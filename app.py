@@ -42,7 +42,7 @@ from config import WHATSAPP_NUMBER
 from services.catalogo import buscar_produto, carregar_produtos
 from services.gerador.compositor import compose_medal
 from services.gerador.config import IMAGE_EXTENSIONS, get_medal_spec
-from services.pricing import TAMANHOS, calcular_carrinho, preco_minimo, preco_varejo
+from services.pricing import TAMANHOS, calcular_carrinho, preco_varejo
 
 app = Flask(__name__)
 app.config["MAX_CONTENT_LENGTH"] = 60 * 1024 * 1024  # 60MB no total do upload
@@ -74,7 +74,7 @@ def index():
         for p in produtos
     ]
     return render_template(
-        "index.html", produtos=itens, preco_a_partir_de=preco_minimo()
+        "index.html", produtos=itens, preco_varejo=preco_varejo()
     )
 
 

@@ -1,6 +1,13 @@
 {% extends "base.html" %}
 
 {% block conteudo %}
+  <div class="banner-atacado">
+    <strong>💰 Preço de atacado automático</strong>
+    <p>Quanto mais medalhas você adicionar ao carrinho — de qualquer santo,
+    inclusive personalizada — menor o preço por unidade. O desconto é
+    aplicado sozinho, sem cupom, assim que você adiciona os itens.</p>
+  </div>
+
   <a class="banner-personalizada" href="{{ url_for('personalizada') }}">
     <div class="banner-texto">
       <strong>✨ Medalha Personalizada</strong>
@@ -21,7 +28,7 @@
         <img src="{{ url_for('static', filename=produto.thumbnail) }}" alt="{{ produto.nome }}" loading="lazy" decoding="async">
         <div class="card-corpo">
           <h2>{{ produto.nome }}</h2>
-          <p class="preco">A partir de {{ preco_a_partir_de | preco }}</p>
+          <p class="preco">{{ preco_varejo | preco }} no varejo</p>
           <span class="ver-modelos">Ver modelos →</span>
         </div>
       </a>

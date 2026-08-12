@@ -556,6 +556,30 @@ button.botao-carrinho:disabled {
   text-align: center;
 }
 
+/* banner do desconto de atacado automatico, bem no topo da home */
+
+.banner-atacado {
+  background: var(--accent);
+  color: white;
+  border-radius: 14px;
+  padding: 16px 18px;
+  margin: 0 0 16px;
+  text-align: center;
+}
+
+.banner-atacado strong {
+  display: block;
+  font-size: 1.05rem;
+  margin-bottom: 6px;
+}
+
+.banner-atacado p {
+  font-size: 0.85rem;
+  line-height: 1.4;
+  margin: 0;
+  opacity: 0.95;
+}
+
 /* banner de destaque para a personalizada, na home */
 
 .banner-personalizada {
