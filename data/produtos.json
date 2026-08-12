@@ -1102,6 +1102,15 @@
     "nome": "Nossa Senhora do Carmo",
     "modelos": [
       {
+        "id": 1,
+        "nome": "Modelo 1",
+        "imagem": "img/produtos/nossa_senhora_do_carmo_modelo_1_medalha.jpg",
+        "tamanhos": [
+          "12mm",
+          "16mm"
+        ]
+      },
+      {
         "id": 2,
         "nome": "Modelo 2",
         "imagem": "img/produtos/nossa_senhora_do_carmo_modelo_2_medalha.jpg",
