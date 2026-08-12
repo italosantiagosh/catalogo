@@ -366,21 +366,6 @@
     ]
   },
   {
-    "id": "fornalha",
-    "nome": "Fornalha",
-    "modelos": [
-      {
-        "id": 1,
-        "nome": "Modelo 1",
-        "imagem": "img/produtos/fornalha_modelo_1_medalha.jpg",
-        "tamanhos": [
-          "12mm",
-          "16mm"
-        ]
-      }
-    ]
-  },
-  {
     "id": "francisco-de-fatima",
     "nome": "Francisco de Fátima",
     "modelos": [
@@ -974,15 +959,6 @@
           "12mm",
           "16mm"
         ]
-      },
-      {
-        "id": 2,
-        "nome": "Modelo 2",
-        "imagem": "img/produtos/nossa_senhora_esperanca_dos_homens_modelo_2_medalha.jpg",
-        "tamanhos": [
-          "12mm",
-          "16mm"
-        ]
       }
     ]
   },
@@ -1081,30 +1057,6 @@
         "id": 2,
         "nome": "Modelo 2",
         "imagem": "img/produtos/nossa_senhora_rainha_da_paz_modelo_2_medalha.jpg",
-        "tamanhos": [
-          "12mm",
-          "16mm"
-        ]
-      }
-    ]
-  },
-  {
-    "id": "nossa-senhora-ressuscitado",
-    "nome": "Nossa Senhora Ressuscitado",
-    "modelos": [
-      {
-        "id": 1,
-        "nome": "Modelo 1",
-        "imagem": "img/produtos/nossa_senhora_ressuscitado_modelo_1_medalha.jpg",
-        "tamanhos": [
-          "12mm",
-          "16mm"
-        ]
-      },
-      {
-        "id": 2,
-        "nome": "Modelo 2",
-        "imagem": "img/produtos/nossa_senhora_ressuscitado_modelo_2_medalha.jpg",
         "tamanhos": [
           "12mm",
           "16mm"
@@ -1254,21 +1206,6 @@
     ]
   },
   {
-    "id": "pais-de-teresinha-personalizada",
-    "nome": "Pais de Teresinha Personalizada",
-    "modelos": [
-      {
-        "id": 1,
-        "nome": "Modelo 1",
-        "imagem": "img/produtos/pais_de_teresinha_personalizada_modelo_1_medalha.jpg",
-        "tamanhos": [
-          "12mm",
-          "16mm"
-        ]
-      }
-    ]
-  },
-  {
     "id": "pentecostes",
     "nome": "Pentecostes",
     "modelos": [
@@ -1276,57 +1213,6 @@
         "id": 1,
         "nome": "Modelo 1",
         "imagem": "img/produtos/pentecostes_modelo_1_medalha.jpg",
-        "tamanhos": [
-          "12mm",
-          "16mm"
-        ]
-      }
-    ]
-  },
-  {
-    "id": "personalizada",
-    "nome": "Personalizada",
-    "modelos": [
-      {
-        "id": 2,
-        "nome": "Modelo 2",
-        "imagem": "img/produtos/personalizada_modelo_2_medalha.jpg",
-        "tamanhos": [
-          "12mm",
-          "16mm"
-        ]
-      },
-      {
-        "id": 3,
-        "nome": "Modelo 3",
-        "imagem": "img/produtos/personalizada_modelo_3_medalha.jpg",
-        "tamanhos": [
-          "12mm",
-          "16mm"
-        ]
-      },
-      {
-        "id": 4,
-        "nome": "Modelo 4",
-        "imagem": "img/produtos/personalizada_modelo_4_medalha.jpg",
-        "tamanhos": [
-          "12mm",
-          "16mm"
-        ]
-      },
-      {
-        "id": 5,
-        "nome": "Modelo 5",
-        "imagem": "img/produtos/personalizada_modelo_5_medalha.jpg",
-        "tamanhos": [
-          "12mm",
-          "16mm"
-        ]
-      },
-      {
-        "id": 6,
-        "nome": "Modelo 6",
-        "imagem": "img/produtos/personalizada_modelo_6_medalha.jpg",
         "tamanhos": [
           "12mm",
           "16mm"
@@ -1449,21 +1335,6 @@
     ]
   },
   {
-    "id": "sagrada-familia-personalizada",
-    "nome": "Sagrada Família Personalizada",
-    "modelos": [
-      {
-        "id": 1,
-        "nome": "Modelo 1",
-        "imagem": "img/produtos/sagrada_familia_personalizada_modelo_1_medalha.jpg",
-        "tamanhos": [
-          "12mm",
-          "16mm"
-        ]
-      }
-    ]
-  },
-  {
     "id": "sagrado-coracao-de-jesus",
     "nome": "Sagrado Coração de Jesus",
     "modelos": [
@@ -1480,7 +1351,7 @@
   },
   {
     "id": "salete",
-    "nome": "Salete",
+    "nome": "La Salete",
     "modelos": [
       {
         "id": 1,
@@ -1572,21 +1443,6 @@
     ]
   },
   {
-    "id": "santa-elena-guerra-personalizada",
-    "nome": "Santa Elena Guerra Personalizada",
-    "modelos": [
-      {
-        "id": 1,
-        "nome": "Modelo 1",
-        "imagem": "img/produtos/santa_elena_guerra_personalizada_modelo_1_medalha.jpg",
-        "tamanhos": [
-          "12mm",
-          "16mm"
-        ]
-      }
-    ]
-  },
-  {
     "id": "santa-faustina",
     "nome": "Santa Faustina",
     "modelos": [
@@ -1617,21 +1473,6 @@
     ]
   },
   {
-    "id": "santa-gemma-personalizada",
-    "nome": "Santa Gemma Personalizada",
-    "modelos": [
-      {
-        "id": 1,
-        "nome": "Modelo 1",
-        "imagem": "img/produtos/santa_gemma_personalizada_modelo_1_medalha.jpg",
-        "tamanhos": [
-          "12mm",
-          "16mm"
-        ]
-      }
-    ]
-  },
-  {
     "id": "santa-gianna",
     "nome": "Santa Gianna",
     "modelos": [
@@ -1648,21 +1489,6 @@
         "id": 2,
         "nome": "Modelo 2",
         "imagem": "img/produtos/santa_gianna_modelo_2_medalha.jpg",
-        "tamanhos": [
-          "12mm",
-          "16mm"
-        ]
-      }
-    ]
-  },
-  {
-    "id": "santa-gianna-personalizada",
-    "nome": "Santa Gianna Personalizada",
-    "modelos": [
-      {
-        "id": 1,
-        "nome": "Modelo 1",
-        "imagem": "img/produtos/santa_gianna_personalizada_modelo_1_medalha.jpg",
         "tamanhos": [
           "12mm",
           "16mm"
@@ -1915,21 +1741,6 @@
         "id": 6,
         "nome": "Modelo 6",
         "imagem": "img/produtos/santa_teresinha_crianca_modelo_6_medalha.jpg",
-        "tamanhos": [
-          "12mm",
-          "16mm"
-        ]
-      }
-    ]
-  },
-  {
-    "id": "santa-teresinha-personalizada",
-    "nome": "Santa Teresinha Personalizada",
-    "modelos": [
-      {
-        "id": 1,
-        "nome": "Modelo 1",
-        "imagem": "img/produtos/santa_teresinha_personalizada_modelo_1_medalha.jpg",
         "tamanhos": [
           "12mm",
           "16mm"
@@ -2341,21 +2152,6 @@
         "id": 4,
         "nome": "Modelo 4",
         "imagem": "img/produtos/sao_joao_paulo_ii_modelo_4_medalha.jpg",
-        "tamanhos": [
-          "12mm",
-          "16mm"
-        ]
-      }
-    ]
-  },
-  {
-    "id": "sao-joao-paulo-ii-personalizada",
-    "nome": "São João Paulo II Personalizada",
-    "modelos": [
-      {
-        "id": 1,
-        "nome": "Modelo 1",
-        "imagem": "img/produtos/sao_joao_paulo_ii_personalizada_modelo_1_medalha.jpg",
         "tamanhos": [
           "12mm",
           "16mm"
