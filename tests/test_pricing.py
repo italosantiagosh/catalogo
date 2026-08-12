@@ -69,3 +69,26 @@ def test_calcular_carrinho_vazio():
     assert resultado["quantidade_total"] == 0
     assert resultado["subtotal_total"] == 0.0
     assert resultado["proxima_faixa"] is None
+    assert resultado["faixa_atual_inicio"] == 0
+    assert resultado["frete_gratis_atingido"] is False
+    assert resultado["falta_para_frete_gratis"] == 300.00
+
+
+def test_faixa_atual_inicio():
+    assert calcular_carrinho([{"tamanho": "16mm", "quantidade": 98}])["faixa_atual_inicio"] == 50
+    assert calcular_carrinho([{"tamanho": "16mm", "quantidade": 100}])["faixa_atual_inicio"] == 100
+
+
+def test_frete_gratis_nao_atingido():
+    resultado = calcular_carrinho([{"tamanho": "16mm", "quantidade": 20}])
+    assert resultado["subtotal_total"] == 90.00
+    assert resultado["frete_gratis_atingido"] is False
+    assert resultado["falta_para_frete_gratis"] == 210.00
+
+
+def test_frete_gratis_atingido():
+    # 110 unidades na faixa 100-130 (R$3,00/un) = R$330, acima dos R$300
+    resultado = calcular_carrinho([{"tamanho": "16mm", "quantidade": 110}])
+    assert resultado["subtotal_total"] == 330.00
+    assert resultado["frete_gratis_atingido"] is True
+    assert resultado["falta_para_frete_gratis"] == 0.0

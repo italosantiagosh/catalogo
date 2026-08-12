@@ -15,14 +15,32 @@
   <div class="resumo-carrinho" id="resumo-carrinho" hidden>
     <p class="resumo-linha">Quantidade total: <strong id="resumo-quantidade">0</strong> medalhas</p>
     <p class="resumo-linha">Faixa de atacado: <strong id="resumo-faixa">—</strong></p>
+
+    <div class="progresso-bloco">
+      <p class="progresso-texto" id="progresso-faixa-texto"></p>
+      <div class="barra-progresso">
+        <div class="barra-progresso-preenchimento" id="progresso-faixa-preenchimento"></div>
+      </div>
+    </div>
+
     <p class="resumo-linha resumo-subtotal">Subtotal: <strong id="resumo-subtotal">R$ 0,00</strong></p>
-    <p class="aviso-proxima-faixa" id="aviso-proxima-faixa" hidden></p>
+
+    <div class="progresso-bloco">
+      <p class="progresso-texto" id="progresso-frete-texto"></p>
+      <div class="barra-progresso">
+        <div class="barra-progresso-preenchimento barra-progresso-frete" id="progresso-frete-preenchimento"></div>
+      </div>
+    </div>
+
     <p class="aviso-minimo" id="aviso-minimo" hidden></p>
+
     <div class="resumo-acoes">
       <button type="button" id="btn-limpar" class="botao-secundario">Limpar carrinho</button>
       <a class="botao-secundario" href="{{ url_for('index') }}">Continuar comprando</a>
     </div>
   </div>
+
+  <div class="toast" id="toast" hidden></div>
 {% endblock %}
 
 {% block script %}

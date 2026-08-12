@@ -7,12 +7,20 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
-  <header class="topo">
-    <a class="marca" href="{{ url_for('index') }}">Catálogo de Medalhas</a>
-    <a class="link-carrinho" href="{{ url_for('carrinho') }}">
-      🛒 Carrinho <span id="contador-carrinho">0</span>
-    </a>
-  </header>
+  <div class="topo-fixo">
+    <header class="topo">
+      <a class="marca" href="{{ url_for('index') }}">Catálogo de Medalhas</a>
+      <a class="link-carrinho" href="{{ url_for('carrinho') }}">
+        🛒 Carrinho <span id="contador-carrinho">0</span>
+      </a>
+    </header>
+    <div class="barra-persistente" id="barra-persistente" hidden>
+      <p class="barra-persistente-texto" id="barra-persistente-texto"></p>
+      <div class="barra-progresso">
+        <div class="barra-progresso-preenchimento" id="barra-persistente-preenchimento"></div>
+      </div>
+    </div>
+  </div>
   <main>
     {% block conteudo %}{% endblock %}
   </main>

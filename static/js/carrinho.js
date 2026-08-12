@@ -1,8 +1,9 @@
 /*
  * Modulo de dados do carrinho -- persistido em localStorage, carregado em
- * toda pagina (via base.html) para que o contador do cabecalho funcione em
- * qualquer lugar. Preco e faixa de atacado ainda nao entram aqui (ETAPA 5);
- * por enquanto cada item so guarda quantidade e os dados de identificacao.
+ * toda pagina (via base.html). Alem do contador do cabecalho, tambem
+ * mantem a barra de progresso persistente (ETAPA 6): quantidade atual x
+ * proxima faixa de desconto, visivel em qualquer pagina exceto o proprio
+ * /carrinho (que ja tem o resumo detalhado).
  */
 
 const CARRINHO_CHAVE = 'catalogo_medalhas_carrinho';
@@ -20,6 +21,7 @@ function carrinhoObterItens() {
 function carrinhoSalvarItens(itens) {
   localStorage.setItem(CARRINHO_CHAVE, JSON.stringify(itens));
   carrinhoAtualizarContador();
+  carrinhoAtualizarBarraPersistente();
 }
 
 function carrinhoAdicionarItem(novoItem) {
@@ -63,4 +65,66 @@ function carrinhoAtualizarContador() {
   if (el) el.textContent = String(carrinhoQuantidadeTotal());
 }
 
-document.addEventListener('DOMContentLoaded', carrinhoAtualizarContador);
+function formatarPreco(valor) {
+  return 'R$ ' + valor.toFixed(2).replace('.', ',');
+}
+
+function _percentualBarra(atual, inicioFaixa, alvo) {
+  if (alvo == null) return 100;
+  const total = alvo - inicioFaixa;
+  if (total <= 0) return 100;
+  return Math.min(100, Math.max(0, ((atual - inicioFaixa) / total) * 100));
+}
+
+async function carrinhoAtualizarBarraPersistente() {
+  const container = document.getElementById('barra-persistente');
+  if (!container) return;
+
+  // a propria pagina do carrinho ja mostra o resumo detalhado -- evita
+  // duplicar a chamada a API e a mensagem.
+  if (document.getElementById('resumo-carrinho')) {
+    container.hidden = true;
+    return;
+  }
+
+  const itens = carrinhoObterItens();
+  if (itens.length === 0) {
+    container.hidden = true;
+    return;
+  }
+
+  try {
+    const resposta = await fetch('/api/carrinho/calcular', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        itens: itens.map((item) => ({ tamanho: item.tamanho, quantidade: item.quantidade })),
+      }),
+    });
+    const dados = await resposta.json();
+
+    const textoEl = document.getElementById('barra-persistente-texto');
+    const preenchimentoEl = document.getElementById('barra-persistente-preenchimento');
+
+    if (dados.proxima_faixa) {
+      textoEl.textContent =
+        `${dados.quantidade_total} / ${dados.proxima_faixa.quantidade} medalhas — ` +
+        `faltam ${dados.proxima_faixa.faltam} para o próximo desconto (${formatarPreco(dados.proxima_faixa.preco)}/un)`;
+      preenchimentoEl.style.width =
+        _percentualBarra(dados.quantidade_total, dados.faixa_atual_inicio, dados.proxima_faixa.quantidade) + '%';
+    } else {
+      const precoAtual = dados.itens[0] ? dados.itens[0].preco_unitario : 0;
+      textoEl.textContent = `🎉 Você já está na melhor faixa de preço (${formatarPreco(precoAtual)}/un)`;
+      preenchimentoEl.style.width = '100%';
+    }
+
+    container.hidden = false;
+  } catch (e) {
+    container.hidden = true;
+  }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  carrinhoAtualizarContador();
+  carrinhoAtualizarBarraPersistente();
+});

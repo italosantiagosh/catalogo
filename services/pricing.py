@@ -7,6 +7,11 @@ tamanhos -- nao da quantidade de cada produto isoladamente. calcular_preco
 e proxima_faixa recebem esse total ja somado por quem chama (o endpoint
 /api/carrinho/calcular, em app.py); nao ha nenhuma soma "por produto"
 aqui dentro.
+
+Frete gratis (frete_gratis_reais em data/precos.json) e so um indicador
+visual por enquanto -- baseado no SUBTOTAL do carrinho, nao na
+quantidade. O calculo de frete em si continua "a combinar no
+atendimento" (secao 18 do briefing).
 """
 
 from __future__ import annotations
@@ -35,21 +40,30 @@ def pedido_minimo_reais() -> float:
     return carregar_precos()["pedido_minimo_reais"]
 
 
+def frete_gratis_reais() -> float:
+    return carregar_precos()["frete_gratis_reais"]
+
+
 def _faixas_ordenadas(tamanho: str) -> list[tuple[int, float]]:
     tabela = carregar_precos()[tamanho]
     return sorted((int(inicio), preco) for inicio, preco in tabela.items())
 
 
-def calcular_preco(tamanho: str, quantidade_total_carrinho: int) -> float:
-    """Preco unitario da faixa atual, para a quantidade TOTAL do carrinho."""
+def _faixa_atual(tamanho: str, quantidade_total_carrinho: int) -> tuple[int, float]:
+    """(inicio, preco) da faixa em que a quantidade dada se encontra."""
     faixas = _faixas_ordenadas(tamanho)
-    preco = faixas[0][1]
+    atual = faixas[0]
     for inicio, valor in faixas:
         if quantidade_total_carrinho >= inicio:
-            preco = valor
+            atual = (inicio, valor)
         else:
             break
-    return preco
+    return atual
+
+
+def calcular_preco(tamanho: str, quantidade_total_carrinho: int) -> float:
+    """Preco unitario da faixa atual, para a quantidade TOTAL do carrinho."""
+    return _faixa_atual(tamanho, quantidade_total_carrinho)[1]
 
 
 def proxima_faixa(tamanho: str, quantidade_total_carrinho: int) -> dict | None:
@@ -104,12 +118,19 @@ def calcular_carrinho(itens: list[dict]) -> dict:
     # uma unica vez no resumo do carrinho.
     tamanho_referencia = itens[0]["tamanho"] if itens else "16mm"
 
+    frete_gratis = frete_gratis_reais()
+    falta_frete = round(frete_gratis - subtotal_total, 2)
+
     return {
         "quantidade_total": quantidade_total,
         "faixa_label": faixa_label(tamanho_referencia, quantidade_total) if itens else "",
+        "faixa_atual_inicio": _faixa_atual(tamanho_referencia, quantidade_total)[0] if itens else 0,
         "itens": itens_calculados,
         "subtotal_total": subtotal_total,
         "pedido_minimo_reais": pedido_minimo_reais(),
         "atinge_minimo": subtotal_total >= pedido_minimo_reais() if itens else True,
         "proxima_faixa": proxima_faixa(tamanho_referencia, quantidade_total) if itens else None,
+        "frete_gratis_reais": frete_gratis,
+        "frete_gratis_atingido": subtotal_total >= frete_gratis if itens else False,
+        "falta_para_frete_gratis": max(0.0, falta_frete) if itens else frete_gratis,
     }

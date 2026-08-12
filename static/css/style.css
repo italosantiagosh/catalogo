@@ -32,6 +32,12 @@ main {
 
 /* topo */
 
+.topo-fixo {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
 header.topo {
   background: var(--card);
   border-bottom: 1px solid var(--border);
@@ -40,9 +46,37 @@ header.topo {
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  position: sticky;
-  top: 0;
-  z-index: 10;
+}
+
+.barra-persistente {
+  background: var(--card);
+  border-bottom: 1px solid var(--border);
+  padding: 8px 16px 10px;
+}
+
+.barra-persistente-texto {
+  font-size: 0.78rem;
+  color: var(--muted);
+  margin: 0 0 6px;
+}
+
+.barra-progresso {
+  height: 8px;
+  border-radius: 999px;
+  background: var(--border);
+  overflow: hidden;
+}
+
+.barra-progresso-preenchimento {
+  height: 100%;
+  border-radius: 999px;
+  background: var(--accent);
+  width: 0%;
+  transition: width 0.35s ease;
+}
+
+.barra-progresso-preenchimento.barra-progresso-frete {
+  background: #4a7a5f;
 }
 
 a.marca {
@@ -446,14 +480,15 @@ button.botao-carrinho:disabled {
   margin: 10px 0;
 }
 
-.aviso-proxima-faixa {
-  background: #f6efe0;
-  color: var(--accent-dark);
-  border-radius: 10px;
-  padding: 10px 14px;
+.progresso-bloco {
+  margin: 0 0 16px;
+}
+
+.progresso-texto {
   font-size: 0.85rem;
   font-weight: 600;
-  margin: 0 0 12px;
+  color: var(--accent-dark);
+  margin: 0 0 6px;
 }
 
 .aviso-minimo {
@@ -469,4 +504,21 @@ button.botao-carrinho:disabled {
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
+}
+
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: 24px;
+  transform: translateX(-50%);
+  background: var(--ink);
+  color: white;
+  padding: 12px 20px;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+  z-index: 50;
+  max-width: calc(100% - 32px);
+  text-align: center;
 }
