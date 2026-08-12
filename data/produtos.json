@@ -1,0 +1,92 @@
+[
+  {
+    "id": "sao-jose",
+    "nome": "São José",
+    "modelos": [
+      {
+        "id": 1,
+        "nome": "Modelo 1",
+        "imagem": "img/produtos/sao-jose/modelo-1.jpg",
+        "tamanhos": ["12mm", "16mm"]
+      },
+      {
+        "id": 2,
+        "nome": "Modelo 2",
+        "imagem": "img/produtos/sao-jose/modelo-2.jpg",
+        "tamanhos": ["12mm", "16mm"]
+      }
+    ]
+  },
+  {
+    "id": "sao-bento",
+    "nome": "São Bento",
+    "modelos": [
+      {
+        "id": 1,
+        "nome": "Modelo 1",
+        "imagem": "img/produtos/sao-bento/modelo-1.jpg",
+        "tamanhos": ["12mm", "16mm"]
+      },
+      {
+        "id": 2,
+        "nome": "Modelo 2",
+        "imagem": "img/produtos/sao-bento/modelo-2.jpg",
+        "tamanhos": ["12mm", "16mm"]
+      }
+    ]
+  },
+  {
+    "id": "sao-miguel",
+    "nome": "São Miguel",
+    "modelos": [
+      {
+        "id": 1,
+        "nome": "Modelo 1",
+        "imagem": "img/produtos/sao-miguel/modelo-1.jpg",
+        "tamanhos": ["12mm", "16mm"]
+      },
+      {
+        "id": 2,
+        "nome": "Modelo 2",
+        "imagem": "img/produtos/sao-miguel/modelo-2.jpg",
+        "tamanhos": ["12mm", "16mm"]
+      }
+    ]
+  },
+  {
+    "id": "santa-teresinha",
+    "nome": "Santa Teresinha",
+    "modelos": [
+      {
+        "id": 1,
+        "nome": "Modelo 1",
+        "imagem": "img/produtos/santa-teresinha/modelo-1.jpg",
+        "tamanhos": ["12mm", "16mm"]
+      },
+      {
+        "id": 2,
+        "nome": "Modelo 2",
+        "imagem": "img/produtos/santa-teresinha/modelo-2.jpg",
+        "tamanhos": ["12mm", "16mm"]
+      }
+    ]
+  },
+  {
+    "id": "carlo-acutis",
+    "nome": "Carlo Acutis",
+    "modelos": [
+      {
+        "id": 1,
+        "nome": "Modelo 1",
+        "imagem": "img/produtos/carlo-acutis/modelo-1.jpg",
+        "tamanhos": ["12mm", "16mm"]
+      },
+      {
+        "id": 2,
+        "nome": "Modelo 2",
+        "imagem": "img/produtos/carlo-acutis/modelo-2.jpg",
+        "tamanhos": ["12mm", "16mm"]
+      }
+    ]
+  }
+]

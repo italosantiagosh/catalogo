@@ -1,0 +1,15 @@
+{
+  "_comentario": "Tabela de atacado. As chaves de cada tamanho sao o INICIO de cada faixa (quantidade TOTAL de medalhas no carrinho, somando todos os produtos). Valores ainda nao definidos (0) -- serao informados depois. Usada pela futura services/pricing.py (ETAPA 5).",
+  "12mm": {
+    "1": 0,
+    "50": 0,
+    "100": 0,
+    "200": 0
+  },
+  "16mm": {
+    "1": 0,
+    "50": 0,
+    "100": 0,
+    "200": 0
+  }
+}

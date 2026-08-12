@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Catálogo de Medalhas</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+  <main>
+    <h1>Catálogo de Medalhas</h1>
+    <p class="subtitle">
+      Página inicial provisória (ETAPA 2) — apenas confirmando que os
+      produtos cadastrados em <code>data/produtos.json</code> carregam
+      corretamente. O catálogo completo (busca, filtros, cards, página
+      de produto) chega na próxima etapa.
+    </p>
+
+    <ul class="lista-santos">
+      {% for produto in produtos %}
+        <li>
+          <strong>{{ produto.nome }}</strong>
+          — {{ produto.modelos | length }} modelo(s)
+          ({% for modelo in produto.modelos %}{{ modelo.nome }}{% if not loop.last %}, {% endif %}{% endfor %})
+        </li>
+      {% endfor %}
+    </ul>
+  </main>
+</body>
+</html>
