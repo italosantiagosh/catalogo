@@ -1,15 +1,28 @@
 {
-  "_comentario": "Tabela de atacado. As chaves de cada tamanho sao o INICIO de cada faixa (quantidade TOTAL de medalhas no carrinho, somando todos os produtos). Valores ainda nao definidos (0) -- serao informados depois. Usada pela futura services/pricing.py (ETAPA 5).",
+  "_comentario": "Tabela de atacado (medalhas/entremeios de 1 lado). As chaves de cada tamanho sao o INICIO de cada faixa (quantidade TOTAL de medalhas no carrinho, somando todos os produtos e todos os santos). O preco unitario da faixa vale para o carrinho inteiro assim que o total atinge aquela quantidade. Mesma tabela para 12mm e 16mm por enquanto (podem ser diferenciadas depois, bastando editar uma delas). pedido_minimo_reais e o valor minimo de subtotal do carrinho para finalizar o pedido -- abaixo de 20 unidades o preco cai para varejo (faixa \"1\"), mas o carrinho so pode ser fechado se o subtotal atingir esse minimo. Usado pela futura services/pricing.py (ETAPA 5).",
+  "pedido_minimo_reais": 30.00,
   "12mm": {
-    "1": 0,
-    "50": 0,
-    "100": 0,
-    "200": 0
+    "1": 5.00,
+    "20": 4.50,
+    "30": 4.00,
+    "50": 3.50,
+    "100": 3.00,
+    "131": 2.75,
+    "160": 2.50,
+    "500": 2.25,
+    "1000": 2.00,
+    "2000": 1.75
   },
   "16mm": {
-    "1": 0,
-    "50": 0,
-    "100": 0,
-    "200": 0
+    "1": 5.00,
+    "20": 4.50,
+    "30": 4.00,
+    "50": 3.50,
+    "100": 3.00,
+    "131": 2.75,
+    "160": 2.50,
+    "500": 2.25,
+    "1000": 2.00,
+    "2000": 1.75
   }
 }
