@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+
+{% block titulo %}Carrinho — Catálogo de Medalhas{% endblock %}
+
+{% block conteudo %}
+  <h1>Seu carrinho</h1>
+
+  <div id="carrinho-vazio" hidden>
+    <p class="vazio-texto">Seu carrinho está vazio.</p>
+    <a class="botao-secundario" href="{{ url_for('index') }}">Ver catálogo</a>
+  </div>
+
+  <div id="lista-itens" class="lista-itens"></div>
+
+  <div class="resumo-carrinho" id="resumo-carrinho" hidden>
+    <p class="resumo-linha">Quantidade total: <strong id="resumo-quantidade">0</strong> medalhas</p>
+    <p class="aviso-preco">Preços e faixa de atacado chegam na próxima etapa.</p>
+    <div class="resumo-acoes">
+      <button type="button" id="btn-limpar" class="botao-secundario">Limpar carrinho</button>
+      <a class="botao-secundario" href="{{ url_for('index') }}">Continuar comprando</a>
+    </div>
+  </div>
+{% endblock %}
+
+{% block script %}
+  <script src="{{ url_for('static', filename='js/carrinho_pagina.js') }}"></script>
+{% endblock %}

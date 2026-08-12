@@ -7,7 +7,7 @@
   <h1>{{ produto.nome }}</h1>
   <p class="instrucao">Escolha um modelo:</p>
 
-  <div class="modelos-grid" id="modelos-grid">
+  <div class="modelos-grid" id="modelos-grid" data-produto-id="{{ produto.id }}" data-produto-nome="{{ produto.nome }}">
     {% for modelo in produto.modelos %}
       <button
         type="button"
@@ -38,8 +38,8 @@
       </div>
     </div>
 
-    <button type="button" class="botao-carrinho" id="btn-adicionar" disabled title="O carrinho chega na próxima etapa">
-      Adicionar ao carrinho — em breve
+    <button type="button" class="botao-carrinho" id="btn-adicionar" disabled>
+      Selecione um modelo e tamanho
     </button>
   </div>
 {% endblock %}

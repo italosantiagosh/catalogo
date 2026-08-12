@@ -36,6 +36,13 @@ header.topo {
   background: var(--card);
   border-bottom: 1px solid var(--border);
   padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  position: sticky;
+  top: 0;
+  z-index: 10;
 }
 
 a.marca {
@@ -43,6 +50,25 @@ a.marca {
   font-size: 1.1rem;
   color: var(--ink);
   text-decoration: none;
+}
+
+a.link-carrinho {
+  color: var(--ink);
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 0.9rem;
+  white-space: nowrap;
+}
+
+a.link-carrinho #contador-carrinho {
+  display: inline-block;
+  min-width: 20px;
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: var(--accent);
+  color: white;
+  font-size: 0.75rem;
+  text-align: center;
 }
 
 /* busca */
@@ -301,4 +327,118 @@ button.botao-carrinho:disabled {
   background: var(--border);
   color: var(--muted);
   cursor: not-allowed;
+}
+
+/* pagina do carrinho */
+
+.vazio-texto {
+  color: var(--muted);
+  margin: 24px 0 16px;
+}
+
+.botao-secundario {
+  display: inline-block;
+  padding: 12px 18px;
+  border: 1px solid var(--accent);
+  border-radius: 10px;
+  background: transparent;
+  color: var(--accent);
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.lista-itens {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.item-carrinho {
+  display: grid;
+  grid-template-columns: 72px 1fr auto;
+  align-items: center;
+  gap: 12px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 10px;
+}
+
+.item-carrinho img {
+  width: 72px;
+  height: 72px;
+  border-radius: 10px;
+  object-fit: cover;
+}
+
+.item-info h2 {
+  font-size: 0.95rem;
+  margin: 0 0 2px;
+}
+
+.item-info p {
+  font-size: 0.8rem;
+  color: var(--muted);
+  margin: 0 0 8px;
+}
+
+.item-stepper {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.item-stepper button {
+  width: 32px;
+  height: 32px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg);
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+.item-stepper .item-qtd {
+  min-width: 24px;
+  text-align: center;
+  font-weight: 600;
+}
+
+.item-remover {
+  width: 36px;
+  height: 36px;
+  border: none;
+  border-radius: 999px;
+  background: var(--bg);
+  color: var(--muted);
+  font-size: 1.1rem;
+  cursor: pointer;
+  align-self: start;
+}
+
+.resumo-carrinho {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 18px;
+}
+
+.resumo-linha {
+  font-size: 1rem;
+  margin: 0 0 6px;
+}
+
+.aviso-preco {
+  font-size: 0.8rem;
+  color: var(--muted);
+  margin: 0 0 16px;
+}
+
+.resumo-acoes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
 }

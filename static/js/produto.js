@@ -6,14 +6,24 @@
   const quantidadeInput = document.getElementById('sel-quantidade');
   const qtdMenos = document.getElementById('qtd-menos');
   const qtdMais = document.getElementById('qtd-mais');
+  const btnAdicionar = document.getElementById('btn-adicionar');
   if (!grid || !painel) return;
+
+  const produtoId = grid.dataset.produtoId;
+  const produtoNome = grid.dataset.produtoNome;
+  let modeloSelecionado = null;
 
   function selecionarModelo(botao) {
     for (const outro of grid.querySelectorAll('.modelo-card')) {
       outro.setAttribute('aria-pressed', String(outro === botao));
     }
 
-    nomeSpan.textContent = botao.dataset.modeloNome;
+    modeloSelecionado = {
+      id: botao.dataset.modeloId,
+      nome: botao.dataset.modeloNome,
+      imagem: botao.querySelector('img').src,
+    };
+    nomeSpan.textContent = modeloSelecionado.nome;
 
     const tamanhos = JSON.parse(botao.dataset.tamanhos || '[]');
     tamanhosFieldset.innerHTML = '<legend>Tamanho</legend>';
@@ -30,6 +40,9 @@
 
     painel.hidden = false;
     painel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+    btnAdicionar.disabled = false;
+    btnAdicionar.textContent = 'Adicionar ao carrinho';
   }
 
   grid.addEventListener('click', (evento) => {
@@ -44,6 +57,32 @@
 
   if (qtdMenos) qtdMenos.addEventListener('click', () => ajustarQuantidade(-1));
   if (qtdMais) qtdMais.addEventListener('click', () => ajustarQuantidade(1));
+
+  if (btnAdicionar) {
+    btnAdicionar.addEventListener('click', () => {
+      const tamanhoInput = tamanhosFieldset.querySelector('input[name="tamanho"]:checked');
+      if (!modeloSelecionado || !tamanhoInput) return;
+
+      const quantidade = Math.max(1, parseInt(quantidadeInput.value, 10) || 1);
+      carrinhoAdicionarItem({
+        chave: `${produtoId}-${modeloSelecionado.id}-${tamanhoInput.value}`,
+        tipo: 'catalogo',
+        produtoId,
+        produtoNome,
+        modeloId: modeloSelecionado.id,
+        modeloNome: modeloSelecionado.nome,
+        imagem: modeloSelecionado.imagem,
+        tamanho: tamanhoInput.value,
+        quantidade,
+      });
+
+      const textoOriginal = 'Adicionar ao carrinho';
+      btnAdicionar.textContent = 'Adicionado ✓';
+      setTimeout(() => {
+        btnAdicionar.textContent = textoOriginal;
+      }, 1200);
+    });
+  }
 
   // seleciona o primeiro modelo automaticamente para quem tem só um
   const primeiro = grid.querySelector('.modelo-card');

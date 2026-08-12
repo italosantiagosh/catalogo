@@ -1,15 +1,17 @@
 """
 Catalogo de medalhas -- ponto de entrada Flask.
 
-Rotas desta etapa (ETAPA 3):
+Rotas ate a ETAPA 4:
     /              catalogo -- busca + grid de cards por santo/devocional
     /produto/<id>  pagina de produto -- modelos, tamanho, quantidade
+    /carrinho      itens do carrinho (persistido em localStorage, static/js/carrinho.js)
 
-O "Adicionar ao carrinho" existe na pagina de produto mas fica desabilitado
-por enquanto -- o carrinho (localStorage, recalculo de atacado) entra na
-ETAPA 4. O gerador de medalha personalizada -- portado sem alteracoes do
-repositorio `mockup`, ja em producao em gerador-medalhas.onrender.com --
-entra em /personalizada na ETAPA 7.
+O carrinho ainda nao calcula preco/faixa de atacado -- isso e a ETAPA 5
+(services/pricing.py ja tem o preco_minimo usado no "a partir de" dos
+cards, mas calcular_preco/proxima_faixa por quantidade total do carrinho
+ainda nao existem). O gerador de medalha personalizada -- portado sem
+alteracoes do repositorio `mockup`, ja em producao em
+gerador-medalhas.onrender.com -- entra em /personalizada na ETAPA 7.
 """
 
 from __future__ import annotations
@@ -51,6 +53,11 @@ def produto(produto_id: str):
     if produto is None:
         abort(404)
     return render_template("produto.html", produto=produto)
+
+
+@app.route("/carrinho", methods=["GET"])
+def carrinho():
+    return render_template("carrinho.html")
 
 
 if __name__ == "__main__":
