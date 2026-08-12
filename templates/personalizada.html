@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+
+{% block titulo %}Medalha Personalizada — Catálogo de Medalhas{% endblock %}
+
+{% block conteudo %}
+  <h1>Medalha Personalizada</h1>
+  <p class="instrucao">Envie uma foto e veja a simulação da sua medalha antes de pedir.</p>
+
+  {% if erro %}
+    <div class="erro">{{ erro }}</div>
+  {% endif %}
+
+  {% if preview_src %}
+    <div class="preview-personalizada">
+      <img src="{{ preview_src }}" alt="Simulação da medalha personalizada" id="preview-imagem">
+    </div>
+
+    <div class="painel-selecao" id="painel-selecao" data-imagem-preview="preview-imagem">
+      <p class="resumo-linha">Tamanho: <strong>{{ tamanho_selecionado.replace('mm', ' mm') }}</strong></p>
+
+      <div class="quantidade">
+        <label for="sel-quantidade">Quantidade</label>
+        <div class="stepper">
+          <button type="button" id="qtd-menos" aria-label="Diminuir quantidade">−</button>
+          <input type="number" id="sel-quantidade" value="10" min="1" inputmode="numeric">
+          <button type="button" id="qtd-mais" aria-label="Aumentar quantidade">+</button>
+        </div>
+      </div>
+
+      <button type="button" class="botao-carrinho" id="btn-adicionar" disabled>
+        Adicionar ao carrinho — em breve
+      </button>
+    </div>
+
+    <a class="voltar" href="{{ url_for('personalizada') }}">&larr; Gerar outra</a>
+  {% else %}
+    <form class="card-upload" action="{{ url_for('personalizada_processar') }}" method="post" enctype="multipart/form-data" id="form-upload">
+      <label class="dropzone" for="input-imagem">
+        <span class="icone">📷</span>
+        <span class="principal">Toque para escolher uma imagem</span>
+        <span class="secundario">JPG, PNG ou WEBP</span>
+      </label>
+      <input type="file" id="input-imagem" name="imagem" accept="image/*">
+      <div id="nome-arquivo"></div>
+
+      <fieldset class="tamanhos">
+        <legend>Tamanho</legend>
+        <label class="opcao-tamanho">
+          <input type="radio" name="tamanho" value="12mm"> 12 mm
+        </label>
+        <label class="opcao-tamanho">
+          <input type="radio" name="tamanho" value="16mm" checked> 16 mm
+        </label>
+      </fieldset>
+
+      <button type="submit" id="botao-enviar" disabled>Selecione uma imagem primeiro</button>
+    </form>
+  {% endif %}
+{% endblock %}
+
+{% block script %}
+  <script src="{{ url_for('static', filename='js/personalizada.js') }}"></script>
+{% endblock %}

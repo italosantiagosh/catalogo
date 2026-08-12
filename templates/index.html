@@ -1,6 +1,14 @@
 {% extends "base.html" %}
 
 {% block conteudo %}
+  <a class="banner-personalizada" href="{{ url_for('personalizada') }}">
+    <div class="banner-texto">
+      <strong>✨ Medalha Personalizada</strong>
+      <span>Envie sua foto e veja a simulação antes de pedir</span>
+    </div>
+    <span class="banner-seta">→</span>
+  </a>
+
   <div class="busca-wrap">
     <input type="search" id="busca" placeholder="Buscar santo ou devoção... (ex: José, Carlo, Fátima)" aria-label="Buscar santo ou devoção">
   </div>

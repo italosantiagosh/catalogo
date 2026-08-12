@@ -522,3 +522,134 @@ button.botao-carrinho:disabled {
   max-width: calc(100% - 32px);
   text-align: center;
 }
+
+/* banner de destaque para a personalizada, na home */
+
+.banner-personalizada {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 16px;
+  margin: 0 0 20px;
+  text-decoration: none;
+  color: var(--ink);
+}
+
+.banner-personalizada .banner-texto strong {
+  display: block;
+  font-size: 0.95rem;
+  margin-bottom: 2px;
+}
+
+.banner-personalizada .banner-texto span {
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+.banner-personalizada .banner-seta {
+  font-size: 1.4rem;
+  color: var(--accent);
+  flex-shrink: 0;
+}
+
+/* pagina /personalizada -- upload */
+
+.card-upload {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 20px;
+}
+
+label.dropzone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 2px dashed var(--border);
+  border-radius: 12px;
+  padding: 32px 16px;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color 0.15s ease;
+}
+
+label.dropzone:active {
+  border-color: var(--accent);
+}
+
+label.dropzone .icone {
+  font-size: 2rem;
+}
+
+label.dropzone .principal {
+  font-weight: 600;
+}
+
+label.dropzone .secundario {
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+input[type="file"] {
+  display: none;
+}
+
+#nome-arquivo {
+  margin-top: 10px;
+  font-size: 0.85rem;
+  color: var(--muted);
+  word-break: break-word;
+}
+
+.card-upload fieldset.tamanhos {
+  margin-top: 18px;
+  margin-bottom: 0;
+}
+
+.card-upload button[type="submit"] {
+  width: 100%;
+  margin-top: 18px;
+  padding: 14px;
+  border: none;
+  border-radius: 10px;
+  background: var(--accent);
+  color: white;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.card-upload button[type="submit"]:disabled {
+  background: var(--border);
+  color: var(--muted);
+  cursor: not-allowed;
+}
+
+.preview-personalizada {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 16px;
+  margin-bottom: 16px;
+}
+
+.preview-personalizada img {
+  width: 100%;
+  border-radius: 12px;
+  display: block;
+}
+
+.erro {
+  background: #fdecea;
+  color: #7a2118;
+  border-radius: 10px;
+  padding: 12px 14px;
+  font-size: 0.9rem;
+  margin-bottom: 16px;
+}
