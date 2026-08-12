@@ -1,28 +1,56 @@
 """
 Catalogo de medalhas -- ponto de entrada Flask.
 
-Nesta etapa (ETAPA 2) a rota "/" e apenas um placeholder que lista os
-santos cadastrados em data/produtos.json, so para validar que os dados
-centralizados carregam corretamente. O catalogo completo (busca,
-filtros, pagina de produto) entra na ETAPA 3; o gerador de medalha
-personalizada -- portado sem alteracoes do repositorio `mockup`, que ja
-esta em producao em gerador-medalhas.onrender.com -- entra em
-/personalizada na ETAPA 7.
+Rotas desta etapa (ETAPA 3):
+    /              catalogo -- busca + grid de cards por santo/devocional
+    /produto/<id>  pagina de produto -- modelos, tamanho, quantidade
+
+O "Adicionar ao carrinho" existe na pagina de produto mas fica desabilitado
+por enquanto -- o carrinho (localStorage, recalculo de atacado) entra na
+ETAPA 4. O gerador de medalha personalizada -- portado sem alteracoes do
+repositorio `mockup`, ja em producao em gerador-medalhas.onrender.com --
+entra em /personalizada na ETAPA 7.
 """
 
 from __future__ import annotations
 
-from flask import Flask, render_template
+from flask import Flask, abort, render_template
 
-from services.catalogo import carregar_produtos
+from services.catalogo import buscar_produto, carregar_produtos
+from services.pricing import preco_minimo
 
 app = Flask(__name__)
+
+
+def _formatar_preco(valor: float) -> str:
+    return f"R$ {valor:.2f}".replace(".", ",")
+
+
+app.jinja_env.filters["preco"] = _formatar_preco
 
 
 @app.route("/", methods=["GET"])
 def index():
     produtos = carregar_produtos()
-    return render_template("index.html", produtos=produtos)
+    itens = [
+        {
+            "id": p["id"],
+            "nome": p["nome"],
+            "thumbnail": p["modelos"][0]["imagem"],
+        }
+        for p in produtos
+    ]
+    return render_template(
+        "index.html", produtos=itens, preco_a_partir_de=preco_minimo()
+    )
+
+
+@app.route("/produto/<produto_id>", methods=["GET"])
+def produto(produto_id: str):
+    produto = buscar_produto(produto_id)
+    if produto is None:
+        abort(404)
+    return render_template("produto.html", produto=produto)
 
 
 if __name__ == "__main__":

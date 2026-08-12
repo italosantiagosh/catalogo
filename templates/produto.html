@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block titulo %}{{ produto.nome }} — Catálogo de Medalhas{% endblock %}
+
+{% block conteudo %}
+  <a class="voltar" href="{{ url_for('index') }}">&larr; Voltar ao catálogo</a>
+  <h1>{{ produto.nome }}</h1>
+  <p class="instrucao">Escolha um modelo:</p>
+
+  <div class="modelos-grid" id="modelos-grid">
+    {% for modelo in produto.modelos %}
+      <button
+        type="button"
+        class="modelo-card"
+        data-modelo-id="{{ modelo.id }}"
+        data-modelo-nome="{{ modelo.nome }}"
+        data-tamanhos='{{ modelo.tamanhos | tojson }}'
+      >
+        <img src="{{ url_for('static', filename=modelo.imagem) }}" alt="{{ produto.nome }} — {{ modelo.nome }}" loading="lazy" decoding="async">
+        <span>{{ modelo.nome }}</span>
+      </button>
+    {% endfor %}
+  </div>
+
+  <div class="painel-selecao" id="painel-selecao" hidden>
+    <h2>Modelo selecionado: <span id="sel-modelo-nome"></span></h2>
+
+    <fieldset class="tamanhos" id="sel-tamanhos">
+      <legend>Tamanho</legend>
+    </fieldset>
+
+    <div class="quantidade">
+      <label for="sel-quantidade">Quantidade</label>
+      <div class="stepper">
+        <button type="button" id="qtd-menos" aria-label="Diminuir quantidade">−</button>
+        <input type="number" id="sel-quantidade" value="10" min="1" inputmode="numeric">
+        <button type="button" id="qtd-mais" aria-label="Aumentar quantidade">+</button>
+      </div>
+    </div>
+
+    <button type="button" class="botao-carrinho" id="btn-adicionar" disabled title="O carrinho chega na próxima etapa">
+      Adicionar ao carrinho — em breve
+    </button>
+  </div>
+{% endblock %}
+
+{% block script %}
+  <script src="{{ url_for('static', filename='js/produto.js') }}"></script>
+{% endblock %}

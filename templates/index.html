@@ -1,30 +1,28 @@
-<!doctype html>
-<html lang="pt-br">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Catálogo de Medalhas</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-</head>
-<body>
-  <main>
-    <h1>Catálogo de Medalhas</h1>
-    <p class="subtitle">
-      Página inicial provisória (ETAPA 2) — apenas confirmando que os
-      produtos cadastrados em <code>data/produtos.json</code> carregam
-      corretamente. O catálogo completo (busca, filtros, cards, página
-      de produto) chega na próxima etapa.
-    </p>
+{% extends "base.html" %}
 
-    <ul class="lista-santos">
-      {% for produto in produtos %}
-        <li>
-          <strong>{{ produto.nome }}</strong>
-          — {{ produto.modelos | length }} modelo(s)
-          ({% for modelo in produto.modelos %}{{ modelo.nome }}{% if not loop.last %}, {% endif %}{% endfor %})
-        </li>
-      {% endfor %}
-    </ul>
-  </main>
-</body>
-</html>
+{% block conteudo %}
+  <div class="busca-wrap">
+    <input type="search" id="busca" placeholder="Buscar santo ou devoção... (ex: José, Carlo, Fátima)" aria-label="Buscar santo ou devoção">
+  </div>
+
+  <p class="contagem" id="contagem"></p>
+
+  <div class="grid-produtos" id="grid-produtos">
+    {% for produto in produtos %}
+      <a class="card-produto" href="{{ url_for('produto', produto_id=produto.id) }}" data-nome="{{ produto.nome }}">
+        <img src="{{ url_for('static', filename=produto.thumbnail) }}" alt="{{ produto.nome }}" loading="lazy" decoding="async">
+        <div class="card-corpo">
+          <h2>{{ produto.nome }}</h2>
+          <p class="preco">A partir de {{ preco_a_partir_de | preco }}</p>
+          <span class="ver-modelos">Ver modelos →</span>
+        </div>
+      </a>
+    {% endfor %}
+  </div>
+
+  <p class="sem-resultado" id="sem-resultado" hidden>Nenhum santo encontrado com esse nome.</p>
+{% endblock %}
+
+{% block script %}
+  <script src="{{ url_for('static', filename='js/catalogo.js') }}"></script>
+{% endblock %}
