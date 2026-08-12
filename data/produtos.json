@@ -26,6 +26,15 @@
           "12mm",
           "16mm"
         ]
+      },
+      {
+        "id": 2,
+        "nome": "Modelo 2",
+        "imagem": "img/produtos/banquete_eterno_modelo_2_medalha.jpg",
+        "tamanhos": [
+          "12mm",
+          "16mm"
+        ]
       }
     ]
   },
@@ -70,8 +79,17 @@
   },
   {
     "id": "beata-sandra-sabatine",
-    "nome": "Beata Sandra Sabatine",
+    "nome": "Beata Sandra Sabattini",
     "modelos": [
+      {
+        "id": 1,
+        "nome": "Modelo 1",
+        "imagem": "img/produtos/beata_sandra_sabattini_modelo_1_medalha.jpg",
+        "tamanhos": [
+          "12mm",
+          "16mm"
+        ]
+      },
       {
         "id": 2,
         "nome": "Modelo 2",
@@ -124,21 +142,6 @@
         "id": 3,
         "nome": "Modelo 3",
         "imagem": "img/produtos/bom_pastor_modelo_3_medalha.jpg",
-        "tamanhos": [
-          "12mm",
-          "16mm"
-        ]
-      }
-    ]
-  },
-  {
-    "id": "cantico-dos-canticos",
-    "nome": "Cântico dos Cânticos",
-    "modelos": [
-      {
-        "id": 1,
-        "nome": "Modelo 1",
-        "imagem": "img/produtos/cantico_dos_canticos_modelo_1_medalha.jpg",
         "tamanhos": [
           "12mm",
           "16mm"
@@ -230,6 +233,15 @@
           "12mm",
           "16mm"
         ]
+      },
+      {
+        "id": 2,
+        "nome": "Modelo 2",
+        "imagem": "img/produtos/chiara_luce_modelo_2_medalha.jpg",
+        "tamanhos": [
+          "12mm",
+          "16mm"
+        ]
       }
     ]
   },
@@ -241,6 +253,21 @@
         "id": 1,
         "nome": "Modelo 1",
         "imagem": "img/produtos/cristo_rei_modelo_1_medalha.jpg",
+        "tamanhos": [
+          "12mm",
+          "16mm"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "cantico-dos-canticos",
+    "nome": "Cântico dos Cânticos",
+    "modelos": [
+      {
+        "id": 1,
+        "nome": "Modelo 1",
+        "imagem": "img/produtos/cantico_dos_canticos_modelo_1_medalha.jpg",
         "tamanhos": [
           "12mm",
           "16mm"
@@ -319,6 +346,21 @@
         "id": 1,
         "nome": "Modelo 1",
         "imagem": "img/produtos/esposo_eucaristico_modelo_1_medalha.jpg",
+        "tamanhos": [
+          "12mm",
+          "16mm"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "espirito-santo",
+    "nome": "Espírito Santo",
+    "modelos": [
+      {
+        "id": 1,
+        "nome": "Modelo 1",
+        "imagem": "img/produtos/espirito_santo_modelo_1_medalha.jpg",
         "tamanhos": [
           "12mm",
           "16mm"
@@ -573,6 +615,21 @@
     ]
   },
   {
+    "id": "salete",
+    "nome": "La Salete",
+    "modelos": [
+      {
+        "id": 1,
+        "nome": "Modelo 1",
+        "imagem": "img/produtos/salete_modelo_1_medalha.jpg",
+        "tamanhos": [
+          "12mm",
+          "16mm"
+        ]
+      }
+    ]
+  },
+  {
     "id": "nossa-senhora-aparecida",
     "nome": "Nossa Senhora Aparecida",
     "modelos": [
@@ -595,6 +652,189 @@
         "id": 1,
         "nome": "Modelo 1",
         "imagem": "img/produtos/nossa_senhora_aparecida_infantil_modelo_1_medalha.jpg",
+        "tamanhos": [
+          "12mm",
+          "16mm"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "nossa-senhora-desatadora-dos-nos",
+    "nome": "Nossa Senhora Desatadora dos Nós",
+    "modelos": [
+      {
+        "id": 1,
+        "nome": "Modelo 1",
+        "imagem": "img/produtos/nossa_senhora_desatadora_dos_nos_modelo_1_medalha.jpg",
+        "tamanhos": [
+          "12mm",
+          "16mm"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "nossa-senhora-esperanca-dos-homens",
+    "nome": "Nossa Senhora Esperança dos Homens",
+    "modelos": [
+      {
+        "id": 1,
+        "nome": "Modelo 1",
+        "imagem": "img/produtos/nossa_senhora_esperanca_dos_homens_modelo_1_medalha.jpg",
+        "tamanhos": [
+          "12mm",
+          "16mm"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "nossa-senhora-imaculada-conceicao",
+    "nome": "Nossa Senhora Imaculada Conceição",
+    "modelos": [
+      {
+        "id": 1,
+        "nome": "Modelo 1",
+        "imagem": "img/produtos/nossa_senhora_imaculada_conceicao_modelo_1_medalha.jpg",
+        "tamanhos": [
+          "12mm",
+          "16mm"
+        ]
+      },
+      {
+        "id": 2,
+        "nome": "Modelo 2",
+        "imagem": "img/produtos/nossa_senhora_imaculada_conceicao_modelo_2_medalha.jpg",
+        "tamanhos": [
+          "12mm",
+          "16mm"
+        ]
+      },
+      {
+        "id": 3,
+        "nome": "Modelo 3",
+        "imagem": "img/produtos/nossa_senhora_imaculada_conceicao_modelo_3_medalha.jpg",
+        "tamanhos": [
+          "12mm",
+          "16mm"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "nossa-senhora-marajoara",
+    "nome": "Nossa Senhora Marajoara",
+    "modelos": [
+      {
+        "id": 1,
+        "nome": "Modelo 1",
+        "imagem": "img/produtos/nossa_senhora_marajoara_modelo_1_medalha.jpg",
+        "tamanhos": [
+          "12mm",
+          "16mm"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "nossa-senhora-mae-dulcissima",
+    "nome": "Nossa Senhora Mãe Dulcíssima",
+    "modelos": [
+      {
+        "id": 1,
+        "nome": "Modelo 1",
+        "imagem": "img/produtos/nossa_senhora_mae_dulcissima_modelo_1_medalha.jpg",
+        "tamanhos": [
+          "12mm",
+          "16mm"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "nossa-senhora-mae-da-ternura",
+    "nome": "Nossa Senhora Mãe da Ternura",
+    "modelos": [
+      {
+        "id": 1,
+        "nome": "Modelo 1",
+        "imagem": "img/produtos/nossa_senhora_mae_da_ternura_modelo_1_medalha.jpg",
+        "tamanhos": [
+          "12mm",
+          "16mm"
+        ]
+      },
+      {
+        "id": 2,
+        "nome": "Modelo 2",
+        "imagem": "img/produtos/nossa_senhora_mae_da_ternura_modelo_2_medalha.jpg",
+        "tamanhos": [
+          "12mm",
+          "16mm"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "nossa-senhora-rainha-da-paz",
+    "nome": "Nossa Senhora Rainha da Paz",
+    "modelos": [
+      {
+        "id": 1,
+        "nome": "Modelo 1",
+        "imagem": "img/produtos/nossa_senhora_rainha_da_paz_modelo_1_medalha.jpg",
+        "tamanhos": [
+          "12mm",
+          "16mm"
+        ]
+      },
+      {
+        "id": 2,
+        "nome": "Modelo 2",
+        "imagem": "img/produtos/nossa_senhora_rainha_da_paz_modelo_2_medalha.jpg",
+        "tamanhos": [
+          "12mm",
+          "16mm"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "nossa-senhora-toda-pequena",
+    "nome": "Nossa Senhora Toda Pequena",
+    "modelos": [
+      {
+        "id": 1,
+        "nome": "Modelo 1",
+        "imagem": "img/produtos/nossa_senhora_toda_pequena_modelo_1_medalha.jpg",
+        "tamanhos": [
+          "12mm",
+          "16mm"
+        ]
+      },
+      {
+        "id": 2,
+        "nome": "Modelo 2",
+        "imagem": "img/produtos/nossa_senhora_toda_pequena_modelo_2_medalha.jpg",
+        "tamanhos": [
+          "12mm",
+          "16mm"
+        ]
+      },
+      {
+        "id": 3,
+        "nome": "Modelo 3",
+        "imagem": "img/produtos/nossa_senhora_toda_pequena_modelo_3_medalha.jpg",
+        "tamanhos": [
+          "12mm",
+          "16mm"
+        ]
+      },
+      {
+        "id": 4,
+        "nome": "Modelo 4",
+        "imagem": "img/produtos/nossa_senhora_toda_pequena_modelo_4_medalha.jpg",
         "tamanhos": [
           "12mm",
           "16mm"
@@ -843,21 +1083,6 @@
     ]
   },
   {
-    "id": "nossa-senhora-desatadora-dos-nos",
-    "nome": "Nossa Senhora Desatadora dos Nós",
-    "modelos": [
-      {
-        "id": 1,
-        "nome": "Modelo 1",
-        "imagem": "img/produtos/nossa_senhora_desatadora_dos_nos_modelo_1_medalha.jpg",
-        "tamanhos": [
-          "12mm",
-          "16mm"
-        ]
-      }
-    ]
-  },
-  {
     "id": "nossa-senhora-do-advento",
     "nome": "Nossa Senhora do Advento",
     "modelos": [
@@ -940,165 +1165,6 @@
         "id": 1,
         "nome": "Modelo 1",
         "imagem": "img/produtos/nossa_senhora_dos_desterro_modelo_1_medalha.jpg",
-        "tamanhos": [
-          "12mm",
-          "16mm"
-        ]
-      }
-    ]
-  },
-  {
-    "id": "nossa-senhora-esperanca-dos-homens",
-    "nome": "Nossa Senhora Esperança dos Homens",
-    "modelos": [
-      {
-        "id": 1,
-        "nome": "Modelo 1",
-        "imagem": "img/produtos/nossa_senhora_esperanca_dos_homens_modelo_1_medalha.jpg",
-        "tamanhos": [
-          "12mm",
-          "16mm"
-        ]
-      }
-    ]
-  },
-  {
-    "id": "nossa-senhora-imaculada-conceicao",
-    "nome": "Nossa Senhora Imaculada Conceição",
-    "modelos": [
-      {
-        "id": 1,
-        "nome": "Modelo 1",
-        "imagem": "img/produtos/nossa_senhora_imaculada_conceicao_modelo_1_medalha.jpg",
-        "tamanhos": [
-          "12mm",
-          "16mm"
-        ]
-      },
-      {
-        "id": 2,
-        "nome": "Modelo 2",
-        "imagem": "img/produtos/nossa_senhora_imaculada_conceicao_modelo_2_medalha.jpg",
-        "tamanhos": [
-          "12mm",
-          "16mm"
-        ]
-      },
-      {
-        "id": 3,
-        "nome": "Modelo 3",
-        "imagem": "img/produtos/nossa_senhora_imaculada_conceicao_modelo_3_medalha.jpg",
-        "tamanhos": [
-          "12mm",
-          "16mm"
-        ]
-      }
-    ]
-  },
-  {
-    "id": "nossa-senhora-mae-da-ternura",
-    "nome": "Nossa Senhora Mãe da Ternura",
-    "modelos": [
-      {
-        "id": 1,
-        "nome": "Modelo 1",
-        "imagem": "img/produtos/nossa_senhora_mae_da_ternura_modelo_1_medalha.jpg",
-        "tamanhos": [
-          "12mm",
-          "16mm"
-        ]
-      },
-      {
-        "id": 2,
-        "nome": "Modelo 2",
-        "imagem": "img/produtos/nossa_senhora_mae_da_ternura_modelo_2_medalha.jpg",
-        "tamanhos": [
-          "12mm",
-          "16mm"
-        ]
-      }
-    ]
-  },
-  {
-    "id": "nossa-senhora-mae-dulcissima",
-    "nome": "Nossa Senhora Mãe Dulcíssima",
-    "modelos": [
-      {
-        "id": 1,
-        "nome": "Modelo 1",
-        "imagem": "img/produtos/nossa_senhora_mae_dulcissima_modelo_1_medalha.jpg",
-        "tamanhos": [
-          "12mm",
-          "16mm"
-        ]
-      }
-    ]
-  },
-  {
-    "id": "nossa-senhora-marajoara",
-    "nome": "Nossa Senhora Marajoara",
-    "modelos": [
-      {
-        "id": 1,
-        "nome": "Modelo 1",
-        "imagem": "img/produtos/nossa_senhora_marajoara_modelo_1_medalha.jpg",
-        "tamanhos": [
-          "12mm",
-          "16mm"
-        ]
-      }
-    ]
-  },
-  {
-    "id": "nossa-senhora-rainha-da-paz",
-    "nome": "Nossa Senhora Rainha da Paz",
-    "modelos": [
-      {
-        "id": 2,
-        "nome": "Modelo 2",
-        "imagem": "img/produtos/nossa_senhora_rainha_da_paz_modelo_2_medalha.jpg",
-        "tamanhos": [
-          "12mm",
-          "16mm"
-        ]
-      }
-    ]
-  },
-  {
-    "id": "nossa-senhora-toda-pequena",
-    "nome": "Nossa Senhora Toda Pequena",
-    "modelos": [
-      {
-        "id": 1,
-        "nome": "Modelo 1",
-        "imagem": "img/produtos/nossa_senhora_toda_pequena_modelo_1_medalha.jpg",
-        "tamanhos": [
-          "12mm",
-          "16mm"
-        ]
-      },
-      {
-        "id": 2,
-        "nome": "Modelo 2",
-        "imagem": "img/produtos/nossa_senhora_toda_pequena_modelo_2_medalha.jpg",
-        "tamanhos": [
-          "12mm",
-          "16mm"
-        ]
-      },
-      {
-        "id": 3,
-        "nome": "Modelo 3",
-        "imagem": "img/produtos/nossa_senhora_toda_pequena_modelo_3_medalha.jpg",
-        "tamanhos": [
-          "12mm",
-          "16mm"
-        ]
-      },
-      {
-        "id": 4,
-        "nome": "Modelo 4",
-        "imagem": "img/produtos/nossa_senhora_toda_pequena_modelo_4_medalha.jpg",
         "tamanhos": [
           "12mm",
           "16mm"
@@ -1265,6 +1331,15 @@
           "12mm",
           "16mm"
         ]
+      },
+      {
+        "id": 2,
+        "nome": "Modelo 2",
+        "imagem": "img/produtos/ronaldo_pereira_modelo_2_medalha.jpg",
+        "tamanhos": [
+          "12mm",
+          "16mm"
+        ]
       }
     ]
   },
@@ -1342,21 +1417,6 @@
         "id": 1,
         "nome": "Modelo 1",
         "imagem": "img/produtos/sagrado_coracao_de_jesus_modelo_1_medalha.jpg",
-        "tamanhos": [
-          "12mm",
-          "16mm"
-        ]
-      }
-    ]
-  },
-  {
-    "id": "salete",
-    "nome": "La Salete",
-    "modelos": [
-      {
-        "id": 1,
-        "nome": "Modelo 1",
-        "imagem": "img/produtos/salete_modelo_1_medalha.jpg",
         "tamanhos": [
           "12mm",
           "16mm"
@@ -1794,21 +1854,6 @@
     ]
   },
   {
-    "id": "santissima-trindade",
-    "nome": "Santíssima Trindade",
-    "modelos": [
-      {
-        "id": 1,
-        "nome": "Modelo 1",
-        "imagem": "img/produtos/santissima_trindade_modelo_1_medalha.jpg",
-        "tamanhos": [
-          "12mm",
-          "16mm"
-        ]
-      }
-    ]
-  },
-  {
     "id": "santo-afonso",
     "nome": "Santo Afonso",
     "modelos": [
@@ -1899,6 +1944,21 @@
     ]
   },
   {
+    "id": "santissima-trindade",
+    "nome": "Santíssima Trindade",
+    "modelos": [
+      {
+        "id": 1,
+        "nome": "Modelo 1",
+        "imagem": "img/produtos/santissima_trindade_modelo_1_medalha.jpg",
+        "tamanhos": [
+          "12mm",
+          "16mm"
+        ]
+      }
+    ]
+  },
+  {
     "id": "sao-bento",
     "nome": "São Bento",
     "modelos": [
@@ -1954,6 +2014,15 @@
         "id": 1,
         "nome": "Modelo 1",
         "imagem": "img/produtos/sao_dom_bosco_modelo_1_medalha.jpg",
+        "tamanhos": [
+          "12mm",
+          "16mm"
+        ]
+      },
+      {
+        "id": 2,
+        "nome": "Modelo 2",
+        "imagem": "img/produtos/sao_dom_bosco_modelo_2_medalha.jpg",
         "tamanhos": [
           "12mm",
           "16mm"
@@ -2049,117 +2118,6 @@
     ]
   },
   {
-    "id": "sao-joao-batista",
-    "nome": "São João Batista",
-    "modelos": [
-      {
-        "id": 2,
-        "nome": "Modelo 2",
-        "imagem": "img/produtos/sao_joao_batista_modelo_2_medalha.jpg",
-        "tamanhos": [
-          "12mm",
-          "16mm"
-        ]
-      }
-    ]
-  },
-  {
-    "id": "sao-joao-da-cruz",
-    "nome": "São João da Cruz",
-    "modelos": [
-      {
-        "id": 1,
-        "nome": "Modelo 1",
-        "imagem": "img/produtos/sao_joao_da_cruz_modelo_1_medalha.jpg",
-        "tamanhos": [
-          "12mm",
-          "16mm"
-        ]
-      }
-    ]
-  },
-  {
-    "id": "sao-joao-evangelista",
-    "nome": "São João Evangelista",
-    "modelos": [
-      {
-        "id": 1,
-        "nome": "Modelo 1",
-        "imagem": "img/produtos/sao_joao_evangelista_modelo_1_medalha.jpg",
-        "tamanhos": [
-          "12mm",
-          "16mm"
-        ]
-      },
-      {
-        "id": 2,
-        "nome": "Modelo 2",
-        "imagem": "img/produtos/sao_joao_evangelista_modelo_2_medalha.jpg",
-        "tamanhos": [
-          "12mm",
-          "16mm"
-        ]
-      }
-    ]
-  },
-  {
-    "id": "sao-joao-maria-vianney",
-    "nome": "São João Maria Vianney",
-    "modelos": [
-      {
-        "id": 1,
-        "nome": "Modelo 1",
-        "imagem": "img/produtos/sao_joao_maria_vianney_modelo_1_medalha.jpg",
-        "tamanhos": [
-          "12mm",
-          "16mm"
-        ]
-      }
-    ]
-  },
-  {
-    "id": "sao-joao-paulo-ii",
-    "nome": "São João Paulo II",
-    "modelos": [
-      {
-        "id": 1,
-        "nome": "Modelo 1",
-        "imagem": "img/produtos/sao_joao_paulo_ii_modelo_1_medalha.jpg",
-        "tamanhos": [
-          "12mm",
-          "16mm"
-        ]
-      },
-      {
-        "id": 2,
-        "nome": "Modelo 2",
-        "imagem": "img/produtos/sao_joao_paulo_ii_modelo_2_medalha.jpg",
-        "tamanhos": [
-          "12mm",
-          "16mm"
-        ]
-      },
-      {
-        "id": 3,
-        "nome": "Modelo 3",
-        "imagem": "img/produtos/sao_joao_paulo_ii_modelo_3_medalha.jpg",
-        "tamanhos": [
-          "12mm",
-          "16mm"
-        ]
-      },
-      {
-        "id": 4,
-        "nome": "Modelo 4",
-        "imagem": "img/produtos/sao_joao_paulo_ii_modelo_4_medalha.jpg",
-        "tamanhos": [
-          "12mm",
-          "16mm"
-        ]
-      }
-    ]
-  },
-  {
     "id": "sao-jorge",
     "nome": "São Jorge",
     "modelos": [
@@ -2182,6 +2140,15 @@
         "id": 1,
         "nome": "Modelo 1",
         "imagem": "img/produtos/sao_jose_modelo_1_medalha.jpg",
+        "tamanhos": [
+          "12mm",
+          "16mm"
+        ]
+      },
+      {
+        "id": 2,
+        "nome": "Modelo 2",
+        "imagem": "img/produtos/sao_jose_modelo_2_medalha.jpg",
         "tamanhos": [
           "12mm",
           "16mm"
@@ -2218,30 +2185,6 @@
         "id": 7,
         "nome": "Modelo 7",
         "imagem": "img/produtos/sao_jose_modelo_7_medalha.jpg",
-        "tamanhos": [
-          "12mm",
-          "16mm"
-        ]
-      }
-    ]
-  },
-  {
-    "id": "sao-jose-de-anchieta",
-    "nome": "São José de Anchieta",
-    "modelos": [
-      {
-        "id": 1,
-        "nome": "Modelo 1",
-        "imagem": "img/produtos/sao_jose_de_anchieta_modelo_1_medalha.jpg",
-        "tamanhos": [
-          "12mm",
-          "16mm"
-        ]
-      },
-      {
-        "id": 2,
-        "nome": "Modelo 2",
-        "imagem": "img/produtos/sao_jose_de_anchieta_modelo_2_medalha.jpg",
         "tamanhos": [
           "12mm",
           "16mm"
@@ -2335,6 +2278,150 @@
         "id": 3,
         "nome": "Modelo 3",
         "imagem": "img/produtos/sao_jose_terror_dos_demonios_modelo_3_medalha.jpg",
+        "tamanhos": [
+          "12mm",
+          "16mm"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "sao-jose-de-anchieta",
+    "nome": "São José de Anchieta",
+    "modelos": [
+      {
+        "id": 1,
+        "nome": "Modelo 1",
+        "imagem": "img/produtos/sao_jose_de_anchieta_modelo_1_medalha.jpg",
+        "tamanhos": [
+          "12mm",
+          "16mm"
+        ]
+      },
+      {
+        "id": 2,
+        "nome": "Modelo 2",
+        "imagem": "img/produtos/sao_jose_de_anchieta_modelo_2_medalha.jpg",
+        "tamanhos": [
+          "12mm",
+          "16mm"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "sao-joao-batista",
+    "nome": "São João Batista",
+    "modelos": [
+      {
+        "id": 1,
+        "nome": "Modelo 1",
+        "imagem": "img/produtos/sao_joao_batista_modelo_1_medalha.jpg",
+        "tamanhos": [
+          "12mm",
+          "16mm"
+        ]
+      },
+      {
+        "id": 2,
+        "nome": "Modelo 2",
+        "imagem": "img/produtos/sao_joao_batista_modelo_2_medalha.jpg",
+        "tamanhos": [
+          "12mm",
+          "16mm"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "sao-joao-evangelista",
+    "nome": "São João Evangelista",
+    "modelos": [
+      {
+        "id": 1,
+        "nome": "Modelo 1",
+        "imagem": "img/produtos/sao_joao_evangelista_modelo_1_medalha.jpg",
+        "tamanhos": [
+          "12mm",
+          "16mm"
+        ]
+      },
+      {
+        "id": 2,
+        "nome": "Modelo 2",
+        "imagem": "img/produtos/sao_joao_evangelista_modelo_2_medalha.jpg",
+        "tamanhos": [
+          "12mm",
+          "16mm"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "sao-joao-maria-vianney",
+    "nome": "São João Maria Vianney",
+    "modelos": [
+      {
+        "id": 1,
+        "nome": "Modelo 1",
+        "imagem": "img/produtos/sao_joao_maria_vianney_modelo_1_medalha.jpg",
+        "tamanhos": [
+          "12mm",
+          "16mm"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "sao-joao-paulo-ii",
+    "nome": "São João Paulo II",
+    "modelos": [
+      {
+        "id": 1,
+        "nome": "Modelo 1",
+        "imagem": "img/produtos/sao_joao_paulo_ii_modelo_1_medalha.jpg",
+        "tamanhos": [
+          "12mm",
+          "16mm"
+        ]
+      },
+      {
+        "id": 2,
+        "nome": "Modelo 2",
+        "imagem": "img/produtos/sao_joao_paulo_ii_modelo_2_medalha.jpg",
+        "tamanhos": [
+          "12mm",
+          "16mm"
+        ]
+      },
+      {
+        "id": 3,
+        "nome": "Modelo 3",
+        "imagem": "img/produtos/sao_joao_paulo_ii_modelo_3_medalha.jpg",
+        "tamanhos": [
+          "12mm",
+          "16mm"
+        ]
+      },
+      {
+        "id": 4,
+        "nome": "Modelo 4",
+        "imagem": "img/produtos/sao_joao_paulo_ii_modelo_4_medalha.jpg",
+        "tamanhos": [
+          "12mm",
+          "16mm"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "sao-joao-da-cruz",
+    "nome": "São João da Cruz",
+    "modelos": [
+      {
+        "id": 1,
+        "nome": "Modelo 1",
+        "imagem": "img/produtos/sao_joao_da_cruz_modelo_1_medalha.jpg",
         "tamanhos": [
           "12mm",
           "16mm"
