@@ -31,11 +31,14 @@
   function linhaItem(item, calculo) {
     const linha = document.createElement('article');
     linha.className = 'item-carrinho';
+    const subtitulo = item.tipo === 'personalizada'
+      ? item.tamanho.replace('mm', ' mm')
+      : `${item.modeloNome} &middot; ${item.tamanho.replace('mm', ' mm')}`;
     linha.innerHTML = `
       <img src="${item.imagem}" alt="${item.produtoNome}">
       <div class="item-info">
         <h2>${item.produtoNome}</h2>
-        <p>${item.modeloNome} &middot; ${item.tamanho.replace('mm', ' mm')}</p>
+        <p>${subtitulo}</p>
         <div class="item-stepper">
           <button type="button" class="qtd-menos" aria-label="Diminuir quantidade">−</button>
           <span class="item-qtd">${item.quantidade}</span>
