@@ -42,7 +42,7 @@ from config import WHATSAPP_NUMBER
 from services.catalogo import buscar_produto, carregar_produtos
 from services.gerador.compositor import compose_medal
 from services.gerador.config import IMAGE_EXTENSIONS, get_medal_spec
-from services.pricing import TAMANHOS, calcular_carrinho, preco_minimo
+from services.pricing import TAMANHOS, calcular_carrinho, preco_minimo, preco_varejo
 
 app = Flask(__name__)
 app.config["MAX_CONTENT_LENGTH"] = 60 * 1024 * 1024  # 60MB no total do upload
@@ -83,7 +83,7 @@ def produto(produto_id: str):
     produto = buscar_produto(produto_id)
     if produto is None:
         abort(404)
-    return render_template("produto.html", produto=produto)
+    return render_template("produto.html", produto=produto, preco_varejo=preco_varejo())
 
 
 @app.route("/carrinho", methods=["GET"])
@@ -110,21 +110,39 @@ def api_calcular_carrinho():
     return jsonify(calcular_carrinho(itens_validos))
 
 
+def _quantidade_do_formulario() -> int:
+    try:
+        quantidade = int(request.form.get("quantidade", 10))
+    except (TypeError, ValueError):
+        quantidade = 10
+    return max(1, quantidade)
+
+
 @app.route("/personalizada", methods=["GET"])
 def personalizada():
-    return render_template("personalizada.html", tamanho_selecionado="16mm")
+    return render_template("personalizada.html", preco_varejo=preco_varejo())
 
 
 @app.route("/personalizada/processar", methods=["POST"])
 def personalizada_processar():
-    tamanho = request.form.get("tamanho", "16mm")
+    tamanho = request.form.get("tamanho")
+    quantidade = _quantidade_do_formulario()
+
     if tamanho not in TAMANHOS:
-        tamanho = "16mm"
+        return render_template(
+            "personalizada.html",
+            erro="Selecione um tamanho antes de gerar a simulacao.",
+            preco_varejo=preco_varejo(),
+        )
 
     arquivo = request.files.get("imagem")
     if not arquivo or not arquivo.filename:
         return render_template(
-            "personalizada.html", erro="Selecione uma imagem.", tamanho_selecionado=tamanho
+            "personalizada.html",
+            erro="Selecione uma imagem.",
+            tamanho_selecionado=tamanho,
+            quantidade_selecionada=quantidade,
+            preco_varejo=preco_varejo(),
         )
 
     if not _extensao_valida(arquivo.filename):
@@ -132,6 +150,8 @@ def personalizada_processar():
             "personalizada.html",
             erro="Formato nao suportado. Envie uma imagem (" + ", ".join(IMAGE_EXTENSIONS) + ").",
             tamanho_selecionado=tamanho,
+            quantidade_selecionada=quantidade,
+            preco_varejo=preco_varejo(),
         )
 
     sufixo = Path(arquivo.filename).suffix or ".jpg"
@@ -144,6 +164,8 @@ def personalizada_processar():
                 "personalizada.html",
                 erro=f"Erro ao gerar a simulacao: {exc}",
                 tamanho_selecionado=tamanho,
+                quantidade_selecionada=quantidade,
+                preco_varejo=preco_varejo(),
             )
 
     buffer = io.BytesIO()
@@ -151,7 +173,11 @@ def personalizada_processar():
     preview_src = "data:image/png;base64," + base64.b64encode(buffer.getvalue()).decode("ascii")
 
     return render_template(
-        "personalizada.html", preview_src=preview_src, tamanho_selecionado=tamanho
+        "personalizada.html",
+        preview_src=preview_src,
+        tamanho_selecionado=tamanho,
+        quantidade_selecionada=quantidade,
+        preco_varejo=preco_varejo(),
     )
 
 

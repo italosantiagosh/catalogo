@@ -7,6 +7,12 @@
   <h1>{{ produto.nome }}</h1>
   <p class="instrucao">Escolha um modelo:</p>
 
+  <p class="aviso-preco-atacado">
+    Preço unitário a partir de <strong>{{ preco_varejo | preco }}</strong>.
+    O desconto de atacado é calculado automaticamente pela quantidade total
+    do seu carrinho, assim que você adicionar os itens.
+  </p>
+
   <div class="modelos-grid" id="modelos-grid" data-produto-id="{{ produto.id }}" data-produto-nome="{{ produto.nome }}">
     {% for modelo in produto.modelos %}
       <button

@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+  <rect width="200" height="200" fill="#e1dacb"/>
+  <text x="100" y="88" font-size="56" text-anchor="middle" dominant-baseline="middle">📷</text>
+  <text x="100" y="142" font-size="15" text-anchor="middle" fill="#6b6255" font-family="-apple-system, sans-serif">Foto a enviar</text>
+</svg>

@@ -40,6 +40,14 @@ def pedido_minimo_reais() -> float:
     return carregar_precos()["pedido_minimo_reais"]
 
 
+def preco_varejo() -> float:
+    """Preco unitario da faixa "1" (antes de qualquer desconto de atacado)
+    -- usado nas paginas de produto/personalizada para mostrar um preco de
+    referencia antes do cliente adicionar ao carrinho, ja que o preco real
+    so e conhecido depois (depende da quantidade TOTAL do carrinho)."""
+    return calcular_preco("16mm", 1)
+
+
 def frete_gratis_reais() -> float:
     return carregar_precos()["frete_gratis_reais"]
 

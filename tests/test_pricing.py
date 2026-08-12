@@ -1,8 +1,12 @@
-from services.pricing import calcular_carrinho, calcular_preco, proxima_faixa
+from services.pricing import calcular_carrinho, calcular_preco, preco_varejo, proxima_faixa
 
 
 def test_calcular_preco_varejo_abaixo_de_20():
     assert calcular_preco("16mm", 10) == 5.00
+
+
+def test_preco_varejo():
+    assert preco_varejo() == 5.00
 
 
 def test_calcular_preco_faixas():

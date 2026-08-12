@@ -30,7 +30,10 @@
         const numero = i + 1;
         const tamanhoLabel = TAMANHO_LABEL[item.tamanho] || item.tamanho;
         if (item.tipo === 'personalizada') {
-          return `${numero}. Medalha Personalizada\nTamanho: ${tamanhoLabel}\nQuantidade: ${item.quantidade}`;
+          const notaFoto = item.semImagem
+            ? 'Foto: ainda não enviada -- enviar nesta conversa'
+            : 'Foto: reenviar esta medalha nesta conversa (o link do WhatsApp não anexa imagem)';
+          return `${numero}. Medalha Personalizada\nTamanho: ${tamanhoLabel}\nQuantidade: ${item.quantidade}\n${notaFoto}`;
         }
         return `${numero}. ${item.produtoNome}\nModelo: ${item.modeloId}\nTamanho: ${tamanhoLabel}\nQuantidade: ${item.quantidade}`;
       })
@@ -80,11 +83,18 @@
     const subtitulo = item.tipo === 'personalizada'
       ? item.tamanho.replace('mm', ' mm')
       : `${item.modeloNome} &middot; ${item.tamanho.replace('mm', ' mm')}`;
+    let avisoFoto = '';
+    if (item.tipo === 'personalizada') {
+      avisoFoto = item.semImagem
+        ? '<p class="item-aviso-foto">📷 Foto pendente -- enviar pelo WhatsApp</p>'
+        : '<p class="item-aviso-foto">📲 Reenviar esta foto pelo WhatsApp ao finalizar</p>';
+    }
     linha.innerHTML = `
       <img src="${item.imagem}" alt="${item.produtoNome}">
       <div class="item-info">
         <h2>${item.produtoNome}</h2>
         <p>${subtitulo}</p>
+        ${avisoFoto}
         <div class="item-stepper">
           <button type="button" class="qtd-menos" aria-label="Diminuir quantidade">−</button>
           <span class="item-qtd">${item.quantidade}</span>

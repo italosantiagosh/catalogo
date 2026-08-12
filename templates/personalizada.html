@@ -6,6 +6,12 @@
   <h1>Medalha Personalizada</h1>
   <p class="instrucao">Envie uma foto e veja a simulação da sua medalha antes de pedir.</p>
 
+  <p class="aviso-preco-atacado">
+    Preço unitário a partir de <strong>{{ preco_varejo | preco }}</strong>.
+    O desconto de atacado é calculado automaticamente pela quantidade total
+    do seu carrinho, assim que você adicionar os itens.
+  </p>
+
   {% if erro %}
     <div class="erro">{{ erro }}</div>
   {% endif %}
@@ -15,6 +21,12 @@
       <img src="{{ preview_src }}" alt="Simulação da medalha personalizada" id="preview-imagem">
     </div>
 
+    <p class="aviso-info">
+      📲 Esta é só uma simulação. Depois de finalizar pelo WhatsApp, você
+      vai precisar <strong>reenviar esta foto</strong> diretamente na
+      conversa — o link do WhatsApp não anexa imagens automaticamente.
+    </p>
+
     <div class="painel-selecao" id="painel-selecao" data-tamanho="{{ tamanho_selecionado }}">
       <p class="resumo-linha">Tamanho: <strong>{{ tamanho_selecionado.replace('mm', ' mm') }}</strong></p>
 
@@ -22,7 +34,7 @@
         <label for="sel-quantidade">Quantidade</label>
         <div class="stepper">
           <button type="button" id="qtd-menos" aria-label="Diminuir quantidade">−</button>
-          <input type="number" id="sel-quantidade" value="10" min="1" inputmode="numeric">
+          <input type="number" id="sel-quantidade" value="{{ quantidade_selecionada or 10 }}" min="1" inputmode="numeric">
           <button type="button" id="qtd-mais" aria-label="Aumentar quantidade">+</button>
         </div>
       </div>
@@ -43,18 +55,34 @@
       <input type="file" id="input-imagem" name="imagem" accept="image/*">
       <div id="nome-arquivo"></div>
 
-      <fieldset class="tamanhos">
-        <legend>Tamanho</legend>
+      <fieldset class="tamanhos" id="tamanhos-form">
+        <legend>Tamanho *</legend>
         <label class="opcao-tamanho">
-          <input type="radio" name="tamanho" value="12mm"> 12 mm
+          <input type="radio" name="tamanho" value="12mm" {% if tamanho_selecionado == '12mm' %}checked{% endif %}> 12 mm
         </label>
         <label class="opcao-tamanho">
-          <input type="radio" name="tamanho" value="16mm" checked> 16 mm
+          <input type="radio" name="tamanho" value="16mm" {% if tamanho_selecionado == '16mm' %}checked{% endif %}> 16 mm
         </label>
       </fieldset>
 
-      <button type="submit" id="botao-enviar" disabled>Selecione uma imagem primeiro</button>
+      <div class="quantidade">
+        <label for="qtd-form">Quantidade</label>
+        <div class="stepper">
+          <button type="button" id="qtd-menos-form" aria-label="Diminuir quantidade">−</button>
+          <input type="number" id="qtd-form" name="quantidade" value="{{ quantidade_selecionada or 10 }}" min="1" inputmode="numeric">
+          <button type="button" id="qtd-mais-form" aria-label="Aumentar quantidade">+</button>
+        </div>
+      </div>
+
+      <button type="submit" id="botao-enviar" disabled>Selecione uma imagem e o tamanho</button>
     </form>
+
+    <div class="opcao-sem-foto">
+      <p class="opcao-sem-foto-texto">Ainda não tem a foto em mãos?</p>
+      <button type="button" id="btn-sem-foto" class="botao-secundario" disabled>
+        Adicionar ao carrinho sem foto (envio depois pelo WhatsApp)
+      </button>
+    </div>
   {% endif %}
 {% endblock %}
 
