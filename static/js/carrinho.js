@@ -4,9 +4,32 @@
  * mantem a barra de progresso persistente (ETAPA 6): quantidade atual x
  * proxima faixa de desconto, visivel em qualquer pagina exceto o proprio
  * /carrinho (que ja tem o resumo detalhado).
+ *
+ * Tambem guarda o ID do pedido (secao 16 do briefing) -- gerado na hora
+ * (sem backend, sem banco), estavel enquanto o carrinho tiver itens, e
+ * renovado assim que o carrinho e limpo.
  */
 
 const CARRINHO_CHAVE = 'catalogo_medalhas_carrinho';
+const PEDIDO_ID_CHAVE = 'catalogo_medalhas_pedido_id';
+const PEDIDO_ID_CHARSET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // sem O/0, I/1 -- evita confusao ao ler em voz alta
+
+function gerarPedidoId() {
+  let id = '';
+  for (let i = 0; i < 6; i++) {
+    id += PEDIDO_ID_CHARSET[Math.floor(Math.random() * PEDIDO_ID_CHARSET.length)];
+  }
+  return id;
+}
+
+function obterOuCriarPedidoId() {
+  let id = localStorage.getItem(PEDIDO_ID_CHAVE);
+  if (!id) {
+    id = gerarPedidoId();
+    localStorage.setItem(PEDIDO_ID_CHAVE, id);
+  }
+  return id;
+}
 
 function carrinhoObterItens() {
   try {
@@ -54,6 +77,9 @@ function carrinhoAtualizarQuantidade(chave, quantidade) {
 
 function carrinhoLimpar() {
   carrinhoSalvarItens([]);
+  // proximo pedido comeca com um ID novo, nao reaproveita o de um pedido
+  // ja finalizado/abandonado.
+  localStorage.removeItem(PEDIDO_ID_CHAVE);
 }
 
 function carrinhoQuantidadeTotal() {

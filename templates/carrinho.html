@@ -34,6 +34,17 @@
 
     <p class="aviso-minimo" id="aviso-minimo" hidden></p>
 
+    <p class="pedido-id" id="pedido-id-texto"></p>
+
+    <div class="whatsapp-acoes">
+      <button type="button" id="btn-whatsapp-finalizar" class="botao-whatsapp">
+        Finalizar pedido pelo WhatsApp
+      </button>
+      <button type="button" id="btn-whatsapp-duvida" class="botao-whatsapp-secundario">
+        Tirar uma dúvida sobre este carrinho
+      </button>
+    </div>
+
     <div class="resumo-acoes">
       <button type="button" id="btn-limpar" class="botao-secundario">Limpar carrinho</button>
       <a class="botao-secundario" href="{{ url_for('index') }}">Continuar comprando</a>
@@ -44,5 +55,6 @@
 {% endblock %}
 
 {% block script %}
+  <script>window.WHATSAPP_NUMBER = {{ whatsapp_number | tojson }};</script>
   <script src="{{ url_for('static', filename='js/carrinho_pagina.js') }}"></script>
 {% endblock %}

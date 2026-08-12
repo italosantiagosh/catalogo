@@ -10,12 +10,58 @@
   const progressoFreteTexto = document.getElementById('progresso-frete-texto');
   const progressoFretePreenchimento = document.getElementById('progresso-frete-preenchimento');
   const avisoMinimoEl = document.getElementById('aviso-minimo');
+  const pedidoIdTexto = document.getElementById('pedido-id-texto');
+  const btnWhatsappFinalizar = document.getElementById('btn-whatsapp-finalizar');
+  const btnWhatsappDuvida = document.getElementById('btn-whatsapp-duvida');
   const btnLimpar = document.getElementById('btn-limpar');
   if (!listaEl) return;
+
+  const TAMANHO_LABEL = { '12mm': '1,2 cm', '16mm': '1,6 cm' };
 
   let faixaAnterior = null;
   let freteAnteriorAtingido = null;
   let primeiraRenderizacao = true;
+  let ultimosItens = [];
+  let ultimoCalculo = null;
+
+  function montarListaPedido(itens) {
+    return itens
+      .map((item, i) => {
+        const numero = i + 1;
+        const tamanhoLabel = TAMANHO_LABEL[item.tamanho] || item.tamanho;
+        if (item.tipo === 'personalizada') {
+          return `${numero}. Medalha Personalizada\nTamanho: ${tamanhoLabel}\nQuantidade: ${item.quantidade}`;
+        }
+        return `${numero}. ${item.produtoNome}\nModelo: ${item.modeloId}\nTamanho: ${tamanhoLabel}\nQuantidade: ${item.quantidade}`;
+      })
+      .join('\n\n');
+  }
+
+  function montarCorpoPedido(itens, calculo) {
+    return [
+      `PEDIDO #${obterOuCriarPedidoId()}`,
+      '',
+      'PEDIDO DE MEDALHAS',
+      '',
+      montarListaPedido(itens),
+      '',
+      '--------------------',
+      '',
+      'Quantidade total:',
+      `${calculo.quantidade_total} medalhas`,
+      '',
+      'Faixa de atacado:',
+      calculo.faixa_label,
+      '',
+      'Valor estimado:',
+      formatarPreco(calculo.subtotal_total),
+    ].join('\n');
+  }
+
+  function abrirWhatsApp(mensagem) {
+    const url = `https://wa.me/${window.WHATSAPP_NUMBER}?text=${encodeURIComponent(mensagem)}`;
+    window.open(url, '_blank');
+  }
 
   function mostrarToast(texto) {
     const toast = document.getElementById('toast');
@@ -141,6 +187,10 @@
     } else {
       avisoMinimoEl.hidden = true;
     }
+
+    ultimosItens = itens;
+    ultimoCalculo = dados;
+    pedidoIdTexto.textContent = `Pedido #${obterOuCriarPedidoId()}`;
   }
 
   if (btnLimpar) {
@@ -149,6 +199,28 @@
         carrinhoLimpar();
         render();
       }
+    });
+  }
+
+  if (btnWhatsappFinalizar) {
+    btnWhatsappFinalizar.addEventListener('click', () => {
+      if (!ultimoCalculo) return;
+      const mensagem =
+        'Olá! Gostaria de fazer este pedido:\n\n' +
+        montarCorpoPedido(ultimosItens, ultimoCalculo) +
+        '\n\nGostaria de finalizar este pedido.';
+      abrirWhatsApp(mensagem);
+    });
+  }
+
+  if (btnWhatsappDuvida) {
+    btnWhatsappDuvida.addEventListener('click', () => {
+      if (!ultimoCalculo) return;
+      const mensagem =
+        'Olá! Estou montando este pedido e gostaria de tirar uma dúvida:\n\n' +
+        montarCorpoPedido(ultimosItens, ultimoCalculo) +
+        '\n\nMinha dúvida é:';
+      abrirWhatsApp(mensagem);
     });
   }
 

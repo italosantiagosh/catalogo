@@ -1,12 +1,18 @@
 """
 Catalogo de medalhas -- ponto de entrada Flask.
 
-Rotas ate a ETAPA 7:
+Rotas ate a ETAPA 9:
     /                       catalogo -- busca + grid de cards por santo/devocional
     /produto/<id>           pagina de produto -- modelos, tamanho, quantidade
-    /carrinho               itens do carrinho (persistido em localStorage, static/js/carrinho.js)
+    /carrinho               itens do carrinho + botoes de WhatsApp (persistido em localStorage)
     /api/carrinho/calcular  preco/faixa de atacado recalculados a partir da quantidade total
     /personalizada          gerador de medalha personalizada (upload -> simulacao)
+
+O numero de WhatsApp fica so em config.py (WHATSAPP_NUMBER); a pagina
+do carrinho recebe esse valor via render_template e monta a mensagem
+inteira no navegador (static/js/carrinho_pagina.js), a partir dos
+mesmos dados que ja aparecem na tela -- nao ha nenhum numero nem
+mensagem duplicados em outro lugar do codigo.
 
 O calculo de preco fica centralizado em services/pricing.py
 (calcular_preco, proxima_faixa, calcular_carrinho) e so e chamado pelo
@@ -32,6 +38,7 @@ from pathlib import Path
 
 from flask import Flask, abort, jsonify, render_template, request
 
+from config import WHATSAPP_NUMBER
 from services.catalogo import buscar_produto, carregar_produtos
 from services.gerador.compositor import compose_medal
 from services.gerador.config import IMAGE_EXTENSIONS, get_medal_spec
@@ -81,7 +88,7 @@ def produto(produto_id: str):
 
 @app.route("/carrinho", methods=["GET"])
 def carrinho():
-    return render_template("carrinho.html")
+    return render_template("carrinho.html", whatsapp_number=WHATSAPP_NUMBER)
 
 
 @app.route("/api/carrinho/calcular", methods=["POST"])
