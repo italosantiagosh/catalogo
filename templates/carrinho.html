@@ -14,7 +14,10 @@
 
   <div class="resumo-carrinho" id="resumo-carrinho" hidden>
     <p class="resumo-linha">Quantidade total: <strong id="resumo-quantidade">0</strong> medalhas</p>
-    <p class="aviso-preco">Preços e faixa de atacado chegam na próxima etapa.</p>
+    <p class="resumo-linha">Faixa de atacado: <strong id="resumo-faixa">—</strong></p>
+    <p class="resumo-linha resumo-subtotal">Subtotal: <strong id="resumo-subtotal">R$ 0,00</strong></p>
+    <p class="aviso-proxima-faixa" id="aviso-proxima-faixa" hidden></p>
+    <p class="aviso-minimo" id="aviso-minimo" hidden></p>
     <div class="resumo-acoes">
       <button type="button" id="btn-limpar" class="botao-secundario">Limpar carrinho</button>
       <a class="botao-secundario" href="{{ url_for('index') }}">Continuar comprando</a>
