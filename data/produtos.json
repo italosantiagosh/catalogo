@@ -15,7 +15,8 @@
         "imagem_entremeio_ouro_velho": "img/produtos/anunciacao_modelo_1_entremeio_ouro_velho.jpg",
         "imagem_chaveiro": "img/produtos/anunciacao_modelo_1_chaveiro.jpg"
       }
-    ]
+    ],
+    "categoria": "Nossa Senhora"
   },
   {
     "id": "banquete-eterno",
@@ -45,7 +46,8 @@
         "imagem_entremeio_ouro_velho": "img/produtos/banquete_eterno_modelo_2_entremeio_ouro_velho.jpg",
         "imagem_chaveiro": "img/produtos/banquete_eterno_modelo_2_chaveiro.jpg"
       }
-    ]
+    ],
+    "categoria": "Devoções"
   },
   {
     "id": "beata-benigna",
@@ -63,7 +65,8 @@
         "imagem_entremeio_ouro_velho": "img/produtos/beata_benigna_modelo_1_entremeio_ouro_velho.jpg",
         "imagem_chaveiro": "img/produtos/beata_benigna_modelo_1_chaveiro.jpg"
       }
-    ]
+    ],
+    "categoria": "Beatos"
   },
   {
     "id": "beata-elisabeth-trindade",
@@ -93,7 +96,8 @@
         "imagem_entremeio_ouro_velho": "img/produtos/beata_elisabeth_trindade_modelo_2_entremeio_ouro_velho.jpg",
         "imagem_chaveiro": "img/produtos/beata_elisabeth_trindade_modelo_2_chaveiro.jpg"
       }
-    ]
+    ],
+    "categoria": "Santas"
   },
   {
     "id": "beata-sandra-sabatine",
@@ -123,7 +127,8 @@
         "imagem_entremeio_ouro_velho": "img/produtos/beata_sandra_sabatine_modelo_2_entremeio_ouro_velho.jpg",
         "imagem_chaveiro": "img/produtos/beata_sandra_sabatine_modelo_2_chaveiro.jpg"
       }
-    ]
+    ],
+    "categoria": "Beatos"
   },
   {
     "id": "bodas-de-cana",
@@ -141,7 +146,8 @@
         "imagem_entremeio_ouro_velho": "img/produtos/bodas_de_cana_modelo_1_entremeio_ouro_velho.jpg",
         "imagem_chaveiro": "img/produtos/bodas_de_cana_modelo_1_chaveiro.jpg"
       }
-    ]
+    ],
+    "categoria": "Devoções"
   },
   {
     "id": "bom-pastor",
@@ -183,7 +189,8 @@
         "imagem_entremeio_ouro_velho": "img/produtos/bom_pastor_modelo_3_entremeio_ouro_velho.jpg",
         "imagem_chaveiro": "img/produtos/bom_pastor_modelo_3_chaveiro.jpg"
       }
-    ]
+    ],
+    "categoria": "Jesus"
   },
   {
     "id": "carlo-acutis",
@@ -225,7 +232,8 @@
         "imagem_entremeio_ouro_velho": "img/produtos/carlo_acutis_modelo_3_entremeio_ouro_velho.jpg",
         "imagem_chaveiro": "img/produtos/carlo_acutis_modelo_3_chaveiro.jpg"
       }
-    ]
+    ],
+    "categoria": "Santos"
   },
   {
     "id": "castissimo-coracao-de-sao-jose",
@@ -243,7 +251,8 @@
         "imagem_entremeio_ouro_velho": "img/produtos/castissimo_coracao_de_sao_jose_modelo_1_entremeio_ouro_velho.jpg",
         "imagem_chaveiro": "img/produtos/castissimo_coracao_de_sao_jose_modelo_1_chaveiro.jpg"
       }
-    ]
+    ],
+    "categoria": "Santos"
   },
   {
     "id": "chiara-corbella",
@@ -273,7 +282,8 @@
         "imagem_entremeio_ouro_velho": "img/produtos/chiara_corbella_modelo_2_entremeio_ouro_velho.jpg",
         "imagem_chaveiro": "img/produtos/chiara_corbella_modelo_2_chaveiro.jpg"
       }
-    ]
+    ],
+    "categoria": "Devoções"
   },
   {
     "id": "chiara-luce",
@@ -303,7 +313,8 @@
         "imagem_entremeio_ouro_velho": "img/produtos/chiara_luce_modelo_2_entremeio_ouro_velho.jpg",
         "imagem_chaveiro": "img/produtos/chiara_luce_modelo_2_chaveiro.jpg"
       }
-    ]
+    ],
+    "categoria": "Beatos"
   },
   {
     "id": "cristo-rei",
@@ -321,7 +332,8 @@
         "imagem_entremeio_ouro_velho": "img/produtos/cristo_rei_modelo_1_entremeio_ouro_velho.jpg",
         "imagem_chaveiro": "img/produtos/cristo_rei_modelo_1_chaveiro.jpg"
       }
-    ]
+    ],
+    "categoria": "Jesus"
   },
   {
     "id": "cantico-dos-canticos",
@@ -339,7 +351,8 @@
         "imagem_entremeio_ouro_velho": "img/produtos/cantico_dos_canticos_modelo_1_entremeio_ouro_velho.jpg",
         "imagem_chaveiro": "img/produtos/cantico_dos_canticos_modelo_1_chaveiro.jpg"
       }
-    ]
+    ],
+    "categoria": "Devoções"
   },
   {
     "id": "dom-henrique",
@@ -357,7 +370,8 @@
         "imagem_entremeio_ouro_velho": "img/produtos/dom_henrique_modelo_1_entremeio_ouro_velho.jpg",
         "imagem_chaveiro": "img/produtos/dom_henrique_modelo_1_chaveiro.jpg"
       }
-    ]
+    ],
+    "categoria": "Outros"
   },
   {
     "id": "edith-stein",
@@ -387,7 +401,8 @@
         "imagem_entremeio_ouro_velho": "img/produtos/edith_stein_modelo_2_entremeio_ouro_velho.jpg",
         "imagem_chaveiro": "img/produtos/edith_stein_modelo_2_chaveiro.jpg"
       }
-    ]
+    ],
+    "categoria": "Santas"
   },
   {
     "id": "esposa-do-espirito",
@@ -417,7 +432,8 @@
         "imagem_entremeio_ouro_velho": "img/produtos/esposa_do_espirito_modelo_2_entremeio_ouro_velho.jpg",
         "imagem_chaveiro": "img/produtos/esposa_do_espirito_modelo_2_chaveiro.jpg"
       }
-    ]
+    ],
+    "categoria": "Nossa Senhora"
   },
   {
     "id": "esposo-eucaristico",
@@ -435,7 +451,8 @@
         "imagem_entremeio_ouro_velho": "img/produtos/esposo_eucaristico_modelo_1_entremeio_ouro_velho.jpg",
         "imagem_chaveiro": "img/produtos/esposo_eucaristico_modelo_1_chaveiro.jpg"
       }
-    ]
+    ],
+    "categoria": "Jesus"
   },
   {
     "id": "espirito-santo",
@@ -453,7 +470,8 @@
         "imagem_entremeio_ouro_velho": "img/produtos/espirito_santo_modelo_1_entremeio_ouro_velho.jpg",
         "imagem_chaveiro": "img/produtos/espirito_santo_modelo_1_chaveiro.jpg"
       }
-    ]
+    ],
+    "categoria": "Espírito Santo"
   },
   {
     "id": "familia-martin",
@@ -471,7 +489,8 @@
         "imagem_entremeio_ouro_velho": "img/produtos/familia_martin_modelo_1_entremeio_ouro_velho.jpg",
         "imagem_chaveiro": "img/produtos/familia_martin_modelo_1_chaveiro.jpg"
       }
-    ]
+    ],
+    "categoria": "Famílias"
   },
   {
     "id": "filho-prodigo-acamps",
@@ -501,7 +520,8 @@
         "imagem_entremeio_ouro_velho": "img/produtos/filho_prodigo_acamps_modelo_2_entremeio_ouro_velho.jpg",
         "imagem_chaveiro": "img/produtos/filho_prodigo_acamps_modelo_2_chaveiro.jpg"
       }
-    ]
+    ],
+    "categoria": "Devoções"
   },
   {
     "id": "francisco-de-fatima",
@@ -519,7 +539,8 @@
         "imagem_entremeio_ouro_velho": "img/produtos/francisco_de_fatima_modelo_1_entremeio_ouro_velho.jpg",
         "imagem_chaveiro": "img/produtos/francisco_de_fatima_modelo_1_chaveiro.jpg"
       }
-    ]
+    ],
+    "categoria": "Santos"
   },
   {
     "id": "frei-alberto",
@@ -537,7 +558,8 @@
         "imagem_entremeio_ouro_velho": "img/produtos/frei_alberto_modelo_1_entremeio_ouro_velho.jpg",
         "imagem_chaveiro": "img/produtos/frei_alberto_modelo_1_chaveiro.jpg"
       }
-    ]
+    ],
+    "categoria": "Outros"
   },
   {
     "id": "frei-damiao",
@@ -555,7 +577,8 @@
         "imagem_entremeio_ouro_velho": "img/produtos/frei_damiao_modelo_1_entremeio_ouro_velho.jpg",
         "imagem_chaveiro": "img/produtos/frei_damiao_modelo_1_chaveiro.jpg"
       }
-    ]
+    ],
+    "categoria": "Devoções"
   },
   {
     "id": "frei-galvao",
@@ -573,7 +596,8 @@
         "imagem_entremeio_ouro_velho": "img/produtos/frei_galvao_modelo_1_entremeio_ouro_velho.jpg",
         "imagem_chaveiro": "img/produtos/frei_galvao_modelo_1_chaveiro.jpg"
       }
-    ]
+    ],
+    "categoria": "Santos"
   },
   {
     "id": "guido",
@@ -603,7 +627,8 @@
         "imagem_entremeio_ouro_velho": "img/produtos/guido_modelo_2_entremeio_ouro_velho.jpg",
         "imagem_chaveiro": "img/produtos/guido_modelo_2_chaveiro.jpg"
       }
-    ]
+    ],
+    "categoria": "Outros"
   },
   {
     "id": "imaculado-coracao-de-maria",
@@ -621,7 +646,8 @@
         "imagem_entremeio_ouro_velho": "img/produtos/imaculado_coracao_de_maria_modelo_1_entremeio_ouro_velho.jpg",
         "imagem_chaveiro": "img/produtos/imaculado_coracao_de_maria_modelo_1_chaveiro.jpg"
       }
-    ]
+    ],
+    "categoria": "Nossa Senhora"
   },
   {
     "id": "irma-clare",
@@ -651,7 +677,8 @@
         "imagem_entremeio_ouro_velho": "img/produtos/irma_clare_modelo_2_entremeio_ouro_velho.jpg",
         "imagem_chaveiro": "img/produtos/irma_clare_modelo_2_chaveiro.jpg"
       }
-    ]
+    ],
+    "categoria": "Outros"
   },
   {
     "id": "jacques-fach",
@@ -669,7 +696,8 @@
         "imagem_entremeio_ouro_velho": "img/produtos/jacques_fach_modelo_1_entremeio_ouro_velho.jpg",
         "imagem_chaveiro": "img/produtos/jacques_fach_modelo_1_chaveiro.jpg"
       }
-    ]
+    ],
+    "categoria": "Devoções"
   },
   {
     "id": "jardim-fechado",
@@ -699,7 +727,8 @@
         "imagem_entremeio_ouro_velho": "img/produtos/jardim_fechado_modelo_2_entremeio_ouro_velho.jpg",
         "imagem_chaveiro": "img/produtos/jardim_fechado_modelo_2_chaveiro.jpg"
       }
-    ]
+    ],
+    "categoria": "Nossa Senhora"
   },
   {
     "id": "jesus-misericordioso",
@@ -717,7 +746,8 @@
         "imagem_entremeio_ouro_velho": "img/produtos/jesus_misericordioso_modelo_1_entremeio_ouro_velho.jpg",
         "imagem_chaveiro": "img/produtos/jesus_misericordioso_modelo_1_chaveiro.jpg"
       }
-    ]
+    ],
+    "categoria": "Jesus"
   },
   {
     "id": "jesus-pantokrator",
@@ -735,7 +765,8 @@
         "imagem_entremeio_ouro_velho": "img/produtos/jesus_pantokrator_modelo_1_entremeio_ouro_velho.jpg",
         "imagem_chaveiro": "img/produtos/jesus_pantokrator_modelo_1_chaveiro.jpg"
       }
-    ]
+    ],
+    "categoria": "Jesus"
   },
   {
     "id": "jesus-semeador",
@@ -753,7 +784,8 @@
         "imagem_entremeio_ouro_velho": "img/produtos/jesus_semeador_modelo_1_entremeio_ouro_velho.jpg",
         "imagem_chaveiro": "img/produtos/jesus_semeador_modelo_1_chaveiro.jpg"
       }
-    ]
+    ],
+    "categoria": "Jesus"
   },
   {
     "id": "salete",
@@ -771,7 +803,8 @@
         "imagem_entremeio_ouro_velho": "img/produtos/salete_modelo_1_entremeio_ouro_velho.jpg",
         "imagem_chaveiro": "img/produtos/salete_modelo_1_chaveiro.jpg"
       }
-    ]
+    ],
+    "categoria": "Nossa Senhora"
   },
   {
     "id": "nossa-senhora-aparecida",
@@ -789,7 +822,8 @@
         "imagem_entremeio_ouro_velho": "img/produtos/nossa_senhora_aparecida_modelo_1_entremeio_ouro_velho.jpg",
         "imagem_chaveiro": "img/produtos/nossa_senhora_aparecida_modelo_1_chaveiro.jpg"
       }
-    ]
+    ],
+    "categoria": "Nossa Senhora"
   },
   {
     "id": "nossa-senhora-aparecida-infantil",
@@ -807,7 +841,8 @@
         "imagem_entremeio_ouro_velho": "img/produtos/nossa_senhora_aparecida_infantil_modelo_1_entremeio_ouro_velho.jpg",
         "imagem_chaveiro": "img/produtos/nossa_senhora_aparecida_infantil_modelo_1_chaveiro.jpg"
       }
-    ]
+    ],
+    "categoria": "Nossa Senhora"
   },
   {
     "id": "nossa-senhora-desatadora-dos-nos",
@@ -825,7 +860,8 @@
         "imagem_entremeio_ouro_velho": "img/produtos/nossa_senhora_desatadora_dos_nos_modelo_1_entremeio_ouro_velho.jpg",
         "imagem_chaveiro": "img/produtos/nossa_senhora_desatadora_dos_nos_modelo_1_chaveiro.jpg"
       }
-    ]
+    ],
+    "categoria": "Nossa Senhora"
   },
   {
     "id": "nossa-senhora-esperanca-dos-homens",
@@ -843,7 +879,8 @@
         "imagem_entremeio_ouro_velho": "img/produtos/nossa_senhora_esperanca_dos_homens_modelo_1_entremeio_ouro_velho.jpg",
         "imagem_chaveiro": "img/produtos/nossa_senhora_esperanca_dos_homens_modelo_1_chaveiro.jpg"
       }
-    ]
+    ],
+    "categoria": "Nossa Senhora"
   },
   {
     "id": "nossa-senhora-imaculada-conceicao",
@@ -885,7 +922,8 @@
         "imagem_entremeio_ouro_velho": "img/produtos/nossa_senhora_imaculada_conceicao_modelo_3_entremeio_ouro_velho.jpg",
         "imagem_chaveiro": "img/produtos/nossa_senhora_imaculada_conceicao_modelo_3_chaveiro.jpg"
       }
-    ]
+    ],
+    "categoria": "Nossa Senhora"
   },
   {
     "id": "nossa-senhora-marajoara",
@@ -903,7 +941,8 @@
         "imagem_entremeio_ouro_velho": "img/produtos/nossa_senhora_marajoara_modelo_1_entremeio_ouro_velho.jpg",
         "imagem_chaveiro": "img/produtos/nossa_senhora_marajoara_modelo_1_chaveiro.jpg"
       }
-    ]
+    ],
+    "categoria": "Nossa Senhora"
   },
   {
     "id": "nossa-senhora-mae-dulcissima",
@@ -921,7 +960,8 @@
         "imagem_entremeio_ouro_velho": "img/produtos/nossa_senhora_mae_dulcissima_modelo_1_entremeio_ouro_velho.jpg",
         "imagem_chaveiro": "img/produtos/nossa_senhora_mae_dulcissima_modelo_1_chaveiro.jpg"
       }
-    ]
+    ],
+    "categoria": "Nossa Senhora"
   },
   {
     "id": "nossa-senhora-mae-da-ternura",
@@ -951,7 +991,8 @@
         "imagem_entremeio_ouro_velho": "img/produtos/nossa_senhora_mae_da_ternura_modelo_2_entremeio_ouro_velho.jpg",
         "imagem_chaveiro": "img/produtos/nossa_senhora_mae_da_ternura_modelo_2_chaveiro.jpg"
       }
-    ]
+    ],
+    "categoria": "Nossa Senhora"
   },
   {
     "id": "nossa-senhora-rainha-da-paz",
@@ -981,7 +1022,8 @@
         "imagem_entremeio_ouro_velho": "img/produtos/nossa_senhora_rainha_da_paz_modelo_2_entremeio_ouro_velho.jpg",
         "imagem_chaveiro": "img/produtos/nossa_senhora_rainha_da_paz_modelo_2_chaveiro.jpg"
       }
-    ]
+    ],
+    "categoria": "Nossa Senhora"
   },
   {
     "id": "nossa-senhora-toda-pequena",
@@ -1035,7 +1077,8 @@
         "imagem_entremeio_ouro_velho": "img/produtos/nossa_senhora_toda_pequena_modelo_4_entremeio_ouro_velho.jpg",
         "imagem_chaveiro": "img/produtos/nossa_senhora_toda_pequena_modelo_4_chaveiro.jpg"
       }
-    ]
+    ],
+    "categoria": "Nossa Senhora"
   },
   {
     "id": "nossa-senhora-da-guia",
@@ -1053,7 +1096,8 @@
         "imagem_entremeio_ouro_velho": "img/produtos/nossa_senhora_da_guia_modelo_1_entremeio_ouro_velho.jpg",
         "imagem_chaveiro": "img/produtos/nossa_senhora_da_guia_modelo_1_chaveiro.jpg"
       }
-    ]
+    ],
+    "categoria": "Nossa Senhora"
   },
   {
     "id": "nossa-senhora-da-rosa-mistica",
@@ -1071,7 +1115,8 @@
         "imagem_entremeio_ouro_velho": "img/produtos/nossa_senhora_da_rosa_mistica_modelo_1_entremeio_ouro_velho.jpg",
         "imagem_chaveiro": "img/produtos/nossa_senhora_da_rosa_mistica_modelo_1_chaveiro.jpg"
       }
-    ]
+    ],
+    "categoria": "Nossa Senhora"
   },
   {
     "id": "nossa-senhora-das-dores",
@@ -1113,7 +1158,8 @@
         "imagem_entremeio_ouro_velho": "img/produtos/nossa_senhora_das_dores_modelo_3_entremeio_ouro_velho.jpg",
         "imagem_chaveiro": "img/produtos/nossa_senhora_das_dores_modelo_3_chaveiro.jpg"
       }
-    ]
+    ],
+    "categoria": "Nossa Senhora"
   },
   {
     "id": "nossa-senhora-das-gracas",
@@ -1143,7 +1189,8 @@
         "imagem_entremeio_ouro_velho": "img/produtos/nossa_senhora_das_gracas_modelo_2_entremeio_ouro_velho.jpg",
         "imagem_chaveiro": "img/produtos/nossa_senhora_das_gracas_modelo_2_chaveiro.jpg"
       }
-    ]
+    ],
+    "categoria": "Nossa Senhora"
   },
   {
     "id": "nossa-senhora-de-candelaria",
@@ -1161,7 +1208,8 @@
         "imagem_entremeio_ouro_velho": "img/produtos/nossa_senhora_de_candelaria_modelo_1_entremeio_ouro_velho.jpg",
         "imagem_chaveiro": "img/produtos/nossa_senhora_de_candelaria_modelo_1_chaveiro.jpg"
       }
-    ]
+    ],
+    "categoria": "Nossa Senhora"
   },
   {
     "id": "nossa-senhora-de-fatima",
@@ -1215,7 +1263,8 @@
         "imagem_entremeio_ouro_velho": "img/produtos/nossa_senhora_de_fatima_modelo_4_entremeio_ouro_velho.jpg",
         "imagem_chaveiro": "img/produtos/nossa_senhora_de_fatima_modelo_4_chaveiro.jpg"
       }
-    ]
+    ],
+    "categoria": "Nossa Senhora"
   },
   {
     "id": "nossa-senhora-de-guadalupe",
@@ -1269,7 +1318,8 @@
         "imagem_entremeio_ouro_velho": "img/produtos/nossa_senhora_de_guadalupe_modelo_4_entremeio_ouro_velho.jpg",
         "imagem_chaveiro": "img/produtos/nossa_senhora_de_guadalupe_modelo_4_chaveiro.jpg"
       }
-    ]
+    ],
+    "categoria": "Nossa Senhora"
   },
   {
     "id": "nossa-senhora-de-lourdes",
@@ -1299,7 +1349,8 @@
         "imagem_entremeio_ouro_velho": "img/produtos/nossa_senhora_de_lourdes_modelo_2_entremeio_ouro_velho.jpg",
         "imagem_chaveiro": "img/produtos/nossa_senhora_de_lourdes_modelo_2_chaveiro.jpg"
       }
-    ]
+    ],
+    "categoria": "Nossa Senhora"
   },
   {
     "id": "nossa-senhora-de-nazare",
@@ -1317,7 +1368,8 @@
         "imagem_entremeio_ouro_velho": "img/produtos/nossa_senhora_de_nazare_modelo_1_entremeio_ouro_velho.jpg",
         "imagem_chaveiro": "img/produtos/nossa_senhora_de_nazare_modelo_1_chaveiro.jpg"
       }
-    ]
+    ],
+    "categoria": "Nossa Senhora"
   },
   {
     "id": "nossa-senhora-de-pieta",
@@ -1335,7 +1387,8 @@
         "imagem_entremeio_ouro_velho": "img/produtos/nossa_senhora_de_pieta_modelo_1_entremeio_ouro_velho.jpg",
         "imagem_chaveiro": "img/produtos/nossa_senhora_de_pieta_modelo_1_chaveiro.jpg"
       }
-    ]
+    ],
+    "categoria": "Nossa Senhora"
   },
   {
     "id": "nossa-senhora-do-advento",
@@ -1353,7 +1406,8 @@
         "imagem_entremeio_ouro_velho": "img/produtos/nossa_senhora_do_advento_modelo_1_entremeio_ouro_velho.jpg",
         "imagem_chaveiro": "img/produtos/nossa_senhora_do_advento_modelo_1_chaveiro.jpg"
       }
-    ]
+    ],
+    "categoria": "Nossa Senhora"
   },
   {
     "id": "nossa-senhora-do-carmo",
@@ -1383,7 +1437,8 @@
         "imagem_entremeio_ouro_velho": "img/produtos/nossa_senhora_do_carmo_modelo_2_entremeio_ouro_velho.jpg",
         "imagem_chaveiro": "img/produtos/nossa_senhora_do_carmo_modelo_2_chaveiro.jpg"
       }
-    ]
+    ],
+    "categoria": "Nossa Senhora"
   },
   {
     "id": "nossa-senhora-do-perpetuo-socorro",
@@ -1401,7 +1456,8 @@
         "imagem_entremeio_ouro_velho": "img/produtos/nossa_senhora_do_perpetuo_socorro_modelo_1_entremeio_ouro_velho.jpg",
         "imagem_chaveiro": "img/produtos/nossa_senhora_do_perpetuo_socorro_modelo_1_chaveiro.jpg"
       }
-    ]
+    ],
+    "categoria": "Nossa Senhora"
   },
   {
     "id": "nossa-senhora-do-silencio",
@@ -1419,7 +1475,8 @@
         "imagem_entremeio_ouro_velho": "img/produtos/nossa_senhora_do_silencio_modelo_1_entremeio_ouro_velho.jpg",
         "imagem_chaveiro": "img/produtos/nossa_senhora_do_silencio_modelo_1_chaveiro.jpg"
       }
-    ]
+    ],
+    "categoria": "Nossa Senhora"
   },
   {
     "id": "nossa-senhora-do-sorriso",
@@ -1437,7 +1494,8 @@
         "imagem_entremeio_ouro_velho": "img/produtos/nossa_senhora_do_sorriso_modelo_1_entremeio_ouro_velho.jpg",
         "imagem_chaveiro": "img/produtos/nossa_senhora_do_sorriso_modelo_1_chaveiro.jpg"
       }
-    ]
+    ],
+    "categoria": "Nossa Senhora"
   },
   {
     "id": "nossa-senhora-dos-desterro",
@@ -1455,7 +1513,8 @@
         "imagem_entremeio_ouro_velho": "img/produtos/nossa_senhora_dos_desterro_modelo_1_entremeio_ouro_velho.jpg",
         "imagem_chaveiro": "img/produtos/nossa_senhora_dos_desterro_modelo_1_chaveiro.jpg"
       }
-    ]
+    ],
+    "categoria": "Nossa Senhora"
   },
   {
     "id": "obra-nova",
@@ -1473,7 +1532,8 @@
         "imagem_entremeio_ouro_velho": "img/produtos/obra_nova_modelo_1_entremeio_ouro_velho.jpg",
         "imagem_chaveiro": "img/produtos/obra_nova_modelo_1_chaveiro.jpg"
       }
-    ]
+    ],
+    "categoria": "Outros"
   },
   {
     "id": "padre-cicero",
@@ -1491,7 +1551,8 @@
         "imagem_entremeio_ouro_velho": "img/produtos/padre_cicero_modelo_1_entremeio_ouro_velho.jpg",
         "imagem_chaveiro": "img/produtos/padre_cicero_modelo_1_chaveiro.jpg"
       }
-    ]
+    ],
+    "categoria": "Devoções"
   },
   {
     "id": "padre-ibiapina",
@@ -1509,7 +1570,8 @@
         "imagem_entremeio_ouro_velho": "img/produtos/padre_ibiapina_modelo_1_entremeio_ouro_velho.jpg",
         "imagem_chaveiro": "img/produtos/padre_ibiapina_modelo_1_chaveiro.jpg"
       }
-    ]
+    ],
+    "categoria": "Devoções"
   },
   {
     "id": "padre-jonas",
@@ -1527,7 +1589,8 @@
         "imagem_entremeio_ouro_velho": "img/produtos/padre_jonas_modelo_1_entremeio_ouro_velho.jpg",
         "imagem_chaveiro": "img/produtos/padre_jonas_modelo_1_chaveiro.jpg"
       }
-    ]
+    ],
+    "categoria": "Outros"
   },
   {
     "id": "pais-de-teresinha",
@@ -1557,7 +1620,8 @@
         "imagem_entremeio_ouro_velho": "img/produtos/pais_de_teresinha_modelo_2_entremeio_ouro_velho.jpg",
         "imagem_chaveiro": "img/produtos/pais_de_teresinha_modelo_2_chaveiro.jpg"
       }
-    ]
+    ],
+    "categoria": "Famílias"
   },
   {
     "id": "pais-de-teresinha-com-teresinha",
@@ -1575,7 +1639,8 @@
         "imagem_entremeio_ouro_velho": "img/produtos/pais_de_teresinha_com_teresinha_modelo_1_entremeio_ouro_velho.jpg",
         "imagem_chaveiro": "img/produtos/pais_de_teresinha_com_teresinha_modelo_1_chaveiro.jpg"
       }
-    ]
+    ],
+    "categoria": "Famílias"
   },
   {
     "id": "pentecostes",
@@ -1593,7 +1658,8 @@
         "imagem_entremeio_ouro_velho": "img/produtos/pentecostes_modelo_1_entremeio_ouro_velho.jpg",
         "imagem_chaveiro": "img/produtos/pentecostes_modelo_1_chaveiro.jpg"
       }
-    ]
+    ],
+    "categoria": "Espírito Santo"
   },
   {
     "id": "ressuscitado",
@@ -1635,7 +1701,8 @@
         "imagem_entremeio_ouro_velho": "img/produtos/ressuscitado_modelo_4_entremeio_ouro_velho.jpg",
         "imagem_chaveiro": "img/produtos/ressuscitado_modelo_4_chaveiro.jpg"
       }
-    ]
+    ],
+    "categoria": "Jesus"
   },
   {
     "id": "ronaldo-pereira",
@@ -1665,7 +1732,8 @@
         "imagem_entremeio_ouro_velho": "img/produtos/ronaldo_pereira_modelo_2_entremeio_ouro_velho.jpg",
         "imagem_chaveiro": "img/produtos/ronaldo_pereira_modelo_2_chaveiro.jpg"
       }
-    ]
+    ],
+    "categoria": "Outros"
   },
   {
     "id": "sagrada-face-de-jesus",
@@ -1683,7 +1751,8 @@
         "imagem_entremeio_ouro_velho": "img/produtos/sagrada_face_de_jesus_modelo_1_entremeio_ouro_velho.jpg",
         "imagem_chaveiro": "img/produtos/sagrada_face_de_jesus_modelo_1_chaveiro.jpg"
       }
-    ]
+    ],
+    "categoria": "Jesus"
   },
   {
     "id": "sagrada-familia",
@@ -1749,7 +1818,8 @@
         "imagem_entremeio_ouro_velho": "img/produtos/sagrada_familia_modelo_5_entremeio_ouro_velho.jpg",
         "imagem_chaveiro": "img/produtos/sagrada_familia_modelo_5_chaveiro.jpg"
       }
-    ]
+    ],
+    "categoria": "Famílias"
   },
   {
     "id": "sagrado-coracao-de-jesus",
@@ -1767,7 +1837,8 @@
         "imagem_entremeio_ouro_velho": "img/produtos/sagrado_coracao_de_jesus_modelo_1_entremeio_ouro_velho.jpg",
         "imagem_chaveiro": "img/produtos/sagrado_coracao_de_jesus_modelo_1_chaveiro.jpg"
       }
-    ]
+    ],
+    "categoria": "Jesus"
   },
   {
     "id": "santa-bakhita",
@@ -1785,7 +1856,8 @@
         "imagem_entremeio_ouro_velho": "img/produtos/santa_bakhita_modelo_1_entremeio_ouro_velho.jpg",
         "imagem_chaveiro": "img/produtos/santa_bakhita_modelo_1_chaveiro.jpg"
       }
-    ]
+    ],
+    "categoria": "Santas"
   },
   {
     "id": "santa-cecilia",
@@ -1803,7 +1875,8 @@
         "imagem_entremeio_ouro_velho": "img/produtos/santa_cecilia_modelo_1_entremeio_ouro_velho.jpg",
         "imagem_chaveiro": "img/produtos/santa_cecilia_modelo_1_chaveiro.jpg"
       }
-    ]
+    ],
+    "categoria": "Santas"
   },
   {
     "id": "santa-clara",
@@ -1821,7 +1894,8 @@
         "imagem_entremeio_ouro_velho": "img/produtos/santa_clara_modelo_1_entremeio_ouro_velho.jpg",
         "imagem_chaveiro": "img/produtos/santa_clara_modelo_1_chaveiro.jpg"
       }
-    ]
+    ],
+    "categoria": "Santas"
   },
   {
     "id": "santa-dulce",
@@ -1863,7 +1937,8 @@
         "imagem_entremeio_ouro_velho": "img/produtos/santa_dulce_modelo_3_entremeio_ouro_velho.jpg",
         "imagem_chaveiro": "img/produtos/santa_dulce_modelo_3_chaveiro.jpg"
       }
-    ]
+    ],
+    "categoria": "Santas"
   },
   {
     "id": "santa-faustina",
@@ -1881,7 +1956,8 @@
         "imagem_entremeio_ouro_velho": "img/produtos/santa_faustina_modelo_1_entremeio_ouro_velho.jpg",
         "imagem_chaveiro": "img/produtos/santa_faustina_modelo_1_chaveiro.jpg"
       }
-    ]
+    ],
+    "categoria": "Santas"
   },
   {
     "id": "santa-gemma",
@@ -1899,7 +1975,8 @@
         "imagem_entremeio_ouro_velho": "img/produtos/santa_gemma_modelo_1_entremeio_ouro_velho.jpg",
         "imagem_chaveiro": "img/produtos/santa_gemma_modelo_1_chaveiro.jpg"
       }
-    ]
+    ],
+    "categoria": "Santas"
   },
   {
     "id": "santa-gianna",
@@ -1929,7 +2006,8 @@
         "imagem_entremeio_ouro_velho": "img/produtos/santa_gianna_modelo_2_entremeio_ouro_velho.jpg",
         "imagem_chaveiro": "img/produtos/santa_gianna_modelo_2_chaveiro.jpg"
       }
-    ]
+    ],
+    "categoria": "Santas"
   },
   {
     "id": "santa-joana-darc",
@@ -1947,7 +2025,8 @@
         "imagem_entremeio_ouro_velho": "img/produtos/santa_joana_darc_modelo_1_entremeio_ouro_velho.jpg",
         "imagem_chaveiro": "img/produtos/santa_joana_darc_modelo_1_chaveiro.jpg"
       }
-    ]
+    ],
+    "categoria": "Santas"
   },
   {
     "id": "santa-luzia",
@@ -1965,7 +2044,8 @@
         "imagem_entremeio_ouro_velho": "img/produtos/santa_luzia_modelo_1_entremeio_ouro_velho.jpg",
         "imagem_chaveiro": "img/produtos/santa_luzia_modelo_1_chaveiro.jpg"
       }
-    ]
+    ],
+    "categoria": "Santas"
   },
   {
     "id": "santa-maria-goretti",
@@ -1983,7 +2063,8 @@
         "imagem_entremeio_ouro_velho": "img/produtos/santa_maria_goretti_modelo_1_entremeio_ouro_velho.jpg",
         "imagem_chaveiro": "img/produtos/santa_maria_goretti_modelo_1_chaveiro.jpg"
       }
-    ]
+    ],
+    "categoria": "Santas"
   },
   {
     "id": "santa-maria-madalena",
@@ -2025,7 +2106,8 @@
         "imagem_entremeio_ouro_velho": "img/produtos/santa_maria_madalena_modelo_3_entremeio_ouro_velho.jpg",
         "imagem_chaveiro": "img/produtos/santa_maria_madalena_modelo_3_chaveiro.jpg"
       }
-    ]
+    ],
+    "categoria": "Santas"
   },
   {
     "id": "santa-rita-de-cassia",
@@ -2055,7 +2137,8 @@
         "imagem_entremeio_ouro_velho": "img/produtos/santa_rita_de_cassia_modelo_2_entremeio_ouro_velho.jpg",
         "imagem_chaveiro": "img/produtos/santa_rita_de_cassia_modelo_2_chaveiro.jpg"
       }
-    ]
+    ],
+    "categoria": "Santas"
   },
   {
     "id": "santa-teresa-davila",
@@ -2109,7 +2192,8 @@
         "imagem_entremeio_ouro_velho": "img/produtos/santa_teresa_davila_modelo_4_entremeio_ouro_velho.jpg",
         "imagem_chaveiro": "img/produtos/santa_teresa_davila_modelo_4_chaveiro.jpg"
       }
-    ]
+    ],
+    "categoria": "Santas"
   },
   {
     "id": "santa-teresa-de-calcuta",
@@ -2139,7 +2223,8 @@
         "imagem_entremeio_ouro_velho": "img/produtos/santa_teresa_de_calcuta_modelo_2_entremeio_ouro_velho.jpg",
         "imagem_chaveiro": "img/produtos/santa_teresa_de_calcuta_modelo_2_chaveiro.jpg"
       }
-    ]
+    ],
+    "categoria": "Santas"
   },
   {
     "id": "santa-teresinha",
@@ -2217,7 +2302,8 @@
         "imagem_entremeio_ouro_velho": "img/produtos/santa_teresinha_modelo_6_entremeio_ouro_velho.jpg",
         "imagem_chaveiro": "img/produtos/santa_teresinha_modelo_6_chaveiro.jpg"
       }
-    ]
+    ],
+    "categoria": "Santas"
   },
   {
     "id": "santa-teresinha-crianca",
@@ -2247,7 +2333,8 @@
         "imagem_entremeio_ouro_velho": "img/produtos/santa_teresinha_crianca_modelo_6_entremeio_ouro_velho.jpg",
         "imagem_chaveiro": "img/produtos/santa_teresinha_crianca_modelo_6_chaveiro.jpg"
       }
-    ]
+    ],
+    "categoria": "Santas"
   },
   {
     "id": "santa-zelia",
@@ -2265,7 +2352,8 @@
         "imagem_entremeio_ouro_velho": "img/produtos/santa_zelia_modelo_1_entremeio_ouro_velho.jpg",
         "imagem_chaveiro": "img/produtos/santa_zelia_modelo_1_chaveiro.jpg"
       }
-    ]
+    ],
+    "categoria": "Santas"
   },
   {
     "id": "santas-chagas",
@@ -2283,7 +2371,8 @@
         "imagem_entremeio_ouro_velho": "img/produtos/santas_chagas_modelo_1_entremeio_ouro_velho.jpg",
         "imagem_chaveiro": "img/produtos/santas_chagas_modelo_1_chaveiro.jpg"
       }
-    ]
+    ],
+    "categoria": "Jesus"
   },
   {
     "id": "santas-felicidade-e-perpetua",
@@ -2301,7 +2390,8 @@
         "imagem_entremeio_ouro_velho": "img/produtos/santas_felicidade_e_perpetua_modelo_1_entremeio_ouro_velho.jpg",
         "imagem_chaveiro": "img/produtos/santas_felicidade_e_perpetua_modelo_1_chaveiro.jpg"
       }
-    ]
+    ],
+    "categoria": "Santas"
   },
   {
     "id": "santo-afonso",
@@ -2319,7 +2409,8 @@
         "imagem_entremeio_ouro_velho": "img/produtos/santo_afonso_modelo_1_entremeio_ouro_velho.jpg",
         "imagem_chaveiro": "img/produtos/santo_afonso_modelo_1_chaveiro.jpg"
       }
-    ]
+    ],
+    "categoria": "Santos"
   },
   {
     "id": "santo-agostinho",
@@ -2337,7 +2428,8 @@
         "imagem_entremeio_ouro_velho": "img/produtos/santo_agostinho_modelo_1_entremeio_ouro_velho.jpg",
         "imagem_chaveiro": "img/produtos/santo_agostinho_modelo_1_chaveiro.jpg"
       }
-    ]
+    ],
+    "categoria": "Santos"
   },
   {
     "id": "santo-antonio",
@@ -2355,7 +2447,8 @@
         "imagem_entremeio_ouro_velho": "img/produtos/santo_antonio_modelo_1_entremeio_ouro_velho.jpg",
         "imagem_chaveiro": "img/produtos/santo_antonio_modelo_1_chaveiro.jpg"
       }
-    ]
+    ],
+    "categoria": "Santos"
   },
   {
     "id": "santo-expedito",
@@ -2373,7 +2466,8 @@
         "imagem_entremeio_ouro_velho": "img/produtos/santo_expedito_modelo_1_entremeio_ouro_velho.jpg",
         "imagem_chaveiro": "img/produtos/santo_expedito_modelo_1_chaveiro.jpg"
       }
-    ]
+    ],
+    "categoria": "Santos"
   },
   {
     "id": "santos-arcanjos",
@@ -2391,7 +2485,8 @@
         "imagem_entremeio_ouro_velho": "img/produtos/santos_arcanjos_modelo_1_entremeio_ouro_velho.jpg",
         "imagem_chaveiro": "img/produtos/santos_arcanjos_modelo_1_chaveiro.jpg"
       }
-    ]
+    ],
+    "categoria": "Anjos"
   },
   {
     "id": "santos-inocentes",
@@ -2409,7 +2504,8 @@
         "imagem_entremeio_ouro_velho": "img/produtos/santos_inocentes_modelo_1_entremeio_ouro_velho.jpg",
         "imagem_chaveiro": "img/produtos/santos_inocentes_modelo_1_chaveiro.jpg"
       }
-    ]
+    ],
+    "categoria": "Devoções"
   },
   {
     "id": "santissima-trindade",
@@ -2427,7 +2523,8 @@
         "imagem_entremeio_ouro_velho": "img/produtos/santissima_trindade_modelo_1_entremeio_ouro_velho.jpg",
         "imagem_chaveiro": "img/produtos/santissima_trindade_modelo_1_chaveiro.jpg"
       }
-    ]
+    ],
+    "categoria": "Espírito Santo"
   },
   {
     "id": "sao-bento",
@@ -2469,7 +2566,8 @@
         "imagem_entremeio_ouro_velho": "img/produtos/sao_bento_modelo_3_entremeio_ouro_velho.jpg",
         "imagem_chaveiro": "img/produtos/sao_bento_modelo_3_chaveiro.jpg"
       }
-    ]
+    ],
+    "categoria": "Santos"
   },
   {
     "id": "sao-cristovao",
@@ -2487,7 +2585,8 @@
         "imagem_entremeio_ouro_velho": "img/produtos/sao_cristovao_modelo_1_entremeio_ouro_velho.jpg",
         "imagem_chaveiro": "img/produtos/sao_cristovao_modelo_1_chaveiro.jpg"
       }
-    ]
+    ],
+    "categoria": "Santos"
   },
   {
     "id": "sao-dom-bosco",
@@ -2517,7 +2616,8 @@
         "imagem_entremeio_ouro_velho": "img/produtos/sao_dom_bosco_modelo_2_entremeio_ouro_velho.jpg",
         "imagem_chaveiro": "img/produtos/sao_dom_bosco_modelo_2_chaveiro.jpg"
       }
-    ]
+    ],
+    "categoria": "Santos"
   },
   {
     "id": "sao-francisco",
@@ -2571,7 +2671,8 @@
         "imagem_entremeio_ouro_velho": "img/produtos/sao_francisco_modelo_4_entremeio_ouro_velho.jpg",
         "imagem_chaveiro": "img/produtos/sao_francisco_modelo_4_chaveiro.jpg"
       }
-    ]
+    ],
+    "categoria": "Santos"
   },
   {
     "id": "sao-francisco-de-sales",
@@ -2589,7 +2690,8 @@
         "imagem_entremeio_ouro_velho": "img/produtos/sao_francisco_de_sales_modelo_1_entremeio_ouro_velho.jpg",
         "imagem_chaveiro": "img/produtos/sao_francisco_de_sales_modelo_1_chaveiro.jpg"
       }
-    ]
+    ],
+    "categoria": "Santos"
   },
   {
     "id": "sao-gabriel",
@@ -2607,7 +2709,8 @@
         "imagem_entremeio_ouro_velho": "img/produtos/sao_gabriel_modelo_1_entremeio_ouro_velho.jpg",
         "imagem_chaveiro": "img/produtos/sao_gabriel_modelo_1_chaveiro.jpg"
       }
-    ]
+    ],
+    "categoria": "Anjos"
   },
   {
     "id": "sao-gabriel-da-virgem-dolorosa",
@@ -2625,7 +2728,8 @@
         "imagem_entremeio_ouro_velho": "img/produtos/sao_gabriel_da_virgem_dolorosa_modelo_1_entremeio_ouro_velho.jpg",
         "imagem_chaveiro": "img/produtos/sao_gabriel_da_virgem_dolorosa_modelo_1_chaveiro.jpg"
       }
-    ]
+    ],
+    "categoria": "Santos"
   },
   {
     "id": "sao-jorge",
@@ -2643,7 +2747,8 @@
         "imagem_entremeio_ouro_velho": "img/produtos/sao_jorge_modelo_1_entremeio_ouro_velho.jpg",
         "imagem_chaveiro": "img/produtos/sao_jorge_modelo_1_chaveiro.jpg"
       }
-    ]
+    ],
+    "categoria": "Santos"
   },
   {
     "id": "sao-jose",
@@ -2721,7 +2826,8 @@
         "imagem_entremeio_ouro_velho": "img/produtos/sao_jose_modelo_7_entremeio_ouro_velho.jpg",
         "imagem_chaveiro": "img/produtos/sao_jose_modelo_7_chaveiro.jpg"
       }
-    ]
+    ],
+    "categoria": "Santos"
   },
   {
     "id": "sao-jose-dormindo",
@@ -2739,7 +2845,8 @@
         "imagem_entremeio_ouro_velho": "img/produtos/sao_jose_dormindo_modelo_1_entremeio_ouro_velho.jpg",
         "imagem_chaveiro": "img/produtos/sao_jose_dormindo_modelo_1_chaveiro.jpg"
       }
-    ]
+    ],
+    "categoria": "Santos"
   },
   {
     "id": "sao-jose-maria-escriva",
@@ -2757,7 +2864,8 @@
         "imagem_entremeio_ouro_velho": "img/produtos/sao_jose_maria_escriva_modelo_1_entremeio_ouro_velho.jpg",
         "imagem_chaveiro": "img/produtos/sao_jose_maria_escriva_modelo_1_chaveiro.jpg"
       }
-    ]
+    ],
+    "categoria": "Santos"
   },
   {
     "id": "sao-jose-moscatti",
@@ -2775,7 +2883,8 @@
         "imagem_entremeio_ouro_velho": "img/produtos/sao_jose_moscatti_modelo_1_entremeio_ouro_velho.jpg",
         "imagem_chaveiro": "img/produtos/sao_jose_moscatti_modelo_1_chaveiro.jpg"
       }
-    ]
+    ],
+    "categoria": "Santos"
   },
   {
     "id": "sao-jose-sanchez",
@@ -2793,7 +2902,8 @@
         "imagem_entremeio_ouro_velho": "img/produtos/sao_jose_sanchez_modelo_1_entremeio_ouro_velho.jpg",
         "imagem_chaveiro": "img/produtos/sao_jose_sanchez_modelo_1_chaveiro.jpg"
       }
-    ]
+    ],
+    "categoria": "Santos"
   },
   {
     "id": "sao-jose-terror-dos-demonios",
@@ -2835,7 +2945,8 @@
         "imagem_entremeio_ouro_velho": "img/produtos/sao_jose_terror_dos_demonios_modelo_3_entremeio_ouro_velho.jpg",
         "imagem_chaveiro": "img/produtos/sao_jose_terror_dos_demonios_modelo_3_chaveiro.jpg"
       }
-    ]
+    ],
+    "categoria": "Santos"
   },
   {
     "id": "sao-jose-de-anchieta",
@@ -2865,7 +2976,8 @@
         "imagem_entremeio_ouro_velho": "img/produtos/sao_jose_de_anchieta_modelo_2_entremeio_ouro_velho.jpg",
         "imagem_chaveiro": "img/produtos/sao_jose_de_anchieta_modelo_2_chaveiro.jpg"
       }
-    ]
+    ],
+    "categoria": "Santos"
   },
   {
     "id": "sao-joao-batista",
@@ -2895,7 +3007,8 @@
         "imagem_entremeio_ouro_velho": "img/produtos/sao_joao_batista_modelo_2_entremeio_ouro_velho.jpg",
         "imagem_chaveiro": "img/produtos/sao_joao_batista_modelo_2_chaveiro.jpg"
       }
-    ]
+    ],
+    "categoria": "Santos"
   },
   {
     "id": "sao-joao-evangelista",
@@ -2925,7 +3038,8 @@
         "imagem_entremeio_ouro_velho": "img/produtos/sao_joao_evangelista_modelo_2_entremeio_ouro_velho.jpg",
         "imagem_chaveiro": "img/produtos/sao_joao_evangelista_modelo_2_chaveiro.jpg"
       }
-    ]
+    ],
+    "categoria": "Santos"
   },
   {
     "id": "sao-joao-maria-vianney",
@@ -2943,7 +3057,8 @@
         "imagem_entremeio_ouro_velho": "img/produtos/sao_joao_maria_vianney_modelo_1_entremeio_ouro_velho.jpg",
         "imagem_chaveiro": "img/produtos/sao_joao_maria_vianney_modelo_1_chaveiro.jpg"
       }
-    ]
+    ],
+    "categoria": "Santos"
   },
   {
     "id": "sao-joao-paulo-ii",
@@ -2997,7 +3112,8 @@
         "imagem_entremeio_ouro_velho": "img/produtos/sao_joao_paulo_ii_modelo_4_entremeio_ouro_velho.jpg",
         "imagem_chaveiro": "img/produtos/sao_joao_paulo_ii_modelo_4_chaveiro.jpg"
       }
-    ]
+    ],
+    "categoria": "Santos"
   },
   {
     "id": "sao-joao-da-cruz",
@@ -3015,7 +3131,8 @@
         "imagem_entremeio_ouro_velho": "img/produtos/sao_joao_da_cruz_modelo_1_entremeio_ouro_velho.jpg",
         "imagem_chaveiro": "img/produtos/sao_joao_da_cruz_modelo_1_chaveiro.jpg"
       }
-    ]
+    ],
+    "categoria": "Santos"
   },
   {
     "id": "sao-judas-tadeu",
@@ -3033,7 +3150,8 @@
         "imagem_entremeio_ouro_velho": "img/produtos/sao_judas_tadeu_modelo_1_entremeio_ouro_velho.jpg",
         "imagem_chaveiro": "img/produtos/sao_judas_tadeu_modelo_1_chaveiro.jpg"
       }
-    ]
+    ],
+    "categoria": "Santos"
   },
   {
     "id": "sao-lucas",
@@ -3051,7 +3169,8 @@
         "imagem_entremeio_ouro_velho": "img/produtos/sao_lucas_modelo_1_entremeio_ouro_velho.jpg",
         "imagem_chaveiro": "img/produtos/sao_lucas_modelo_1_chaveiro.jpg"
       }
-    ]
+    ],
+    "categoria": "Santos"
   },
   {
     "id": "sao-luis-martin",
@@ -3069,7 +3188,8 @@
         "imagem_entremeio_ouro_velho": "img/produtos/sao_luis_martin_modelo_1_entremeio_ouro_velho.jpg",
         "imagem_chaveiro": "img/produtos/sao_luis_martin_modelo_1_chaveiro.jpg"
       }
-    ]
+    ],
+    "categoria": "Santos"
   },
   {
     "id": "sao-miguel",
@@ -3111,7 +3231,8 @@
         "imagem_entremeio_ouro_velho": "img/produtos/sao_miguel_modelo_3_entremeio_ouro_velho.jpg",
         "imagem_chaveiro": "img/produtos/sao_miguel_modelo_3_chaveiro.jpg"
       }
-    ]
+    ],
+    "categoria": "Anjos"
   },
   {
     "id": "sao-padre-pio",
@@ -3141,7 +3262,8 @@
         "imagem_entremeio_ouro_velho": "img/produtos/sao_padre_pio_modelo_2_entremeio_ouro_velho.jpg",
         "imagem_chaveiro": "img/produtos/sao_padre_pio_modelo_2_chaveiro.jpg"
       }
-    ]
+    ],
+    "categoria": "Santos"
   },
   {
     "id": "sao-paulo",
@@ -3171,7 +3293,8 @@
         "imagem_entremeio_ouro_velho": "img/produtos/sao_paulo_modelo_2_entremeio_ouro_velho.jpg",
         "imagem_chaveiro": "img/produtos/sao_paulo_modelo_2_chaveiro.jpg"
       }
-    ]
+    ],
+    "categoria": "Santos"
   },
   {
     "id": "sao-pier-giorgio-frassati",
@@ -3201,7 +3324,8 @@
         "imagem_entremeio_ouro_velho": "img/produtos/sao_pier_giorgio_frassati_modelo_2_entremeio_ouro_velho.jpg",
         "imagem_chaveiro": "img/produtos/sao_pier_giorgio_frassati_modelo_2_chaveiro.jpg"
       }
-    ]
+    ],
+    "categoria": "Santos"
   },
   {
     "id": "sao-rafael",
@@ -3219,7 +3343,8 @@
         "imagem_entremeio_ouro_velho": "img/produtos/sao_rafael_modelo_1_entremeio_ouro_velho.jpg",
         "imagem_chaveiro": "img/produtos/sao_rafael_modelo_1_chaveiro.jpg"
       }
-    ]
+    ],
+    "categoria": "Anjos"
   },
   {
     "id": "sao-tarcisio",
@@ -3237,7 +3362,8 @@
         "imagem_entremeio_ouro_velho": "img/produtos/sao_tarcisio_modelo_1_entremeio_ouro_velho.jpg",
         "imagem_chaveiro": "img/produtos/sao_tarcisio_modelo_1_chaveiro.jpg"
       }
-    ]
+    ],
+    "categoria": "Santos"
   },
   {
     "id": "sao-timoteo",
@@ -3255,7 +3381,8 @@
         "imagem_entremeio_ouro_velho": "img/produtos/sao_timoteo_modelo_1_entremeio_ouro_velho.jpg",
         "imagem_chaveiro": "img/produtos/sao_timoteo_modelo_1_chaveiro.jpg"
       }
-    ]
+    ],
+    "categoria": "Santos"
   },
   {
     "id": "sao-tome",
@@ -3285,7 +3412,8 @@
         "imagem_entremeio_ouro_velho": "img/produtos/sao_tome_modelo_2_entremeio_ouro_velho.jpg",
         "imagem_chaveiro": "img/produtos/sao_tome_modelo_2_chaveiro.jpg"
       }
-    ]
+    ],
+    "categoria": "Santos"
   },
   {
     "id": "teresas-do-carmelo",
@@ -3303,7 +3431,8 @@
         "imagem_entremeio_ouro_velho": "img/produtos/teresas_do_carmelo_modelo_1_entremeio_ouro_velho.jpg",
         "imagem_chaveiro": "img/produtos/teresas_do_carmelo_modelo_1_chaveiro.jpg"
       }
-    ]
+    ],
+    "categoria": "Famílias"
   },
   {
     "id": "tres-coracoes",
@@ -3321,7 +3450,8 @@
         "imagem_entremeio_ouro_velho": "img/produtos/tres_coracoes_modelo_1_entremeio_ouro_velho.jpg",
         "imagem_chaveiro": "img/produtos/tres_coracoes_modelo_1_chaveiro.jpg"
       }
-    ]
+    ],
+    "categoria": "Famílias"
   },
   {
     "id": "virgens-prudentes",
@@ -3339,6 +3469,7 @@
         "imagem_entremeio_ouro_velho": "img/produtos/virgens_prudentes_modelo_1_entremeio_ouro_velho.jpg",
         "imagem_chaveiro": "img/produtos/virgens_prudentes_modelo_1_chaveiro.jpg"
       }
-    ]
+    ],
+    "categoria": "Devoções"
   }
 ]

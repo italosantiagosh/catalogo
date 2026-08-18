@@ -11,12 +11,16 @@ function normalizar(texto) {
   const grid = document.getElementById('grid-produtos');
   const contagem = document.getElementById('contagem');
   const semResultado = document.getElementById('sem-resultado');
+  const filtrosCategoria = document.getElementById('filtros-categoria');
   if (!input || !grid) return;
 
   const cards = Array.from(grid.querySelectorAll('.card-produto')).map((card) => ({
     el: card,
     nome: normalizar(card.dataset.nome || ''),
+    categoria: card.dataset.categoria || '',
   }));
+
+  let categoriaAtual = '';
 
   function atualizarContagem(visiveis) {
     if (!contagem) return;
@@ -29,7 +33,9 @@ function normalizar(texto) {
     const termo = normalizar(input.value);
     let visiveis = 0;
     for (const card of cards) {
-      const bate = termo === '' || card.nome.includes(termo);
+      const bateBusca = termo === '' || card.nome.includes(termo);
+      const bateCategoria = categoriaAtual === '' || card.categoria === categoriaAtual;
+      const bate = bateBusca && bateCategoria;
       card.el.hidden = !bate;
       if (bate) visiveis += 1;
     }
@@ -38,5 +44,18 @@ function normalizar(texto) {
   }
 
   input.addEventListener('input', filtrar);
+
+  if (filtrosCategoria) {
+    filtrosCategoria.addEventListener('click', (evento) => {
+      const chip = evento.target.closest('.chip-categoria');
+      if (!chip) return;
+      categoriaAtual = chip.dataset.categoria || '';
+      for (const outro of filtrosCategoria.querySelectorAll('.chip-categoria')) {
+        outro.setAttribute('aria-pressed', String(outro === chip));
+      }
+      filtrar();
+    });
+  }
+
   filtrar();
 })();

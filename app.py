@@ -160,12 +160,15 @@ def index():
         {
             "id": p["id"],
             "nome": p["nome"],
+            "categoria": p["categoria"],
             "thumbnail": p["modelos"][0]["imagem"],
+            "thumbnail_chaveiro": p["modelos"][0]["imagem_chaveiro"],
         }
         for p in produtos
     ]
+    categorias = sorted({p["categoria"] for p in itens})
     return render_template(
-        "index.html", produtos=itens, preco_varejo=preco_varejo()
+        "index.html", produtos=itens, categorias=categorias, preco_varejo=preco_varejo()
     )
 
 
