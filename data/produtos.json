@@ -3471,5 +3471,43 @@
       }
     ],
     "categoria": "Devoções"
+  },
+  {
+    "id": "nossa-senhora-da-apresentacao",
+    "nome": "Nossa Senhora da Apresentação",
+    "modelos": [
+      {
+        "id": 1,
+        "nome": "Modelo 1",
+        "tamanhos": [
+          "12mm",
+          "16mm"
+        ],
+        "imagem": "img/produtos/nossa_senhora_da_apresentacao_modelo_1_medalha.jpg",
+        "imagem_entremeio_prata": "img/produtos/nossa_senhora_da_apresentacao_modelo_1_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/nossa_senhora_da_apresentacao_modelo_1_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/nossa_senhora_da_apresentacao_modelo_1_chaveiro.jpg"
+      }
+    ],
+    "categoria": "Nossa Senhora"
+  },
+  {
+    "id": "santos-martires-do-rn",
+    "nome": "Santos Mártires do RN",
+    "modelos": [
+      {
+        "id": 1,
+        "nome": "Modelo 1",
+        "tamanhos": [
+          "12mm",
+          "16mm"
+        ],
+        "imagem": "img/produtos/santos_martires_do_rn_modelo_1_medalha.jpg",
+        "imagem_entremeio_prata": "img/produtos/santos_martires_do_rn_modelo_1_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/santos_martires_do_rn_modelo_1_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/santos_martires_do_rn_modelo_1_chaveiro.jpg"
+      }
+    ],
+    "categoria": "Beatos"
   }
 ]
