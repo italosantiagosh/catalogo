@@ -7,10 +7,15 @@
   <h1>{{ produto.nome }}</h1>
   <p class="instrucao">Escolha um modelo:</p>
 
-  <p class="aviso-preco-atacado">
+  <p class="aviso-preco-atacado" id="aviso-preco-atacado">
     Preço unitário a partir de <strong>{{ preco_varejo | preco }}</strong>.
     O desconto de atacado é calculado automaticamente pela quantidade total
     do seu carrinho, assim que você adicionar os itens.
+  </p>
+  <p class="aviso-formatos">
+    Cada santo está disponível em <strong>medalha</strong> (1,2 ou 1,6 cm),
+    <strong>entremeio</strong> (prata ou ouro velho) e <strong>chaveiro</strong>
+    -- escolha o formato depois de selecionar o modelo.
   </p>
 
   <div class="modelos-grid" id="modelos-grid" data-produto-id="{{ produto.id }}" data-produto-nome="{{ produto.nome }}">
@@ -31,8 +36,36 @@
   <div class="painel-selecao" id="painel-selecao" hidden>
     <h2>Modelo selecionado: <span id="sel-modelo-nome"></span></h2>
 
+    <fieldset class="formatos" id="sel-formatos">
+      <legend>Formato *</legend>
+      <label class="opcao-formato">
+        <input type="radio" name="formato" id="formato-medalha" value="medalha" checked>
+        Medalha
+      </label>
+      <label class="opcao-formato">
+        <input type="radio" name="formato" id="formato-entremeio" value="entremeio">
+        Entremeio (para terço)
+      </label>
+      <label class="opcao-formato">
+        <input type="radio" name="formato" id="formato-chaveiro" value="chaveiro">
+        Chaveiro
+      </label>
+    </fieldset>
+
     <fieldset class="tamanhos" id="sel-tamanhos">
-      <legend>Tamanho</legend>
+      <legend>Tamanho *</legend>
+    </fieldset>
+
+    <fieldset class="cores" id="sel-cores" hidden>
+      <legend>Cor *</legend>
+      <label class="opcao-cor">
+        <input type="radio" name="cor" id="cor-prata" value="prata">
+        Prata
+      </label>
+      <label class="opcao-cor">
+        <input type="radio" name="cor" id="cor-ouro_velho" value="ouro_velho">
+        Ouro velho
+      </label>
     </fieldset>
 
     <div class="quantidade">
@@ -51,5 +84,9 @@
 {% endblock %}
 
 {% block script %}
+  <script>
+    window.PRECO_VAREJO_PADRAO = {{ preco_varejo | tojson }};
+    window.PRECO_VAREJO_CHAVEIRO = {{ preco_varejo_chaveiro | tojson }};
+  </script>
   <script src="{{ url_for('static', filename='js/produto.js') }}"></script>
 {% endblock %}

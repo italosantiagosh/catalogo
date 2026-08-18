@@ -1,155 +1,429 @@
 (function () {
-  const PLACEHOLDER_SEM_FOTO = '/static/img/sem-foto.svg';
+  "use strict";
 
-  // ---- formulario de upload (antes de gerar a simulacao) ----
+  const CROPPER_SIZE = 320;
+  const RAIO = CROPPER_SIZE / 2;
+  const ZOOM_MAX_MULT = 4;
 
-  const input = document.getElementById('input-imagem');
-  const nomeDiv = document.getElementById('nome-arquivo');
-  const botaoEnviar = document.getElementById('botao-enviar');
-  const form = document.getElementById('form-upload');
-  const tamanhosForm = document.getElementById('tamanhos-form');
+  const viewUpload = document.getElementById('view-upload');
+  const opcaoSemFoto = document.getElementById('opcao-sem-foto');
+  const viewCropper = document.getElementById('view-cropper');
+  const viewPreview = document.getElementById('view-preview');
+  const bannerErro = document.getElementById('banner-erro');
+  const avisoPreco = document.getElementById('aviso-preco-atacado');
+
+  const formatosFieldset = document.getElementById('sel-formatos');
+  const tamanhosFieldset = document.getElementById('sel-tamanhos');
+  const coresFieldset = document.getElementById('sel-cores');
+  const inputImagem = document.getElementById('input-imagem');
+  const nomeArquivoDiv = document.getElementById('nome-arquivo');
   const qtdFormInput = document.getElementById('qtd-form');
   const qtdMenosForm = document.getElementById('qtd-menos-form');
   const qtdMaisForm = document.getElementById('qtd-mais-form');
+  const botaoEnviar = document.getElementById('botao-enviar');
   const btnSemFoto = document.getElementById('btn-sem-foto');
 
-  function tamanhoDoFormulario() {
-    const marcado = tamanhosForm ? tamanhosForm.querySelector('input[name="tamanho"]:checked') : null;
-    return marcado ? marcado.value : null;
+  if (!viewUpload) return;
+
+  function formatarPrecoLocal(valor) {
+    return 'R$ ' + valor.toFixed(2).replace('.', ',');
   }
 
-  function atualizarBotaoEnviar() {
-    if (!botaoEnviar) return;
-    const temArquivo = input && input.files.length > 0;
-    const temTamanho = !!tamanhoDoFormulario();
-    if (!temArquivo && !temTamanho) {
-      botaoEnviar.textContent = 'Selecione uma imagem e o tamanho';
+  function mostrarErro(msg) {
+    bannerErro.textContent = msg;
+    bannerErro.hidden = false;
+  }
+
+  function limparErro() {
+    bannerErro.hidden = true;
+    bannerErro.textContent = '';
+  }
+
+  function mostrarView(nome) {
+    viewUpload.hidden = nome !== 'upload';
+    opcaoSemFoto.hidden = nome !== 'upload';
+    viewCropper.hidden = nome !== 'cropper';
+    viewPreview.hidden = nome !== 'preview';
+    window.scrollTo(0, 0);
+  }
+
+  // ---- formato / tamanho / cor (mesmo padrao de produto.js) ----
+
+  function formatoAtual() {
+    const input = formatosFieldset.querySelector('input[name="formato"]:checked');
+    return input ? input.value : 'medalha';
+  }
+
+  function tamanhoAtual() {
+    const input = tamanhosFieldset.querySelector('input[name="tamanho"]:checked');
+    return input ? input.value : null;
+  }
+
+  function corAtual() {
+    const input = coresFieldset.querySelector('input[name="cor"]:checked');
+    return input ? input.value : null;
+  }
+
+  function subSelecaoCompleta() {
+    const formato = formatoAtual();
+    if (formato === 'medalha') return !!tamanhoAtual();
+    if (formato === 'entremeio') return !!corAtual();
+    return true;
+  }
+
+  function chavePrecoAtual() {
+    const formato = formatoAtual();
+    if (formato === 'medalha') return tamanhoAtual();
+    return formato;
+  }
+
+  function atualizarAvisoPreco() {
+    if (!avisoPreco) return;
+    const preco = formatoAtual() === 'chaveiro' ? window.PRECO_VAREJO_CHAVEIRO : window.PRECO_VAREJO_PADRAO;
+    avisoPreco.innerHTML =
+      `Preço unitário a partir de <strong>${formatarPrecoLocal(preco)}</strong>. ` +
+      'O desconto de atacado é calculado automaticamente pela quantidade total ' +
+      'do seu carrinho, assim que você adicionar os itens.';
+  }
+
+  function atualizarSubSelecao() {
+    const formato = formatoAtual();
+    tamanhosFieldset.hidden = formato !== 'medalha';
+    coresFieldset.hidden = formato !== 'entremeio';
+    atualizarAvisoPreco();
+    atualizarBotoesUpload();
+  }
+
+  function atualizarBotoesUpload() {
+    const completo = subSelecaoCompleta();
+    const temArquivo = inputImagem.files.length > 0;
+
+    if (!completo) {
+      botaoEnviar.textContent = formatoAtual() === 'medalha' ? 'Selecione um tamanho' : 'Selecione uma cor';
     } else if (!temArquivo) {
       botaoEnviar.textContent = 'Selecione uma imagem';
-    } else if (!temTamanho) {
-      botaoEnviar.textContent = 'Selecione o tamanho';
     } else {
       botaoEnviar.textContent = 'Gerar simulação';
     }
-    botaoEnviar.disabled = !(temArquivo && temTamanho);
+    botaoEnviar.disabled = !(completo && temArquivo);
+    btnSemFoto.disabled = !completo;
   }
 
-  function atualizarBotaoSemFoto() {
-    if (!btnSemFoto) return;
-    btnSemFoto.disabled = !tamanhoDoFormulario();
-  }
+  formatosFieldset.addEventListener('change', (evento) => {
+    if (evento.target.name === 'formato') atualizarSubSelecao();
+  });
+  tamanhosFieldset.addEventListener('change', (evento) => {
+    if (evento.target.name === 'tamanho') atualizarBotoesUpload();
+  });
+  coresFieldset.addEventListener('change', (evento) => {
+    if (evento.target.name === 'cor') atualizarBotoesUpload();
+  });
 
-  if (input) {
-    input.addEventListener('change', () => {
-      nomeDiv.textContent = input.files.length > 0 ? input.files[0].name : '';
-      atualizarBotaoEnviar();
-    });
-  }
-
-  if (tamanhosForm) {
-    tamanhosForm.addEventListener('change', (evento) => {
-      if (evento.target.name === 'tamanho') {
-        atualizarBotaoEnviar();
-        atualizarBotaoSemFoto();
-      }
-    });
-  }
+  inputImagem.addEventListener('change', () => {
+    nomeArquivoDiv.textContent = inputImagem.files.length > 0 ? inputImagem.files[0].name : '';
+    atualizarBotoesUpload();
+  });
 
   function ajustarQuantidadeForm(delta) {
     const atual = parseInt(qtdFormInput.value, 10) || 1;
     qtdFormInput.value = Math.max(1, atual + delta);
   }
+  qtdMenosForm.addEventListener('click', () => ajustarQuantidadeForm(-1));
+  qtdMaisForm.addEventListener('click', () => ajustarQuantidadeForm(1));
 
-  if (qtdMenosForm) qtdMenosForm.addEventListener('click', () => ajustarQuantidadeForm(-1));
-  if (qtdMaisForm) qtdMaisForm.addEventListener('click', () => ajustarQuantidadeForm(1));
+  // ---- editor de recorte (canvas): pan com arraste, zoom com o slider.
+  // Nunca deixa posicionar/zoom-out alem dos limites da imagem original --
+  // sem preenchimento de branco/preto, o recorte fica sempre 100% dentro
+  // da foto. Portado sem alteracoes do repositorio `mockup`. ----
 
-  if (form) {
-    form.addEventListener('submit', () => {
-      botaoEnviar.disabled = true;
-      botaoEnviar.textContent = 'Gerando simulação...';
+  const canvas = document.getElementById('cropper-canvas');
+  const ctx = canvas.getContext('2d');
+  const zoomSlider = document.getElementById('cropper-zoom');
+  const botaoConfirmar = document.getElementById('botao-cropper-confirmar');
+  const botaoCancelar = document.getElementById('botao-cropper-cancelar');
+
+  let cropperImg = null;
+  let minScale = 1, maxScale = 1, scale = 1;
+  let offsetX = 0, offsetY = 0;
+  let recorteFoiAjustado = false;
+
+  function clampOffset() {
+    const rImg = RAIO / scale;
+    const maxX = Math.max(rImg, cropperImg.naturalWidth - rImg);
+    const maxY = Math.max(rImg, cropperImg.naturalHeight - rImg);
+    offsetX = Math.min(Math.max(offsetX, rImg), maxX);
+    offsetY = Math.min(Math.max(offsetY, rImg), maxY);
+  }
+
+  function desenharCropper() {
+    ctx.clearRect(0, 0, CROPPER_SIZE, CROPPER_SIZE);
+    const drawW = cropperImg.naturalWidth * scale;
+    const drawH = cropperImg.naturalHeight * scale;
+    const drawX = RAIO - offsetX * scale;
+    const drawY = RAIO - offsetY * scale;
+    ctx.drawImage(cropperImg, drawX, drawY, drawW, drawH);
+
+    ctx.save();
+    ctx.fillStyle = 'rgba(0,0,0,0.55)';
+    ctx.beginPath();
+    ctx.rect(0, 0, CROPPER_SIZE, CROPPER_SIZE);
+    ctx.arc(RAIO, RAIO, RAIO, 0, Math.PI * 2, true);
+    ctx.fill('evenodd');
+    ctx.restore();
+
+    ctx.beginPath();
+    ctx.arc(RAIO, RAIO, RAIO - 1, 0, Math.PI * 2);
+    ctx.strokeStyle = 'rgba(255,255,255,0.9)';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+  }
+
+  function zoomSliderParaEscala(valorSlider) {
+    const t = valorSlider / 1000;
+    return minScale * Math.pow(ZOOM_MAX_MULT, t);
+  }
+
+  function escalaParaZoomSlider(valorEscala) {
+    const t = Math.log(valorEscala / minScale) / Math.log(ZOOM_MAX_MULT);
+    return Math.round(Math.min(Math.max(t, 0), 1) * 1000);
+  }
+
+  function iniciarCropper(imgEl, boxInicial) {
+    cropperImg = imgEl;
+    minScale = CROPPER_SIZE / Math.min(imgEl.naturalWidth, imgEl.naturalHeight);
+    maxScale = minScale * ZOOM_MAX_MULT;
+
+    if (boxInicial) {
+      const [x1, y1, x2, y2] = boxInicial;
+      const lado = x2 - x1;
+      scale = Math.min(Math.max(CROPPER_SIZE / lado, minScale), maxScale);
+      offsetX = (x1 + x2) / 2;
+      offsetY = (y1 + y2) / 2;
+    } else {
+      scale = minScale;
+      offsetX = imgEl.naturalWidth / 2;
+      offsetY = imgEl.naturalHeight / 2;
+    }
+    clampOffset();
+    zoomSlider.value = escalaParaZoomSlider(scale);
+    desenharCropper();
+  }
+
+  function boxAtual() {
+    const rImg = RAIO / scale;
+    return [offsetX - rImg, offsetY - rImg, offsetX + rImg, offsetY + rImg];
+  }
+
+  zoomSlider.addEventListener('input', () => {
+    recorteFoiAjustado = true;
+    scale = zoomSliderParaEscala(Number(zoomSlider.value));
+    clampOffset();
+    desenharCropper();
+  });
+
+  let arrastando = false;
+  let inicioPointer = { x: 0, y: 0 };
+  let inicioOffset = { x: 0, y: 0 };
+
+  canvas.addEventListener('pointerdown', (ev) => {
+    arrastando = true;
+    canvas.setPointerCapture(ev.pointerId);
+    const rect = canvas.getBoundingClientRect();
+    inicioPointer = { x: ev.clientX, y: ev.clientY };
+    inicioOffset = { x: offsetX, y: offsetY };
+    canvas._escalaTela = canvas.width / rect.width;
+  });
+  canvas.addEventListener('pointermove', (ev) => {
+    if (!arrastando) return;
+    recorteFoiAjustado = true;
+    const fator = canvas._escalaTela || 1;
+    const dx = (ev.clientX - inicioPointer.x) * fator;
+    const dy = (ev.clientY - inicioPointer.y) * fator;
+    offsetX = inicioOffset.x - dx / scale;
+    offsetY = inicioOffset.y - dy / scale;
+    clampOffset();
+    desenharCropper();
+  });
+  function pararArraste(ev) {
+    if (arrastando) canvas.releasePointerCapture(ev.pointerId);
+    arrastando = false;
+  }
+  canvas.addEventListener('pointerup', pararArraste);
+  canvas.addEventListener('pointercancel', pararArraste);
+
+  // ---- fluxo geral ----
+
+  let arquivoAtual = null;
+  let boxAnterior = null;
+  let ultimoResultado = null; // { previewSrc, urlPreview, urlCrop, formato, tamanho, cor, chavePreco }
+
+  function carregarImagemDeArquivo(file) {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      img.onload = () => resolve(img);
+      img.onerror = reject;
+      img.src = URL.createObjectURL(file);
     });
   }
 
-  if (btnSemFoto) {
-    btnSemFoto.addEventListener('click', () => {
-      const tamanho = tamanhoDoFormulario();
-      if (!tamanho) return;
-      const quantidade = Math.max(1, parseInt(qtdFormInput.value, 10) || 1);
+  botaoEnviar.addEventListener('click', async () => {
+    if (botaoEnviar.disabled) return;
+    limparErro();
+    arquivoAtual = inputImagem.files[0];
+    boxAnterior = null;
+    recorteFoiAjustado = false;
+    const img = await carregarImagemDeArquivo(arquivoAtual);
+    iniciarCropper(img, null);
+    mostrarView('cropper');
+  });
 
-      carrinhoAdicionarItem({
-        chave: `personalizada-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
-        tipo: 'personalizada',
-        produtoNome: 'Medalha Personalizada',
-        modeloNome: null,
-        imagem: PLACEHOLDER_SEM_FOTO,
-        tamanho,
-        quantidade,
-        semImagem: true,
-      });
+  botaoCancelar.addEventListener('click', () => {
+    inputImagem.value = '';
+    nomeArquivoDiv.textContent = '';
+    atualizarBotoesUpload();
+    mostrarView('upload');
+  });
 
-      const textoOriginal = 'Adicionar ao carrinho sem foto (envio depois pelo WhatsApp)';
-      btnSemFoto.textContent = 'Adicionado ✓ — não esqueça de enviar a foto depois';
-      setTimeout(() => {
-        btnSemFoto.textContent = textoOriginal;
-      }, 2200);
-    });
+  async function gerarPreviaUnica(box) {
+    limparErro();
+    botaoConfirmar.disabled = true;
+    botaoConfirmar.textContent = 'Gerando...';
+    try {
+      const fd = new FormData();
+      fd.append('imagem', arquivoAtual);
+      fd.append('formato', formatoAtual());
+      if (corAtual()) fd.append('cor', corAtual());
+      fd.append('x1', box[0]); fd.append('y1', box[1]);
+      fd.append('x2', box[2]); fd.append('y2', box[3]);
+      const resp = await fetch('/api/personalizada/preview', { method: 'POST', body: fd });
+      const dados = await resp.json();
+      if (!resp.ok) throw new Error(dados.erro || 'Erro ao gerar prévia.');
+
+      boxAnterior = box;
+      ultimoResultado = {
+        previewSrc: dados.preview,
+        urlPreview: dados.url_preview,
+        urlCrop: dados.url_crop,
+        formato: formatoAtual(),
+        tamanho: tamanhoAtual(),
+        cor: corAtual(),
+        chavePreco: chavePrecoAtual(),
+        ajustado: recorteFoiAjustado,
+      };
+      renderizarPreview();
+      mostrarView('preview');
+    } catch (err) {
+      mostrarErro(err.message || String(err));
+      mostrarView('cropper');
+    } finally {
+      botaoConfirmar.disabled = false;
+      botaoConfirmar.textContent = 'Gerar prévia';
+    }
   }
 
-  atualizarBotaoEnviar();
-  atualizarBotaoSemFoto();
+  botaoConfirmar.addEventListener('click', () => {
+    gerarPreviaUnica(boxAtual());
+  });
 
-  // ---- resultado (depois de gerar a simulacao) ----
+  // ---- resultado ----
 
-  function gerarMiniatura(imgEl, ladoMax) {
-    const escala = Math.min(1, ladoMax / Math.max(imgEl.naturalWidth, imgEl.naturalHeight));
-    const largura = Math.round(imgEl.naturalWidth * escala);
-    const altura = Math.round(imgEl.naturalHeight * escala);
-    const canvas = document.createElement('canvas');
-    canvas.width = largura;
-    canvas.height = altura;
-    const ctx = canvas.getContext('2d');
-    ctx.fillStyle = '#ffffff';
-    ctx.fillRect(0, 0, largura, altura);
-    ctx.drawImage(imgEl, 0, 0, largura, altura);
-    return canvas.toDataURL('image/jpeg', 0.8);
-  }
-
-  const btnAdicionar = document.getElementById('btn-adicionar');
-  const painel = document.getElementById('painel-selecao');
   const previewImg = document.getElementById('preview-imagem');
+  const linkBaixarPrevia = document.getElementById('link-baixar-previa');
+  const linkBaixarRecorte = document.getElementById('link-baixar-recorte');
+  const avisoReenvio = document.getElementById('aviso-reenvio');
   const qtdMenos = document.getElementById('qtd-menos');
   const qtdMais = document.getElementById('qtd-mais');
   const quantidadeInput = document.getElementById('sel-quantidade');
+  const btnAdicionar = document.getElementById('btn-adicionar');
+  const botaoReposicionar = document.getElementById('botao-reposicionar');
+
+  function renderizarPreview() {
+    previewImg.src = ultimoResultado.previewSrc;
+    linkBaixarPrevia.href = ultimoResultado.urlPreview;
+    linkBaixarRecorte.href = ultimoResultado.urlCrop;
+    quantidadeInput.value = qtdFormInput.value;
+
+    if (ultimoResultado.ajustado) {
+      avisoReenvio.innerHTML =
+        '⚠️ Você ajustou a posição/zoom do recorte -- pra manter exatamente essa simulação, ' +
+        '<strong>reenvie pelo WhatsApp o arquivo "Baixar recorte (1:1)"</strong> baixado aqui, ' +
+        'e não a foto original (ela geraria um recorte diferente, o automático).';
+    } else {
+      avisoReenvio.innerHTML =
+        '📲 Esta é só uma simulação. Depois de finalizar pelo WhatsApp, você vai precisar ' +
+        '<strong>reenviar a foto</strong> diretamente na conversa — o link do WhatsApp não anexa imagens automaticamente.';
+    }
+  }
 
   function ajustarQuantidade(delta) {
     const atual = parseInt(quantidadeInput.value, 10) || 1;
     quantidadeInput.value = Math.max(1, atual + delta);
   }
+  qtdMenos.addEventListener('click', () => ajustarQuantidade(-1));
+  qtdMais.addEventListener('click', () => ajustarQuantidade(1));
 
-  if (qtdMenos) qtdMenos.addEventListener('click', () => ajustarQuantidade(-1));
-  if (qtdMais) qtdMais.addEventListener('click', () => ajustarQuantidade(1));
+  botaoReposicionar.addEventListener('click', async () => {
+    const img = await carregarImagemDeArquivo(arquivoAtual);
+    recorteFoiAjustado = true; // reabriu o editor -- nao ha garantia de que o recorte final bate com a foto original
+    iniciarCropper(img, boxAnterior);
+    mostrarView('cropper');
+  });
 
-  if (btnAdicionar && painel && previewImg) {
-    btnAdicionar.addEventListener('click', () => {
-      const quantidade = Math.max(1, parseInt(quantidadeInput.value, 10) || 1);
-      const tamanho = painel.dataset.tamanho;
+  btnAdicionar.addEventListener('click', () => {
+    if (!ultimoResultado) return;
+    const quantidade = Math.max(1, parseInt(quantidadeInput.value, 10) || 1);
+    const r = ultimoResultado;
 
-      carrinhoAdicionarItem({
-        chave: `personalizada-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
-        tipo: 'personalizada',
-        produtoNome: 'Medalha Personalizada',
-        modeloNome: null,
-        imagem: gerarMiniatura(previewImg, 320),
-        tamanho,
-        quantidade,
-        semImagem: false,
-      });
-
-      const textoOriginal = 'Adicionar ao carrinho';
-      btnAdicionar.textContent = 'Adicionado ✓';
-      setTimeout(() => {
-        btnAdicionar.textContent = textoOriginal;
-      }, 1200);
+    carrinhoAdicionarItem({
+      chave: `personalizada-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+      tipo: 'personalizada',
+      produtoNome: 'Personalizada',
+      modeloNome: null,
+      imagem: r.previewSrc,
+      formato: r.formato,
+      chave_preco: r.chavePreco,
+      tamanho: r.tamanho,
+      cor: r.cor,
+      quantidade,
+      semImagem: false,
+      avisoReenvio: r.ajustado
+        ? 'Reenviar o arquivo "recorte (1:1)" baixado (não a foto original)'
+        : 'Reenviar esta foto pelo WhatsApp ao finalizar',
     });
-  }
+
+    const textoOriginal = 'Adicionar ao carrinho';
+    btnAdicionar.textContent = 'Adicionado ✓';
+    setTimeout(() => {
+      btnAdicionar.textContent = textoOriginal;
+    }, 1200);
+  });
+
+  // ---- sem foto ----
+
+  btnSemFoto.addEventListener('click', () => {
+    if (btnSemFoto.disabled) return;
+    const quantidade = Math.max(1, parseInt(qtdFormInput.value, 10) || 1);
+
+    carrinhoAdicionarItem({
+      chave: `personalizada-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+      tipo: 'personalizada',
+      produtoNome: 'Personalizada',
+      modeloNome: null,
+      imagem: '/static/img/sem-foto.svg',
+      formato: formatoAtual(),
+      chave_preco: chavePrecoAtual(),
+      tamanho: tamanhoAtual(),
+      cor: corAtual(),
+      quantidade,
+      semImagem: true,
+    });
+
+    const textoOriginal = 'Adicionar ao carrinho sem foto (envio depois pelo WhatsApp)';
+    btnSemFoto.textContent = 'Adicionado ✓ — não esqueça de enviar a foto depois';
+    setTimeout(() => {
+      btnSemFoto.textContent = textoOriginal;
+    }, 2200);
+  });
+
+  atualizarSubSelecao();
 })();

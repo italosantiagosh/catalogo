@@ -2,7 +2,10 @@
   const grid = document.getElementById('modelos-grid');
   const painel = document.getElementById('painel-selecao');
   const nomeSpan = document.getElementById('sel-modelo-nome');
+  const formatosFieldset = document.getElementById('sel-formatos');
   const tamanhosFieldset = document.getElementById('sel-tamanhos');
+  const coresFieldset = document.getElementById('sel-cores');
+  const avisoPreco = document.getElementById('aviso-preco-atacado');
   const quantidadeInput = document.getElementById('sel-quantidade');
   const qtdMenos = document.getElementById('qtd-menos');
   const qtdMais = document.getElementById('qtd-mais');
@@ -13,11 +16,44 @@
   const produtoNome = grid.dataset.produtoNome;
   let modeloSelecionado = null;
 
+  function formatarPrecoLocal(valor) {
+    return 'R$ ' + valor.toFixed(2).replace('.', ',');
+  }
+
+  function formatoAtual() {
+    const input = formatosFieldset.querySelector('input[name="formato"]:checked');
+    return input ? input.value : 'medalha';
+  }
+
+  function atualizarAvisoPreco() {
+    if (!avisoPreco) return;
+    const formato = formatoAtual();
+    const preco = formato === 'chaveiro' ? window.PRECO_VAREJO_CHAVEIRO : window.PRECO_VAREJO_PADRAO;
+    avisoPreco.innerHTML =
+      `Preço unitário a partir de <strong>${formatarPrecoLocal(preco)}</strong>. ` +
+      'O desconto de atacado é calculado automaticamente pela quantidade total ' +
+      'do seu carrinho, assim que você adicionar os itens.';
+  }
+
+  function atualizarSubSelecao() {
+    const formato = formatoAtual();
+    tamanhosFieldset.hidden = formato !== 'medalha';
+    coresFieldset.hidden = formato !== 'entremeio';
+    atualizarAvisoPreco();
+    atualizarBotao();
+  }
+
   function atualizarBotao() {
-    const tamanhoEscolhido = tamanhosFieldset.querySelector('input[name="tamanho"]:checked');
-    if (!tamanhoEscolhido) {
+    const formato = formatoAtual();
+    let completo = true;
+    if (formato === 'medalha') {
+      completo = !!tamanhosFieldset.querySelector('input[name="tamanho"]:checked');
+    } else if (formato === 'entremeio') {
+      completo = !!coresFieldset.querySelector('input[name="cor"]:checked');
+    }
+    if (!completo) {
       btnAdicionar.disabled = true;
-      btnAdicionar.textContent = 'Selecione um tamanho';
+      btnAdicionar.textContent = formato === 'medalha' ? 'Selecione um tamanho' : 'Selecione uma cor';
     } else {
       btnAdicionar.disabled = false;
       btnAdicionar.textContent = 'Adicionar ao carrinho';
@@ -36,6 +72,11 @@
     };
     nomeSpan.textContent = modeloSelecionado.nome;
 
+    // formato sempre volta pra medalha ao trocar de modelo -- evita
+    // carregar uma escolha de cor/tamanho que nao fez sentido no modelo novo
+    const inputMedalha = formatosFieldset.querySelector('#formato-medalha');
+    if (inputMedalha) inputMedalha.checked = true;
+
     const tamanhos = JSON.parse(botao.dataset.tamanhos || '[]');
     tamanhosFieldset.innerHTML = '<legend>Tamanho *</legend>';
     tamanhos.forEach((tamanho) => {
@@ -48,11 +89,14 @@
       `;
       tamanhosFieldset.appendChild(label);
     });
+    for (const input of coresFieldset.querySelectorAll('input[name="cor"]')) {
+      input.checked = false;
+    }
 
     painel.hidden = false;
     painel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 
-    atualizarBotao();
+    atualizarSubSelecao();
   }
 
   grid.addEventListener('click', (evento) => {
@@ -60,8 +104,16 @@
     if (botao) selecionarModelo(botao);
   });
 
+  formatosFieldset.addEventListener('change', (evento) => {
+    if (evento.target.name === 'formato') atualizarSubSelecao();
+  });
+
   tamanhosFieldset.addEventListener('change', (evento) => {
     if (evento.target.name === 'tamanho') atualizarBotao();
+  });
+
+  coresFieldset.addEventListener('change', (evento) => {
+    if (evento.target.name === 'cor') atualizarBotao();
   });
 
   function ajustarQuantidade(delta) {
@@ -74,19 +126,42 @@
 
   if (btnAdicionar) {
     btnAdicionar.addEventListener('click', () => {
-      const tamanhoInput = tamanhosFieldset.querySelector('input[name="tamanho"]:checked');
-      if (!modeloSelecionado || !tamanhoInput) return;
+      if (!modeloSelecionado) return;
+      const formato = formatoAtual();
+
+      let chavePreco = null;
+      let tamanho = null;
+      let cor = null;
+      let subAttr = '';
+      if (formato === 'medalha') {
+        const tamanhoInput = tamanhosFieldset.querySelector('input[name="tamanho"]:checked');
+        if (!tamanhoInput) return;
+        tamanho = tamanhoInput.value;
+        chavePreco = tamanho;
+        subAttr = tamanho;
+      } else if (formato === 'entremeio') {
+        const corInput = coresFieldset.querySelector('input[name="cor"]:checked');
+        if (!corInput) return;
+        cor = corInput.value;
+        chavePreco = 'entremeio';
+        subAttr = cor;
+      } else {
+        chavePreco = 'chaveiro';
+      }
 
       const quantidade = Math.max(1, parseInt(quantidadeInput.value, 10) || 1);
       carrinhoAdicionarItem({
-        chave: `${produtoId}-${modeloSelecionado.id}-${tamanhoInput.value}`,
+        chave: `${produtoId}-${modeloSelecionado.id}-${formato}-${subAttr}`,
         tipo: 'catalogo',
         produtoId,
         produtoNome,
         modeloId: modeloSelecionado.id,
         modeloNome: modeloSelecionado.nome,
         imagem: modeloSelecionado.imagem,
-        tamanho: tamanhoInput.value,
+        formato,
+        chave_preco: chavePreco,
+        tamanho,
+        cor,
         quantidade,
       });
 
@@ -99,7 +174,7 @@
   }
 
   // seleciona o primeiro modelo automaticamente para quem tem só um --
-  // mas o tamanho continua em branco, precisa escolher na mao.
+  // mas tamanho/cor continuam em branco, precisa escolher na mao.
   const primeiro = grid.querySelector('.modelo-card');
   if (primeiro && grid.querySelectorAll('.modelo-card').length === 1) {
     selecionarModelo(primeiro);

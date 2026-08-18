@@ -7,6 +7,8 @@ def test_calcular_preco_varejo_abaixo_de_20():
 
 def test_preco_varejo():
     assert preco_varejo() == 5.00
+    assert preco_varejo("entremeio") == 5.00
+    assert preco_varejo("chaveiro") == 15.00
 
 
 def test_calcular_preco_faixas():
@@ -19,9 +21,23 @@ def test_calcular_preco_faixas():
     assert calcular_preco("16mm", 5000) == 1.75
 
 
-def test_calcular_preco_igual_para_12_e_16mm():
+def test_calcular_preco_igual_para_12mm_16mm_e_entremeio():
     for quantidade in (1, 20, 50, 131, 2000):
-        assert calcular_preco("12mm", quantidade) == calcular_preco("16mm", quantidade)
+        preco_12 = calcular_preco("12mm", quantidade)
+        assert calcular_preco("16mm", quantidade) == preco_12
+        assert calcular_preco("entremeio", quantidade) == preco_12
+
+
+def test_calcular_preco_chaveiro_tem_tabela_propria():
+    assert calcular_preco("chaveiro", 1) == 15.00
+    assert calcular_preco("chaveiro", 19) == 15.00
+    assert calcular_preco("chaveiro", 20) == 12.00
+    assert calcular_preco("chaveiro", 30) == 11.00
+    assert calcular_preco("chaveiro", 50) == 10.00
+    assert calcular_preco("chaveiro", 100) == 9.00
+    assert calcular_preco("chaveiro", 200) == 8.00
+    assert calcular_preco("chaveiro", 300) == 7.00
+    assert calcular_preco("chaveiro", 1000) == 7.00
 
 
 def test_proxima_faixa_perto_do_limite():
@@ -31,39 +47,68 @@ def test_proxima_faixa_perto_do_limite():
 def test_proxima_faixa_none_na_faixa_maxima():
     assert proxima_faixa("16mm", 2000) is None
     assert proxima_faixa("16mm", 5000) is None
+    assert proxima_faixa("chaveiro", 300) is None
+    assert proxima_faixa("chaveiro", 1000) is None
 
 
-def test_calcular_carrinho_soma_todos_produtos_para_a_mesma_faixa():
+def test_calcular_carrinho_soma_medalha_e_entremeio_no_mesmo_grupo():
+    # medalhas 12mm/16mm e entremeios se misturam pra faixa (grupo "padrao")
     itens = [
-        {"tamanho": "16mm", "quantidade": 40},
-        {"tamanho": "12mm", "quantidade": 30},
-        {"tamanho": "16mm", "quantidade": 40},
+        {"chave_preco": "16mm", "quantidade": 40},
+        {"chave_preco": "12mm", "quantidade": 30},
+        {"chave_preco": "entremeio", "quantidade": 40},
     ]
     resultado = calcular_carrinho(itens)
     assert resultado["quantidade_total"] == 110
-    assert resultado["faixa_label"] == "100-130 unidades"
+    assert resultado["grupos"]["padrao"]["quantidade_total"] == 110
+    assert resultado["grupos"]["padrao"]["faixa_label"] == "100-130 unidades"
     for item in resultado["itens"]:
         assert item["preco_unitario"] == 3.00
     assert resultado["subtotal_total"] == round(110 * 3.00, 2)
 
 
+def test_calcular_carrinho_chaveiro_nao_se_mistura_com_padrao():
+    itens = [
+        {"chave_preco": "16mm", "quantidade": 90},
+        {"chave_preco": "chaveiro", "quantidade": 10},
+    ]
+    resultado = calcular_carrinho(itens)
+    assert resultado["quantidade_total"] == 100
+    assert resultado["grupos"]["padrao"]["quantidade_total"] == 90
+    assert resultado["grupos"]["chaveiro"]["quantidade_total"] == 10
+    # 90 medalhas -> faixa 50-99 (R$3,50), nao a faixa 100 mesmo somando com chaveiros
+    medalha_item = next(i for i in resultado["itens"] if i["chave_preco"] == "16mm")
+    assert medalha_item["preco_unitario"] == 3.50
+    # 10 chaveiros -> continua no varejo (R$15), nao pega desconto por causa das medalhas
+    chaveiro_item = next(i for i in resultado["itens"] if i["chave_preco"] == "chaveiro")
+    assert chaveiro_item["preco_unitario"] == 15.00
+
+
+def test_calcular_carrinho_chaveiro_em_quantidade_isoladamente_bate_faixa_propria():
+    resultado = calcular_carrinho([{"chave_preco": "chaveiro", "quantidade": 200}])
+    assert resultado["grupos"]["chaveiro"]["quantidade_total"] == 200
+    assert resultado["grupos"]["chaveiro"]["faixa_label"] == "200-299 unidades"
+    assert resultado["itens"][0]["preco_unitario"] == 8.00
+    assert resultado["subtotal_total"] == round(200 * 8.00, 2)
+
+
 def test_calcular_carrinho_mudanca_de_faixa_ao_cruzar_o_limite():
-    quase = calcular_carrinho([{"tamanho": "16mm", "quantidade": 98}])
-    assert quase["proxima_faixa"] == {"quantidade": 100, "faltam": 2, "preco": 3.00}
+    quase = calcular_carrinho([{"chave_preco": "16mm", "quantidade": 98}])
+    assert quase["grupos"]["padrao"]["proxima_faixa"] == {"quantidade": 100, "faltam": 2, "preco": 3.00}
     assert quase["itens"][0]["preco_unitario"] == 3.50
 
-    completo = calcular_carrinho([{"tamanho": "16mm", "quantidade": 100}])
+    completo = calcular_carrinho([{"chave_preco": "16mm", "quantidade": 100}])
     assert completo["itens"][0]["preco_unitario"] == 3.00
 
 
 def test_calcular_carrinho_abaixo_do_minimo():
-    resultado = calcular_carrinho([{"tamanho": "16mm", "quantidade": 5}])
+    resultado = calcular_carrinho([{"chave_preco": "16mm", "quantidade": 5}])
     assert resultado["subtotal_total"] == 25.00
     assert resultado["atinge_minimo"] is False
 
 
 def test_calcular_carrinho_atinge_minimo():
-    resultado = calcular_carrinho([{"tamanho": "16mm", "quantidade": 20}])
+    resultado = calcular_carrinho([{"chave_preco": "16mm", "quantidade": 20}])
     assert resultado["subtotal_total"] == 90.00
     assert resultado["atinge_minimo"] is True
 
@@ -72,19 +117,21 @@ def test_calcular_carrinho_vazio():
     resultado = calcular_carrinho([])
     assert resultado["quantidade_total"] == 0
     assert resultado["subtotal_total"] == 0.0
-    assert resultado["proxima_faixa"] is None
-    assert resultado["faixa_atual_inicio"] == 0
+    assert resultado["grupos"]["padrao"]["proxima_faixa"] is None
+    assert resultado["grupos"]["padrao"]["faixa_atual_inicio"] == 0
+    assert resultado["grupos"]["chaveiro"]["proxima_faixa"] is None
+    assert resultado["grupos"]["chaveiro"]["faixa_atual_inicio"] == 0
     assert resultado["frete_gratis_atingido"] is False
     assert resultado["falta_para_frete_gratis"] == 300.00
 
 
 def test_faixa_atual_inicio():
-    assert calcular_carrinho([{"tamanho": "16mm", "quantidade": 98}])["faixa_atual_inicio"] == 50
-    assert calcular_carrinho([{"tamanho": "16mm", "quantidade": 100}])["faixa_atual_inicio"] == 100
+    assert calcular_carrinho([{"chave_preco": "16mm", "quantidade": 98}])["grupos"]["padrao"]["faixa_atual_inicio"] == 50
+    assert calcular_carrinho([{"chave_preco": "16mm", "quantidade": 100}])["grupos"]["padrao"]["faixa_atual_inicio"] == 100
 
 
 def test_frete_gratis_nao_atingido():
-    resultado = calcular_carrinho([{"tamanho": "16mm", "quantidade": 20}])
+    resultado = calcular_carrinho([{"chave_preco": "16mm", "quantidade": 20}])
     assert resultado["subtotal_total"] == 90.00
     assert resultado["frete_gratis_atingido"] is False
     assert resultado["falta_para_frete_gratis"] == 210.00
@@ -92,7 +139,18 @@ def test_frete_gratis_nao_atingido():
 
 def test_frete_gratis_atingido():
     # 110 unidades na faixa 100-130 (R$3,00/un) = R$330, acima dos R$300
-    resultado = calcular_carrinho([{"tamanho": "16mm", "quantidade": 110}])
+    resultado = calcular_carrinho([{"chave_preco": "16mm", "quantidade": 110}])
     assert resultado["subtotal_total"] == 330.00
     assert resultado["frete_gratis_atingido"] is True
     assert resultado["falta_para_frete_gratis"] == 0.0
+
+
+def test_frete_gratis_considera_subtotal_combinado_de_ambos_grupos():
+    # medalhas + chaveiros somam pro frete gratis, mesmo sem se misturar na faixa
+    resultado = calcular_carrinho([
+        {"chave_preco": "16mm", "quantidade": 5},   # 5 x 5,00 = 25,00
+        {"chave_preco": "chaveiro", "quantidade": 20},  # 20 x 12,00 = 240,00
+    ])
+    assert resultado["subtotal_total"] == 265.00
+    assert resultado["frete_gratis_atingido"] is False
+    assert resultado["falta_para_frete_gratis"] == 35.00

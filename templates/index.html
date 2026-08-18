@@ -3,9 +3,10 @@
 {% block conteudo %}
   <div class="banner-atacado">
     <strong>💰 Preço de atacado automático</strong>
-    <p>Quanto mais medalhas você adicionar ao carrinho — de qualquer santo,
-    inclusive personalizada — menor o preço por unidade. O desconto é
-    aplicado sozinho, sem cupom, assim que você adiciona os itens.</p>
+    <p>Quanto mais medalhas e entremeios você adicionar ao carrinho — de
+    qualquer santo, inclusive personalizada — menor o preço por unidade.
+    Chaveiros têm tabela de atacado própria. O desconto é aplicado sozinho,
+    sem cupom, assim que você adiciona os itens.</p>
   </div>
 
   <a class="banner-personalizada" href="{{ url_for('personalizada') }}">
@@ -25,7 +26,10 @@
   <div class="grid-produtos" id="grid-produtos">
     {% for produto in produtos %}
       <a class="card-produto" href="{{ url_for('produto', produto_id=produto.id) }}" data-nome="{{ produto.nome }}">
-        <img src="{{ url_for('static', filename=produto.thumbnail) }}" alt="{{ produto.nome }}" loading="lazy" decoding="async">
+        <div class="card-imagem-wrap">
+          <img src="{{ url_for('static', filename=produto.thumbnail) }}" alt="{{ produto.nome }}" loading="lazy" decoding="async">
+          <span class="badge-formatos">Medalha · Entremeio · Chaveiro</span>
+        </div>
         <div class="card-corpo">
           <h2>{{ produto.nome }}</h2>
           <p class="preco">{{ preco_varejo | preco }} no varejo</p>

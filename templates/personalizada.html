@@ -4,88 +4,128 @@
 
 {% block conteudo %}
   <h1>Medalha Personalizada</h1>
-  <p class="instrucao">Envie uma foto e veja a simulação da sua medalha antes de pedir.</p>
+  <p class="instrucao">Envie uma foto, ajuste o recorte e veja a simulação da sua peça antes de pedir.</p>
 
-  <p class="aviso-preco-atacado">
+  <p class="aviso-preco-atacado" id="aviso-preco-atacado">
     Preço unitário a partir de <strong>{{ preco_varejo | preco }}</strong>.
     O desconto de atacado é calculado automaticamente pela quantidade total
     do seu carrinho, assim que você adicionar os itens.
   </p>
 
-  {% if erro %}
-    <div class="erro">{{ erro }}</div>
-  {% endif %}
+  <div id="banner-erro" class="erro" hidden></div>
 
-  {% if preview_src %}
-    <div class="preview-personalizada">
-      <img src="{{ preview_src }}" alt="Simulação da medalha personalizada" id="preview-imagem">
-    </div>
+  <!-- 1) escolha de formato + foto -->
+  <section id="view-upload" class="card-upload">
+    <fieldset class="formatos" id="sel-formatos">
+      <legend>Formato *</legend>
+      <label class="opcao-formato">
+        <input type="radio" name="formato" id="formato-medalha" value="medalha" checked>
+        Medalha
+      </label>
+      <label class="opcao-formato">
+        <input type="radio" name="formato" id="formato-entremeio" value="entremeio">
+        Entremeio (para terço)
+      </label>
+      <label class="opcao-formato">
+        <input type="radio" name="formato" id="formato-chaveiro" value="chaveiro">
+        Chaveiro
+      </label>
+    </fieldset>
 
-    <p class="aviso-info">
-      📲 Esta é só uma simulação. Depois de finalizar pelo WhatsApp, você
-      vai precisar <strong>reenviar esta foto</strong> diretamente na
-      conversa — o link do WhatsApp não anexa imagens automaticamente.
-    </p>
+    <fieldset class="tamanhos" id="sel-tamanhos">
+      <legend>Tamanho *</legend>
+      <label class="opcao-tamanho">
+        <input type="radio" name="tamanho" value="12mm" checked> 12 mm
+      </label>
+      <label class="opcao-tamanho">
+        <input type="radio" name="tamanho" value="16mm"> 16 mm
+      </label>
+    </fieldset>
 
-    <div class="painel-selecao" id="painel-selecao" data-tamanho="{{ tamanho_selecionado }}">
-      <p class="resumo-linha">Tamanho: <strong>{{ tamanho_selecionado.replace('mm', ' mm') }}</strong></p>
+    <fieldset class="cores" id="sel-cores" hidden>
+      <legend>Cor *</legend>
+      <label class="opcao-cor">
+        <input type="radio" name="cor" value="prata"> Prata
+      </label>
+      <label class="opcao-cor">
+        <input type="radio" name="cor" value="ouro_velho"> Ouro velho
+      </label>
+    </fieldset>
 
-      <div class="quantidade">
-        <label for="sel-quantidade">Quantidade</label>
-        <div class="stepper">
-          <button type="button" id="qtd-menos" aria-label="Diminuir quantidade">−</button>
-          <input type="number" id="sel-quantidade" value="{{ quantidade_selecionada or 10 }}" min="1" inputmode="numeric">
-          <button type="button" id="qtd-mais" aria-label="Aumentar quantidade">+</button>
-        </div>
+    <label class="dropzone" for="input-imagem">
+      <span class="icone">📷</span>
+      <span class="principal">Toque para escolher uma imagem</span>
+      <span class="secundario">JPG, PNG ou WEBP</span>
+    </label>
+    <input type="file" id="input-imagem" accept="image/*">
+    <div id="nome-arquivo"></div>
+
+    <div class="quantidade">
+      <label for="qtd-form">Quantidade</label>
+      <div class="stepper">
+        <button type="button" id="qtd-menos-form" aria-label="Diminuir quantidade">−</button>
+        <input type="number" id="qtd-form" value="10" min="1" inputmode="numeric">
+        <button type="button" id="qtd-mais-form" aria-label="Aumentar quantidade">+</button>
       </div>
-
-      <button type="button" class="botao-carrinho" id="btn-adicionar">
-        Adicionar ao carrinho
-      </button>
     </div>
+
+    <button type="button" id="botao-enviar" disabled>Selecione uma imagem</button>
+  </section>
+
+  <div class="opcao-sem-foto" id="opcao-sem-foto">
+    <p class="opcao-sem-foto-texto">Ainda não tem a foto em mãos?</p>
+    <button type="button" id="btn-sem-foto" class="botao-secundario">
+      Adicionar ao carrinho sem foto (envio depois pelo WhatsApp)
+    </button>
+  </div>
+
+  <!-- 2) editor de recorte -->
+  <section id="view-cropper" class="card-upload" hidden>
+    <canvas id="cropper-canvas" width="320" height="320"></canvas>
+    <p class="cropper-dica">Arraste para posicionar. Use o controle abaixo para dar zoom.</p>
+    <div class="zoom-linha">
+      <span>&#9673;</span>
+      <input type="range" id="cropper-zoom" min="0" max="1000" value="0">
+      <span style="font-size:1.5rem">&#9673;</span>
+    </div>
+    <button type="button" id="botao-cropper-confirmar">Gerar prévia</button>
+    <button type="button" id="botao-cropper-cancelar" class="botao-secundario">Cancelar</button>
+  </section>
+
+  <!-- 3) resultado -->
+  <section id="view-preview" class="preview-personalizada" hidden>
+    <img id="preview-imagem" alt="Simulação da medalha personalizada">
+
+    <p class="aviso-info" id="aviso-reenvio"></p>
+
+    <div class="duas-colunas-personalizada">
+      <a id="link-baixar-previa" class="botao-secundario" download>Baixar prévia</a>
+      <a id="link-baixar-recorte" class="botao-secundario" download>Baixar recorte (1:1)</a>
+    </div>
+
+    <button type="button" id="botao-reposicionar" class="botao-secundario">Reposicionar</button>
+
+    <div class="quantidade">
+      <label for="sel-quantidade">Quantidade</label>
+      <div class="stepper">
+        <button type="button" id="qtd-menos" aria-label="Diminuir quantidade">−</button>
+        <input type="number" id="sel-quantidade" value="10" min="1" inputmode="numeric">
+        <button type="button" id="qtd-mais" aria-label="Aumentar quantidade">+</button>
+      </div>
+    </div>
+
+    <button type="button" class="botao-carrinho" id="btn-adicionar">
+      Adicionar ao carrinho
+    </button>
 
     <a class="voltar" href="{{ url_for('personalizada') }}">&larr; Gerar outra</a>
-  {% else %}
-    <form class="card-upload" action="{{ url_for('personalizada_processar') }}" method="post" enctype="multipart/form-data" id="form-upload">
-      <label class="dropzone" for="input-imagem">
-        <span class="icone">📷</span>
-        <span class="principal">Toque para escolher uma imagem</span>
-        <span class="secundario">JPG, PNG ou WEBP</span>
-      </label>
-      <input type="file" id="input-imagem" name="imagem" accept="image/*">
-      <div id="nome-arquivo"></div>
-
-      <fieldset class="tamanhos" id="tamanhos-form">
-        <legend>Tamanho *</legend>
-        <label class="opcao-tamanho">
-          <input type="radio" name="tamanho" value="12mm" {% if tamanho_selecionado == '12mm' %}checked{% endif %}> 12 mm
-        </label>
-        <label class="opcao-tamanho">
-          <input type="radio" name="tamanho" value="16mm" {% if tamanho_selecionado == '16mm' %}checked{% endif %}> 16 mm
-        </label>
-      </fieldset>
-
-      <div class="quantidade">
-        <label for="qtd-form">Quantidade</label>
-        <div class="stepper">
-          <button type="button" id="qtd-menos-form" aria-label="Diminuir quantidade">−</button>
-          <input type="number" id="qtd-form" name="quantidade" value="{{ quantidade_selecionada or 10 }}" min="1" inputmode="numeric">
-          <button type="button" id="qtd-mais-form" aria-label="Aumentar quantidade">+</button>
-        </div>
-      </div>
-
-      <button type="submit" id="botao-enviar" disabled>Selecione uma imagem e o tamanho</button>
-    </form>
-
-    <div class="opcao-sem-foto">
-      <p class="opcao-sem-foto-texto">Ainda não tem a foto em mãos?</p>
-      <button type="button" id="btn-sem-foto" class="botao-secundario" disabled>
-        Adicionar ao carrinho sem foto (envio depois pelo WhatsApp)
-      </button>
-    </div>
-  {% endif %}
+  </section>
 {% endblock %}
 
 {% block script %}
+  <script>
+    window.PRECO_VAREJO_PADRAO = {{ preco_varejo | tojson }};
+    window.PRECO_VAREJO_CHAVEIRO = {{ preco_varejo_chaveiro | tojson }};
+  </script>
   <script src="{{ url_for('static', filename='js/personalizada.js') }}"></script>
 {% endblock %}

@@ -31,11 +31,19 @@ function obterOuCriarPedidoId() {
   return id;
 }
 
+// Carrinhos salvos antes da adicao de chaveiros/entremeios so tinham
+// `tamanho` (12mm/16mm), sempre medalha -- migra na leitura pra nao
+// quebrar carrinhos de clientes ja em andamento (localStorage, sem backend).
+function _migrarItemLegado(item) {
+  if (item.chave_preco) return item;
+  return { ...item, formato: item.formato || 'medalha', chave_preco: item.tamanho };
+}
+
 function carrinhoObterItens() {
   try {
     const bruto = localStorage.getItem(CARRINHO_CHAVE);
     const itens = bruto ? JSON.parse(bruto) : [];
-    return Array.isArray(itens) ? itens : [];
+    return Array.isArray(itens) ? itens.map(_migrarItemLegado) : [];
   } catch (e) {
     return [];
   }
@@ -102,6 +110,45 @@ function _percentualBarra(atual, inicioFaixa, alvo) {
   return Math.min(100, Math.max(0, ((atual - inicioFaixa) / total) * 100));
 }
 
+// Espelha services/pricing.py: GRUPO_DE_CHAVE / GRUPOS -- cada chave_preco
+// pertence a um grupo de atacado, e chaveiro NAO se mistura com
+// medalha/entremeio pra faixa de desconto.
+const GRUPO_DE_CHAVE = {
+  '12mm': 'padrao',
+  '16mm': 'padrao',
+  entremeio: 'padrao',
+  chaveiro: 'chaveiro',
+};
+
+const GRUPO_LABEL = {
+  padrao: 'medalhas/entremeios',
+  chaveiro: 'chaveiros',
+};
+
+function _blocoBarraGrupo(nomeGrupo, grupo, itensDoGrupo) {
+  const label = GRUPO_LABEL[nomeGrupo] || nomeGrupo;
+  let texto;
+  let percentual;
+  if (grupo.proxima_faixa) {
+    texto =
+      `${grupo.quantidade_total} / ${grupo.proxima_faixa.quantidade} ${label} — ` +
+      `faltam ${grupo.proxima_faixa.faltam} para o próximo desconto (${formatarPreco(grupo.proxima_faixa.preco)}/un)`;
+    percentual = _percentualBarra(grupo.quantidade_total, grupo.faixa_atual_inicio, grupo.proxima_faixa.quantidade);
+  } else {
+    const precoAtual = itensDoGrupo[0] ? itensDoGrupo[0].preco_unitario : 0;
+    texto = `🎉 Você já está na melhor faixa de ${label} (${formatarPreco(precoAtual)}/un)`;
+    percentual = 100;
+  }
+  return (
+    '<div class="barra-persistente-grupo">' +
+    `<p class="barra-persistente-texto">${texto}</p>` +
+    '<div class="barra-progresso"><div class="barra-progresso-preenchimento" style="width:' +
+    percentual +
+    '%"></div></div>' +
+    '</div>'
+  );
+}
+
 async function carrinhoAtualizarBarraPersistente() {
   const container = document.getElementById('barra-persistente');
   if (!container) return;
@@ -124,27 +171,20 @@ async function carrinhoAtualizarBarraPersistente() {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        itens: itens.map((item) => ({ tamanho: item.tamanho, quantidade: item.quantidade })),
+        itens: itens.map((item) => ({ chave_preco: item.chave_preco, quantidade: item.quantidade })),
       }),
     });
     const dados = await resposta.json();
 
-    const textoEl = document.getElementById('barra-persistente-texto');
-    const preenchimentoEl = document.getElementById('barra-persistente-preenchimento');
-
-    if (dados.proxima_faixa) {
-      textoEl.textContent =
-        `${dados.quantidade_total} / ${dados.proxima_faixa.quantidade} medalhas — ` +
-        `faltam ${dados.proxima_faixa.faltam} para o próximo desconto (${formatarPreco(dados.proxima_faixa.preco)}/un)`;
-      preenchimentoEl.style.width =
-        _percentualBarra(dados.quantidade_total, dados.faixa_atual_inicio, dados.proxima_faixa.quantidade) + '%';
-    } else {
-      const precoAtual = dados.itens[0] ? dados.itens[0].preco_unitario : 0;
-      textoEl.textContent = `🎉 Você já está na melhor faixa de preço (${formatarPreco(precoAtual)}/un)`;
-      preenchimentoEl.style.width = '100%';
+    let html = '';
+    for (const nomeGrupo of Object.keys(dados.grupos)) {
+      const grupo = dados.grupos[nomeGrupo];
+      if (grupo.quantidade_total === 0) continue;
+      const itensDoGrupo = dados.itens.filter((i) => GRUPO_DE_CHAVE[i.chave_preco] === nomeGrupo);
+      html += _blocoBarraGrupo(nomeGrupo, grupo, itensDoGrupo);
     }
-
-    container.hidden = false;
+    container.innerHTML = html;
+    container.hidden = html === '';
   } catch (e) {
     container.hidden = true;
   }

@@ -3,10 +3,8 @@
   const vazioEl = document.getElementById('carrinho-vazio');
   const resumoEl = document.getElementById('resumo-carrinho');
   const resumoQtdEl = document.getElementById('resumo-quantidade');
-  const resumoFaixaEl = document.getElementById('resumo-faixa');
   const resumoSubtotalEl = document.getElementById('resumo-subtotal');
-  const progressoFaixaTexto = document.getElementById('progresso-faixa-texto');
-  const progressoFaixaPreenchimento = document.getElementById('progresso-faixa-preenchimento');
+  const progressoGruposEl = document.getElementById('progresso-grupos');
   const progressoFreteTexto = document.getElementById('progresso-frete-texto');
   const progressoFretePreenchimento = document.getElementById('progresso-frete-preenchimento');
   const avisoMinimoEl = document.getElementById('aviso-minimo');
@@ -17,27 +15,47 @@
   if (!listaEl) return;
 
   const TAMANHO_LABEL = { '12mm': '1,2 cm', '16mm': '1,6 cm' };
+  const COR_LABEL = { prata: 'Prata', ouro_velho: 'Ouro velho' };
+  const FORMATO_LABEL = { medalha: 'Medalha', entremeio: 'Entremeio', chaveiro: 'Chaveiro' };
+  const GRUPO_LABEL = { padrao: 'medalhas/entremeios', chaveiro: 'chaveiros' };
 
-  let faixaAnterior = null;
+  let faixasAnteriores = {};
   let freteAnteriorAtingido = null;
   let primeiraRenderizacao = true;
   let ultimosItens = [];
   let ultimoCalculo = null;
 
+  function detalheFormato(item) {
+    const formato = item.formato || 'medalha';
+    if (formato === 'entremeio') return `${FORMATO_LABEL.entremeio} · ${COR_LABEL[item.cor] || item.cor}`;
+    if (formato === 'chaveiro') return FORMATO_LABEL.chaveiro;
+    return `${FORMATO_LABEL.medalha} · ${TAMANHO_LABEL[item.tamanho] || item.tamanho}`;
+  }
+
   function montarListaPedido(itens) {
     return itens
       .map((item, i) => {
         const numero = i + 1;
-        const tamanhoLabel = TAMANHO_LABEL[item.tamanho] || item.tamanho;
+        const detalhe = detalheFormato(item);
         if (item.tipo === 'personalizada') {
           const notaFoto = item.semImagem
             ? 'Foto: ainda não enviada -- enviar nesta conversa'
-            : 'Foto: reenviar esta medalha nesta conversa (o link do WhatsApp não anexa imagem)';
-          return `${numero}. Medalha Personalizada\nTamanho: ${tamanhoLabel}\nQuantidade: ${item.quantidade}\n${notaFoto}`;
+            : `Foto: ${item.avisoReenvio || 'reenviar esta medalha nesta conversa (o link do WhatsApp não anexa imagem)'}`;
+          return `${numero}. Personalizada\n${detalhe}\nQuantidade: ${item.quantidade}\n${notaFoto}`;
         }
-        return `${numero}. ${item.produtoNome}\nModelo: ${item.modeloId}\nTamanho: ${tamanhoLabel}\nQuantidade: ${item.quantidade}`;
+        return `${numero}. ${item.produtoNome}\nModelo: ${item.modeloId}\n${detalhe}\nQuantidade: ${item.quantidade}`;
       })
       .join('\n\n');
+  }
+
+  function montarLinhasFaixas(calculo) {
+    const linhas = [];
+    for (const nomeGrupo of Object.keys(calculo.grupos)) {
+      const grupo = calculo.grupos[nomeGrupo];
+      if (grupo.quantidade_total === 0) continue;
+      linhas.push(`Faixa de atacado (${GRUPO_LABEL[nomeGrupo] || nomeGrupo}):`, grupo.faixa_label, '');
+    }
+    return linhas;
   }
 
   function montarCorpoPedido(itens, calculo) {
@@ -51,11 +69,9 @@
       '--------------------',
       '',
       'Quantidade total:',
-      `${calculo.quantidade_total} medalhas`,
+      `${calculo.quantidade_total} peças`,
       '',
-      'Faixa de atacado:',
-      calculo.faixa_label,
-      '',
+      ...montarLinhasFaixas(calculo),
       'Valor estimado:',
       formatarPreco(calculo.subtotal_total),
     ].join('\n');
@@ -81,13 +97,13 @@
     const linha = document.createElement('article');
     linha.className = 'item-carrinho';
     const subtitulo = item.tipo === 'personalizada'
-      ? item.tamanho.replace('mm', ' mm')
-      : `${item.modeloNome} &middot; ${item.tamanho.replace('mm', ' mm')}`;
+      ? detalheFormato(item)
+      : `${item.modeloNome} &middot; ${detalheFormato(item)}`;
     let avisoFoto = '';
     if (item.tipo === 'personalizada') {
       avisoFoto = item.semImagem
         ? '<p class="item-aviso-foto">📷 Foto pendente -- enviar pelo WhatsApp</p>'
-        : '<p class="item-aviso-foto">📲 Reenviar esta foto pelo WhatsApp ao finalizar</p>';
+        : `<p class="item-aviso-foto">📲 ${item.avisoReenvio || 'Reenviar esta foto pelo WhatsApp ao finalizar'}</p>`;
     }
     linha.innerHTML = `
       <img src="${item.imagem}" alt="${item.produtoNome}">
@@ -139,7 +155,7 @@
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        itens: itens.map((item) => ({ tamanho: item.tamanho, quantidade: item.quantidade })),
+        itens: itens.map((item) => ({ chave_preco: item.chave_preco, quantidade: item.quantidade })),
       }),
     });
     const dados = await resposta.json();
@@ -150,19 +166,36 @@
     });
 
     resumoQtdEl.textContent = String(dados.quantidade_total);
-    resumoFaixaEl.textContent = dados.faixa_label;
     resumoSubtotalEl.textContent = formatarPreco(dados.subtotal_total);
 
-    // barra de progresso: proxima faixa de desconto
-    if (dados.proxima_faixa) {
-      progressoFaixaTexto.textContent =
-        `${dados.quantidade_total} / ${dados.proxima_faixa.quantidade} medalhas — ` +
-        `faltam ${dados.proxima_faixa.faltam} para o próximo desconto`;
-      progressoFaixaPreenchimento.style.width =
-        _percentualBarra(dados.quantidade_total, dados.faixa_atual_inicio, dados.proxima_faixa.quantidade) + '%';
-    } else {
-      progressoFaixaTexto.textContent = '🎉 Você já está na melhor faixa de preço!';
-      progressoFaixaPreenchimento.style.width = '100%';
+    // barra de progresso: proxima faixa de desconto, uma por grupo ativo
+    // (medalhas/entremeios e chaveiros nao se misturam -- services/pricing.py)
+    progressoGruposEl.innerHTML = '';
+    for (const nomeGrupo of Object.keys(dados.grupos)) {
+      const grupo = dados.grupos[nomeGrupo];
+      if (grupo.quantidade_total === 0) continue;
+      const bloco = document.createElement('div');
+      bloco.className = 'progresso-bloco';
+      const texto = document.createElement('p');
+      texto.className = 'progresso-texto';
+      const preenchimento = document.createElement('div');
+      preenchimento.className = 'barra-progresso-preenchimento';
+      if (grupo.proxima_faixa) {
+        texto.textContent =
+          `${grupo.quantidade_total} / ${grupo.proxima_faixa.quantidade} ${GRUPO_LABEL[nomeGrupo] || nomeGrupo} — ` +
+          `faltam ${grupo.proxima_faixa.faltam} para o próximo desconto`;
+        preenchimento.style.width =
+          _percentualBarra(grupo.quantidade_total, grupo.faixa_atual_inicio, grupo.proxima_faixa.quantidade) + '%';
+      } else {
+        texto.textContent = `🎉 Você já está na melhor faixa de preço de ${GRUPO_LABEL[nomeGrupo] || nomeGrupo}!`;
+        preenchimento.style.width = '100%';
+      }
+      const barra = document.createElement('div');
+      barra.className = 'barra-progresso';
+      barra.appendChild(preenchimento);
+      bloco.appendChild(texto);
+      bloco.appendChild(barra);
+      progressoGruposEl.appendChild(bloco);
     }
 
     // barra de progresso: frete gratis
@@ -179,14 +212,20 @@
     // toast de comemoracao -- so depois da primeira renderizacao, pra nao
     // disparar assim que a pagina abre com um carrinho ja em faixa alta.
     if (!primeiraRenderizacao) {
-      if (dados.faixa_label !== faixaAnterior) {
-        const preco = dados.itens[0] ? dados.itens[0].preco_unitario : null;
-        mostrarToast(`🎉 Novo desconto desbloqueado! Agora ${formatarPreco(preco)}/un`);
+      const grupoMudou = Object.keys(dados.grupos).find(
+        (g) => dados.grupos[g].quantidade_total > 0 && dados.grupos[g].faixa_label !== faixasAnteriores[g]
+      );
+      if (grupoMudou) {
+        const itemDoGrupo = dados.itens.find((i) => GRUPO_DE_CHAVE[i.chave_preco] === grupoMudou);
+        const preco = itemDoGrupo ? itemDoGrupo.preco_unitario : null;
+        mostrarToast(`🎉 Novo desconto desbloqueado (${GRUPO_LABEL[grupoMudou] || grupoMudou})! Agora ${formatarPreco(preco)}/un`);
       } else if (dados.frete_gratis_atingido && !freteAnteriorAtingido) {
         mostrarToast('🎉 Frete grátis desbloqueado!');
       }
     }
-    faixaAnterior = dados.faixa_label;
+    faixasAnteriores = Object.fromEntries(
+      Object.keys(dados.grupos).map((g) => [g, dados.grupos[g].faixa_label])
+    );
     freteAnteriorAtingido = dados.frete_gratis_atingido;
     primeiraRenderizacao = false;
 
