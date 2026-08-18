@@ -2,6 +2,7 @@
   const grid = document.getElementById('modelos-grid');
   const painel = document.getElementById('painel-selecao');
   const nomeSpan = document.getElementById('sel-modelo-nome');
+  const previewImg = document.getElementById('sel-preview-imagem');
   const formatosFieldset = document.getElementById('sel-formatos');
   const tamanhosFieldset = document.getElementById('sel-tamanhos');
   const coresFieldset = document.getElementById('sel-cores');
@@ -35,11 +36,32 @@
       'do seu carrinho, assim que você adicionar os itens.';
   }
 
+  // qual imagem mostrar pro formato/cor escolhidos -- entremeio sem cor
+  // ainda marcada usa prata como previa provisoria (a cor so afeta a
+  // previa, o preco/chave ja e "entremeio" nos dois casos).
+  function imagemParaFormato() {
+    if (!modeloSelecionado) return null;
+    const formato = formatoAtual();
+    if (formato === 'medalha') return modeloSelecionado.imagens.medalha;
+    if (formato === 'chaveiro') return modeloSelecionado.imagens.chaveiro;
+    const cor = coresFieldset.querySelector('input[name="cor"]:checked');
+    return cor && cor.value === 'ouro_velho'
+      ? modeloSelecionado.imagens.entremeio_ouro_velho
+      : modeloSelecionado.imagens.entremeio_prata;
+  }
+
+  function atualizarPreview() {
+    if (!previewImg || !modeloSelecionado) return;
+    previewImg.src = imagemParaFormato();
+    previewImg.alt = `${produtoNome} — ${modeloSelecionado.nome}`;
+  }
+
   function atualizarSubSelecao() {
     const formato = formatoAtual();
     tamanhosFieldset.hidden = formato !== 'medalha';
     coresFieldset.hidden = formato !== 'entremeio';
     atualizarAvisoPreco();
+    atualizarPreview();
     atualizarBotao();
   }
 
@@ -68,7 +90,7 @@
     modeloSelecionado = {
       id: botao.dataset.modeloId,
       nome: botao.dataset.modeloNome,
-      imagem: botao.querySelector('img').src,
+      imagens: JSON.parse(botao.dataset.imagens || '{}'),
     };
     nomeSpan.textContent = modeloSelecionado.nome;
 
@@ -113,7 +135,10 @@
   });
 
   coresFieldset.addEventListener('change', (evento) => {
-    if (evento.target.name === 'cor') atualizarBotao();
+    if (evento.target.name === 'cor') {
+      atualizarPreview();
+      atualizarBotao();
+    }
   });
 
   function ajustarQuantidade(delta) {
@@ -157,7 +182,7 @@
         produtoNome,
         modeloId: modeloSelecionado.id,
         modeloNome: modeloSelecionado.nome,
-        imagem: modeloSelecionado.imagem,
+        imagem: imagemParaFormato(),
         formato,
         chave_preco: chavePreco,
         tamanho,

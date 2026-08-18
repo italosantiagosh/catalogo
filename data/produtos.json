@@ -10,7 +10,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/anunciacao_modelo_1_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/anunciacao_modelo_1_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/anunciacao_modelo_1_chaveiro.jpg"
       }
     ]
   },
@@ -25,7 +28,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/banquete_eterno_modelo_1_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/banquete_eterno_modelo_1_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/banquete_eterno_modelo_1_chaveiro.jpg"
       },
       {
         "id": 2,
@@ -34,7 +40,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/banquete_eterno_modelo_2_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/banquete_eterno_modelo_2_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/banquete_eterno_modelo_2_chaveiro.jpg"
       }
     ]
   },
@@ -49,7 +58,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/beata_benigna_modelo_1_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/beata_benigna_modelo_1_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/beata_benigna_modelo_1_chaveiro.jpg"
       }
     ]
   },
@@ -64,7 +76,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/beata_elisabeth_trindade_modelo_1_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/beata_elisabeth_trindade_modelo_1_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/beata_elisabeth_trindade_modelo_1_chaveiro.jpg"
       },
       {
         "id": 2,
@@ -73,7 +88,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/beata_elisabeth_trindade_modelo_2_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/beata_elisabeth_trindade_modelo_2_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/beata_elisabeth_trindade_modelo_2_chaveiro.jpg"
       }
     ]
   },
@@ -88,7 +106,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/beata_sandra_sabattini_modelo_1_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/beata_sandra_sabattini_modelo_1_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/beata_sandra_sabattini_modelo_1_chaveiro.jpg"
       },
       {
         "id": 2,
@@ -97,7 +118,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/beata_sandra_sabatine_modelo_2_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/beata_sandra_sabatine_modelo_2_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/beata_sandra_sabatine_modelo_2_chaveiro.jpg"
       }
     ]
   },
@@ -112,7 +136,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/bodas_de_cana_modelo_1_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/bodas_de_cana_modelo_1_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/bodas_de_cana_modelo_1_chaveiro.jpg"
       }
     ]
   },
@@ -127,7 +154,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/bom_pastor_modelo_1_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/bom_pastor_modelo_1_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/bom_pastor_modelo_1_chaveiro.jpg"
       },
       {
         "id": 2,
@@ -136,7 +166,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/bom_pastor_modelo_2_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/bom_pastor_modelo_2_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/bom_pastor_modelo_2_chaveiro.jpg"
       },
       {
         "id": 3,
@@ -145,7 +178,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/bom_pastor_modelo_3_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/bom_pastor_modelo_3_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/bom_pastor_modelo_3_chaveiro.jpg"
       }
     ]
   },
@@ -160,7 +196,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/carlo_acutis_modelo_1_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/carlo_acutis_modelo_1_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/carlo_acutis_modelo_1_chaveiro.jpg"
       },
       {
         "id": 2,
@@ -169,7 +208,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/carlo_acutis_modelo_2_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/carlo_acutis_modelo_2_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/carlo_acutis_modelo_2_chaveiro.jpg"
       },
       {
         "id": 3,
@@ -178,7 +220,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/carlo_acutis_modelo_3_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/carlo_acutis_modelo_3_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/carlo_acutis_modelo_3_chaveiro.jpg"
       }
     ]
   },
@@ -193,7 +238,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/castissimo_coracao_de_sao_jose_modelo_1_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/castissimo_coracao_de_sao_jose_modelo_1_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/castissimo_coracao_de_sao_jose_modelo_1_chaveiro.jpg"
       }
     ]
   },
@@ -208,7 +256,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/chiara_corbella_modelo_1_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/chiara_corbella_modelo_1_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/chiara_corbella_modelo_1_chaveiro.jpg"
       },
       {
         "id": 2,
@@ -217,7 +268,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/chiara_corbella_modelo_2_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/chiara_corbella_modelo_2_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/chiara_corbella_modelo_2_chaveiro.jpg"
       }
     ]
   },
@@ -232,7 +286,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/chiara_luce_modelo_1_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/chiara_luce_modelo_1_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/chiara_luce_modelo_1_chaveiro.jpg"
       },
       {
         "id": 2,
@@ -241,7 +298,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/chiara_luce_modelo_2_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/chiara_luce_modelo_2_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/chiara_luce_modelo_2_chaveiro.jpg"
       }
     ]
   },
@@ -256,7 +316,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/cristo_rei_modelo_1_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/cristo_rei_modelo_1_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/cristo_rei_modelo_1_chaveiro.jpg"
       }
     ]
   },
@@ -271,7 +334,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/cantico_dos_canticos_modelo_1_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/cantico_dos_canticos_modelo_1_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/cantico_dos_canticos_modelo_1_chaveiro.jpg"
       }
     ]
   },
@@ -286,7 +352,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/dom_henrique_modelo_1_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/dom_henrique_modelo_1_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/dom_henrique_modelo_1_chaveiro.jpg"
       }
     ]
   },
@@ -301,7 +370,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/edith_stein_modelo_1_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/edith_stein_modelo_1_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/edith_stein_modelo_1_chaveiro.jpg"
       },
       {
         "id": 2,
@@ -310,7 +382,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/edith_stein_modelo_2_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/edith_stein_modelo_2_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/edith_stein_modelo_2_chaveiro.jpg"
       }
     ]
   },
@@ -325,7 +400,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/esposa_do_espirito_modelo_1_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/esposa_do_espirito_modelo_1_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/esposa_do_espirito_modelo_1_chaveiro.jpg"
       },
       {
         "id": 2,
@@ -334,7 +412,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/esposa_do_espirito_modelo_2_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/esposa_do_espirito_modelo_2_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/esposa_do_espirito_modelo_2_chaveiro.jpg"
       }
     ]
   },
@@ -349,7 +430,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/esposo_eucaristico_modelo_1_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/esposo_eucaristico_modelo_1_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/esposo_eucaristico_modelo_1_chaveiro.jpg"
       }
     ]
   },
@@ -364,7 +448,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/espirito_santo_modelo_1_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/espirito_santo_modelo_1_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/espirito_santo_modelo_1_chaveiro.jpg"
       }
     ]
   },
@@ -379,7 +466,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/familia_martin_modelo_1_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/familia_martin_modelo_1_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/familia_martin_modelo_1_chaveiro.jpg"
       }
     ]
   },
@@ -394,7 +484,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/filho_prodigo_acamps_modelo_1_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/filho_prodigo_acamps_modelo_1_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/filho_prodigo_acamps_modelo_1_chaveiro.jpg"
       },
       {
         "id": 2,
@@ -403,7 +496,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/filho_prodigo_acamps_modelo_2_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/filho_prodigo_acamps_modelo_2_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/filho_prodigo_acamps_modelo_2_chaveiro.jpg"
       }
     ]
   },
@@ -418,7 +514,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/francisco_de_fatima_modelo_1_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/francisco_de_fatima_modelo_1_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/francisco_de_fatima_modelo_1_chaveiro.jpg"
       }
     ]
   },
@@ -433,7 +532,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/frei_alberto_modelo_1_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/frei_alberto_modelo_1_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/frei_alberto_modelo_1_chaveiro.jpg"
       }
     ]
   },
@@ -448,7 +550,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/frei_damiao_modelo_1_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/frei_damiao_modelo_1_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/frei_damiao_modelo_1_chaveiro.jpg"
       }
     ]
   },
@@ -463,7 +568,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/frei_galvao_modelo_1_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/frei_galvao_modelo_1_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/frei_galvao_modelo_1_chaveiro.jpg"
       }
     ]
   },
@@ -478,7 +586,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/guido_modelo_1_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/guido_modelo_1_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/guido_modelo_1_chaveiro.jpg"
       },
       {
         "id": 2,
@@ -487,7 +598,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/guido_modelo_2_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/guido_modelo_2_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/guido_modelo_2_chaveiro.jpg"
       }
     ]
   },
@@ -502,7 +616,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/imaculado_coracao_de_maria_modelo_1_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/imaculado_coracao_de_maria_modelo_1_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/imaculado_coracao_de_maria_modelo_1_chaveiro.jpg"
       }
     ]
   },
@@ -517,7 +634,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/irma_clare_modelo_1_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/irma_clare_modelo_1_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/irma_clare_modelo_1_chaveiro.jpg"
       },
       {
         "id": 2,
@@ -526,7 +646,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/irma_clare_modelo_2_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/irma_clare_modelo_2_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/irma_clare_modelo_2_chaveiro.jpg"
       }
     ]
   },
@@ -541,7 +664,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/jacques_fach_modelo_1_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/jacques_fach_modelo_1_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/jacques_fach_modelo_1_chaveiro.jpg"
       }
     ]
   },
@@ -556,7 +682,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/jardim_fechado_modelo_1_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/jardim_fechado_modelo_1_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/jardim_fechado_modelo_1_chaveiro.jpg"
       },
       {
         "id": 2,
@@ -565,7 +694,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/jardim_fechado_modelo_2_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/jardim_fechado_modelo_2_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/jardim_fechado_modelo_2_chaveiro.jpg"
       }
     ]
   },
@@ -580,7 +712,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/jesus_misericordioso_modelo_1_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/jesus_misericordioso_modelo_1_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/jesus_misericordioso_modelo_1_chaveiro.jpg"
       }
     ]
   },
@@ -595,7 +730,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/jesus_pantokrator_modelo_1_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/jesus_pantokrator_modelo_1_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/jesus_pantokrator_modelo_1_chaveiro.jpg"
       }
     ]
   },
@@ -610,7 +748,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/jesus_semeador_modelo_1_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/jesus_semeador_modelo_1_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/jesus_semeador_modelo_1_chaveiro.jpg"
       }
     ]
   },
@@ -625,7 +766,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/salete_modelo_1_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/salete_modelo_1_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/salete_modelo_1_chaveiro.jpg"
       }
     ]
   },
@@ -640,7 +784,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/nossa_senhora_aparecida_modelo_1_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/nossa_senhora_aparecida_modelo_1_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/nossa_senhora_aparecida_modelo_1_chaveiro.jpg"
       }
     ]
   },
@@ -655,7 +802,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/nossa_senhora_aparecida_infantil_modelo_1_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/nossa_senhora_aparecida_infantil_modelo_1_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/nossa_senhora_aparecida_infantil_modelo_1_chaveiro.jpg"
       }
     ]
   },
@@ -670,7 +820,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/nossa_senhora_desatadora_dos_nos_modelo_1_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/nossa_senhora_desatadora_dos_nos_modelo_1_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/nossa_senhora_desatadora_dos_nos_modelo_1_chaveiro.jpg"
       }
     ]
   },
@@ -685,7 +838,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/nossa_senhora_esperanca_dos_homens_modelo_1_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/nossa_senhora_esperanca_dos_homens_modelo_1_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/nossa_senhora_esperanca_dos_homens_modelo_1_chaveiro.jpg"
       }
     ]
   },
@@ -700,7 +856,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/nossa_senhora_imaculada_conceicao_modelo_1_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/nossa_senhora_imaculada_conceicao_modelo_1_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/nossa_senhora_imaculada_conceicao_modelo_1_chaveiro.jpg"
       },
       {
         "id": 2,
@@ -709,7 +868,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/nossa_senhora_imaculada_conceicao_modelo_2_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/nossa_senhora_imaculada_conceicao_modelo_2_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/nossa_senhora_imaculada_conceicao_modelo_2_chaveiro.jpg"
       },
       {
         "id": 3,
@@ -718,7 +880,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/nossa_senhora_imaculada_conceicao_modelo_3_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/nossa_senhora_imaculada_conceicao_modelo_3_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/nossa_senhora_imaculada_conceicao_modelo_3_chaveiro.jpg"
       }
     ]
   },
@@ -733,7 +898,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/nossa_senhora_marajoara_modelo_1_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/nossa_senhora_marajoara_modelo_1_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/nossa_senhora_marajoara_modelo_1_chaveiro.jpg"
       }
     ]
   },
@@ -748,7 +916,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/nossa_senhora_mae_dulcissima_modelo_1_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/nossa_senhora_mae_dulcissima_modelo_1_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/nossa_senhora_mae_dulcissima_modelo_1_chaveiro.jpg"
       }
     ]
   },
@@ -763,7 +934,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/nossa_senhora_mae_da_ternura_modelo_1_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/nossa_senhora_mae_da_ternura_modelo_1_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/nossa_senhora_mae_da_ternura_modelo_1_chaveiro.jpg"
       },
       {
         "id": 2,
@@ -772,7 +946,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/nossa_senhora_mae_da_ternura_modelo_2_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/nossa_senhora_mae_da_ternura_modelo_2_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/nossa_senhora_mae_da_ternura_modelo_2_chaveiro.jpg"
       }
     ]
   },
@@ -787,7 +964,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/nossa_senhora_rainha_da_paz_modelo_1_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/nossa_senhora_rainha_da_paz_modelo_1_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/nossa_senhora_rainha_da_paz_modelo_1_chaveiro.jpg"
       },
       {
         "id": 2,
@@ -796,7 +976,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/nossa_senhora_rainha_da_paz_modelo_2_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/nossa_senhora_rainha_da_paz_modelo_2_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/nossa_senhora_rainha_da_paz_modelo_2_chaveiro.jpg"
       }
     ]
   },
@@ -811,7 +994,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/nossa_senhora_toda_pequena_modelo_1_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/nossa_senhora_toda_pequena_modelo_1_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/nossa_senhora_toda_pequena_modelo_1_chaveiro.jpg"
       },
       {
         "id": 2,
@@ -820,7 +1006,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/nossa_senhora_toda_pequena_modelo_2_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/nossa_senhora_toda_pequena_modelo_2_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/nossa_senhora_toda_pequena_modelo_2_chaveiro.jpg"
       },
       {
         "id": 3,
@@ -829,7 +1018,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/nossa_senhora_toda_pequena_modelo_3_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/nossa_senhora_toda_pequena_modelo_3_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/nossa_senhora_toda_pequena_modelo_3_chaveiro.jpg"
       },
       {
         "id": 4,
@@ -838,7 +1030,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/nossa_senhora_toda_pequena_modelo_4_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/nossa_senhora_toda_pequena_modelo_4_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/nossa_senhora_toda_pequena_modelo_4_chaveiro.jpg"
       }
     ]
   },
@@ -853,7 +1048,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/nossa_senhora_da_guia_modelo_1_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/nossa_senhora_da_guia_modelo_1_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/nossa_senhora_da_guia_modelo_1_chaveiro.jpg"
       }
     ]
   },
@@ -868,7 +1066,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/nossa_senhora_da_rosa_mistica_modelo_1_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/nossa_senhora_da_rosa_mistica_modelo_1_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/nossa_senhora_da_rosa_mistica_modelo_1_chaveiro.jpg"
       }
     ]
   },
@@ -883,7 +1084,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/nossa_senhora_das_dores_modelo_1_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/nossa_senhora_das_dores_modelo_1_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/nossa_senhora_das_dores_modelo_1_chaveiro.jpg"
       },
       {
         "id": 2,
@@ -892,7 +1096,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/nossa_senhora_das_dores_modelo_2_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/nossa_senhora_das_dores_modelo_2_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/nossa_senhora_das_dores_modelo_2_chaveiro.jpg"
       },
       {
         "id": 3,
@@ -901,7 +1108,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/nossa_senhora_das_dores_modelo_3_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/nossa_senhora_das_dores_modelo_3_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/nossa_senhora_das_dores_modelo_3_chaveiro.jpg"
       }
     ]
   },
@@ -916,7 +1126,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/nossa_senhora_das_gracas_modelo_1_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/nossa_senhora_das_gracas_modelo_1_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/nossa_senhora_das_gracas_modelo_1_chaveiro.jpg"
       },
       {
         "id": 2,
@@ -925,7 +1138,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/nossa_senhora_das_gracas_modelo_2_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/nossa_senhora_das_gracas_modelo_2_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/nossa_senhora_das_gracas_modelo_2_chaveiro.jpg"
       }
     ]
   },
@@ -940,7 +1156,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/nossa_senhora_de_candelaria_modelo_1_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/nossa_senhora_de_candelaria_modelo_1_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/nossa_senhora_de_candelaria_modelo_1_chaveiro.jpg"
       }
     ]
   },
@@ -955,7 +1174,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/nossa_senhora_de_fatima_modelo_1_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/nossa_senhora_de_fatima_modelo_1_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/nossa_senhora_de_fatima_modelo_1_chaveiro.jpg"
       },
       {
         "id": 2,
@@ -964,7 +1186,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/nossa_senhora_de_fatima_modelo_2_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/nossa_senhora_de_fatima_modelo_2_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/nossa_senhora_de_fatima_modelo_2_chaveiro.jpg"
       },
       {
         "id": 3,
@@ -973,7 +1198,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/nossa_senhora_de_fatima_modelo_3_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/nossa_senhora_de_fatima_modelo_3_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/nossa_senhora_de_fatima_modelo_3_chaveiro.jpg"
       },
       {
         "id": 4,
@@ -982,7 +1210,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/nossa_senhora_de_fatima_modelo_4_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/nossa_senhora_de_fatima_modelo_4_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/nossa_senhora_de_fatima_modelo_4_chaveiro.jpg"
       }
     ]
   },
@@ -997,7 +1228,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/nossa_senhora_de_guadalupe_modelo_1_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/nossa_senhora_de_guadalupe_modelo_1_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/nossa_senhora_de_guadalupe_modelo_1_chaveiro.jpg"
       },
       {
         "id": 2,
@@ -1006,7 +1240,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/nossa_senhora_de_guadalupe_modelo_2_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/nossa_senhora_de_guadalupe_modelo_2_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/nossa_senhora_de_guadalupe_modelo_2_chaveiro.jpg"
       },
       {
         "id": 3,
@@ -1015,7 +1252,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/nossa_senhora_de_guadalupe_modelo_3_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/nossa_senhora_de_guadalupe_modelo_3_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/nossa_senhora_de_guadalupe_modelo_3_chaveiro.jpg"
       },
       {
         "id": 4,
@@ -1024,7 +1264,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/nossa_senhora_de_guadalupe_modelo_4_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/nossa_senhora_de_guadalupe_modelo_4_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/nossa_senhora_de_guadalupe_modelo_4_chaveiro.jpg"
       }
     ]
   },
@@ -1039,7 +1282,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/nossa_senhora_de_lourdes_modelo_1_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/nossa_senhora_de_lourdes_modelo_1_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/nossa_senhora_de_lourdes_modelo_1_chaveiro.jpg"
       },
       {
         "id": 2,
@@ -1048,7 +1294,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/nossa_senhora_de_lourdes_modelo_2_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/nossa_senhora_de_lourdes_modelo_2_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/nossa_senhora_de_lourdes_modelo_2_chaveiro.jpg"
       }
     ]
   },
@@ -1063,7 +1312,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/nossa_senhora_de_nazare_modelo_1_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/nossa_senhora_de_nazare_modelo_1_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/nossa_senhora_de_nazare_modelo_1_chaveiro.jpg"
       }
     ]
   },
@@ -1078,7 +1330,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/nossa_senhora_de_pieta_modelo_1_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/nossa_senhora_de_pieta_modelo_1_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/nossa_senhora_de_pieta_modelo_1_chaveiro.jpg"
       }
     ]
   },
@@ -1093,7 +1348,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/nossa_senhora_do_advento_modelo_1_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/nossa_senhora_do_advento_modelo_1_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/nossa_senhora_do_advento_modelo_1_chaveiro.jpg"
       }
     ]
   },
@@ -1108,7 +1366,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/nossa_senhora_do_carmo_modelo_1_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/nossa_senhora_do_carmo_modelo_1_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/nossa_senhora_do_carmo_modelo_1_chaveiro.jpg"
       },
       {
         "id": 2,
@@ -1117,7 +1378,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/nossa_senhora_do_carmo_modelo_2_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/nossa_senhora_do_carmo_modelo_2_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/nossa_senhora_do_carmo_modelo_2_chaveiro.jpg"
       }
     ]
   },
@@ -1132,7 +1396,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/nossa_senhora_do_perpetuo_socorro_modelo_1_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/nossa_senhora_do_perpetuo_socorro_modelo_1_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/nossa_senhora_do_perpetuo_socorro_modelo_1_chaveiro.jpg"
       }
     ]
   },
@@ -1147,7 +1414,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/nossa_senhora_do_silencio_modelo_1_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/nossa_senhora_do_silencio_modelo_1_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/nossa_senhora_do_silencio_modelo_1_chaveiro.jpg"
       }
     ]
   },
@@ -1162,7 +1432,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/nossa_senhora_do_sorriso_modelo_1_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/nossa_senhora_do_sorriso_modelo_1_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/nossa_senhora_do_sorriso_modelo_1_chaveiro.jpg"
       }
     ]
   },
@@ -1177,7 +1450,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/nossa_senhora_dos_desterro_modelo_1_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/nossa_senhora_dos_desterro_modelo_1_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/nossa_senhora_dos_desterro_modelo_1_chaveiro.jpg"
       }
     ]
   },
@@ -1192,7 +1468,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/obra_nova_modelo_1_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/obra_nova_modelo_1_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/obra_nova_modelo_1_chaveiro.jpg"
       }
     ]
   },
@@ -1207,7 +1486,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/padre_cicero_modelo_1_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/padre_cicero_modelo_1_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/padre_cicero_modelo_1_chaveiro.jpg"
       }
     ]
   },
@@ -1222,7 +1504,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/padre_ibiapina_modelo_1_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/padre_ibiapina_modelo_1_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/padre_ibiapina_modelo_1_chaveiro.jpg"
       }
     ]
   },
@@ -1237,7 +1522,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/padre_jonas_modelo_1_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/padre_jonas_modelo_1_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/padre_jonas_modelo_1_chaveiro.jpg"
       }
     ]
   },
@@ -1252,7 +1540,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/pais_de_teresinha_modelo_1_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/pais_de_teresinha_modelo_1_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/pais_de_teresinha_modelo_1_chaveiro.jpg"
       },
       {
         "id": 2,
@@ -1261,7 +1552,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/pais_de_teresinha_modelo_2_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/pais_de_teresinha_modelo_2_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/pais_de_teresinha_modelo_2_chaveiro.jpg"
       }
     ]
   },
@@ -1276,7 +1570,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/pais_de_teresinha_com_teresinha_modelo_1_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/pais_de_teresinha_com_teresinha_modelo_1_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/pais_de_teresinha_com_teresinha_modelo_1_chaveiro.jpg"
       }
     ]
   },
@@ -1291,7 +1588,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/pentecostes_modelo_1_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/pentecostes_modelo_1_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/pentecostes_modelo_1_chaveiro.jpg"
       }
     ]
   },
@@ -1306,7 +1606,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/ressuscitado_modelo_1_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/ressuscitado_modelo_1_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/ressuscitado_modelo_1_chaveiro.jpg"
       },
       {
         "id": 3,
@@ -1315,7 +1618,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/ressuscitado_modelo_3_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/ressuscitado_modelo_3_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/ressuscitado_modelo_3_chaveiro.jpg"
       },
       {
         "id": 4,
@@ -1324,7 +1630,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/ressuscitado_modelo_4_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/ressuscitado_modelo_4_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/ressuscitado_modelo_4_chaveiro.jpg"
       }
     ]
   },
@@ -1339,7 +1648,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/ronaldo_pereira_modelo_1_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/ronaldo_pereira_modelo_1_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/ronaldo_pereira_modelo_1_chaveiro.jpg"
       },
       {
         "id": 2,
@@ -1348,7 +1660,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/ronaldo_pereira_modelo_2_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/ronaldo_pereira_modelo_2_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/ronaldo_pereira_modelo_2_chaveiro.jpg"
       }
     ]
   },
@@ -1363,7 +1678,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/sagrada_face_de_jesus_modelo_1_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/sagrada_face_de_jesus_modelo_1_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/sagrada_face_de_jesus_modelo_1_chaveiro.jpg"
       }
     ]
   },
@@ -1378,7 +1696,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/sagrada_familia_modelo_1_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/sagrada_familia_modelo_1_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/sagrada_familia_modelo_1_chaveiro.jpg"
       },
       {
         "id": 2,
@@ -1387,7 +1708,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/sagrada_familia_modelo_2_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/sagrada_familia_modelo_2_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/sagrada_familia_modelo_2_chaveiro.jpg"
       },
       {
         "id": 3,
@@ -1396,7 +1720,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/sagrada_familia_modelo_3_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/sagrada_familia_modelo_3_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/sagrada_familia_modelo_3_chaveiro.jpg"
       },
       {
         "id": 4,
@@ -1405,7 +1732,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/sagrada_familia_modelo_4_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/sagrada_familia_modelo_4_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/sagrada_familia_modelo_4_chaveiro.jpg"
       },
       {
         "id": 5,
@@ -1414,7 +1744,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/sagrada_familia_modelo_5_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/sagrada_familia_modelo_5_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/sagrada_familia_modelo_5_chaveiro.jpg"
       }
     ]
   },
@@ -1429,7 +1762,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/sagrado_coracao_de_jesus_modelo_1_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/sagrado_coracao_de_jesus_modelo_1_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/sagrado_coracao_de_jesus_modelo_1_chaveiro.jpg"
       }
     ]
   },
@@ -1444,7 +1780,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/santa_bakhita_modelo_1_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/santa_bakhita_modelo_1_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/santa_bakhita_modelo_1_chaveiro.jpg"
       }
     ]
   },
@@ -1459,7 +1798,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/santa_cecilia_modelo_1_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/santa_cecilia_modelo_1_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/santa_cecilia_modelo_1_chaveiro.jpg"
       }
     ]
   },
@@ -1474,7 +1816,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/santa_clara_modelo_1_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/santa_clara_modelo_1_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/santa_clara_modelo_1_chaveiro.jpg"
       }
     ]
   },
@@ -1489,7 +1834,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/santa_dulce_modelo_1_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/santa_dulce_modelo_1_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/santa_dulce_modelo_1_chaveiro.jpg"
       },
       {
         "id": 2,
@@ -1498,7 +1846,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/santa_dulce_modelo_2_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/santa_dulce_modelo_2_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/santa_dulce_modelo_2_chaveiro.jpg"
       },
       {
         "id": 3,
@@ -1507,7 +1858,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/santa_dulce_modelo_3_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/santa_dulce_modelo_3_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/santa_dulce_modelo_3_chaveiro.jpg"
       }
     ]
   },
@@ -1522,7 +1876,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/santa_faustina_modelo_1_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/santa_faustina_modelo_1_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/santa_faustina_modelo_1_chaveiro.jpg"
       }
     ]
   },
@@ -1537,7 +1894,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/santa_gemma_modelo_1_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/santa_gemma_modelo_1_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/santa_gemma_modelo_1_chaveiro.jpg"
       }
     ]
   },
@@ -1552,7 +1912,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/santa_gianna_modelo_1_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/santa_gianna_modelo_1_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/santa_gianna_modelo_1_chaveiro.jpg"
       },
       {
         "id": 2,
@@ -1561,7 +1924,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/santa_gianna_modelo_2_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/santa_gianna_modelo_2_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/santa_gianna_modelo_2_chaveiro.jpg"
       }
     ]
   },
@@ -1576,7 +1942,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/santa_joana_darc_modelo_1_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/santa_joana_darc_modelo_1_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/santa_joana_darc_modelo_1_chaveiro.jpg"
       }
     ]
   },
@@ -1591,7 +1960,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/santa_luzia_modelo_1_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/santa_luzia_modelo_1_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/santa_luzia_modelo_1_chaveiro.jpg"
       }
     ]
   },
@@ -1606,7 +1978,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/santa_maria_goretti_modelo_1_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/santa_maria_goretti_modelo_1_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/santa_maria_goretti_modelo_1_chaveiro.jpg"
       }
     ]
   },
@@ -1621,7 +1996,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/santa_maria_madalena_modelo_1_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/santa_maria_madalena_modelo_1_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/santa_maria_madalena_modelo_1_chaveiro.jpg"
       },
       {
         "id": 2,
@@ -1630,7 +2008,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/santa_maria_madalena_modelo_2_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/santa_maria_madalena_modelo_2_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/santa_maria_madalena_modelo_2_chaveiro.jpg"
       },
       {
         "id": 3,
@@ -1639,7 +2020,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/santa_maria_madalena_modelo_3_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/santa_maria_madalena_modelo_3_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/santa_maria_madalena_modelo_3_chaveiro.jpg"
       }
     ]
   },
@@ -1654,7 +2038,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/santa_rita_de_cassia_modelo_1_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/santa_rita_de_cassia_modelo_1_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/santa_rita_de_cassia_modelo_1_chaveiro.jpg"
       },
       {
         "id": 2,
@@ -1663,7 +2050,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/santa_rita_de_cassia_modelo_2_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/santa_rita_de_cassia_modelo_2_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/santa_rita_de_cassia_modelo_2_chaveiro.jpg"
       }
     ]
   },
@@ -1678,7 +2068,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/santa_teresa_davila_modelo_1_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/santa_teresa_davila_modelo_1_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/santa_teresa_davila_modelo_1_chaveiro.jpg"
       },
       {
         "id": 2,
@@ -1687,7 +2080,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/santa_teresa_davila_modelo_2_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/santa_teresa_davila_modelo_2_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/santa_teresa_davila_modelo_2_chaveiro.jpg"
       },
       {
         "id": 3,
@@ -1696,7 +2092,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/santa_teresa_davila_modelo_3_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/santa_teresa_davila_modelo_3_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/santa_teresa_davila_modelo_3_chaveiro.jpg"
       },
       {
         "id": 4,
@@ -1705,7 +2104,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/santa_teresa_davila_modelo_4_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/santa_teresa_davila_modelo_4_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/santa_teresa_davila_modelo_4_chaveiro.jpg"
       }
     ]
   },
@@ -1720,7 +2122,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/santa_teresa_de_calcuta_modelo_1_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/santa_teresa_de_calcuta_modelo_1_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/santa_teresa_de_calcuta_modelo_1_chaveiro.jpg"
       },
       {
         "id": 2,
@@ -1729,7 +2134,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/santa_teresa_de_calcuta_modelo_2_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/santa_teresa_de_calcuta_modelo_2_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/santa_teresa_de_calcuta_modelo_2_chaveiro.jpg"
       }
     ]
   },
@@ -1744,7 +2152,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/santa_teresinha_modelo_1_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/santa_teresinha_modelo_1_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/santa_teresinha_modelo_1_chaveiro.jpg"
       },
       {
         "id": 2,
@@ -1753,7 +2164,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/santa_teresinha_modelo_2_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/santa_teresinha_modelo_2_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/santa_teresinha_modelo_2_chaveiro.jpg"
       },
       {
         "id": 3,
@@ -1762,7 +2176,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/santa_teresinha_modelo_3_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/santa_teresinha_modelo_3_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/santa_teresinha_modelo_3_chaveiro.jpg"
       },
       {
         "id": 4,
@@ -1771,7 +2188,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/santa_teresinha_modelo_4_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/santa_teresinha_modelo_4_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/santa_teresinha_modelo_4_chaveiro.jpg"
       },
       {
         "id": 5,
@@ -1780,7 +2200,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/santa_teresinha_modelo_5_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/santa_teresinha_modelo_5_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/santa_teresinha_modelo_5_chaveiro.jpg"
       },
       {
         "id": 6,
@@ -1789,7 +2212,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/santa_teresinha_modelo_6_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/santa_teresinha_modelo_6_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/santa_teresinha_modelo_6_chaveiro.jpg"
       }
     ]
   },
@@ -1804,7 +2230,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/santa_teresinha_crianca_modelo_1_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/santa_teresinha_crianca_modelo_1_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/santa_teresinha_crianca_modelo_1_chaveiro.jpg"
       },
       {
         "id": 6,
@@ -1813,7 +2242,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/santa_teresinha_crianca_modelo_6_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/santa_teresinha_crianca_modelo_6_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/santa_teresinha_crianca_modelo_6_chaveiro.jpg"
       }
     ]
   },
@@ -1828,7 +2260,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/santa_zelia_modelo_1_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/santa_zelia_modelo_1_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/santa_zelia_modelo_1_chaveiro.jpg"
       }
     ]
   },
@@ -1843,7 +2278,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/santas_chagas_modelo_1_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/santas_chagas_modelo_1_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/santas_chagas_modelo_1_chaveiro.jpg"
       }
     ]
   },
@@ -1858,7 +2296,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/santas_felicidade_e_perpetua_modelo_1_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/santas_felicidade_e_perpetua_modelo_1_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/santas_felicidade_e_perpetua_modelo_1_chaveiro.jpg"
       }
     ]
   },
@@ -1873,7 +2314,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/santo_afonso_modelo_1_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/santo_afonso_modelo_1_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/santo_afonso_modelo_1_chaveiro.jpg"
       }
     ]
   },
@@ -1888,7 +2332,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/santo_agostinho_modelo_1_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/santo_agostinho_modelo_1_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/santo_agostinho_modelo_1_chaveiro.jpg"
       }
     ]
   },
@@ -1903,7 +2350,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/santo_antonio_modelo_1_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/santo_antonio_modelo_1_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/santo_antonio_modelo_1_chaveiro.jpg"
       }
     ]
   },
@@ -1918,7 +2368,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/santo_expedito_modelo_1_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/santo_expedito_modelo_1_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/santo_expedito_modelo_1_chaveiro.jpg"
       }
     ]
   },
@@ -1933,7 +2386,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/santos_arcanjos_modelo_1_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/santos_arcanjos_modelo_1_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/santos_arcanjos_modelo_1_chaveiro.jpg"
       }
     ]
   },
@@ -1948,7 +2404,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/santos_inocentes_modelo_1_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/santos_inocentes_modelo_1_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/santos_inocentes_modelo_1_chaveiro.jpg"
       }
     ]
   },
@@ -1963,7 +2422,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/santissima_trindade_modelo_1_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/santissima_trindade_modelo_1_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/santissima_trindade_modelo_1_chaveiro.jpg"
       }
     ]
   },
@@ -1978,7 +2440,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/sao_bento_modelo_1_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/sao_bento_modelo_1_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/sao_bento_modelo_1_chaveiro.jpg"
       },
       {
         "id": 2,
@@ -1987,7 +2452,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/sao_bento_modelo_2_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/sao_bento_modelo_2_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/sao_bento_modelo_2_chaveiro.jpg"
       },
       {
         "id": 3,
@@ -1996,7 +2464,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/sao_bento_modelo_3_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/sao_bento_modelo_3_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/sao_bento_modelo_3_chaveiro.jpg"
       }
     ]
   },
@@ -2011,7 +2482,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/sao_cristovao_modelo_1_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/sao_cristovao_modelo_1_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/sao_cristovao_modelo_1_chaveiro.jpg"
       }
     ]
   },
@@ -2026,7 +2500,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/sao_dom_bosco_modelo_1_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/sao_dom_bosco_modelo_1_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/sao_dom_bosco_modelo_1_chaveiro.jpg"
       },
       {
         "id": 2,
@@ -2035,7 +2512,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/sao_dom_bosco_modelo_2_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/sao_dom_bosco_modelo_2_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/sao_dom_bosco_modelo_2_chaveiro.jpg"
       }
     ]
   },
@@ -2050,7 +2530,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/sao_francisco_modelo_1_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/sao_francisco_modelo_1_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/sao_francisco_modelo_1_chaveiro.jpg"
       },
       {
         "id": 2,
@@ -2059,7 +2542,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/sao_francisco_modelo_2_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/sao_francisco_modelo_2_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/sao_francisco_modelo_2_chaveiro.jpg"
       },
       {
         "id": 3,
@@ -2068,7 +2554,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/sao_francisco_modelo_3_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/sao_francisco_modelo_3_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/sao_francisco_modelo_3_chaveiro.jpg"
       },
       {
         "id": 4,
@@ -2077,7 +2566,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/sao_francisco_modelo_4_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/sao_francisco_modelo_4_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/sao_francisco_modelo_4_chaveiro.jpg"
       }
     ]
   },
@@ -2092,7 +2584,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/sao_francisco_de_sales_modelo_1_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/sao_francisco_de_sales_modelo_1_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/sao_francisco_de_sales_modelo_1_chaveiro.jpg"
       }
     ]
   },
@@ -2107,7 +2602,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/sao_gabriel_modelo_1_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/sao_gabriel_modelo_1_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/sao_gabriel_modelo_1_chaveiro.jpg"
       }
     ]
   },
@@ -2122,7 +2620,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/sao_gabriel_da_virgem_dolorosa_modelo_1_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/sao_gabriel_da_virgem_dolorosa_modelo_1_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/sao_gabriel_da_virgem_dolorosa_modelo_1_chaveiro.jpg"
       }
     ]
   },
@@ -2137,7 +2638,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/sao_jorge_modelo_1_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/sao_jorge_modelo_1_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/sao_jorge_modelo_1_chaveiro.jpg"
       }
     ]
   },
@@ -2152,7 +2656,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/sao_jose_modelo_1_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/sao_jose_modelo_1_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/sao_jose_modelo_1_chaveiro.jpg"
       },
       {
         "id": 2,
@@ -2161,7 +2668,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/sao_jose_modelo_2_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/sao_jose_modelo_2_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/sao_jose_modelo_2_chaveiro.jpg"
       },
       {
         "id": 3,
@@ -2170,7 +2680,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/sao_jose_modelo_3_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/sao_jose_modelo_3_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/sao_jose_modelo_3_chaveiro.jpg"
       },
       {
         "id": 4,
@@ -2179,7 +2692,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/sao_jose_modelo_4_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/sao_jose_modelo_4_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/sao_jose_modelo_4_chaveiro.jpg"
       },
       {
         "id": 6,
@@ -2188,7 +2704,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/sao_jose_modelo_6_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/sao_jose_modelo_6_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/sao_jose_modelo_6_chaveiro.jpg"
       },
       {
         "id": 7,
@@ -2197,7 +2716,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/sao_jose_modelo_7_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/sao_jose_modelo_7_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/sao_jose_modelo_7_chaveiro.jpg"
       }
     ]
   },
@@ -2212,7 +2734,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/sao_jose_dormindo_modelo_1_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/sao_jose_dormindo_modelo_1_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/sao_jose_dormindo_modelo_1_chaveiro.jpg"
       }
     ]
   },
@@ -2227,7 +2752,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/sao_jose_maria_escriva_modelo_1_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/sao_jose_maria_escriva_modelo_1_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/sao_jose_maria_escriva_modelo_1_chaveiro.jpg"
       }
     ]
   },
@@ -2242,7 +2770,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/sao_jose_moscatti_modelo_1_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/sao_jose_moscatti_modelo_1_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/sao_jose_moscatti_modelo_1_chaveiro.jpg"
       }
     ]
   },
@@ -2257,7 +2788,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/sao_jose_sanchez_modelo_1_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/sao_jose_sanchez_modelo_1_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/sao_jose_sanchez_modelo_1_chaveiro.jpg"
       }
     ]
   },
@@ -2272,7 +2806,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/sao_jose_terror_dos_demonios_modelo_1_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/sao_jose_terror_dos_demonios_modelo_1_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/sao_jose_terror_dos_demonios_modelo_1_chaveiro.jpg"
       },
       {
         "id": 2,
@@ -2281,7 +2818,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/sao_jose_terror_dos_demonios_modelo_2_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/sao_jose_terror_dos_demonios_modelo_2_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/sao_jose_terror_dos_demonios_modelo_2_chaveiro.jpg"
       },
       {
         "id": 3,
@@ -2290,7 +2830,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/sao_jose_terror_dos_demonios_modelo_3_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/sao_jose_terror_dos_demonios_modelo_3_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/sao_jose_terror_dos_demonios_modelo_3_chaveiro.jpg"
       }
     ]
   },
@@ -2305,7 +2848,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/sao_jose_de_anchieta_modelo_1_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/sao_jose_de_anchieta_modelo_1_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/sao_jose_de_anchieta_modelo_1_chaveiro.jpg"
       },
       {
         "id": 2,
@@ -2314,7 +2860,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/sao_jose_de_anchieta_modelo_2_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/sao_jose_de_anchieta_modelo_2_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/sao_jose_de_anchieta_modelo_2_chaveiro.jpg"
       }
     ]
   },
@@ -2329,7 +2878,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/sao_joao_batista_modelo_1_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/sao_joao_batista_modelo_1_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/sao_joao_batista_modelo_1_chaveiro.jpg"
       },
       {
         "id": 2,
@@ -2338,7 +2890,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/sao_joao_batista_modelo_2_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/sao_joao_batista_modelo_2_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/sao_joao_batista_modelo_2_chaveiro.jpg"
       }
     ]
   },
@@ -2353,7 +2908,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/sao_joao_evangelista_modelo_1_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/sao_joao_evangelista_modelo_1_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/sao_joao_evangelista_modelo_1_chaveiro.jpg"
       },
       {
         "id": 2,
@@ -2362,7 +2920,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/sao_joao_evangelista_modelo_2_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/sao_joao_evangelista_modelo_2_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/sao_joao_evangelista_modelo_2_chaveiro.jpg"
       }
     ]
   },
@@ -2377,7 +2938,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/sao_joao_maria_vianney_modelo_1_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/sao_joao_maria_vianney_modelo_1_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/sao_joao_maria_vianney_modelo_1_chaveiro.jpg"
       }
     ]
   },
@@ -2392,7 +2956,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/sao_joao_paulo_ii_modelo_1_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/sao_joao_paulo_ii_modelo_1_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/sao_joao_paulo_ii_modelo_1_chaveiro.jpg"
       },
       {
         "id": 2,
@@ -2401,7 +2968,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/sao_joao_paulo_ii_modelo_2_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/sao_joao_paulo_ii_modelo_2_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/sao_joao_paulo_ii_modelo_2_chaveiro.jpg"
       },
       {
         "id": 3,
@@ -2410,7 +2980,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/sao_joao_paulo_ii_modelo_3_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/sao_joao_paulo_ii_modelo_3_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/sao_joao_paulo_ii_modelo_3_chaveiro.jpg"
       },
       {
         "id": 4,
@@ -2419,7 +2992,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/sao_joao_paulo_ii_modelo_4_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/sao_joao_paulo_ii_modelo_4_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/sao_joao_paulo_ii_modelo_4_chaveiro.jpg"
       }
     ]
   },
@@ -2434,7 +3010,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/sao_joao_da_cruz_modelo_1_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/sao_joao_da_cruz_modelo_1_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/sao_joao_da_cruz_modelo_1_chaveiro.jpg"
       }
     ]
   },
@@ -2449,7 +3028,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/sao_judas_tadeu_modelo_1_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/sao_judas_tadeu_modelo_1_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/sao_judas_tadeu_modelo_1_chaveiro.jpg"
       }
     ]
   },
@@ -2464,7 +3046,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/sao_lucas_modelo_1_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/sao_lucas_modelo_1_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/sao_lucas_modelo_1_chaveiro.jpg"
       }
     ]
   },
@@ -2479,7 +3064,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/sao_luis_martin_modelo_1_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/sao_luis_martin_modelo_1_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/sao_luis_martin_modelo_1_chaveiro.jpg"
       }
     ]
   },
@@ -2494,7 +3082,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/sao_miguel_modelo_1_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/sao_miguel_modelo_1_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/sao_miguel_modelo_1_chaveiro.jpg"
       },
       {
         "id": 2,
@@ -2503,7 +3094,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/sao_miguel_modelo_2_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/sao_miguel_modelo_2_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/sao_miguel_modelo_2_chaveiro.jpg"
       },
       {
         "id": 3,
@@ -2512,7 +3106,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/sao_miguel_modelo_3_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/sao_miguel_modelo_3_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/sao_miguel_modelo_3_chaveiro.jpg"
       }
     ]
   },
@@ -2527,7 +3124,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/sao_padre_pio_modelo_1_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/sao_padre_pio_modelo_1_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/sao_padre_pio_modelo_1_chaveiro.jpg"
       },
       {
         "id": 2,
@@ -2536,7 +3136,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/sao_padre_pio_modelo_2_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/sao_padre_pio_modelo_2_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/sao_padre_pio_modelo_2_chaveiro.jpg"
       }
     ]
   },
@@ -2551,7 +3154,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/sao_paulo_modelo_1_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/sao_paulo_modelo_1_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/sao_paulo_modelo_1_chaveiro.jpg"
       },
       {
         "id": 2,
@@ -2560,7 +3166,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/sao_paulo_modelo_2_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/sao_paulo_modelo_2_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/sao_paulo_modelo_2_chaveiro.jpg"
       }
     ]
   },
@@ -2575,7 +3184,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/sao_pier_giorgio_frassati_modelo_1_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/sao_pier_giorgio_frassati_modelo_1_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/sao_pier_giorgio_frassati_modelo_1_chaveiro.jpg"
       },
       {
         "id": 2,
@@ -2584,7 +3196,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/sao_pier_giorgio_frassati_modelo_2_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/sao_pier_giorgio_frassati_modelo_2_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/sao_pier_giorgio_frassati_modelo_2_chaveiro.jpg"
       }
     ]
   },
@@ -2599,7 +3214,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/sao_rafael_modelo_1_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/sao_rafael_modelo_1_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/sao_rafael_modelo_1_chaveiro.jpg"
       }
     ]
   },
@@ -2614,7 +3232,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/sao_tarcisio_modelo_1_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/sao_tarcisio_modelo_1_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/sao_tarcisio_modelo_1_chaveiro.jpg"
       }
     ]
   },
@@ -2629,7 +3250,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/sao_timoteo_modelo_1_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/sao_timoteo_modelo_1_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/sao_timoteo_modelo_1_chaveiro.jpg"
       }
     ]
   },
@@ -2644,7 +3268,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/sao_tome_modelo_1_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/sao_tome_modelo_1_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/sao_tome_modelo_1_chaveiro.jpg"
       },
       {
         "id": 2,
@@ -2653,7 +3280,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/sao_tome_modelo_2_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/sao_tome_modelo_2_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/sao_tome_modelo_2_chaveiro.jpg"
       }
     ]
   },
@@ -2668,7 +3298,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/teresas_do_carmelo_modelo_1_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/teresas_do_carmelo_modelo_1_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/teresas_do_carmelo_modelo_1_chaveiro.jpg"
       }
     ]
   },
@@ -2683,7 +3316,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/tres_coracoes_modelo_1_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/tres_coracoes_modelo_1_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/tres_coracoes_modelo_1_chaveiro.jpg"
       }
     ]
   },
@@ -2698,7 +3334,10 @@
         "tamanhos": [
           "12mm",
           "16mm"
-        ]
+        ],
+        "imagem_entremeio_prata": "img/produtos/virgens_prudentes_modelo_1_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/virgens_prudentes_modelo_1_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/virgens_prudentes_modelo_1_chaveiro.jpg"
       }
     ]
   }

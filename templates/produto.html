@@ -26,6 +26,12 @@
         data-modelo-id="{{ modelo.id }}"
         data-modelo-nome="{{ modelo.nome }}"
         data-tamanhos='{{ modelo.tamanhos | tojson }}'
+        data-imagens='{{ {
+          "medalha": url_for("static", filename=modelo.imagem),
+          "entremeio_prata": url_for("static", filename=modelo.imagem_entremeio_prata),
+          "entremeio_ouro_velho": url_for("static", filename=modelo.imagem_entremeio_ouro_velho),
+          "chaveiro": url_for("static", filename=modelo.imagem_chaveiro),
+        } | tojson }}'
       >
         <img src="{{ url_for('static', filename=modelo.imagem) }}" alt="{{ produto.nome }} — {{ modelo.nome }}" loading="lazy" decoding="async">
         <span>{{ modelo.nome }}</span>
@@ -34,6 +40,10 @@
   </div>
 
   <div class="painel-selecao" id="painel-selecao" hidden>
+    <div class="preview-formato-wrap">
+      <img id="sel-preview-imagem" alt="">
+    </div>
+
     <h2>Modelo selecionado: <span id="sel-modelo-nome"></span></h2>
 
     <fieldset class="formatos" id="sel-formatos">

@@ -329,6 +329,21 @@ h1 {
   margin: 0 0 14px;
 }
 
+.preview-formato-wrap {
+  max-width: 220px;
+  margin: 0 auto 16px;
+}
+
+.preview-formato-wrap img {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+  display: block;
+  border-radius: 14px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+}
+
 fieldset.tamanhos,
 fieldset.formatos,
 fieldset.cores {
