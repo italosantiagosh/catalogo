@@ -791,6 +791,103 @@ button.botao-carrinho:disabled {
   margin: 0 0 6px;
 }
 
+.calculadora-frete {
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  padding: 16px 0;
+  margin: 16px 0;
+}
+
+.calculadora-frete > label {
+  display: block;
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.frete-linha {
+  display: flex;
+  gap: 8px;
+}
+
+#frete-cep {
+  flex: 1;
+  padding: 12px 14px;
+  font-size: 0.95rem;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--card);
+  color: var(--ink);
+}
+
+#btn-calcular-frete {
+  padding: 12px 18px;
+  border: none;
+  border-radius: 10px;
+  background: var(--accent);
+  color: #fff;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+#btn-calcular-frete:disabled {
+  background: var(--border);
+  color: var(--muted);
+  cursor: not-allowed;
+}
+
+#frete-resultado {
+  margin-top: 12px;
+}
+
+.frete-opcao {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  margin-bottom: 8px;
+  font-size: 0.85rem;
+}
+
+.frete-opcao:first-child {
+  border-color: var(--accent);
+  background: #eef2f8;
+}
+
+.frete-opcao-nome {
+  font-weight: 600;
+}
+
+.frete-opcao-prazo {
+  color: var(--muted);
+  font-size: 0.78rem;
+}
+
+.frete-opcao-preco {
+  font-weight: 700;
+  color: var(--accent);
+  white-space: nowrap;
+}
+
+.frete-gratis-aviso {
+  background: var(--gold-soft);
+  color: #7a5c1f;
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 0.85rem;
+  line-height: 1.4;
+}
+
+.frete-erro {
+  color: #7a2118;
+  font-size: 0.85rem;
+}
+
 .aviso-minimo {
   background: var(--error-bg, #fdecea);
   color: #7a2118;

@@ -12,6 +12,9 @@
   const btnWhatsappFinalizar = document.getElementById('btn-whatsapp-finalizar');
   const btnWhatsappDuvida = document.getElementById('btn-whatsapp-duvida');
   const btnLimpar = document.getElementById('btn-limpar');
+  const freteCepInput = document.getElementById('frete-cep');
+  const btnCalcularFrete = document.getElementById('btn-calcular-frete');
+  const freteResultadoEl = document.getElementById('frete-resultado');
   if (!listaEl) return;
 
   const TAMANHO_LABEL = { '12mm': '1,2 cm', '16mm': '1,6 cm' };
@@ -24,6 +27,7 @@
   let primeiraRenderizacao = true;
   let ultimosItens = [];
   let ultimoCalculo = null;
+  let freteEscolhido = null; // { texto, preco } -- preco null quando e frete gratis
 
   function detalheFormato(item) {
     const formato = item.formato || 'medalha';
@@ -58,6 +62,11 @@
     return linhas;
   }
 
+  function montarLinhasFrete() {
+    if (!freteEscolhido) return [];
+    return ['Frete:', freteEscolhido.texto, ''];
+  }
+
   function montarCorpoPedido(itens, calculo) {
     return [
       `PEDIDO #${obterOuCriarPedidoId()}`,
@@ -72,6 +81,7 @@
       `${calculo.quantidade_total} peças`,
       '',
       ...montarLinhasFaixas(calculo),
+      ...montarLinhasFrete(),
       'Valor estimado:',
       formatarPreco(calculo.subtotal_total),
     ].join('\n');
@@ -237,9 +247,101 @@
       avisoMinimoEl.hidden = true;
     }
 
+    // cart mudou -- qualquer frete calculado antes nao vale mais (peso/
+    // faixa de frete gratis podem ter mudado), pede pra recalcular.
+    freteEscolhido = null;
+    if (freteResultadoEl) freteResultadoEl.innerHTML = '';
+
     ultimosItens = itens;
     ultimoCalculo = dados;
     pedidoIdTexto.textContent = `Pedido #${obterOuCriarPedidoId()}`;
+  }
+
+  // ---- calculadora de frete (Frenet) ----
+
+  function mascararCep(valor) {
+    const digitos = valor.replace(/\D/g, '').slice(0, 8);
+    return digitos.length > 5 ? `${digitos.slice(0, 5)}-${digitos.slice(5)}` : digitos;
+  }
+
+  if (freteCepInput) {
+    freteCepInput.addEventListener('input', () => {
+      freteCepInput.value = mascararCep(freteCepInput.value);
+    });
+  }
+
+  function renderizarFrete(dados) {
+    freteEscolhido = null;
+    if (!freteResultadoEl) return;
+
+    if (dados.erro) {
+      freteResultadoEl.innerHTML = `<p class="frete-erro">${dados.erro}</p>`;
+      return;
+    }
+
+    if (dados.frete_gratis) {
+      freteEscolhido = { texto: 'Grátis', preco: 0 };
+      freteResultadoEl.innerHTML = `<p class="frete-gratis-aviso">🎉 ${dados.aviso}</p>`;
+      return;
+    }
+
+    if (!dados.opcoes || dados.opcoes.length === 0) {
+      freteResultadoEl.innerHTML = '<p class="frete-erro">Nenhuma opção de frete encontrada para esse CEP.</p>';
+      return;
+    }
+
+    freteResultadoEl.innerHTML = '';
+    dados.opcoes.forEach((opcao, i) => {
+      const linha = document.createElement('div');
+      linha.className = 'frete-opcao';
+      const prazo = opcao.prazo_dias ? `${opcao.prazo_dias} dia(s) úteis` : '';
+      linha.innerHTML = `
+        <div>
+          <div class="frete-opcao-nome">${opcao.transportadora} — ${opcao.servico}</div>
+          <div class="frete-opcao-prazo">${prazo}</div>
+        </div>
+        <div class="frete-opcao-preco">${formatarPreco(opcao.preco)}</div>
+      `;
+      freteResultadoEl.appendChild(linha);
+      if (i === 0) {
+        freteEscolhido = {
+          texto: `${opcao.transportadora} ${opcao.servico} — ${formatarPreco(opcao.preco)}`,
+          preco: opcao.preco,
+        };
+      }
+    });
+  }
+
+  if (btnCalcularFrete) {
+    btnCalcularFrete.addEventListener('click', async () => {
+      const cep = (freteCepInput.value || '').replace(/\D/g, '');
+      if (cep.length !== 8) {
+        freteResultadoEl.innerHTML = '<p class="frete-erro">Digite um CEP válido.</p>';
+        return;
+      }
+      const itens = carrinhoObterItens();
+      if (itens.length === 0) return;
+
+      btnCalcularFrete.disabled = true;
+      btnCalcularFrete.textContent = 'Calculando...';
+      try {
+        const resposta = await fetch('/api/frete/calcular', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            cep,
+            itens: itens.map((item) => ({ chave_preco: item.chave_preco, quantidade: item.quantidade })),
+          }),
+        });
+        const dados = await resposta.json();
+        renderizarFrete(dados);
+      } catch (e) {
+        freteResultadoEl.innerHTML = '<p class="frete-erro">Não foi possível calcular o frete agora.</p>';
+      } finally {
+        btnCalcularFrete.disabled = false;
+        btnCalcularFrete.textContent = 'Calcular';
+      }
+    });
   }
 
   if (btnLimpar) {

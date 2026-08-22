@@ -50,6 +50,7 @@ from werkzeug.datastructures import FileStorage
 
 from config import WHATSAPP_NUMBER
 from services.catalogo import buscar_produto, carregar_produtos
+from services.frete import calcular_frete
 from services.gerador.compositor import auto_cover_box, compose_medal, crop_to_box, load_rgba
 from services.gerador.config import IMAGE_EXTENSIONS, MEDAL_SPECS
 from services.pricing import CHAVES_PRECO, calcular_carrinho, preco_varejo
@@ -190,13 +191,9 @@ def carrinho():
     return render_template("carrinho.html", whatsapp_number=WHATSAPP_NUMBER)
 
 
-@app.route("/api/carrinho/calcular", methods=["POST"])
-def api_calcular_carrinho():
-    dados = request.get_json(silent=True) or {}
-    itens_recebidos = dados.get("itens", [])
-
+def _itens_validos_do_corpo(dados: dict) -> list[dict]:
     itens_validos = []
-    for item in itens_recebidos:
+    for item in dados.get("itens", []):
         try:
             chave_preco = str(item["chave_preco"])
             quantidade = int(item["quantidade"])
@@ -205,8 +202,27 @@ def api_calcular_carrinho():
         if chave_preco not in CHAVES_PRECO or quantidade <= 0:
             continue
         itens_validos.append({"chave_preco": chave_preco, "quantidade": quantidade})
+    return itens_validos
 
+
+@app.route("/api/carrinho/calcular", methods=["POST"])
+def api_calcular_carrinho():
+    dados = request.get_json(silent=True) or {}
+    itens_validos = _itens_validos_do_corpo(dados)
     return jsonify(calcular_carrinho(itens_validos))
+
+
+@app.route("/api/frete/calcular", methods=["POST"])
+def api_calcular_frete():
+    dados = request.get_json(silent=True) or {}
+    itens_validos = _itens_validos_do_corpo(dados)
+    cep = str(dados.get("cep", ""))
+
+    resumo_carrinho = calcular_carrinho(itens_validos)
+    resultado = calcular_frete(
+        itens_validos, cep, resumo_carrinho["subtotal_total"], resumo_carrinho["frete_gratis_atingido"]
+    )
+    return jsonify(resultado)
 
 
 @app.route("/personalizada", methods=["GET"])
