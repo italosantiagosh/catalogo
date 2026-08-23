@@ -95,6 +95,9 @@ def test_consultar_frenet_filtra_so_erro_mini_envio_fica_e_ordena_por_preco(monk
     assert kwargs["json"]["SellerCEP"] == "59000000"
     assert kwargs["json"]["RecipientCEP"] == "20040020"
     assert kwargs["json"]["ShipmentInvoiceValue"] == 0  # sem seguro
+    item = kwargs["json"]["ShippingItemArray"][0]
+    assert item["Category"]
+    assert item["isFragile"] is False
 
     opcoes = resultado["opcoes"]
     # so o servico com Error=True fica de fora -- Mini Envios aparece

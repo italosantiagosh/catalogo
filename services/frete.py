@@ -59,6 +59,13 @@ PESO_KG_POR_CHAVE = {
 # cm) -- confirmada pelo usuario a partir do cadastro real na Yampi.
 CAIXA_CM = {"altura": 4, "largura": 12, "comprimento": 17}
 
+# Categoria do item mandada pra Frenet -- nosso request original nao
+# mandava esse campo (nem "isFragile"), presente em integracoes reais
+# que funcionam (ex: Yampi). Suspeita forte de ser a causa das cotacoes
+# absurdas: sem categoria, algumas transportadoras de carga parecem
+# classificar o item numa faixa de preco erradas.
+CATEGORIA_ITEM = "Bijuterias e Acessórios|Medalhas Religiosas"
+
 # Faixas de peso padrao (kg) mandadas pra Frenet no lugar do peso real
 # calculado -- pedido do usuario, pra evitar declarar um peso tao baixo
 # que as transportadoras nao conseguem/nao querem cotar.
@@ -129,6 +136,8 @@ def consultar_frenet(cep_destino: str, peso_kg: float, subtotal: float) -> dict:
                 "Width": CAIXA_CM["largura"],
                 "Weight": round(peso_kg, 3),
                 "Quantity": 1,
+                "Category": CATEGORIA_ITEM,
+                "isFragile": False,
             }
         ],
     }
