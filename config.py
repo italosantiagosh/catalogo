@@ -106,6 +106,16 @@ PROVA_SOCIAL = [
     },
 ]
 
+# "Mais procurados" -- 4 santos em destaque logo no topo da home
+# (pedido explicito do usuario), com botao pra ver o catalogo completo
+# logo depois. A grade completa continua na mesma pagina, mais abaixo
+# (nao vira uma pagina separada) -- crawler ainda ve todos os 130+
+# produtos no HTML da home, so a ordem visual muda. As 2 devocoes
+# marianas foram escolhidas por serem provavelmente as mais populares
+# no Brasil: Aparecida (padroeira do Brasil) e Desatadora dos Nos
+# (devocao muito procurada atualmente).
+PROCURADOS_HOME = ["sao-miguel", "sao-bento", "nossa-senhora-aparecida", "nossa-senhora-desatadora-dos-nos"]
+
 # Destaques da home (ver app.py:_montar_destaques, templates/index.html)
 # -- reduz a paralisia de escolha de quem chega e ve os 130+ santos
 # todos "iguais". IDs conferidos contra data/produtos.json; um id que

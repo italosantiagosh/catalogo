@@ -233,9 +233,15 @@
         if (grupo.quantidade_total === 0 || !grupo.proxima_faixa) continue;
         const nudge = document.createElement('p');
         nudge.className = 'nudge-desconto';
-        nudge.textContent =
+        let texto =
           `💰 Faltam ${grupo.proxima_faixa.faltam} ${GRUPO_LABEL[nomeGrupo] || nomeGrupo} para o preço cair ` +
-          `para ${formatarPreco(grupo.proxima_faixa.preco)}/un — adicione mais antes de finalizar!`;
+          `para ${formatarPreco(grupo.proxima_faixa.preco)}/un`;
+        if (grupo.proxima_faixa.economia > 0) {
+          texto += ` — seu pedido economiza ${formatarPreco(grupo.proxima_faixa.economia)}!`;
+        } else {
+          texto += ' — adicione mais antes de finalizar!';
+        }
+        nudge.textContent = texto;
         nudgeDescontoEl.appendChild(nudge);
       }
     }
@@ -261,8 +267,14 @@
         const itemDoGrupo = dados.itens.find((i) => GRUPO_DE_CHAVE[i.chave_preco] === grupoMudou);
         const preco = itemDoGrupo ? itemDoGrupo.preco_unitario : null;
         mostrarToast(`🎉 Novo desconto desbloqueado (${GRUPO_LABEL[grupoMudou] || grupoMudou})! Agora ${formatarPreco(preco)}/un`);
+        rastrearEventoGA4('reach_wholesale_tier', {
+          grupo: grupoMudou,
+          faixa: dados.grupos[grupoMudou].faixa_label,
+          preco_unitario: preco,
+        });
       } else if (dados.frete_gratis_atingido && !freteAnteriorAtingido) {
         mostrarToast('🎉 Frete grátis desbloqueado!');
+        rastrearEventoGA4('reach_free_shipping', { subtotal: dados.subtotal_total });
       }
     }
     faixasAnteriores = Object.fromEntries(
@@ -419,6 +431,10 @@
     // Conversao real desse site e "cliente manda o pedido pelo WhatsApp"
     // -- nao ha compra confirmada aqui (isso acontece la fora, na
     // conversa), entao o evento certo e "lead", nao "purchase".
+    // begin_whatsapp_checkout e o evento de funil (diagnostico, granular);
+    // generate_lead/Lead sao os sinais de conversao pros leiloes de anuncio
+    // do Google/Meta -- os dois fazem sentido juntos, propositos diferentes.
+    rastrearEventoGA4('begin_whatsapp_checkout', { currency: 'BRL', value: valor });
     if (typeof gtag === 'function') {
       gtag('event', 'generate_lead', { currency: 'BRL', value: valor });
     }

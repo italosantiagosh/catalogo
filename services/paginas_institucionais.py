@@ -10,7 +10,22 @@ templates/pagina_atendimento.html) -- conteudo enviado pelo usuario
       um texto-modelo nao adaptado, ja que o resto do site e uma loja
       brasileira (Correios, CPF/CNPJ, R$). Trocado pela LGPD (Lei
       13.709/2018), mantendo a mesma estrutura/intencao do texto
-      original.
+      original. Tambem ganhou secoes de cookies/analytics (GA4 + Meta
+      Pixel passaram a rodar no site depois desse texto ter sido
+      escrito), compartilhamento de dados e direitos do titular --
+      ainda vale revisao juridica antes de escalar trafego pago, mas o
+      texto ja cobre o que realmente esta em uso no site hoje.
+    - "Trocas e devolucao": reorganizada em accordion (<details>) por
+      sugestao de auditoria externa -- separa claramente arrependimento
+      (sem precisar de motivo, so as condicoes do produto) de defeito
+      (precisa de foto/video), que antes apareciam meio misturados no
+      mesmo paragrafo. Conteudo/prazos/condicoes sao os mesmos, so a
+      organizacao mudou.
+    - "Envio e prazo de entrega": reescrita como 3 etapas numeradas
+      (producao -> postagem/rastreio -> entrega) pelo mesmo motivo --
+      os prazos ja informados (5 dias producao, 7 dias rastreio, 2-20
+      dias entrega) ficavam confusos sem deixar claro que sao etapas
+      sequenciais, nao 3 prazos somados.
 
 O corpo de cada pagina e HTML pronto (nao Markdown) -- marcado como
 `| safe` no template porque e conteudo autoral nosso, nao entrada de
@@ -27,19 +42,26 @@ PAGINAS_ATENDIMENTO = {
             "com código de rastreamento enviado em até 7 dias úteis."
         ),
         "corpo_html": """
-            <p>A produção é de até <strong>5 dias úteis</strong>. Depois do envio da
-            mercadoria, o prazo de entrega varia de <strong>2 a 20 dias úteis</strong>,
-            conforme o destino.</p>
+            <p>São três etapas, nessa ordem:</p>
+            <ol>
+                <li><strong>Produção:</strong> até 5 dias úteis a partir da confirmação
+                    do pagamento;</li>
+                <li><strong>Postagem e rastreio:</strong> você recebe o código de
+                    rastreamento no contato cadastrado no pedido em até 7 dias úteis
+                    contados da confirmação do pedido (esse prazo já inclui os dias de
+                    produção);</li>
+                <li><strong>Entrega:</strong> de 2 a 20 dias úteis a partir da postagem,
+                    conforme o destino e a transportadora.</li>
+            </ol>
 
-            <p>Você recebe o código de rastreamento no contato cadastrado no pedido em
-            até <strong>7 dias úteis</strong> após o processamento. Se o seu pedido
-            estiver demorando além do prazo estipulado, consulte o código de rastreio
-            primeiro -- se não tiver o código em mãos, fale com a gente pelo
-            WhatsApp.</p>
+            <p>Se o seu pedido estiver demorando além do prazo estipulado, consulte o
+            código de rastreio primeiro -- se não tiver o código em mãos, fale com a
+            gente pelo WhatsApp.</p>
 
             <p>Às vezes o produto fica um bom tempo parado num trajeto, principalmente
-            no Mini Envios, que não tem rastreamento detalhado. Não se preocupe: o
-            produto chega até você.</p>
+            no Mini Envios, que não tem rastreamento detalhado. Se o prazo estimado for
+            ultrapassado, fale com a gente que acompanhamos a entrega junto à
+            transportadora.</p>
         """,
     },
     "trocas-e-devolucao": {
@@ -52,43 +74,60 @@ PAGINAS_ATENDIMENTO = {
             <p>A equipe Nove de Julho está constantemente investindo em políticas para
             que nossos clientes sempre saiam satisfeitos. Você pode solicitar a troca ou
             devolução de um produto em até <strong>7 dias corridos</strong> após o
-            recebimento. Precisam ser observadas as seguintes condições:</p>
+            recebimento.</p>
 
-            <ol>
-                <li>O produto deve ser devolvido em sua embalagem original;</li>
-                <li>O produto deve ser devolvido sem indícios de uso ou consumo, isto é,
-                    da forma que foi recebido;</li>
-                <li>O produto deve ser devolvido com etiquetas (ou protetores) afixados,
-                    manuais e todos os acessórios que o acompanhem.</li>
-            </ol>
+            <details class="acordeao" open>
+                <summary>Arrependimento (não gostei, mudei de ideia)</summary>
+                <p>Você tem até 7 dias corridos após o recebimento pra desistir da
+                compra, sem precisar justificar o motivo -- é o seu direito de
+                arrependimento em compras feitas fora de loja física. Pra isso, o
+                produto precisa:</p>
+                <ol>
+                    <li>Voltar na embalagem original;</li>
+                    <li>Estar sem indícios de uso ou consumo, do jeito que foi
+                        recebido;</li>
+                    <li>Vir com etiquetas (ou protetores), manuais e todos os
+                        acessórios que o acompanhem.</li>
+                </ol>
+            </details>
+
+            <details class="acordeao">
+                <summary>Produto com defeito</summary>
+                <p>Se o produto chegou com defeito, envie também uma <strong>imagem
+                ou vídeo que comprove o problema</strong> junto com o pedido de troca
+                ou devolução -- isso agiliza a análise.</p>
+            </details>
+
+            <details class="acordeao">
+                <summary>Como solicitar</summary>
+                <p>Envie um e-mail para <strong>9djulho@gmail.com</strong> ou uma
+                mensagem para <strong>(84) 98127-6650</strong> informando:</p>
+                <ol>
+                    <li>Nome do produto;</li>
+                    <li>Número do pedido;</li>
+                    <li>Contato cadastrado na compra;</li>
+                    <li>Motivo da troca ou devolução;</li>
+                    <li>Imagem ou vídeo do defeito, se for o caso.</li>
+                </ol>
+                <p>Confirmadas todas as questões, informamos o endereço para
+                devolução do produto e ressarcimos o valor pago do produto e do
+                frete.</p>
+            </details>
+
+            <details class="acordeao">
+                <summary>Reembolso</summary>
+                <ul>
+                    <li><strong>Estorno no cartão de crédito:</strong> pode aparecer
+                        em até duas faturas após a conclusão da devolução pelo
+                        gateway de pagamento.</li>
+                    <li><strong>TED:</strong> em até 10 dias úteis após a confirmação
+                        da devolução, direto na conta do cliente (não pode ser feita
+                        em conta de terceiros).</li>
+                </ul>
+            </details>
 
             <p><strong>Importante:</strong> não aceitamos devoluções caso as condições
             acima não sejam respeitadas.</p>
-
-            <h2>O que fazer para solicitar troca ou devolução</h2>
-            <p>Envie um e-mail para <strong>9djulho@gmail.com</strong> ou uma mensagem
-            para <strong>(84) 98127-6650</strong> informando:</p>
-            <ol>
-                <li>Nome do produto;</li>
-                <li>Número do pedido;</li>
-                <li>Contato cadastrado na compra;</li>
-                <li>Motivo da troca ou devolução;</li>
-                <li>Imagem ou vídeo que comprove o defeito, caso haja.</li>
-            </ol>
-
-            <p>Confirmadas todas as questões sobre a devolução, informamos o endereço
-            para devolução do produto e ressarcimos o valor pago do produto e do
-            frete.</p>
-
-            <h2>Formas de ressarcimento</h2>
-            <ul>
-                <li><strong>Estorno no cartão de crédito:</strong> pode aparecer em até
-                    duas faturas após a conclusão da devolução pelo gateway de
-                    pagamento.</li>
-                <li><strong>TED:</strong> transferência para a conta do cliente,
-                    realizada em até 10 dias úteis após a confirmação da devolução. A
-                    transferência não pode ser feita em conta de terceiros.</li>
-            </ul>
         """,
     },
     "formas-de-pagamento": {
@@ -110,6 +149,11 @@ PAGINAS_ATENDIMENTO = {
 
             <p>Emitimos <strong>nota fiscal</strong> para CNPJ ou CPF antes do envio do
             seu pedido.</p>
+
+            <p>Por segurança, o pagamento é combinado <strong>somente pelos canais
+            oficiais da Nove de Julho Artigos Ltda</strong> (CNPJ 39.390.354/0001-25) --
+            WhatsApp (84) 98127-6650 ou e-mail 9djulho@gmail.com. Desconfie de qualquer
+            cobrança fora desses canais.</p>
         """,
     },
     "quem-somos": {
@@ -175,6 +219,24 @@ PAGINAS_ATENDIMENTO = {
             <p>As informações pessoais coletadas podem incluir seu nome, e-mail,
             telefone/WhatsApp, endereço e outros dados necessários para processar seu
             pedido, calcular o frete e emitir a nota fiscal.</p>
+
+            <h2>Cookies e ferramentas de análise</h2>
+            <p>Usamos cookies e ferramentas de análise (Google Analytics e Meta Pixel)
+            para entender como o site é usado e melhorar a experiência de compra. Essas
+            ferramentas podem registrar dados como páginas visitadas, tempo de navegação
+            e origem do acesso. Você pode desativar cookies nas configurações do seu
+            navegador, mas algumas funcionalidades do site podem parar de funcionar
+            corretamente.</p>
+
+            <h2>Compartilhamento de dados</h2>
+            <p>Compartilhamos apenas os dados necessários para processar seu pedido com
+            transportadoras (envio) e processadores de pagamento (Pix, cartão, boleto).
+            Não vendemos nem alugamos seus dados pessoais para terceiros.</p>
+
+            <h2>Seus direitos</h2>
+            <p>Você pode solicitar a qualquer momento a confirmação, o acesso, a
+            correção ou a exclusão dos seus dados pessoais, entrando em contato pelo
+            e-mail <strong>9djulho@gmail.com</strong>.</p>
 
             <p>O uso do site da Nove de Julho pressupõe a aceitação deste termo.
             Podemos alterar este acordo sem aviso prévio — recomendamos consultar esta

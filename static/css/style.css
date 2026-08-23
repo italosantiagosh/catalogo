@@ -440,6 +440,11 @@ a.link-carrinho #contador-carrinho {
   margin: 0 0 6px;
 }
 
+.preco-atacado {
+  color: var(--gold);
+  font-weight: 600;
+}
+
 .card-corpo .ver-modelos {
   font-size: 0.8rem;
   font-weight: 600;
@@ -1130,6 +1135,21 @@ button.botao-carrinho:disabled {
   font-weight: 600;
   line-height: 1.4;
   margin: 0 0 8px;
+}
+
+.preview-preco {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 0.85rem;
+  color: var(--ink);
+  line-height: 1.45;
+  margin: 0 0 14px;
+}
+
+.preview-preco strong {
+  color: var(--accent);
 }
 
 .pix-bloco {
@@ -1844,6 +1864,41 @@ input[type="file"] {
 
 .conteudo-institucional li {
   margin-bottom: 4px;
+}
+
+.conteudo-institucional .acordeao {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 14px;
+  margin: 0 0 10px;
+  background: var(--card);
+}
+
+.conteudo-institucional .acordeao > summary {
+  cursor: pointer;
+  font-weight: 600;
+  color: var(--accent);
+  list-style: none;
+}
+
+.conteudo-institucional .acordeao > summary::-webkit-details-marker {
+  display: none;
+}
+
+.conteudo-institucional .acordeao > summary::before {
+  content: '+ ';
+}
+
+.conteudo-institucional .acordeao[open] > summary::before {
+  content: '− ';
+}
+
+.conteudo-institucional .acordeao > summary + * {
+  margin-top: 10px;
+}
+
+.conteudo-institucional .acordeao :last-child {
+  margin-bottom: 0;
 }
 
 /* descricoes por formato (pagina de produto) */

@@ -172,3 +172,8 @@ def test_barra_fixa_comprar_presente_na_pagina_de_produto(client):
     html = client.get("/produto/sao-jose").get_data(as_text=True)
     assert 'id="barra-fixa-comprar"' in html
     assert 'id="barra-fixa-btn-adicionar"' in html
+
+
+def test_preview_preco_presente_na_pagina_de_produto(client):
+    html = client.get("/produto/sao-jose").get_data(as_text=True)
+    assert 'id="preview-preco"' in html

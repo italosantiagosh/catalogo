@@ -86,13 +86,19 @@ def calcular_preco(chave_preco: str, quantidade_total_grupo: int) -> float:
 
 def proxima_faixa(chave_preco: str, quantidade_total_grupo: int) -> dict | None:
     """Proxima faixa a desbloquear (quantidade/faltam/preco), ou None se o
-    grupo ja esta na maior faixa cadastrada."""
+    grupo ja esta na maior faixa cadastrada. `economia` e quanto o pedido
+    inteiro passa a custar A MENOS ao cruzar essa faixa -- preco por
+    unidade cai pra TODAS as unidades do grupo, nao so as adicionadas
+    (mesmo modelo de faixa "por degrau" ja usado em calcular_preco), entao
+    e (preco atual - preco da faixa) vezes a quantidade que a faixa exige."""
+    preco_atual = calcular_preco(chave_preco, quantidade_total_grupo)
     for inicio, valor in _faixas_ordenadas(chave_preco):
         if quantidade_total_grupo < inicio:
             return {
                 "quantidade": inicio,
                 "faltam": inicio - quantidade_total_grupo,
                 "preco": valor,
+                "economia": round((preco_atual - valor) * inicio, 2),
             }
     return None
 

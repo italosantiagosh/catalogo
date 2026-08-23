@@ -18,6 +18,8 @@
   <meta name="twitter:description" content="{{ self.og_descricao() }}">
   <meta name="twitter:image" content="{{ self.og_imagem() }}">
 
+  <link rel="canonical" href="{{ request.base_url }}">
+
   <link rel="icon" href="{{ url_for('static', filename='img/favicon.ico') }}" sizes="any">
   <link rel="icon" type="image/png" href="{{ url_for('static', filename='img/favicon-32.png') }}" sizes="32x32">
   <link rel="apple-touch-icon" href="{{ url_for('static', filename='img/apple-touch-icon.png') }}">

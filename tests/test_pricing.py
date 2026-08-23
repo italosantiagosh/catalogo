@@ -41,7 +41,12 @@ def test_calcular_preco_chaveiro_tem_tabela_propria():
 
 
 def test_proxima_faixa_perto_do_limite():
-    assert proxima_faixa("16mm", 98) == {"quantidade": 100, "faltam": 2, "preco": 3.00}
+    assert proxima_faixa("16mm", 98) == {
+        "quantidade": 100,
+        "faltam": 2,
+        "preco": 3.00,
+        "economia": 50.00,  # (3.50 atual - 3.00 proximo) * 100 unidades
+    }
 
 
 def test_proxima_faixa_none_na_faixa_maxima():
@@ -94,7 +99,12 @@ def test_calcular_carrinho_chaveiro_em_quantidade_isoladamente_bate_faixa_propri
 
 def test_calcular_carrinho_mudanca_de_faixa_ao_cruzar_o_limite():
     quase = calcular_carrinho([{"chave_preco": "16mm", "quantidade": 98}])
-    assert quase["grupos"]["padrao"]["proxima_faixa"] == {"quantidade": 100, "faltam": 2, "preco": 3.00}
+    assert quase["grupos"]["padrao"]["proxima_faixa"] == {
+        "quantidade": 100,
+        "faltam": 2,
+        "preco": 3.00,
+        "economia": 50.00,
+    }
     assert quase["itens"][0]["preco_unitario"] == 3.50
 
     completo = calcular_carrinho([{"chave_preco": "16mm", "quantidade": 100}])

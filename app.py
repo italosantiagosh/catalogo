@@ -56,6 +56,7 @@ from config import (
     GA4_MEASUREMENT_ID,
     INSTAGRAM_URL,
     META_PIXEL_ID,
+    PROCURADOS_HOME,
     PROVA_SOCIAL,
     VIDEO_APRESENTACAO_URL,
     WHATSAPP_NUMBER,
@@ -282,13 +283,16 @@ def index():
         for p in produtos
     ]
     categorias = categorias_com_slug(produtos)
-    destaques = _montar_destaques({item["id"]: item for item in itens})
+    itens_por_id = {item["id"]: item for item in itens}
+    destaques = _montar_destaques(itens_por_id)
+    procurados = [itens_por_id[pid] for pid in PROCURADOS_HOME if pid in itens_por_id]
     return render_template(
         "index.html",
         produtos=itens,
         categorias=categorias,
         preco_varejo=preco_varejo(),
         destaques=destaques,
+        procurados=procurados,
     )
 
 

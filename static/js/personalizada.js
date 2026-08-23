@@ -119,9 +119,14 @@
     if (evento.target.name === 'cor') atualizarBotoesUpload();
   });
 
+  let customizerIniciado = false;
   inputImagem.addEventListener('change', () => {
     nomeArquivoDiv.textContent = inputImagem.files.length > 0 ? inputImagem.files[0].name : '';
     atualizarBotoesUpload();
+    if (!customizerIniciado && inputImagem.files.length > 0) {
+      customizerIniciado = true;
+      rastrearEventoGA4('start_customizer', {});
+    }
   });
 
   function ajustarQuantidadeForm(delta) {

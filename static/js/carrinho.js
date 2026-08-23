@@ -10,6 +10,14 @@
  * renovado assim que o carrinho e limpo.
  */
 
+// Dispara um evento pro GA4 (ver base.html -- gtag so existe se
+// GA4_MEASUREMENT_ID estiver configurado) -- usado em todo lugar que
+// precisa registrar um passo do funil (busca, add ao carrinho, faixa
+// de atacado atingida etc), sem repetir o guard em cada arquivo.
+function rastrearEventoGA4(nome, params) {
+  if (typeof gtag === 'function') gtag('event', nome, params || {});
+}
+
 const CARRINHO_CHAVE = 'catalogo_medalhas_carrinho';
 const PEDIDO_ID_CHAVE = 'catalogo_medalhas_pedido_id';
 const PEDIDO_ID_CHARSET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // sem O/0, I/1 -- evita confusao ao ler em voz alta
@@ -64,6 +72,14 @@ function carrinhoAdicionarItem(novoItem) {
     itens.push(novoItem);
   }
   carrinhoSalvarItens(itens);
+  // um so lugar pro evento -- cobre tanto o catalogo (produto.js) quanto
+  // a personalizada (personalizada.js), os dois unicos jeitos de item
+  // entrar no carrinho.
+  rastrearEventoGA4('add_to_cart', {
+    item_id: novoItem.produtoId || novoItem.tipo,
+    item_name: novoItem.produtoNome || 'Medalha personalizada',
+    quantity: novoItem.quantidade,
+  });
   return itens;
 }
 

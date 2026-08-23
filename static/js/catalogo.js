@@ -43,7 +43,23 @@ function normalizar(texto) {
     if (semResultado) semResultado.hidden = visiveis !== 0;
   }
 
-  input.addEventListener('input', filtrar);
+  let buscaTimer = null;
+  let ultimoTermoRastreado = '';
+  function agendarRastrearBusca() {
+    clearTimeout(buscaTimer);
+    buscaTimer = setTimeout(() => {
+      const termo = normalizar(input.value);
+      if (termo && termo !== ultimoTermoRastreado) {
+        rastrearEventoGA4('search', { search_term: termo });
+        ultimoTermoRastreado = termo;
+      }
+    }, 600);
+  }
+
+  input.addEventListener('input', () => {
+    filtrar();
+    agendarRastrearBusca();
+  });
 
   if (filtrosCategoria) {
     filtrosCategoria.addEventListener('click', (evento) => {
