@@ -645,6 +645,18 @@
         "imagem_entremeio_prata": "img/produtos/imaculado_coracao_de_maria_modelo_1_entremeio_prata.jpg",
         "imagem_entremeio_ouro_velho": "img/produtos/imaculado_coracao_de_maria_modelo_1_entremeio_ouro_velho.jpg",
         "imagem_chaveiro": "img/produtos/imaculado_coracao_de_maria_modelo_1_chaveiro.jpg"
+      },
+      {
+        "id": 2,
+        "nome": "Modelo 2",
+        "imagem": "img/produtos/imaculado_coracao_de_maria_modelo_2_medalha.jpg",
+        "tamanhos": [
+          "12mm",
+          "16mm"
+        ],
+        "imagem_entremeio_prata": "img/produtos/imaculado_coracao_de_maria_modelo_2_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/imaculado_coracao_de_maria_modelo_2_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/imaculado_coracao_de_maria_modelo_2_chaveiro.jpg"
       }
     ],
     "categoria": "Nossa Senhora"
@@ -3506,6 +3518,25 @@
         "imagem_entremeio_prata": "img/produtos/santos_martires_do_rn_modelo_1_entremeio_prata.jpg",
         "imagem_entremeio_ouro_velho": "img/produtos/santos_martires_do_rn_modelo_1_entremeio_ouro_velho.jpg",
         "imagem_chaveiro": "img/produtos/santos_martires_do_rn_modelo_1_chaveiro.jpg"
+      }
+    ],
+    "categoria": "Beatos"
+  },
+  {
+    "id": "beata-nha-xica",
+    "nome": "Beata Nhá Xica",
+    "modelos": [
+      {
+        "id": 1,
+        "nome": "Modelo 1",
+        "imagem": "img/produtos/beata_nha_xica_modelo_1_medalha.jpg",
+        "tamanhos": [
+          "12mm",
+          "16mm"
+        ],
+        "imagem_entremeio_prata": "img/produtos/beata_nha_xica_modelo_1_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/beata_nha_xica_modelo_1_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/beata_nha_xica_modelo_1_chaveiro.jpg"
       }
     ],
     "categoria": "Beatos"
