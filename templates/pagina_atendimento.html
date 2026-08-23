@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+
+{% block titulo %}{{ pagina.titulo }} — Nove de Julho{% endblock %}
+{% block meta_descricao %}{{ pagina.resumo }}{% endblock %}
+
+{% block conteudo %}
+  <a class="voltar" href="{{ url_for('index') }}">&larr; Voltar ao catálogo</a>
+  <h1>{{ pagina.titulo }}</h1>
+  <div class="conteudo-institucional">
+    {{ pagina.corpo_html | safe }}
+  </div>
+{% endblock %}

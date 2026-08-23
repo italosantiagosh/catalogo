@@ -56,10 +56,19 @@
     previewImg.alt = `${produtoNome} — ${modeloSelecionado.nome}`;
   }
 
+  function atualizarInfoFormato() {
+    const formato = formatoAtual();
+    for (const nome of ['medalha', 'entremeio', 'chaveiro']) {
+      const bloco = document.getElementById(`formato-info-${nome}`);
+      if (bloco) bloco.hidden = formato !== nome;
+    }
+  }
+
   function atualizarSubSelecao() {
     const formato = formatoAtual();
     tamanhosFieldset.hidden = formato !== 'medalha';
     coresFieldset.hidden = formato !== 'entremeio';
+    atualizarInfoFormato();
     atualizarAvisoPreco();
     atualizarPreview();
     atualizarBotao();

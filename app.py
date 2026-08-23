@@ -42,6 +42,7 @@ import io
 import secrets
 import tempfile
 import time
+from datetime import datetime, timezone
 from pathlib import Path
 
 from flask import Flask, Response, abort, jsonify, render_template, request, send_file, url_for
@@ -50,6 +51,7 @@ from werkzeug.datastructures import FileStorage
 
 from config import (
     DESCRICOES_CATEGORIA,
+    DESCRICOES_FORMATO,
     DESTAQUES_HOME,
     GA4_MEASUREMENT_ID,
     INSTAGRAM_URL,
@@ -59,6 +61,7 @@ from config import (
     WHATSAPP_NUMBER,
 )
 from services.catalogo import buscar_produto, carregar_produtos, categoria_por_slug, categorias_com_slug
+from services.paginas_institucionais import PAGINAS_ATENDIMENTO
 from services.catalogo_pdf import gerar_pdf_catalogo
 from services.frete import calcular_frete
 from services.pix import gerar_copia_cola, gerar_qr_data_uri
@@ -70,16 +73,45 @@ app = Flask(__name__)
 app.config["MAX_CONTENT_LENGTH"] = 60 * 1024 * 1024  # 60MB no total do upload
 
 
+def _dados_organizacao() -> dict:
+    """Schema.org Organization (SEO -- ajuda o Google a reconhecer a
+    marca/negocio) -- dados reais: CNPJ, endereco (so retirada com
+    agendamento, nao e loja fisica aberta), contato. Igual em toda
+    pagina, ver base.html."""
+    return {
+        "@context": "https://schema.org",
+        "@type": "Organization",
+        "name": "Nove de Julho Artigos Ltda",
+        "alternateName": "Nove de Julho",
+        "url": request.url_root,
+        "logo": url_for("static", filename="img/logo-icone.png", _external=True),
+        "taxID": "39.390.354/0001-25",
+        "telephone": f"+55{WHATSAPP_NUMBER[2:]}",
+        "email": "9djulho@gmail.com",
+        "address": {
+            "@type": "PostalAddress",
+            "streetAddress": "Rua Furnas, 4835",
+            "addressLocality": "Natal",
+            "addressRegion": "RN",
+            "addressCountry": "BR",
+        },
+        "sameAs": [INSTAGRAM_URL],
+    }
+
+
 @app.context_processor
 def _injetar_globais_de_template():
     # Disponivel em todo template (base.html usa pro botao flutuante de
-    # WhatsApp, pela bolinha de video e pelos scripts de analytics no
-    # <head>) -- nenhum desses muda por rota.
+    # WhatsApp, pela bolinha de video, pelos scripts de analytics e pelo
+    # schema.org Organization no <head>) -- nenhum desses muda por rota.
     return {
         "whatsapp_number": WHATSAPP_NUMBER,
         "video_apresentacao_url": VIDEO_APRESENTACAO_URL,
         "ga4_measurement_id": GA4_MEASUREMENT_ID,
         "meta_pixel_id": META_PIXEL_ID,
+        "instagram_url": INSTAGRAM_URL,
+        "ano_atual": datetime.now(timezone.utc).year,
+        "dados_organizacao": _dados_organizacao(),
     }
 
 
@@ -203,6 +235,7 @@ def sitemap_xml():
     caminhos = [url_for("index"), url_for("carrinho"), url_for("personalizada")]
     caminhos += [url_for("categoria", slug=c["slug"]) for c in categorias_com_slug(produtos)]
     caminhos += [url_for("produto", produto_id=p["id"]) for p in produtos]
+    caminhos += [url_for("pagina_atendimento", slug=s) for s in PAGINAS_ATENDIMENTO]
 
     base = request.url_root.rstrip("/")
     itens_xml = "".join(
@@ -272,19 +305,46 @@ def produto(produto_id: str):
     produto = buscar_produto(produto_id)
     if produto is None:
         abort(404)
+    preco = preco_varejo()
+    dados_produto = {
+        "@context": "https://schema.org",
+        "@type": "Product",
+        "name": produto["nome"],
+        "image": url_for("static", filename=produto["modelos"][0]["imagem"], _external=True),
+        "description": (
+            f"Medalha, entremeio e chaveiro de {produto['nome']} a partir de "
+            f"R$ {preco:.2f} -- desconto de atacado automático conforme a quantidade."
+        ),
+        "offers": {
+            "@type": "Offer",
+            "url": url_for("produto", produto_id=produto_id, _external=True),
+            "priceCurrency": "BRL",
+            "price": f"{preco:.2f}",
+            "availability": "https://schema.org/InStock",
+        },
+    }
     return render_template(
         "produto.html",
         produto=produto,
-        preco_varejo=preco_varejo(),
+        preco_varejo=preco,
         preco_varejo_chaveiro=preco_varejo("chaveiro"),
         prova_social=PROVA_SOCIAL,
-        instagram_url=INSTAGRAM_URL,
+        descricoes_formato=DESCRICOES_FORMATO,
+        dados_produto=dados_produto,
     )
 
 
 @app.route("/carrinho", methods=["GET"])
 def carrinho():
     return render_template("carrinho.html")
+
+
+@app.route("/atendimento/<slug>", methods=["GET"])
+def pagina_atendimento(slug: str):
+    pagina = PAGINAS_ATENDIMENTO.get(slug)
+    if pagina is None:
+        abort(404)
+    return render_template("pagina_atendimento.html", pagina=pagina, slug=slug)
 
 
 @app.route("/catalogo.pdf", methods=["GET"])

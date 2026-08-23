@@ -63,6 +63,16 @@
       </label>
     </fieldset>
 
+    <div class="formato-info" id="formato-info-medalha">
+      <p>{{ descricoes_formato.medalha }}</p>
+    </div>
+    <div class="formato-info" id="formato-info-entremeio" hidden>
+      <p>{{ descricoes_formato.entremeio }}</p>
+    </div>
+    <div class="formato-info" id="formato-info-chaveiro" hidden>
+      <p>{{ descricoes_formato.chaveiro }}</p>
+    </div>
+
     <fieldset class="tamanhos" id="sel-tamanhos">
       <legend>Tamanho *</legend>
     </fieldset>
@@ -132,6 +142,7 @@
 {% endblock %}
 
 {% block script %}
+  <script type="application/ld+json">{{ dados_produto | tojson }}</script>
   <script>
     window.PRECO_VAREJO_PADRAO = {{ preco_varejo | tojson }};
     window.PRECO_VAREJO_CHAVEIRO = {{ preco_varejo_chaveiro | tojson }};

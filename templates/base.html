@@ -13,6 +13,8 @@
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;1,9..144,500&family=Public+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 
+  <script type="application/ld+json">{{ dados_organizacao | tojson }}</script>
+
   {% if ga4_measurement_id %}
     <!-- Google Analytics (GA4) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id={{ ga4_measurement_id }}"></script>
@@ -67,6 +69,36 @@
   <main>
     {% block conteudo %}{% endblock %}
   </main>
+
+  <footer class="rodape">
+    <div class="rodape-colunas">
+      <div class="rodape-coluna rodape-marca">
+        <img class="rodape-logo" src="{{ url_for('static', filename='img/logo-icone.png') }}" alt="" width="34" height="40">
+        <strong>Nove de Julho</strong>
+        <p>Medalhas, chaveiros e entremeios católicos feitos com cuidado e devoção —
+        presentes de fé para marcar momentos especiais.</p>
+      </div>
+      <div class="rodape-coluna">
+        <strong>Atendimento</strong>
+        <a href="{{ url_for('pagina_atendimento', slug='envio-e-prazo-de-entrega') }}">Envio e prazo de entrega</a>
+        <a href="{{ url_for('pagina_atendimento', slug='trocas-e-devolucao') }}">Trocas e devolução</a>
+        <a href="{{ url_for('pagina_atendimento', slug='formas-de-pagamento') }}">Formas de pagamento</a>
+        <a href="{{ url_for('pagina_atendimento', slug='quem-somos') }}">Quem somos</a>
+        <a href="{{ url_for('pagina_atendimento', slug='termos-e-privacidade') }}">Termos e privacidade</a>
+      </div>
+      <div class="rodape-coluna">
+        <strong>Contato</strong>
+        <a href="https://wa.me/{{ whatsapp_number }}" target="_blank" rel="noopener">💬 WhatsApp</a>
+        <a href="{{ instagram_url }}" target="_blank" rel="noopener">📷 Instagram</a>
+      </div>
+    </div>
+    <div class="rodape-legal">
+      <p>Rua Furnas, 4835 — Neópolis, Natal/RN — endereço apenas para retirada, com
+      agendamento prévio.</p>
+      <p>© {{ ano_atual }} Nove de Julho Artigos Ltda — CNPJ 39.390.354/0001-25</p>
+    </div>
+  </footer>
+
   {% if request.endpoint != 'carrinho' %}
     <a class="whatsapp-flutuante" href="https://wa.me/{{ whatsapp_number }}" target="_blank"
        rel="noopener" aria-label="Falar no WhatsApp">

@@ -184,3 +184,25 @@ DESCRICOES_CATEGORIA = {
         "automático conforme a quantidade, sem cupom."
     ),
 }
+
+# Descricoes por FORMATO (nao confundir com DESCRICOES_CATEGORIA acima,
+# que e por santo/devocao) -- pedido do usuario: "uma descricao padrao
+# pra medalha, uma pra entremeio (16mm de diametro interno) e chaveiro
+# (30mm de diametro interno)". Usada em templates/produto.html, embaixo
+# do seletor de formato (services/gerador/config.py:MEDAL_SPECS tem a
+# geometria calibrada -- aqui e so o texto explicativo pro cliente).
+DESCRICOES_FORMATO = {
+    "medalha": (
+        "Medalha resinada em aço inoxidável, disponível em 1,2 cm ou 1,6 cm de diâmetro. "
+        "O formato mais tradicional, ideal pra usar em colar ou pulseira no dia a dia."
+    ),
+    "entremeio": (
+        "Entremeio resinado em aço inoxidável, com 1,6 cm de diâmetro interno. Passa "
+        "direto no cordão do terço/rosário, pra montar seu próprio terço com o santo "
+        "de devoção."
+    ),
+    "chaveiro": (
+        "Peça resinada em aço inoxidável, com 3 cm de diâmetro interno — o maior formato "
+        "do catálogo. Ótimo pra levar na bolsa, mochila ou chaveiro, ou pra presentear."
+    ),
+}
