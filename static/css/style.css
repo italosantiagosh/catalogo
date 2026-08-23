@@ -736,9 +736,23 @@ button.botao-carrinho:disabled {
 }
 
 .item-stepper .item-qtd {
-  min-width: 24px;
+  width: 44px;
+  height: 32px;
   text-align: center;
   font-weight: 600;
+  font-family: inherit;
+  font-size: 1rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg);
+  color: inherit;
+  -moz-appearance: textfield;
+}
+
+.item-stepper .item-qtd::-webkit-outer-spin-button,
+.item-stepper .item-qtd::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
 }
 
 .item-preco {
@@ -911,6 +925,16 @@ button.botao-carrinho:disabled {
   border-radius: 10px;
   padding: 10px 14px;
   font-size: 0.85rem;
+  margin: 0 0 12px;
+}
+
+.aviso-pagamento {
+  background: var(--gold-soft);
+  color: #7a5c1f;
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 0.82rem;
+  line-height: 1.4;
   margin: 0 0 12px;
 }
 

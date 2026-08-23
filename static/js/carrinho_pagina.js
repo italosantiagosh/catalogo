@@ -123,7 +123,7 @@
         ${avisoFoto}
         <div class="item-stepper">
           <button type="button" class="qtd-menos" aria-label="Diminuir quantidade">−</button>
-          <span class="item-qtd">${item.quantidade}</span>
+          <input type="number" class="item-qtd" value="${item.quantidade}" min="1" inputmode="numeric" aria-label="Quantidade">
           <button type="button" class="qtd-mais" aria-label="Aumentar quantidade">+</button>
         </div>
         <p class="item-preco">
@@ -140,6 +140,19 @@
     linha.querySelector('.qtd-mais').addEventListener('click', () => {
       carrinhoAtualizarQuantidade(item.chave, item.quantidade + 1);
       render();
+    });
+    const inputQtd = linha.querySelector('.item-qtd');
+    const confirmarQtdDigitada = () => {
+      const quantidade = parseInt(inputQtd.value, 10);
+      carrinhoAtualizarQuantidade(item.chave, Number.isFinite(quantidade) ? quantidade : 1);
+      render();
+    };
+    inputQtd.addEventListener('change', confirmarQtdDigitada);
+    inputQtd.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        inputQtd.blur();
+      }
     });
     linha.querySelector('.item-remover').addEventListener('click', () => {
       carrinhoRemoverItem(item.chave);
