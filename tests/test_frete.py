@@ -44,7 +44,9 @@ def test_preco_str_para_float_nao_confunde_ponto_com_separador_de_milhar():
     assert frete._preco_str_para_float("17.09") != 1709.0
 
 
-def test_calcular_frete_com_frete_gratis_nao_consulta_api():
+def test_calcular_frete_com_frete_gratis_sem_cotacao_cai_no_aviso_antigo():
+    # Sem token nenhum configurado, nenhuma fonte devolve cotacao --
+    # cai no aviso generico (comportamento antigo preservado nesse caso).
     with patch("services.frete.requests.post") as post_mock:
         resultado = frete.calcular_frete(
             itens=[{"chave_preco": "16mm", "quantidade": 200}],
@@ -56,6 +58,42 @@ def test_calcular_frete_com_frete_gratis_nao_consulta_api():
     assert resultado["frete_gratis"] is True
     assert resultado["opcoes"] == []
     assert "WhatsApp" in resultado["aviso"]
+
+
+def test_calcular_frete_com_frete_gratis_mostra_todas_opcoes_com_credito(monkeypatch):
+    # Pedido do usuario: mesmo com frete gratis atingido, mostrar todas
+    # as cotacoes -- a mais barata "Gratis" (preco original riscado), as
+    # demais "Por R$X" (X = preco original menos o valor da mais barata).
+    monkeypatch.setattr(frete, "FRENET_TOKEN", "token-fake")
+    monkeypatch.setattr(frete, "CEP_ORIGEM", "59000000")
+    monkeypatch.setattr(frete, "MELHOR_ENVIO_TOKEN", "")
+
+    with patch(
+        "services.frete.requests.post",
+        return_value=_resposta_frenet_fake(
+            {"Carrier": "Correios", "ServiceDescription": "PAC", "ShippingPrice": "25.00",
+             "DeliveryTime": 8, "Error": False},
+            {"Carrier": "Correios", "ServiceDescription": "SEDEX", "ShippingPrice": "50.00",
+             "DeliveryTime": 3, "Error": False},
+        ),
+    ):
+        resultado = frete.calcular_frete(
+            itens=[{"chave_preco": "16mm", "quantidade": 10}],
+            cep_destino="20040020",
+            subtotal=50.0,
+            frete_gratis_atingido=True,
+        )
+
+    assert resultado["frete_gratis"] is True
+    pac, sedex = resultado["opcoes"]
+    assert pac["servico"] == "PAC"
+    assert pac["preco_original"] == 25.00
+    assert pac["preco_final"] == 0.0
+    assert pac["gratis"] is True
+    assert sedex["servico"] == "SEDEX"
+    assert sedex["preco_original"] == 50.00
+    assert sedex["preco_final"] == 25.00  # 50 - 25 (credito = valor da mais barata)
+    assert sedex["gratis"] is False
 
 
 def test_consultar_frenet_sem_token_retorna_erro(monkeypatch):
@@ -216,7 +254,7 @@ def test_consultar_melhor_envio_filtra_transportadoras_conhecidas_e_erros(monkey
     # transportadoras do Melhor Envio) e a Azul com erro ficam de fora
     assert {o["transportadora"] for o in opcoes} == {"Azul Cargo Express", "Correios"}
     preco_por_transportadora = {o["transportadora"]: o["preco"] for o in opcoes}
-    assert preco_por_transportadora["Azul Cargo Express"] == 29.86
+    assert preco_por_transportadora["Azul Cargo Express"] == 34.86  # 29.86 + 5 de sobretaxa
     assert preco_por_transportadora["Correios"] == 20.70
 
 
@@ -267,7 +305,7 @@ def test_calcular_frete_combina_frenet_e_melhor_envio_ordenado_por_preco(monkeyp
     # a Azul (mais barata) vem primeiro, PAC depois -- fontes diferentes,
     # uma lista so, ordenada por preco
     assert [o["transportadora"] for o in resultado["opcoes"]] == ["Azul Cargo Express", "Correios"]
-    assert resultado["opcoes"][0]["preco"] == 19.90
+    assert resultado["opcoes"][0]["preco"] == 24.90  # 19.90 + 5 de sobretaxa
     assert resultado["opcoes"][1]["preco"] == 25.90
 
 

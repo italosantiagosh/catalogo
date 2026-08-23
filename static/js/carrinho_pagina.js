@@ -280,8 +280,38 @@
     }
 
     if (dados.frete_gratis) {
-      freteEscolhido = { texto: 'Grátis', preco: 0 };
+      if (!dados.opcoes || dados.opcoes.length === 0) {
+        freteEscolhido = { texto: 'Grátis', preco: 0 };
+        freteResultadoEl.innerHTML = `<p class="frete-gratis-aviso">🎉 ${dados.aviso}</p>`;
+        return;
+      }
+
       freteResultadoEl.innerHTML = `<p class="frete-gratis-aviso">🎉 ${dados.aviso}</p>`;
+      dados.opcoes.forEach((opcao, i) => {
+        const linha = document.createElement('div');
+        linha.className = 'frete-opcao';
+        const prazo = opcao.prazo_dias ? `${opcao.prazo_dias} dia(s) úteis` : '';
+        const rotulo = opcao.gratis
+          ? '<span class="frete-opcao-gratis">Grátis</span>'
+          : `<span class="frete-opcao-por">Por ${formatarPreco(opcao.preco_final)}</span>`;
+        linha.innerHTML = `
+          <div>
+            <div class="frete-opcao-nome">${opcao.transportadora} — ${opcao.servico}</div>
+            <div class="frete-opcao-prazo">${prazo}</div>
+          </div>
+          <div class="frete-opcao-preco">
+            <span class="frete-opcao-preco-original">${formatarPreco(opcao.preco_original)}</span>
+            ${rotulo}
+          </div>
+        `;
+        freteResultadoEl.appendChild(linha);
+        if (i === 0) {
+          freteEscolhido = {
+            texto: `${opcao.transportadora} ${opcao.servico} — Grátis`,
+            preco: 0,
+          };
+        }
+      });
       return;
     }
 

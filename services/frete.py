@@ -27,15 +27,15 @@ Regras de negocio (pedidas pelo usuario):
     - Sem seguro (ShipmentInvoiceValue sempre 0 na cotacao -- nao
       declara valor de mercadoria, entao a transportadora nao cobra
       premio de seguro em cima do frete).
-    - "Mini envios" aparece normalmente como opcao quando o frete NAO
-      e gratis. So fica de fora quando o carrinho ja atinge frete
-      gratis -- mas nesse caso NENHUMA cotacao calculada e mostrada
-      (ver proximo item), entao isso acontece sozinho, sem filtro
-      explicito.
+    - "Mini envios" aparece normalmente como opcao, frete gratis ou nao.
     - Quando o carrinho ja atinge frete gratis (calcular_carrinho ->
-      frete_gratis_atingido), NAO mostramos as cotacoes calculadas --
-      so o aviso de frete gratis e uma nota convidando a consultar um
-      envio mais rapido com desconto pelo WhatsApp.
+      frete_gratis_atingido), mostramos TODAS as cotacoes calculadas
+      normalmente, mas com um credito de frete gratis aplicado: a mais
+      barata sai com preco original riscado e "Gratis"; as demais saem
+      com preco original riscado e "Por R$X", onde X = preco original
+      menos o preco da mais barata (o credito do frete gratis vale
+      pra qualquer transportadora escolhida, nao so a mais barata --
+      ver _resultado_frete_gratis).
 """
 
 from __future__ import annotations
@@ -214,7 +214,7 @@ def _normalizar_nome(nome: str) -> str:
 # Valor e uma sobretaxa fixa em R$ somada ao preco de cada cotacao
 # dessa transportadora (pedido do usuario) -- 0 quando nao ha sobretaxa.
 TRANSPORTADORAS_MELHOR_ENVIO = {
-    "azul": 0.0,
+    "azul": 5.0,
     "latam": 50.0,
     "jt": 20.0,  # J&T Express
     "correios": 0.0,
@@ -300,26 +300,47 @@ def consultar_melhor_envio(cep_destino: str, peso_kg: float, subtotal: float) ->
     return opcoes
 
 
+AVISO_FRETE_GRATIS = (
+    "Seu pedido já garantiu frete grátis — o valor da opção mais barata sai por "
+    "conta da casa em qualquer transportadora escolhida. Quer receber mais rápido? "
+    "Fale com a gente pelo WhatsApp enviando seu carrinho para consultar um envio "
+    "expresso com desconto."
+)
+
+
+def _resultado_frete_gratis(opcoes: list[dict]) -> dict:
+    """Aplica o credito de frete gratis (pedido do usuario) em cima das
+    cotacoes reais ja calculadas: a mais barata sai com preco original
+    riscado e "Gratis"; as demais saem com preco original riscado e
+    "Por R$X", onde X = preco original menos o preco da mais barata --
+    o credito vale pra qualquer transportadora, nao so a mais barata.
+    Sem cotacoes (nenhuma fonte respondeu), cai no aviso antigo."""
+    if not opcoes:
+        return {"frete_gratis": True, "opcoes": [], "aviso": AVISO_FRETE_GRATIS}
+
+    credito = opcoes[0]["preco"]
+    opcoes_com_credito = [
+        {
+            "transportadora": opcao["transportadora"],
+            "servico": opcao["servico"],
+            "prazo_dias": opcao["prazo_dias"],
+            "preco_original": opcao["preco"],
+            "preco_final": (preco_final := round(max(opcao["preco"] - credito, 0.0), 2)),
+            "gratis": preco_final == 0.0,
+        }
+        for opcao in opcoes
+    ]
+    return {"frete_gratis": True, "opcoes": opcoes_com_credito, "aviso": AVISO_FRETE_GRATIS}
+
+
 def calcular_frete(
     itens: list[dict], cep_destino: str, subtotal: float, frete_gratis_atingido: bool
 ) -> dict:
-    """Combina a regra de frete gratis com a cotacao real da Frenet.
-
-    Quando o pedido ja atinge frete gratis, nao mostra as cotacoes
-    calculadas -- so confirma que o frete gratis e a opcao mais barata
-    e convida a consultar um envio mais rapido com desconto pelo
-    WhatsApp (pedido explicito do usuario)."""
-    if frete_gratis_atingido:
-        return {
-            "frete_gratis": True,
-            "opcoes": [],
-            "aviso": (
-                "Seu pedido já garantiu frete grátis — essa é a opção mais barata. "
-                "Quer receber mais rápido? Fale com a gente pelo WhatsApp enviando "
-                "seu carrinho para consultar um envio expresso com desconto."
-            ),
-        }
-
+    """Combina a regra de frete gratis com a cotacao real da Frenet +
+    Melhor Envio. Quando o pedido ja atinge frete gratis, ainda cotamos
+    tudo normalmente e aplicamos o credito de frete gratis em cima
+    (ver _resultado_frete_gratis) -- pedido do usuario, pra mostrar
+    todas as opcoes mesmo com frete gratis."""
     peso_real_kg = peso_total_kg(itens)
     peso_kg = peso_padrao_kg(peso_real_kg)
 
@@ -327,6 +348,9 @@ def calcular_frete(
     opcoes = list(resultado.get("opcoes", []))
     opcoes += consultar_melhor_envio(cep_destino, peso_kg, subtotal)
     opcoes.sort(key=lambda o: o["preco"])
+
+    if frete_gratis_atingido:
+        return _resultado_frete_gratis(opcoes)
 
     if not opcoes and "erro" in resultado:
         return {"frete_gratis": False, "opcoes": [], "erro": resultado["erro"]}

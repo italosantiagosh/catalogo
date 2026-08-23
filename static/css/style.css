@@ -872,6 +872,23 @@ button.botao-carrinho:disabled {
   font-weight: 700;
   color: var(--accent);
   white-space: nowrap;
+  text-align: right;
+}
+
+.frete-opcao-preco-original {
+  display: block;
+  font-weight: 400;
+  font-size: 0.78rem;
+  color: var(--muted);
+  text-decoration: line-through;
+}
+
+.frete-opcao-gratis {
+  color: #1f7a4d;
+}
+
+.frete-opcao-por {
+  color: var(--accent);
 }
 
 .frete-gratis-aviso {
