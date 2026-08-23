@@ -8,11 +8,11 @@ import services.frete as frete
 def test_peso_total_kg():
     itens = [
         {"chave_preco": "16mm", "quantidade": 10},  # 10 x 0,002kg = 0,020kg
-        {"chave_preco": "12mm", "quantidade": 4},  # 4 x 0,002kg (1,5g arredondado) = 0,008kg
+        {"chave_preco": "12mm", "quantidade": 4},  # 4 x 0,001kg = 0,004kg
         {"chave_preco": "entremeio", "quantidade": 5},  # 5 x 0,002kg = 0,010kg
         {"chave_preco": "chaveiro", "quantidade": 2},  # 2 x 0,015kg = 0,030kg
     ]
-    assert frete.peso_total_kg(itens) == 0.068
+    assert frete.peso_total_kg(itens) == 0.064
 
 
 def test_peso_padrao_kg_sobe_para_a_proxima_faixa():

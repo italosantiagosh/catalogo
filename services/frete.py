@@ -10,11 +10,9 @@ Regras de negocio (pedidas pelo usuario):
     - Peso por peca (services/frete.py:PESO_KG_POR_CHAVE) e uma unica
       caixa fixa (CAIXA_CM) pro pedido inteiro -- nao calculamos caixas
       multiplas por quantidade.
-    - A Frenet espera o peso em kg com 3 casas decimais -- os pesos por
-      peca ja vem convertidos e arredondados nessa granularidade (ex:
-      1,5g -> 0,002kg, arredondado pra cima) em vez de guardar em
-      gramas e arredondar o total depois, pra nao depender de
-      arredondamento de ponto flutuante em cima de fracao de grama.
+    - Peso por peca e dimensoes da caixa conferidos com o cadastro real
+      dos produtos na Yampi (mesma fonte que a cotacao que funciona
+      por la usa) -- ja em kg com ate 3 casas decimais.
     - O peso REAL calculado (que pode ser so alguns gramas) nunca e
       mandado direto pra Frenet -- varias transportadoras simplesmente
       nao cotam ou devolvem lista vazia pra um peso declarado tao baixo
@@ -47,18 +45,19 @@ from config import CEP_ORIGEM, FRENET_TOKEN
 
 FRENET_URL = "https://api.frenet.com.br/shipping/quote"
 
-# Peso de cada peca, ja em kg (Frenet usa kg com 3 casas decimais) --
-# ver services/pricing.py pras mesmas chaves. 1,5g (12mm) arredonda pra
-# cima, 0,002kg -- os outros sao exatos nessa casa decimal.
+# Peso de cada peca, ja em kg -- confirmado pelo cadastro real dos
+# produtos na Yampi (mesma fonte que a cotacao que da certo por la usa).
+# Ver services/pricing.py pras mesmas chaves.
 PESO_KG_POR_CHAVE = {
-    "12mm": 0.002,
+    "12mm": 0.001,
     "16mm": 0.002,
     "entremeio": 0.002,
     "chaveiro": 0.015,
 }
 
-# Caixa padrao usada pro pedido inteiro (altura x largura x comprimento, cm).
-CAIXA_CM = {"altura": 4, "largura": 11, "comprimento": 17}
+# Caixa padrao usada pro pedido inteiro (altura x largura x comprimento,
+# cm) -- confirmada pelo usuario a partir do cadastro real na Yampi.
+CAIXA_CM = {"altura": 4, "largura": 12, "comprimento": 17}
 
 # Faixas de peso padrao (kg) mandadas pra Frenet no lugar do peso real
 # calculado -- pedido do usuario, pra evitar declarar um peso tao baixo
