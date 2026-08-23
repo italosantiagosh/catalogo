@@ -160,13 +160,13 @@ def consultar_frenet(cep_destino: str, peso_kg: float, subtotal: float) -> dict:
 
     servicos = dados.get("ShippingSevicesArray", [])
     opcoes = []
-    descartadas_por_preco_absurdo = 0
+    descartadas = []  # (transportadora, preco) -- so pra diagnostico temporario
     for servico in servicos:
         if servico.get("Error"):
             continue
         preco = _preco_str_para_float(servico.get("ShippingPrice"))
         if preco > limite_preco:
-            descartadas_por_preco_absurdo += 1
+            descartadas.append((servico.get("Carrier", "?"), preco))
             continue
         opcoes.append(
             {
@@ -179,10 +179,17 @@ def consultar_frenet(cep_destino: str, peso_kg: float, subtotal: float) -> dict:
 
     opcoes.sort(key=lambda o: o["preco"])
     resultado = {"opcoes": opcoes}
-    if not opcoes and descartadas_por_preco_absurdo:
+    if not opcoes and descartadas:
+        descartadas.sort(key=lambda d: d[1])
+        # DIAGNOSTICO TEMPORARIO (remover depois de descobrir a causa dos
+        # precos absurdos): mostra a transportadora/preco mais barato que
+        # foi descartado, pra dar pra ver o numero real sem precisar de
+        # acesso aos logs do servidor.
+        ref = descartadas[0]
         resultado["erro"] = (
             "Não conseguimos calcular um frete confiável para esse CEP agora. "
-            "Fale com a gente pelo WhatsApp enviando seu carrinho para consultar o valor."
+            "Fale com a gente pelo WhatsApp enviando seu carrinho para consultar o valor. "
+            f"(ref. interna: {ref[0]} R$ {ref[1]:.2f})"
         )
     return resultado
 
