@@ -2,9 +2,11 @@
 
 {% block conteudo %}
   <section class="hero">
-    <h1>Medalhas que carregam histórias de fé.</h1>
-    <p>Mais de 130 santos e devoções, em medalha, entremeio ou chaveiro — ou crie
-    a sua própria medalha personalizada.</p>
+    <img
+      class="hero-banner"
+      src="{{ url_for('static', filename='img/banner-hero.jpg') }}"
+      alt="Nove de Julho — Catálogo de atacado. Medalhas que carregam histórias de fé. Mais de 130 santos e devoções, em medalha, entremeio ou chaveiro — ou crie a sua própria medalha personalizada."
+    >
     <div class="hero-acoes">
       <a href="#grid-produtos" class="botao-hero-primario">Explorar catálogo</a>
       <a href="{{ url_for('personalizada') }}" class="botao-hero-secundario">Criar personalizada</a>
