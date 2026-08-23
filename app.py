@@ -219,7 +219,12 @@ def api_calcular_frete():
     cep = str(dados.get("cep", ""))
 
     resumo_carrinho = calcular_carrinho(itens_validos)
-    resultado = calcular_frete(itens_validos, cep, resumo_carrinho["frete_gratis_atingido"])
+    resultado = calcular_frete(
+        itens_validos,
+        cep,
+        resumo_carrinho["subtotal_total"],
+        resumo_carrinho["frete_gratis_atingido"],
+    )
     return jsonify(resultado)
 
 

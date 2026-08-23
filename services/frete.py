@@ -51,6 +51,16 @@ CAIXA_CM = {"altura": 4, "largura": 11, "comprimento": 17}
 # transportadora), so evita mandar um peso irrealisticamente baixo.
 PESO_MINIMO_KG = 0.05
 
+# Filtro de sanidade: algumas transportadoras de carga/cubagem (Jadlog,
+# Loggi, Total Express) tem peso minimo faturavel alto e devolvem
+# cotacoes absurdas pra um pacote de poucos gramas (visto na pratica --
+# R$1700+ pra 50g de medalhas). Como isso nunca faz sentido pra um
+# pedido de medalhas, descarta qualquer cotacao mais cara que
+# LIMITE_MULTIPLICADOR_SUBTOTAL vezes o valor do pedido (com um piso
+# minimo, pra nao filtrar frete legitimo em pedidos muito baratos).
+LIMITE_MULTIPLICADOR_SUBTOTAL = 3
+LIMITE_MINIMO_REAIS = 150.0
+
 
 def _limpar_cep(cep: str) -> str:
     return re.sub(r"\D", "", cep or "")
@@ -73,7 +83,7 @@ def _preco_str_para_float(valor: str) -> float:
         return 0.0
 
 
-def consultar_frenet(cep_destino: str, peso_gramas: float) -> dict:
+def consultar_frenet(cep_destino: str, peso_gramas: float, subtotal: float) -> dict:
     """Consulta a Frenet e devolve {"opcoes": [...]} ou {"erro": "..."}."""
     if not FRENET_TOKEN:
         return {"erro": "Calculadora de frete nao configurada (falta FRENET_TOKEN)."}
@@ -117,25 +127,40 @@ def consultar_frenet(cep_destino: str, peso_gramas: float) -> dict:
     except ValueError:
         return {"erro": "Resposta invalida da Frenet."}
 
+    limite_preco = max(subtotal * LIMITE_MULTIPLICADOR_SUBTOTAL, LIMITE_MINIMO_REAIS)
+
     servicos = dados.get("ShippingSevicesArray", [])
     opcoes = []
+    descartadas_por_preco_absurdo = 0
     for servico in servicos:
         if servico.get("Error"):
+            continue
+        preco = _preco_str_para_float(servico.get("ShippingPrice"))
+        if preco > limite_preco:
+            descartadas_por_preco_absurdo += 1
             continue
         opcoes.append(
             {
                 "transportadora": servico.get("Carrier", ""),
                 "servico": servico.get("ServiceDescription", ""),
-                "preco": _preco_str_para_float(servico.get("ShippingPrice")),
+                "preco": preco,
                 "prazo_dias": servico.get("DeliveryTime"),
             }
         )
 
     opcoes.sort(key=lambda o: o["preco"])
-    return {"opcoes": opcoes}
+    resultado = {"opcoes": opcoes}
+    if not opcoes and descartadas_por_preco_absurdo:
+        resultado["erro"] = (
+            "Não conseguimos calcular um frete confiável para esse CEP agora. "
+            "Fale com a gente pelo WhatsApp enviando seu carrinho para consultar o valor."
+        )
+    return resultado
 
 
-def calcular_frete(itens: list[dict], cep_destino: str, frete_gratis_atingido: bool) -> dict:
+def calcular_frete(
+    itens: list[dict], cep_destino: str, subtotal: float, frete_gratis_atingido: bool
+) -> dict:
     """Combina a regra de frete gratis com a cotacao real da Frenet.
 
     Quando o pedido ja atinge frete gratis, nao mostra as cotacoes
@@ -154,7 +179,7 @@ def calcular_frete(itens: list[dict], cep_destino: str, frete_gratis_atingido: b
         }
 
     peso = peso_total_gramas(itens)
-    resultado = consultar_frenet(cep_destino, peso)
+    resultado = consultar_frenet(cep_destino, peso, subtotal)
     if "erro" in resultado:
         return {"frete_gratis": False, "opcoes": [], "erro": resultado["erro"]}
 
