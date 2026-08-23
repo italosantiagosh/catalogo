@@ -50,6 +50,7 @@ from werkzeug.datastructures import FileStorage
 
 from config import WHATSAPP_NUMBER
 from services.catalogo import buscar_produto, carregar_produtos
+from services.catalogo_pdf import gerar_pdf_catalogo
 from services.frete import calcular_frete
 from services.pix import gerar_copia_cola, gerar_qr_data_uri
 from services.gerador.compositor import auto_cover_box, compose_medal, crop_to_box, load_rgba
@@ -190,6 +191,20 @@ def produto(produto_id: str):
 @app.route("/carrinho", methods=["GET"])
 def carrinho():
     return render_template("carrinho.html", whatsapp_number=WHATSAPP_NUMBER)
+
+
+@app.route("/catalogo.pdf", methods=["GET"])
+def catalogo_pdf():
+    """PDF com o catalogo completo (fotos + tabela de precos de atacado +
+    orientacoes de pedido) -- ver services/catalogo_pdf.py. Servido
+    inline (nao forcado como anexo) pra abrir no visualizador de PDF do
+    navegador, de onde da pra salvar/baixar normalmente."""
+    return send_file(
+        io.BytesIO(gerar_pdf_catalogo()),
+        mimetype="application/pdf",
+        as_attachment=False,
+        download_name="catalogo-nove-de-julho.pdf",
+    )
 
 
 def _itens_validos_do_corpo(dados: dict) -> list[dict]:
