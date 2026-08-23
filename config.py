@@ -33,3 +33,16 @@ CEP_ORIGEM = os.environ.get("CEP_ORIGEM", "59088-040")
 # escopo no painel do Melhor Envio, e mais seguro trocar por um mais
 # restrito.
 MELHOR_ENVIO_TOKEN = os.environ.get("MELHOR_ENVIO_TOKEN", "")
+
+# Pix (recebimento, ver services/pix.py). A chave Pix NAO e uma
+# credencial no sentido de senha/token -- e feita pra ser publicada e
+# escaneada por qualquer cliente (mesmo principio de um QR impresso
+# numa maquininha de cartao): so permite que mandem dinheiro pra
+# conta, nao da acesso a nada. Por isso fica direto no codigo, como o
+# CEP_ORIGEM -- variavel de ambiente so se quiser trocar sem redeploy.
+# Nome e cidade aparecem pro cliente no app do banco ao escanear;
+# CIDADE foi assumida como Natal/RN a partir do CEP_ORIGEM (faixa
+# 590xx-599xx) -- confirme/corrija se estiver errado.
+PIX_CHAVE = os.environ.get("PIX_CHAVE", "39390354000125")
+PIX_NOME_RECEBEDOR = os.environ.get("PIX_NOME_RECEBEDOR", "NOVE DE JULHO")
+PIX_CIDADE = os.environ.get("PIX_CIDADE", "NATAL")

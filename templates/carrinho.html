@@ -44,6 +44,17 @@
       Quer pagar no boleto ou cartão? É só pedir pelo WhatsApp — pagamento no cartão tem taxas à parte.
     </p>
 
+    <div class="pix-bloco">
+      <button type="button" id="btn-gerar-pix" class="botao-secundario">💠 Gerar QR Code Pix</button>
+      <div id="pix-resultado" class="pix-resultado" hidden>
+        <img id="pix-qr" class="pix-qr" alt="QR Code Pix para pagamento">
+        <label for="pix-copia-cola">Pix Copia e Cola</label>
+        <textarea id="pix-copia-cola" class="pix-copia-cola" readonly rows="3"></textarea>
+        <button type="button" id="btn-copiar-pix" class="botao-secundario">Copiar código</button>
+        <span class="pix-copiado" id="pix-copiado" hidden>Copiado!</span>
+      </div>
+    </div>
+
     <div class="whatsapp-acoes">
       <button type="button" id="btn-whatsapp-finalizar" class="botao-whatsapp">
         Finalizar pedido pelo WhatsApp

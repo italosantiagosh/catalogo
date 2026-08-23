@@ -51,6 +51,7 @@ from werkzeug.datastructures import FileStorage
 from config import WHATSAPP_NUMBER
 from services.catalogo import buscar_produto, carregar_produtos
 from services.frete import calcular_frete
+from services.pix import gerar_copia_cola, gerar_qr_data_uri
 from services.gerador.compositor import auto_cover_box, compose_medal, crop_to_box, load_rgba
 from services.gerador.config import IMAGE_EXTENSIONS, MEDAL_SPECS
 from services.pricing import CHAVES_PRECO, calcular_carrinho, preco_varejo
@@ -226,6 +227,24 @@ def api_calcular_frete():
         resumo_carrinho["frete_gratis_atingido"],
     )
     return jsonify(resultado)
+
+
+@app.route("/api/pix/gerar", methods=["POST"])
+def api_pix_gerar():
+    """Gera o Pix "copia e cola" + QR code com o valor do pedido ja
+    preenchido (ver services/pix.py -- BR Code estatico com valor, sem
+    integracao com API de banco)."""
+    dados = request.get_json(silent=True) or {}
+    try:
+        valor = float(dados.get("valor", 0))
+    except (TypeError, ValueError):
+        return jsonify(erro="Valor invalido."), 400
+    if valor <= 0:
+        return jsonify(erro="Valor invalido."), 400
+
+    txid = str(dados.get("txid") or "***")
+    copia_cola = gerar_copia_cola(valor, txid)
+    return jsonify(copia_cola=copia_cola, qr_data_uri=gerar_qr_data_uri(copia_cola))
 
 
 @app.route("/personalizada", methods=["GET"])

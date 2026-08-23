@@ -938,6 +938,53 @@ button.botao-carrinho:disabled {
   margin: 0 0 12px;
 }
 
+.pix-bloco {
+  margin: 0 0 16px;
+}
+
+.pix-resultado {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+  padding: 14px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--card);
+}
+
+.pix-qr {
+  width: 200px;
+  height: 200px;
+  max-width: 100%;
+  border-radius: 8px;
+}
+
+.pix-resultado label {
+  font-size: 0.78rem;
+  color: var(--muted);
+  align-self: flex-start;
+}
+
+.pix-copia-cola {
+  width: 100%;
+  font-family: monospace;
+  font-size: 0.72rem;
+  padding: 8px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg);
+  color: inherit;
+  resize: none;
+}
+
+.pix-copiado {
+  color: #1f7a4d;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
 .resumo-acoes {
   display: flex;
   flex-wrap: wrap;
