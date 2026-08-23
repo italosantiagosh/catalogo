@@ -1,9 +1,13 @@
 """
 Calculadora de frete do carrinho -- Frenet (Correios + demais
-transportadoras) + Melhor Envio (so Azul Express, com a tarifa
-contratada pelo usuario ali). O contrato proprio dos Correios nao
-precisa de integracao separada: o preco bate com a tabela publica que
-a propria Frenet ja retorna.
+transportadoras) + Melhor Envio (Azul Express, LATAM Cargo, J&T
+Express e Correios, com a tarifa contratada pelo usuario ali -- ver
+TRANSPORTADORAS_MELHOR_ENVIO pra sobretaxas por transportadora).
+
+Correios aparece nas duas fontes (Frenet com o preco do contrato
+proprio do usuario, ja confirmado batendo; Melhor Envio tambem, a
+pedido do usuario) -- podem aparecer 2 opcoes de Correios com precos
+diferentes, isso e esperado dado o pedido, nao e bug.
 
 Regras de negocio (pedidas pelo usuario):
     - Peso por peca (services/frete.py:PESO_KG_POR_CHAVE) e uma unica
@@ -200,12 +204,31 @@ def consultar_frenet(cep_destino: str, peso_kg: float, subtotal: float) -> dict:
     return resultado
 
 
+def _normalizar_nome(nome: str) -> str:
+    return re.sub(r"[^a-z0-9]", "", (nome or "").lower())
+
+
+# Transportadoras cotadas no Melhor Envio -- chave e um trecho do nome
+# ja normalizado (sem espaco/acento/pontuacao) pra casar com o nome que
+# a API devolve (ex: "J&T Express" -> "jtexpress", contem "jt").
+# Valor e uma sobretaxa fixa em R$ somada ao preco de cada cotacao
+# dessa transportadora (pedido do usuario) -- 0 quando nao ha sobretaxa.
+TRANSPORTADORAS_MELHOR_ENVIO = {
+    "azul": 0.0,
+    "latam": 50.0,
+    "jt": 20.0,  # J&T Express
+    "correios": 0.0,
+}
+
+
 def consultar_melhor_envio(cep_destino: str, peso_kg: float, subtotal: float) -> list[dict]:
-    """Cota so Azul Express no Melhor Envio (tarifa contratada pelo
-    usuario ali). Ao contrario da Frenet, a ausencia de token aqui NAO
-    e um erro -- essa fonte e complementar, o carrinho continua
-    funcionando so com a Frenet se nao estiver configurada. Retorna
-    uma lista de opcoes (pode ser vazia), nunca um erro visivel."""
+    """Cota Azul Express, LATAM Cargo, J&T Express e Correios no Melhor
+    Envio (tarifas contratadas pelo usuario ali -- ver
+    TRANSPORTADORAS_MELHOR_ENVIO pra sobretaxas). Ao contrario da
+    Frenet, a ausencia de token aqui NAO e um erro -- essa fonte e
+    complementar, o carrinho continua funcionando so com a Frenet se
+    nao estiver configurada. Retorna uma lista de opcoes (pode ser
+    vazia), nunca um erro visivel."""
     if not MELHOR_ENVIO_TOKEN:
         return []
 
@@ -252,16 +275,25 @@ def consultar_melhor_envio(cep_destino: str, peso_kg: float, subtotal: float) ->
         if servico.get("error"):
             continue
         nome_transportadora = (servico.get("company") or {}).get("name", "")
-        if "azul" not in nome_transportadora.lower():
+        nome_normalizado = _normalizar_nome(nome_transportadora)
+        sobretaxa = next(
+            (
+                valor
+                for chave, valor in TRANSPORTADORAS_MELHOR_ENVIO.items()
+                if chave in nome_normalizado
+            ),
+            None,
+        )
+        if sobretaxa is None:
             continue
-        preco = _preco_str_para_float(servico.get("price"))
+        preco = _preco_str_para_float(servico.get("price")) + sobretaxa
         if preco <= 0 or preco > limite_preco:
             continue
         opcoes.append(
             {
                 "transportadora": nome_transportadora,
                 "servico": servico.get("name", ""),
-                "preco": preco,
+                "preco": round(preco, 2),
                 "prazo_dias": servico.get("delivery_time"),
             }
         )
