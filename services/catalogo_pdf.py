@@ -18,12 +18,13 @@ from __future__ import annotations
 import io
 from pathlib import Path
 
+from PIL import Image as PilImage
 from reportlab.lib import colors
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
 from reportlab.lib.units import cm
 from reportlab.platypus import (
-    Image,
+    Image as RLImage,
     PageBreak,
     Paragraph,
     SimpleDocTemplate,
@@ -45,7 +46,16 @@ COR_ZEBRA = colors.HexColor("#f5f2ea")
 LADO_FOTO = 2.6 * cm
 COLUNAS_GRADE = 4
 
+# Fotos originais sao 480x480 (~40KB cada) -- com ~860 celulas no PDF
+# (todos os modelos x formatos, pedido do usuario), embutir no tamanho
+# original inchava o PDF pra quase 40MB. Reduz pra um tamanho de pixel
+# que ainda fica nitido no tamanho impresso (LADO_FOTO) antes de
+# embutir -- cai pra poucos MB.
+LADO_FOTO_PX = 180
+QUALIDADE_JPEG = 72
+
 _cache_pdf: bytes | None = None
+_cache_fotos: dict[str, io.BytesIO] = {}
 
 
 def _estilos() -> dict:
@@ -152,20 +162,68 @@ def _paginas_precos(estilos: dict) -> list:
     ]
 
 
-def _celula_produto(produto: dict, estilos: dict) -> Table:
-    caminho = STATIC_DIR / produto["modelos"][0]["imagem"]
+# Cada modelo de um produto tem ate 4 fotos -- uma por formato/cor (ver
+# services/catalogo.py). Medalha e uma so foto pro modelo (12mm/16mm sao
+# so o tamanho fisico impresso, a simulacao visual e identica -- mesmo
+# criterio de FORMATO_PARA_SPEC em app.py), mas entremeio tem as 2 cores
+# e chaveiro tem a propria foto -- pedido do usuario pra aparecerem
+# todas no PDF, nao so a medalha.
+FORMATOS_MODELO = [
+    ("Medalha", "imagem"),
+    ("Entremeio prata", "imagem_entremeio_prata"),
+    ("Entremeio ouro velho", "imagem_entremeio_ouro_velho"),
+    ("Chaveiro", "imagem_chaveiro"),
+]
+
+
+def _foto_reduzida(caminho_relativo: str) -> io.BytesIO | None:
+    """Reabre a foto original, redimensiona pro tamanho de exibicao no
+    PDF e reencoda em JPEG -- cacheada por caminho pra nao reprocessar a
+    mesma foto 2x (medalha e chaveiro de modelos diferentes podem
+    reaproveitar a mesma imagem base em alguns produtos)."""
+    if caminho_relativo in _cache_fotos:
+        _cache_fotos[caminho_relativo].seek(0)
+        return _cache_fotos[caminho_relativo]
+    caminho = STATIC_DIR / caminho_relativo
     try:
-        foto = Image(str(caminho), width=LADO_FOTO, height=LADO_FOTO)
+        with PilImage.open(caminho) as imagem:
+            imagem = imagem.convert("RGB")
+            imagem.thumbnail((LADO_FOTO_PX, LADO_FOTO_PX), PilImage.LANCZOS)
+            buffer = io.BytesIO()
+            imagem.save(buffer, format="JPEG", quality=QUALIDADE_JPEG)
     except Exception:
+        return None
+    buffer.seek(0)
+    _cache_fotos[caminho_relativo] = buffer
+    return buffer
+
+
+def _celula_modelo(nome_produto: str, modelo: dict, rotulo_formato: str, caminho_imagem: str, estilos: dict) -> Table:
+    buffer = _foto_reduzida(caminho_imagem)
+    if buffer is not None:
+        foto = RLImage(buffer, width=LADO_FOTO, height=LADO_FOTO)
+    else:
         foto = Spacer(LADO_FOTO, LADO_FOTO)
-    nome = Paragraph(produto["nome"], estilos["produto_nome"])
-    celula = Table([[foto], [nome]], colWidths=[LADO_FOTO + 0.4 * cm])
+    legenda = f"{nome_produto}<br/>Modelo {modelo['id']} · {rotulo_formato}"
+    texto = Paragraph(legenda, estilos["produto_nome"])
+    celula = Table([[foto], [texto]], colWidths=[LADO_FOTO + 0.4 * cm])
     celula.setStyle(TableStyle([("ALIGN", (0, 0), (-1, -1), "CENTER")]))
     return celula
 
 
-def _grade_categoria(produtos_categoria: list[dict], estilos: dict) -> Table:
-    celulas = [_celula_produto(p, estilos) for p in produtos_categoria]
+def _celulas_produto(produto: dict, estilos: dict) -> list[Table]:
+    celulas = []
+    for modelo in produto["modelos"]:
+        for rotulo_formato, campo_imagem in FORMATOS_MODELO:
+            caminho_imagem = modelo.get(campo_imagem)
+            if not caminho_imagem:
+                continue
+            celulas.append(_celula_modelo(produto["nome"], modelo, rotulo_formato, caminho_imagem, estilos))
+    return celulas
+
+
+def _grade(celulas: list[Table]) -> Table:
+    celulas = list(celulas)
     while len(celulas) % COLUNAS_GRADE:
         celulas.append("")
     linhas = [celulas[i : i + COLUNAS_GRADE] for i in range(0, len(celulas), COLUNAS_GRADE)]
@@ -184,16 +242,12 @@ def _grade_categoria(produtos_categoria: list[dict], estilos: dict) -> Table:
 
 
 def _paginas_catalogo(produtos: list[dict], estilos: dict) -> list:
-    por_categoria: dict[str, list[dict]] = {}
-    for produto in produtos:
-        por_categoria.setdefault(produto["categoria"], []).append(produto)
-
-    itens: list = [Paragraph("Catálogo completo", estilos["titulo"])]
-    for categoria in sorted(por_categoria):
-        produtos_ordenados = sorted(por_categoria[categoria], key=lambda p: p["nome"])
-        itens.append(Paragraph(categoria, estilos["categoria"]))
-        itens.append(_grade_categoria(produtos_ordenados, estilos))
-    return itens
+    # Sem separar por categoria (pedido do usuario) -- uma grade so, com
+    # todos os modelos/formatos de todos os santos, em ordem alfabetica.
+    celulas: list[Table] = []
+    for produto in sorted(produtos, key=lambda p: p["nome"]):
+        celulas += _celulas_produto(produto, estilos)
+    return [Paragraph("Catálogo completo", estilos["titulo"]), _grade(celulas)]
 
 
 def gerar_pdf_catalogo() -> bytes:
