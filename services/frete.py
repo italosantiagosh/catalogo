@@ -10,8 +10,14 @@ Regras de negocio (pedidas pelo usuario):
     - Peso por peca (services/frete.py:PESO_GRAMAS_POR_CHAVE) e uma
       unica caixa fixa (CAIXA_CM) pro pedido inteiro -- nao calculamos
       caixas multiplas por quantidade.
-    - Servicos "mini envios" nunca aparecem como opcao (nem fora da
-      faixa de frete gratis).
+    - Sem seguro (ShipmentInvoiceValue sempre 0 na cotacao -- nao
+      declara valor de mercadoria, entao a transportadora nao cobra
+      premio de seguro em cima do frete).
+    - "Mini envios" aparece normalmente como opcao quando o frete NAO
+      e gratis. So fica de fora quando o carrinho ja atinge frete
+      gratis -- mas nesse caso NENHUMA cotacao calculada e mostrada
+      (ver proximo item), entao isso acontece sozinho, sem filtro
+      explicito.
     - Quando o carrinho ja atinge frete gratis (calcular_carrinho ->
       frete_gratis_atingido), NAO mostramos as cotacoes calculadas --
       so o aviso de frete gratis e uma nota convidando a consultar um
@@ -67,11 +73,7 @@ def _preco_str_para_float(valor: str) -> float:
         return 0.0
 
 
-def _e_mini_envio(descricao: str) -> bool:
-    return "mini" in (descricao or "").lower()
-
-
-def consultar_frenet(cep_destino: str, peso_gramas: float, valor_declarado: float) -> dict:
+def consultar_frenet(cep_destino: str, peso_gramas: float) -> dict:
     """Consulta a Frenet e devolve {"opcoes": [...]} ou {"erro": "..."}."""
     if not FRENET_TOKEN:
         return {"erro": "Calculadora de frete nao configurada (falta FRENET_TOKEN)."}
@@ -87,7 +89,7 @@ def consultar_frenet(cep_destino: str, peso_gramas: float, valor_declarado: floa
     corpo = {
         "SellerCEP": _limpar_cep(CEP_ORIGEM),
         "RecipientCEP": cep_destino,
-        "ShipmentInvoiceValue": round(valor_declarado, 2),
+        "ShipmentInvoiceValue": 0,  # sem seguro -- nao declara valor de mercadoria
         "ShippingServiceCode": None,
         "RecipientCountry": "BR",
         "ShippingItemArray": [
@@ -120,13 +122,10 @@ def consultar_frenet(cep_destino: str, peso_gramas: float, valor_declarado: floa
     for servico in servicos:
         if servico.get("Error"):
             continue
-        descricao = servico.get("ServiceDescription", "")
-        if _e_mini_envio(descricao):
-            continue
         opcoes.append(
             {
                 "transportadora": servico.get("Carrier", ""),
-                "servico": descricao,
+                "servico": servico.get("ServiceDescription", ""),
                 "preco": _preco_str_para_float(servico.get("ShippingPrice")),
                 "prazo_dias": servico.get("DeliveryTime"),
             }
@@ -136,9 +135,7 @@ def consultar_frenet(cep_destino: str, peso_gramas: float, valor_declarado: floa
     return {"opcoes": opcoes}
 
 
-def calcular_frete(
-    itens: list[dict], cep_destino: str, subtotal: float, frete_gratis_atingido: bool
-) -> dict:
+def calcular_frete(itens: list[dict], cep_destino: str, frete_gratis_atingido: bool) -> dict:
     """Combina a regra de frete gratis com a cotacao real da Frenet.
 
     Quando o pedido ja atinge frete gratis, nao mostra as cotacoes
@@ -157,7 +154,7 @@ def calcular_frete(
         }
 
     peso = peso_total_gramas(itens)
-    resultado = consultar_frenet(cep_destino, peso, subtotal)
+    resultado = consultar_frenet(cep_destino, peso)
     if "erro" in resultado:
         return {"frete_gratis": False, "opcoes": [], "erro": resultado["erro"]}
 

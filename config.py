@@ -18,5 +18,6 @@ WHATSAPP_NUMBER = "5584981276650"
 FRENET_TOKEN = os.environ.get("FRENET_TOKEN", "")
 
 # CEP de onde os pedidos sao despachados -- usado como origem em toda
-# cotacao de frete. Ajuste aqui (nao e segredo, pode ficar no codigo).
-CEP_ORIGEM = os.environ.get("CEP_ORIGEM", "")
+# cotacao de frete. Nao e segredo, pode ficar no codigo -- variavel de
+# ambiente so se precisar sobrescrever sem redeploy.
+CEP_ORIGEM = os.environ.get("CEP_ORIGEM", "59088-040")
