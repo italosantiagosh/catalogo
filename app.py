@@ -66,6 +66,7 @@ from services.catalogo import (
     carregar_produtos,
     categoria_por_slug,
     categorias_com_slug,
+    normalizar_busca,
     slugify,
 )
 from services.paginas_institucionais import PAGINAS_ATENDIMENTO
@@ -294,11 +295,13 @@ def index():
     itens_por_id = {item["id"]: item for item in itens}
     destaques = _montar_destaques(itens_por_id)
     procurados = [itens_por_id[pid] for pid in PROCURADOS_HOME if pid in itens_por_id]
+    categorias = categorias_com_slug(produtos)
     return render_template(
         "index.html",
         preco_varejo=preco_varejo(),
         destaques=destaques,
         procurados=procurados,
+        categorias=categorias,
     )
 
 
@@ -456,6 +459,30 @@ def _itens_validos_do_corpo(dados: dict) -> list[dict]:
             continue
         itens_validos.append({"chave_preco": chave_preco, "quantidade": quantidade})
     return itens_validos
+
+
+@app.route("/api/busca", methods=["GET"])
+def api_busca():
+    """Busca ao vivo da home -- digitar no campo chama isso (debounced,
+    ver static/js/home_busca.js) e mostra nome + miniatura dos santos que
+    baterem, sem precisar apertar Enter nem carregar a grade completa
+    (essa fica em /catalogo)."""
+    termo = normalizar_busca(request.args.get("q", ""))
+    if not termo:
+        return jsonify([])
+    itens = _itens_do_grid(carregar_produtos())
+    resultados = [item for item in itens if termo in normalizar_busca(item["nome"])][:6]
+    return jsonify(
+        [
+            {
+                "id": item["id"],
+                "nome": item["nome"],
+                "thumbnail": url_for("static", filename=item["thumbnail"]),
+                "url": url_for("produto", produto_id=item["id"]),
+            }
+            for item in resultados
+        ]
+    )
 
 
 @app.route("/api/carrinho/calcular", methods=["POST"])

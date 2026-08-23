@@ -87,19 +87,35 @@
     <span class="banner-seta">→</span>
   </a>
 
-  <div class="busca-wrap">
-    <input type="search" id="busca-home" placeholder="Qual santo você procura? (ex: José, Carlo, Fátima)" aria-label="Buscar santo ou devoção">
+  <div class="busca-wrap busca-wrap-home">
+    <input type="search" id="busca-home" placeholder="Qual santo você procura? (ex: José, Carlo, Fátima)" aria-label="Buscar santo ou devoção" autocomplete="off">
+    <div class="busca-resultados" id="busca-home-resultados" hidden></div>
+  </div>
+
+  <div class="filtros-categoria" id="filtros-categoria">
+    <a href="{{ url_for('catalogo_completo') }}" class="chip-categoria">Todos</a>
+    {% for categoria in categorias %}
+      <a href="{{ url_for('categoria', slug=categoria.slug) }}" class="chip-categoria">{{ categoria.nome }}</a>
+    {% endfor %}
   </div>
 
   {% if procurados %}
     <section class="destaques">
       <div class="destaques-grupo">
         <h2 class="destaques-titulo">Conheça alguns santos do catálogo</h2>
-        <div class="destaques-linha">
+        <div class="grid-produtos">
           {% for produto in procurados %}
-            <a class="destaque-card" href="{{ url_for('produto', produto_id=produto.id) }}">
-              <img src="{{ url_for('static', filename=produto.thumbnail) }}" alt="{{ produto.nome }}" loading="lazy" decoding="async" width="150" height="150">
-              <span>{{ produto.nome }}</span>
+            <a class="card-produto" href="{{ url_for('produto', produto_id=produto.id) }}">
+              <div class="card-imagem-wrap">
+                <img src="{{ url_for('static', filename=produto.thumbnail) }}" alt="{{ produto.nome }}" loading="lazy" decoding="async" width="240" height="240">
+                <img class="card-imagem-alt" src="{{ url_for('static', filename=produto.thumbnail_chaveiro) }}" alt="" loading="lazy" decoding="async" aria-hidden="true" width="240" height="240">
+                <span class="badge-formatos">Medalha · Entremeio · Chaveiro</span>
+              </div>
+              <div class="card-corpo">
+                <h2>{{ produto.nome }}</h2>
+                <p class="preco">{{ preco_varejo | preco }} no varejo <span class="preco-atacado">· até 65% OFF no atacado</span></p>
+                <span class="ver-modelos">Ver modelos →</span>
+              </div>
             </a>
           {% endfor %}
         </div>

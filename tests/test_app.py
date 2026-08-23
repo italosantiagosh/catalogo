@@ -52,13 +52,32 @@ def test_categoria_inexistente_404(client):
 
 
 def test_home_nao_tem_a_grade_completa_mas_linka_o_catalogo(client):
-    # a home virou landing page (hero, vantagens, destaques, 4 santos +
-    # botao) -- a grade dos 130+ produtos e o filtro por categoria saem
-    # daqui e vao pra /catalogo.
+    # a home virou landing page (hero, vantagens, destaques, busca ao
+    # vivo, chips de categoria, 4 santos + botao) -- so a grade dos 130+
+    # produtos sai daqui e vai pra /catalogo.
     resposta = client.get("/").get_data(as_text=True)
     assert 'id="grid-produtos"' not in resposta
-    assert 'id="filtros-categoria"' not in resposta
+    assert 'id="filtros-categoria"' in resposta
+    assert 'id="busca-home-resultados"' in resposta
     assert 'href="/catalogo"' in resposta
+
+
+def test_home_mostra_so_4_cards_no_final(client):
+    resposta = client.get("/").get_data(as_text=True)
+    assert resposta.count('class="card-produto"') == 4
+
+
+def test_api_busca_encontra_por_nome_sem_acento(client):
+    resposta = client.get("/api/busca?q=jose")
+    assert resposta.status_code == 200
+    dados = resposta.get_json()
+    assert any(item["nome"] == "São José" for item in dados)
+    assert all({"id", "nome", "thumbnail", "url"} <= item.keys() for item in dados)
+
+
+def test_api_busca_sem_termo_retorna_vazio(client):
+    resposta = client.get("/api/busca")
+    assert resposta.get_json() == []
 
 
 def test_catalogo_completo_tem_grade_e_links_de_categoria(client):

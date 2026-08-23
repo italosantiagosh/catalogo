@@ -32,6 +32,13 @@ def slugify(texto: str) -> str:
     return re.sub(r"[^a-z0-9]+", "-", sem_acento.lower()).strip("-")
 
 
+def normalizar_busca(texto: str) -> str:
+    """minusculo sem acento, pra comparar nomes de forma tolerante a
+    acentuacao -- usado tanto no filtro client-side de /catalogo (via
+    equivalente em JS) quanto na busca ao vivo da home (/api/busca)."""
+    return unicodedata.normalize("NFKD", texto).encode("ascii", "ignore").decode("ascii").lower()
+
+
 def categorias_com_slug(produtos: list[dict]) -> list[dict]:
     nomes = sorted({p["categoria"] for p in produtos})
     return [{"nome": nome, "slug": slugify(nome)} for nome in nomes]
