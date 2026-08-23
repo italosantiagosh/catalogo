@@ -7,9 +7,14 @@ nao precisa de integracao separada: o preco bate com a tabela publica
 que a propria Frenet ja retorna.
 
 Regras de negocio (pedidas pelo usuario):
-    - Peso por peca (services/frete.py:PESO_GRAMAS_POR_CHAVE) e uma
-      unica caixa fixa (CAIXA_CM) pro pedido inteiro -- nao calculamos
-      caixas multiplas por quantidade.
+    - Peso por peca (services/frete.py:PESO_KG_POR_CHAVE) e uma unica
+      caixa fixa (CAIXA_CM) pro pedido inteiro -- nao calculamos caixas
+      multiplas por quantidade.
+    - A Frenet espera o peso em kg com 3 casas decimais -- os pesos por
+      peca ja vem convertidos e arredondados nessa granularidade (ex:
+      1,5g -> 0,002kg, arredondado pra cima) em vez de guardar em
+      gramas e arredondar o total depois, pra nao depender de
+      arredondamento de ponto flutuante em cima de fracao de grama.
     - Sem seguro (ShipmentInvoiceValue sempre 0 na cotacao -- nao
       declara valor de mercadoria, entao a transportadora nao cobra
       premio de seguro em cima do frete).
@@ -34,22 +39,18 @@ from config import CEP_ORIGEM, FRENET_TOKEN
 
 FRENET_URL = "https://api.frenet.com.br/shipping/quote"
 
-# Peso de cada peca, em gramas -- ver services/pricing.py pras mesmas chaves.
-PESO_GRAMAS_POR_CHAVE = {
-    "12mm": 1.5,
-    "16mm": 2.0,
-    "entremeio": 2.0,
-    "chaveiro": 15.0,
+# Peso de cada peca, ja em kg (Frenet usa kg com 3 casas decimais) --
+# ver services/pricing.py pras mesmas chaves. 1,5g (12mm) arredonda pra
+# cima, 0,002kg -- os outros sao exatos nessa casa decimal.
+PESO_KG_POR_CHAVE = {
+    "12mm": 0.002,
+    "16mm": 0.002,
+    "entremeio": 0.002,
+    "chaveiro": 0.015,
 }
 
 # Caixa padrao usada pro pedido inteiro (altura x largura x comprimento, cm).
 CAIXA_CM = {"altura": 4, "largura": 11, "comprimento": 17}
-
-# Peso minimo (kg) mandado pra Frenet mesmo em pedidos muito leves --
-# evita erro/cotacao invalida de transportadora com peso minimo de
-# cubagem. Nao altera a cobranca real (isso e definido pela
-# transportadora), so evita mandar um peso irrealisticamente baixo.
-PESO_MINIMO_KG = 0.05
 
 # Filtro de sanidade: algumas transportadoras de carga/cubagem (Jadlog,
 # Loggi, Total Express) tem peso minimo faturavel alto e devolvem
@@ -66,13 +67,13 @@ def _limpar_cep(cep: str) -> str:
     return re.sub(r"\D", "", cep or "")
 
 
-def peso_total_gramas(itens: list[dict]) -> float:
+def peso_total_kg(itens: list[dict]) -> float:
     """`itens` no mesmo formato do carrinho: [{"chave_preco": ..., "quantidade": ...}]."""
     total = 0.0
     for item in itens:
-        peso_unitario = PESO_GRAMAS_POR_CHAVE.get(item.get("chave_preco"), 0.0)
+        peso_unitario = PESO_KG_POR_CHAVE.get(item.get("chave_preco"), 0.0)
         total += peso_unitario * int(item.get("quantidade", 0))
-    return total
+    return round(total, 3)
 
 
 def _preco_str_para_float(valor: str) -> float:
@@ -83,7 +84,7 @@ def _preco_str_para_float(valor: str) -> float:
         return 0.0
 
 
-def consultar_frenet(cep_destino: str, peso_gramas: float, subtotal: float) -> dict:
+def consultar_frenet(cep_destino: str, peso_kg: float, subtotal: float) -> dict:
     """Consulta a Frenet e devolve {"opcoes": [...]} ou {"erro": "..."}."""
     if not FRENET_TOKEN:
         return {"erro": "Calculadora de frete nao configurada (falta FRENET_TOKEN)."}
@@ -93,8 +94,6 @@ def consultar_frenet(cep_destino: str, peso_gramas: float, subtotal: float) -> d
     cep_destino = _limpar_cep(cep_destino)
     if len(cep_destino) != 8:
         return {"erro": "CEP invalido."}
-
-    peso_kg = max(peso_gramas / 1000, PESO_MINIMO_KG)
 
     corpo = {
         "SellerCEP": _limpar_cep(CEP_ORIGEM),
@@ -178,8 +177,8 @@ def calcular_frete(
             ),
         }
 
-    peso = peso_total_gramas(itens)
-    resultado = consultar_frenet(cep_destino, peso, subtotal)
+    peso_kg = peso_total_kg(itens)
+    resultado = consultar_frenet(cep_destino, peso_kg, subtotal)
     if "erro" in resultado:
         return {"frete_gratis": False, "opcoes": [], "erro": resultado["erro"]}
 

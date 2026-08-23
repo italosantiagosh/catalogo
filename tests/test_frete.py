@@ -5,14 +5,14 @@ from unittest.mock import Mock, patch
 import services.frete as frete
 
 
-def test_peso_total_gramas():
+def test_peso_total_kg():
     itens = [
-        {"chave_preco": "16mm", "quantidade": 10},  # 10 x 2g = 20g
-        {"chave_preco": "12mm", "quantidade": 4},  # 4 x 1.5g = 6g
-        {"chave_preco": "entremeio", "quantidade": 5},  # 5 x 2g = 10g
-        {"chave_preco": "chaveiro", "quantidade": 2},  # 2 x 15g = 30g
+        {"chave_preco": "16mm", "quantidade": 10},  # 10 x 0,002kg = 0,020kg
+        {"chave_preco": "12mm", "quantidade": 4},  # 4 x 0,002kg (1,5g arredondado) = 0,008kg
+        {"chave_preco": "entremeio", "quantidade": 5},  # 5 x 0,002kg = 0,010kg
+        {"chave_preco": "chaveiro", "quantidade": 2},  # 2 x 0,015kg = 0,030kg
     ]
-    assert frete.peso_total_gramas(itens) == 66.0
+    assert frete.peso_total_kg(itens) == 0.068
 
 
 def test_preco_str_para_float_formato_br():
@@ -37,14 +37,14 @@ def test_calcular_frete_com_frete_gratis_nao_consulta_api():
 def test_consultar_frenet_sem_token_retorna_erro(monkeypatch):
     monkeypatch.setattr(frete, "FRENET_TOKEN", "")
     monkeypatch.setattr(frete, "CEP_ORIGEM", "59000000")
-    resultado = frete.consultar_frenet("20040020", 100, 50.0)
+    resultado = frete.consultar_frenet("20040020", 0.1, 50.0)
     assert "erro" in resultado
 
 
 def test_consultar_frenet_cep_invalido(monkeypatch):
     monkeypatch.setattr(frete, "FRENET_TOKEN", "token-fake")
     monkeypatch.setattr(frete, "CEP_ORIGEM", "59000000")
-    resultado = frete.consultar_frenet("123", 100, 50.0)
+    resultado = frete.consultar_frenet("123", 0.1, 50.0)
     assert "erro" in resultado
 
 
@@ -71,7 +71,7 @@ def test_consultar_frenet_filtra_so_erro_mini_envio_fica_e_ordena_por_preco(monk
     ]
 
     with patch("services.frete.requests.post", return_value=_resposta_frenet_fake(*servicos)) as post_mock:
-        resultado = frete.consultar_frenet("20040020", 50, 100.0)
+        resultado = frete.consultar_frenet("20040020", 0.05, 100.0)
 
     post_mock.assert_called_once()
     _, kwargs = post_mock.call_args
@@ -105,7 +105,7 @@ def test_consultar_frenet_descarta_cotacao_absurda_de_transportadora_de_carga(mo
          "DeliveryTime": 7, "Error": False},
     ]
     with patch("services.frete.requests.post", return_value=_resposta_frenet_fake(*servicos)):
-        resultado = frete.consultar_frenet("20040020", 50, 50.0)
+        resultado = frete.consultar_frenet("20040020", 0.05, 50.0)
 
     assert [o["transportadora"] for o in resultado["opcoes"]] == ["Correios"]
 
@@ -119,7 +119,7 @@ def test_consultar_frenet_sem_nenhuma_cotacao_confiavel_retorna_erro(monkeypatch
          "DeliveryTime": 11, "Error": False},
     ]
     with patch("services.frete.requests.post", return_value=_resposta_frenet_fake(*servicos)):
-        resultado = frete.consultar_frenet("20040020", 50, 50.0)
+        resultado = frete.consultar_frenet("20040020", 0.05, 50.0)
 
     assert resultado["opcoes"] == []
     assert "erro" in resultado
