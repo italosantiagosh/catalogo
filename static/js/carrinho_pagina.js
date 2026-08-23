@@ -15,12 +15,6 @@
   const freteCepInput = document.getElementById('frete-cep');
   const btnCalcularFrete = document.getElementById('btn-calcular-frete');
   const freteResultadoEl = document.getElementById('frete-resultado');
-  const btnGerarPix = document.getElementById('btn-gerar-pix');
-  const pixResultadoEl = document.getElementById('pix-resultado');
-  const pixQrEl = document.getElementById('pix-qr');
-  const pixCopiaColaEl = document.getElementById('pix-copia-cola');
-  const btnCopiarPix = document.getElementById('btn-copiar-pix');
-  const pixCopiadoEl = document.getElementById('pix-copiado');
   if (!listaEl) return;
 
   const TAMANHO_LABEL = { '12mm': '1,2 cm', '16mm': '1,6 cm' };
@@ -271,10 +265,6 @@
     freteEscolhido = null;
     if (freteResultadoEl) freteResultadoEl.innerHTML = '';
 
-    // idem pro Pix -- o valor mudou, o QR/copia-e-cola gerado antes
-    // nao serve mais pro novo total.
-    if (pixResultadoEl) pixResultadoEl.hidden = true;
-
     ultimosItens = itens;
     ultimoCalculo = dados;
     pedidoIdTexto.textContent = `Pedido #${obterOuCriarPedidoId()}`;
@@ -394,55 +384,6 @@
         btnCalcularFrete.disabled = false;
         btnCalcularFrete.textContent = 'Calcular';
       }
-    });
-  }
-
-  if (btnGerarPix) {
-    btnGerarPix.addEventListener('click', async () => {
-      if (!ultimoCalculo) return;
-      const valorFrete = freteEscolhido && freteEscolhido.preco ? freteEscolhido.preco : 0;
-      const valor = ultimoCalculo.subtotal_total + valorFrete;
-
-      btnGerarPix.disabled = true;
-      btnGerarPix.textContent = 'Gerando...';
-      try {
-        const resposta = await fetch('/api/pix/gerar', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ valor, txid: obterOuCriarPedidoId() }),
-        });
-        const dados = await resposta.json();
-        if (dados.erro) {
-          mostrarToast(dados.erro);
-          return;
-        }
-        pixQrEl.src = dados.qr_data_uri;
-        pixCopiaColaEl.value = dados.copia_cola;
-        pixResultadoEl.hidden = false;
-        pixCopiadoEl.hidden = true;
-      } catch (e) {
-        mostrarToast('Não foi possível gerar o Pix agora.');
-      } finally {
-        btnGerarPix.disabled = false;
-        btnGerarPix.textContent = '💠 Gerar QR Code Pix';
-      }
-    });
-  }
-
-  if (btnCopiarPix) {
-    btnCopiarPix.addEventListener('click', async () => {
-      const texto = pixCopiaColaEl.value;
-      try {
-        await navigator.clipboard.writeText(texto);
-      } catch (e) {
-        pixCopiaColaEl.select();
-        document.execCommand('copy');
-      }
-      pixCopiadoEl.hidden = false;
-      clearTimeout(btnCopiarPix._timer);
-      btnCopiarPix._timer = setTimeout(() => {
-        pixCopiadoEl.hidden = true;
-      }, 2000);
     });
   }
 
