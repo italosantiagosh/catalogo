@@ -49,6 +49,10 @@ function normalizar(texto) {
     filtrosCategoria.addEventListener('click', (evento) => {
       const chip = evento.target.closest('.chip-categoria');
       if (!chip) return;
+      // os chips sao links de verdade pra /categoria/<slug> (SEO -- URL
+      // indexavel por categoria), mas com JS ligado o filtro instantaneo
+      // na propria pagina continua sendo a experiencia melhor.
+      evento.preventDefault();
       categoriaAtual = chip.dataset.categoria || '';
       for (const outro of filtrosCategoria.querySelectorAll('.chip-categoria')) {
         outro.setAttribute('aria-pressed', String(outro === chip));

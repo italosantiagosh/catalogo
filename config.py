@@ -124,3 +124,63 @@ DESTAQUES_HOME = [
         "produtos": ["sao-pier-giorgio-frassati", "beata-sandra-sabatine", "filho-prodigo-acamps"],
     },
 ]
+
+# Descricoes por categoria -- usadas na pagina /categoria/<slug>
+# (app.py/templates/categoria.html) como H1/intro + meta description,
+# pra cada categoria virar uma URL indexavel de verdade (SEO), em vez
+# de so um filtro por clique na home. Estrutura igual em todas (pedido
+# do usuario): 1a frase com exemplos reais de produtos da categoria
+# (conteudo unico por pagina), 2a frase padrao sobre formato/atacado.
+DESCRICOES_CATEGORIA = {
+    "Nossa Senhora": (
+        "Mais de 30 apresentações e títulos de Nossa Senhora — Aparecida, Desatadora dos "
+        "Nós, Imaculado Coração, La Salete e outras devoções marianas — em medalha, "
+        "entremeio ou chaveiro. Desconto de atacado automático conforme a quantidade, "
+        "sem cupom."
+    ),
+    "Santos": (
+        "O maior grupo do catálogo, com 36 santos canonizados — de Santo Antônio e Santo "
+        "Expedito a Carlo Acutis e São José — em medalha, entremeio ou chaveiro. Desconto "
+        "de atacado automático conforme a quantidade, sem cupom."
+    ),
+    "Santas": (
+        "20 santas da Igreja Católica — Santa Clara, Santa Dulce, Santa Faustina, Edith "
+        "Stein e outras — em medalha, entremeio ou chaveiro. Desconto de atacado "
+        "automático conforme a quantidade, sem cupom."
+    ),
+    "Devoções": (
+        "Devoções e passagens marcantes da fé católica — Bodas de Caná, Cântico dos "
+        "Cânticos, Filho Pródigo, Frei Damião — em medalha, entremeio ou chaveiro. "
+        "Desconto de atacado automático conforme a quantidade, sem cupom."
+    ),
+    "Jesus": (
+        "Representações de Jesus Cristo — Bom Pastor, Cristo Rei, Jesus Misericordioso, "
+        "Sagrada Face — em medalha, entremeio ou chaveiro. Desconto de atacado automático "
+        "conforme a quantidade, sem cupom."
+    ),
+    "Outros": (
+        "Peças e devoções que não se encaixam nas demais categorias, com a mesma "
+        "variedade e qualidade do catálogo — em medalha, entremeio ou chaveiro. Desconto "
+        "de atacado automático conforme a quantidade, sem cupom."
+    ),
+    "Famílias": (
+        "Representações de família na tradição católica — Sagrada Família, Família "
+        "Martin, Pais de Teresinha — em medalha, entremeio ou chaveiro. Desconto de "
+        "atacado automático conforme a quantidade, sem cupom."
+    ),
+    "Beatos": (
+        "Beatos e beatas da Igreja, em diferentes etapas do processo de canonização — "
+        "Carlo Acutis, Sandra Sabattini, Beata Nhá Xica — em medalha, entremeio ou "
+        "chaveiro. Desconto de atacado automático conforme a quantidade, sem cupom."
+    ),
+    "Anjos": (
+        "Anjos e arcanjos da tradição católica — São Miguel, São Gabriel, São Rafael e "
+        "os Santos Arcanjos — em medalha, entremeio ou chaveiro. Desconto de atacado "
+        "automático conforme a quantidade, sem cupom."
+    ),
+    "Espírito Santo": (
+        "O Espírito Santo, Pentecostes e a Santíssima Trindade — presente tradicional de "
+        "crisma e confirmação — em medalha, entremeio ou chaveiro. Desconto de atacado "
+        "automático conforme a quantidade, sem cupom."
+    ),
+}

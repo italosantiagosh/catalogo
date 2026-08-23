@@ -310,6 +310,7 @@ a.link-carrinho #contador-carrinho {
 }
 
 .chip-categoria {
+  display: inline-block;
   flex-shrink: 0;
   border: 1px solid var(--border);
   background: var(--card);
@@ -320,6 +321,7 @@ a.link-carrinho #contador-carrinho {
   border-radius: 999px;
   cursor: pointer;
   white-space: nowrap;
+  text-decoration: none;
 }
 
 .chip-categoria[aria-pressed="true"] {

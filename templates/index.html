@@ -92,9 +92,9 @@
   </div>
 
   <div class="filtros-categoria" id="filtros-categoria">
-    <button type="button" class="chip-categoria" data-categoria="" aria-pressed="true">Todos</button>
+    <a href="{{ url_for('index') }}" class="chip-categoria" data-categoria="" aria-pressed="true">Todos</a>
     {% for categoria in categorias %}
-      <button type="button" class="chip-categoria" data-categoria="{{ categoria }}" aria-pressed="false">{{ categoria }}</button>
+      <a href="{{ url_for('categoria', slug=categoria.slug) }}" class="chip-categoria" data-categoria="{{ categoria.nome }}" aria-pressed="false">{{ categoria.nome }}</a>
     {% endfor %}
   </div>
 

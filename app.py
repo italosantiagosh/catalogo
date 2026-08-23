@@ -44,11 +44,12 @@ import tempfile
 import time
 from pathlib import Path
 
-from flask import Flask, abort, jsonify, render_template, request, send_file
+from flask import Flask, Response, abort, jsonify, render_template, request, send_file, url_for
 from PIL import Image
 from werkzeug.datastructures import FileStorage
 
 from config import (
+    DESCRICOES_CATEGORIA,
     DESTAQUES_HOME,
     GA4_MEASUREMENT_ID,
     INSTAGRAM_URL,
@@ -57,7 +58,7 @@ from config import (
     VIDEO_APRESENTACAO_URL,
     WHATSAPP_NUMBER,
 )
-from services.catalogo import buscar_produto, carregar_produtos
+from services.catalogo import buscar_produto, carregar_produtos, categoria_por_slug, categorias_com_slug
 from services.catalogo_pdf import gerar_pdf_catalogo
 from services.frete import calcular_frete
 from services.pix import gerar_copia_cola, gerar_qr_data_uri
@@ -190,6 +191,30 @@ def _montar_destaques(itens_por_id: dict) -> list[dict]:
     return destaques
 
 
+@app.route("/robots.txt", methods=["GET"])
+def robots_txt():
+    linhas = ["User-agent: *", "Allow: /", f"Sitemap: {request.url_root}sitemap.xml"]
+    return Response("\n".join(linhas), mimetype="text/plain")
+
+
+@app.route("/sitemap.xml", methods=["GET"])
+def sitemap_xml():
+    produtos = carregar_produtos()
+    caminhos = [url_for("index"), url_for("carrinho"), url_for("personalizada")]
+    caminhos += [url_for("categoria", slug=c["slug"]) for c in categorias_com_slug(produtos)]
+    caminhos += [url_for("produto", produto_id=p["id"]) for p in produtos]
+
+    base = request.url_root.rstrip("/")
+    itens_xml = "".join(
+        f"<url><loc>{(base + caminho).replace('&', '&amp;')}</loc></url>" for caminho in caminhos
+    )
+    corpo = (
+        '<?xml version="1.0" encoding="UTF-8"?>'
+        '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' + itens_xml + "</urlset>"
+    )
+    return Response(corpo, mimetype="application/xml")
+
+
 @app.route("/", methods=["GET"])
 def index():
     produtos = carregar_produtos()
@@ -203,7 +228,7 @@ def index():
         }
         for p in produtos
     ]
-    categorias = sorted({p["categoria"] for p in itens})
+    categorias = categorias_com_slug(produtos)
     destaques = _montar_destaques({item["id"]: item for item in itens})
     return render_template(
         "index.html",
@@ -211,6 +236,34 @@ def index():
         categorias=categorias,
         preco_varejo=preco_varejo(),
         destaques=destaques,
+    )
+
+
+@app.route("/categoria/<slug>", methods=["GET"])
+def categoria(slug: str):
+    """Pagina propria por categoria (SEO: URL indexavel, com titulo e
+    meta description unicos -- ver config.py:DESCRICOES_CATEGORIA) --
+    alem do filtro por clique que ja existe na home."""
+    produtos = carregar_produtos()
+    nome_categoria = categoria_por_slug(produtos, slug)
+    if nome_categoria is None:
+        abort(404)
+    itens = [
+        {
+            "id": p["id"],
+            "nome": p["nome"],
+            "thumbnail": p["modelos"][0]["imagem"],
+            "thumbnail_chaveiro": p["modelos"][0]["imagem_chaveiro"],
+        }
+        for p in produtos
+        if p["categoria"] == nome_categoria
+    ]
+    return render_template(
+        "categoria.html",
+        categoria_nome=nome_categoria,
+        categoria_descricao=DESCRICOES_CATEGORIA.get(nome_categoria, ""),
+        produtos=itens,
+        preco_varejo=preco_varejo(),
     )
 
 

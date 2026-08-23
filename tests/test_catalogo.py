@@ -1,6 +1,13 @@
 from pathlib import Path
 
-from services.catalogo import buscar_produto, carregar_produtos
+from config import DESCRICOES_CATEGORIA
+from services.catalogo import (
+    buscar_produto,
+    carregar_produtos,
+    categoria_por_slug,
+    categorias_com_slug,
+    slugify,
+)
 
 STATIC_DIR = Path(__file__).resolve().parent.parent / "static"
 
@@ -39,3 +46,35 @@ def test_buscar_produto_por_id():
 
 def test_buscar_produto_inexistente():
     assert buscar_produto("nao-existe") is None
+
+
+def test_slugify():
+    assert slugify("Nossa Senhora") == "nossa-senhora"
+    assert slugify("Espírito Santo") == "espirito-santo"
+    assert slugify("Famílias") == "familias"
+
+
+def test_categorias_com_slug_cobre_todas_as_categorias_reais():
+    produtos = carregar_produtos()
+    categorias_reais = {p["categoria"] for p in produtos}
+    categorias = categorias_com_slug(produtos)
+    assert {c["nome"] for c in categorias} == categorias_reais
+    # slugs unicos -- duas categorias diferentes nao podem colidir na
+    # mesma URL /categoria/<slug>
+    slugs = [c["slug"] for c in categorias]
+    assert len(slugs) == len(set(slugs))
+
+
+def test_categoria_por_slug_resolve_e_ignora_slug_invalido():
+    produtos = carregar_produtos()
+    assert categoria_por_slug(produtos, "nossa-senhora") == "Nossa Senhora"
+    assert categoria_por_slug(produtos, "nao-existe") is None
+
+
+def test_descricoes_categoria_cobre_todas_as_categorias_reais():
+    # toda categoria que existe de verdade no catalogo precisa ter uma
+    # descricao (senao a pagina /categoria/<slug> fica sem meta
+    # description/intro) -- pega categoria nova sem descricao cadastrada.
+    produtos = carregar_produtos()
+    categorias_reais = {p["categoria"] for p in produtos}
+    assert categorias_reais <= set(DESCRICOES_CATEGORIA)

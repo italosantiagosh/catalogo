@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 
-{% block titulo %}{{ produto.nome }} — Catálogo de Medalhas{% endblock %}
+{% block titulo %}{{ produto.nome }} — Catálogo de Atacado | Nove de Julho{% endblock %}
+{% block meta_descricao %}Medalha, entremeio e chaveiro de {{ produto.nome }} a partir de {{ preco_varejo | preco }} -- desconto de atacado automático conforme a quantidade, sem cupom. Peça pelo catálogo Nove de Julho.{% endblock %}
 
 {% block conteudo %}
   <a class="voltar" href="{{ url_for('index') }}">&larr; Voltar ao catálogo</a>
