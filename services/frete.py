@@ -15,6 +15,14 @@ Regras de negocio (pedidas pelo usuario):
       1,5g -> 0,002kg, arredondado pra cima) em vez de guardar em
       gramas e arredondar o total depois, pra nao depender de
       arredondamento de ponto flutuante em cima de fracao de grama.
+    - O peso REAL calculado (que pode ser so alguns gramas) nunca e
+      mandado direto pra Frenet -- varias transportadoras simplesmente
+      nao cotam ou devolvem lista vazia pra um peso declarado tao baixo
+      (visto na pratica: nenhuma cotacao aparecia). Em vez disso o peso
+      real e arredondado pra cima pro proximo "peso padrao" de envio
+      (PESOS_PADRAO_KG: 300g / 500g / 1kg / 2kg, ou o peso real se
+      passar de 2kg) -- imita o que uma transportadora real cobraria
+      por uma caixa pequena de qualquer forma.
     - Sem seguro (ShipmentInvoiceValue sempre 0 na cotacao -- nao
       declara valor de mercadoria, entao a transportadora nao cobra
       premio de seguro em cima do frete).
@@ -51,6 +59,20 @@ PESO_KG_POR_CHAVE = {
 
 # Caixa padrao usada pro pedido inteiro (altura x largura x comprimento, cm).
 CAIXA_CM = {"altura": 4, "largura": 11, "comprimento": 17}
+
+# Faixas de peso padrao (kg) mandadas pra Frenet no lugar do peso real
+# calculado -- pedido do usuario, pra evitar declarar um peso tao baixo
+# que as transportadoras nao conseguem/nao querem cotar.
+PESOS_PADRAO_KG = [0.3, 0.5, 1.0, 2.0]
+
+
+def peso_padrao_kg(peso_real_kg: float) -> float:
+    """Primeira faixa de PESOS_PADRAO_KG que cobre o peso real -- ou o
+    proprio peso real, se passar da maior faixa (2kg)."""
+    for faixa in PESOS_PADRAO_KG:
+        if peso_real_kg <= faixa:
+            return faixa
+    return peso_real_kg
 
 # Filtro de sanidade: algumas transportadoras de carga/cubagem (Jadlog,
 # Loggi, Total Express) tem peso minimo faturavel alto e devolvem
@@ -177,7 +199,8 @@ def calcular_frete(
             ),
         }
 
-    peso_kg = peso_total_kg(itens)
+    peso_real_kg = peso_total_kg(itens)
+    peso_kg = peso_padrao_kg(peso_real_kg)
     resultado = consultar_frenet(cep_destino, peso_kg, subtotal)
     if "erro" in resultado:
         return {"frete_gratis": False, "opcoes": [], "erro": resultado["erro"]}

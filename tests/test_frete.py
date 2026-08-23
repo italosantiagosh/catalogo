@@ -15,6 +15,22 @@ def test_peso_total_kg():
     assert frete.peso_total_kg(itens) == 0.068
 
 
+def test_peso_padrao_kg_sobe_para_a_proxima_faixa():
+    assert frete.peso_padrao_kg(0.02) == 0.3  # pedido pequeno -> 300g
+    assert frete.peso_padrao_kg(0.3) == 0.3  # exatamente na faixa -> fica nela
+    assert frete.peso_padrao_kg(0.31) == 0.5
+    assert frete.peso_padrao_kg(0.5) == 0.5
+    assert frete.peso_padrao_kg(0.51) == 1.0
+    assert frete.peso_padrao_kg(1.0) == 1.0
+    assert frete.peso_padrao_kg(1.01) == 2.0
+    assert frete.peso_padrao_kg(2.0) == 2.0
+
+
+def test_peso_padrao_kg_acima_de_2kg_usa_peso_real():
+    assert frete.peso_padrao_kg(2.5) == 2.5
+    assert frete.peso_padrao_kg(5.0) == 5.0
+
+
 def test_preco_str_para_float_formato_br():
     assert frete._preco_str_para_float("25,90") == 25.90
     assert frete._preco_str_para_float("1.234,56") == 1234.56
@@ -133,13 +149,18 @@ def test_calcular_frete_sem_frete_gratis_consulta_api(monkeypatch):
         {"Carrier": "Correios", "ServiceDescription": "PAC", "ShippingPrice": "25,90",
          "DeliveryTime": 8, "Error": False},
     ]
-    with patch("services.frete.requests.post", return_value=_resposta_frenet_fake(*servicos)):
+    with patch("services.frete.requests.post", return_value=_resposta_frenet_fake(*servicos)) as post_mock:
         resultado = frete.calcular_frete(
+            # 10 x 16mm = 0,020kg de peso real -- bem abaixo da faixa
+            # padrao de 300g, entao 300g e o que deve ser mandado.
             itens=[{"chave_preco": "16mm", "quantidade": 10}],
             cep_destino="20040020",
             subtotal=50.0,
             frete_gratis_atingido=False,
         )
+
+    _, kwargs = post_mock.call_args
+    assert kwargs["json"]["ShippingItemArray"][0]["Weight"] == 0.3
 
     assert resultado["frete_gratis"] is False
     assert resultado["opcoes"][0]["servico"] == "PAC"
