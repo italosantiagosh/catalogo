@@ -107,6 +107,12 @@ def _paragrafo_orientacoes(estilos: dict) -> list:
             "pelo WhatsApp. Emitimos nota fiscal para CNPJ ou CPF.",
             estilos["corpo"],
         ),
+        Paragraph("Prazo de produção", estilos["secao"]),
+        Paragraph(
+            "Após o pagamento confirmado, a produção do pedido tem prazo de até 5 dias "
+            "úteis antes do envio.",
+            estilos["corpo"],
+        ),
         Paragraph("Desconto progressivo", estilos["secao"]),
         Paragraph(
             "Medalhas (12mm/16mm) e entremeios somam juntos para a faixa de desconto — pode "

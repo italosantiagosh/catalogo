@@ -245,7 +245,9 @@ a.link-carrinho #contador-carrinho {
 
 @media (min-width: 640px) {
   .vantagens {
-    grid-template-columns: repeat(4, 1fr);
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
   }
 }
 
@@ -255,6 +257,12 @@ a.link-carrinho #contador-carrinho {
   gap: 2px;
   text-align: center;
   align-items: center;
+}
+
+@media (min-width: 640px) {
+  .vantagem {
+    flex: 0 0 calc(25% - 9px);
+  }
 }
 
 .vantagem-icone {
@@ -1054,6 +1062,21 @@ button.botao-carrinho:disabled {
   margin: 0 0 12px;
 }
 
+.aviso-producao {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  color: var(--muted);
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 0.82rem;
+  line-height: 1.4;
+  margin: 0 0 12px;
+}
+
+.aviso-producao strong {
+  color: var(--ink);
+}
+
 .pix-bloco {
   margin: 0 0 16px;
 }
@@ -1260,6 +1283,73 @@ button.botao-carrinho:disabled {
   line-height: 1.4;
   margin: 0;
   opacity: 0.95;
+}
+
+.banner-urgencia {
+  background: var(--gold-soft);
+  color: #7a5c1f;
+  border-radius: 12px;
+  padding: 12px 16px;
+  margin: 0 0 16px;
+  font-size: 0.84rem;
+  line-height: 1.4;
+  text-align: center;
+}
+
+.banner-urgencia strong {
+  color: #6b4a12;
+}
+
+/* destaques da home (mais vendidos / novidades / etc) */
+
+.destaques {
+  margin: 0 0 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.destaques-titulo {
+  font-size: 0.95rem;
+  margin: 0 0 8px;
+  color: var(--accent);
+}
+
+.destaques-linha {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+}
+
+.destaque-card {
+  flex: 0 0 auto;
+  width: 108px;
+  border-radius: 12px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  overflow: hidden;
+  scroll-snap-align: start;
+  text-decoration: none;
+  color: var(--ink);
+  display: block;
+}
+
+.destaque-card img {
+  width: 100%;
+  height: 108px;
+  object-fit: cover;
+  display: block;
+}
+
+.destaque-card span {
+  display: block;
+  padding: 8px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  line-height: 1.25;
 }
 
 /* banner de destaque para a personalizada, na home */

@@ -47,12 +47,36 @@
     </div>
   </div>
 
+  {% if destaques %}
+    <section class="destaques">
+      {% for grupo in destaques %}
+        <div class="destaques-grupo">
+          <h2 class="destaques-titulo">{{ grupo.titulo }}</h2>
+          <div class="destaques-linha">
+            {% for produto in grupo.produtos %}
+              <a class="destaque-card" href="{{ url_for('produto', produto_id=produto.id) }}">
+                <img src="{{ url_for('static', filename=produto.thumbnail) }}" alt="{{ produto.nome }}" loading="lazy" decoding="async">
+                <span>{{ produto.nome }}</span>
+              </a>
+            {% endfor %}
+          </div>
+        </div>
+      {% endfor %}
+    </section>
+  {% endif %}
+
   <div class="banner-atacado">
     <strong>💰 Preço de atacado automático</strong>
     <p>Quanto mais medalhas e entremeios você adicionar ao carrinho — de
     qualquer santo, inclusive personalizada — menor o preço por unidade.
     Chaveiros têm tabela de atacado própria. O desconto é aplicado sozinho,
     sem cupom, assim que você adiciona os itens.</p>
+  </div>
+
+  <div class="banner-urgencia">
+    ⏳ <strong>Preços e frete grátis podem mudar sem aviso.</strong>
+    Garanta as condições de hoje fazendo seu pedido agora — a tabela de
+    atacado atual não tem data pra durar.
   </div>
 
   <a class="banner-personalizada" href="{{ url_for('personalizada') }}">

@@ -105,3 +105,22 @@ PROVA_SOCIAL = [
         "texto": "Quem compra sempre quer mais uma depois!",
     },
 ]
+
+# Destaques da home (ver app.py:_montar_destaques, templates/index.html)
+# -- reduz a paralisia de escolha de quem chega e ve os 130+ santos
+# todos "iguais". IDs conferidos contra data/produtos.json; um id que
+# nao existir mais e simplesmente ignorado (nao quebra a pagina).
+DESTAQUES_HOME = [
+    {
+        "titulo": "🔥 Mais vendidos",
+        "produtos": ["sao-jose", "santa-teresinha", "carlo-acutis", "sagrada-familia", "sao-joao-paulo-ii"],
+    },
+    {
+        "titulo": "🕊️ Ano Jubilar de São Francisco",
+        "produtos": ["sao-francisco", "santa-clara"],
+    },
+    {
+        "titulo": "✨ Novidades",
+        "produtos": ["sao-pier-giorgio-frassati", "beata-sandra-sabatine", "filho-prodigo-acamps"],
+    },
+]

@@ -49,6 +49,7 @@ from PIL import Image
 from werkzeug.datastructures import FileStorage
 
 from config import (
+    DESTAQUES_HOME,
     GA4_MEASUREMENT_ID,
     INSTAGRAM_URL,
     META_PIXEL_ID,
@@ -177,6 +178,18 @@ def _salvar_temp(arquivo: FileStorage) -> tempfile._TemporaryFileWrapper:
     return tmp
 
 
+def _montar_destaques(itens_por_id: dict) -> list[dict]:
+    """Monta os grupos de destaques da home (DESTAQUES_HOME em config.py)
+    a partir dos itens ja carregados -- ids que nao existirem mais no
+    catalogo sao ignorados silenciosamente, nao quebram a pagina."""
+    destaques = []
+    for grupo in DESTAQUES_HOME:
+        produtos_grupo = [itens_por_id[pid] for pid in grupo["produtos"] if pid in itens_por_id]
+        if produtos_grupo:
+            destaques.append({"titulo": grupo["titulo"], "produtos": produtos_grupo})
+    return destaques
+
+
 @app.route("/", methods=["GET"])
 def index():
     produtos = carregar_produtos()
@@ -191,8 +204,13 @@ def index():
         for p in produtos
     ]
     categorias = sorted({p["categoria"] for p in itens})
+    destaques = _montar_destaques({item["id"]: item for item in itens})
     return render_template(
-        "index.html", produtos=itens, categorias=categorias, preco_varejo=preco_varejo()
+        "index.html",
+        produtos=itens,
+        categorias=categorias,
+        preco_varejo=preco_varejo(),
+        destaques=destaques,
     )
 
 
