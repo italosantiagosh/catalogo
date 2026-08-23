@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block titulo %}Catálogo completo — Nove de Julho{% endblock %}
+{% block meta_descricao %}Catálogo completo de atacado: mais de 130 santos e devoções em medalha, entremeio ou chaveiro. Busque por nome ou filtre por categoria.{% endblock %}
+
+{% block conteudo %}
+  <nav class="breadcrumbs" aria-label="Breadcrumb">
+    <a href="{{ url_for('index') }}">Início</a>
+    <span>›</span>
+    <span aria-current="page">Catálogo completo</span>
+  </nav>
+  <h1>Catálogo completo</h1>
+
+  <div class="busca-wrap">
+    <input type="search" id="busca" placeholder="Qual santo você procura? (ex: José, Carlo, Fátima)" aria-label="Buscar santo ou devoção">
+  </div>
+
+  <div class="filtros-categoria" id="filtros-categoria">
+    <a href="{{ url_for('catalogo_completo') }}" class="chip-categoria" data-categoria="" aria-pressed="true">Todos</a>
+    {% for categoria in categorias %}
+      <a href="{{ url_for('categoria', slug=categoria.slug) }}" class="chip-categoria" data-categoria="{{ categoria.nome }}" aria-pressed="false">{{ categoria.nome }}</a>
+    {% endfor %}
+  </div>
+
+  <p class="contagem" id="contagem"></p>
+
+  <div class="grid-produtos" id="grid-produtos">
+    {% for produto in produtos %}
+      <a class="card-produto" href="{{ url_for('produto', produto_id=produto.id) }}" data-nome="{{ produto.nome }}" data-categoria="{{ produto.categoria }}">
+        <div class="card-imagem-wrap">
+          <img src="{{ url_for('static', filename=produto.thumbnail) }}" alt="{{ produto.nome }}" loading="lazy" decoding="async">
+          <img class="card-imagem-alt" src="{{ url_for('static', filename=produto.thumbnail_chaveiro) }}" alt="" loading="lazy" decoding="async" aria-hidden="true">
+          <span class="badge-formatos">Medalha · Entremeio · Chaveiro</span>
+        </div>
+        <div class="card-corpo">
+          <h2>{{ produto.nome }}</h2>
+          <p class="preco">{{ preco_varejo | preco }} no varejo <span class="preco-atacado">· até 65% OFF no atacado</span></p>
+          <span class="ver-modelos">Ver modelos →</span>
+        </div>
+      </a>
+    {% endfor %}
+  </div>
+
+  <p class="sem-resultado" id="sem-resultado" hidden>Nenhum santo encontrado com esse nome.</p>
+{% endblock %}
+
+{% block script %}
+  <script src="{{ url_for('static', filename='js/catalogo.js') }}"></script>
+{% endblock %}

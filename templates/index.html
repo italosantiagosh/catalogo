@@ -8,7 +8,7 @@
       alt="Nove de Julho — Catálogo de atacado. Medalhas que carregam histórias de fé. Mais de 130 santos e devoções, em medalha, entremeio ou chaveiro — ou crie a sua própria medalha personalizada."
     >
     <div class="hero-acoes">
-      <a href="#grid-produtos" class="botao-hero-primario">Explorar catálogo</a>
+      <a href="{{ url_for('catalogo_completo') }}" class="botao-hero-primario">Explorar catálogo</a>
       <a href="{{ url_for('personalizada') }}" class="botao-hero-secundario">Criar personalizada</a>
       <a href="{{ url_for('catalogo_pdf') }}" target="_blank" class="botao-hero-secundario">📄 Baixar catálogo em PDF</a>
     </div>
@@ -46,23 +46,6 @@
       <span>Emitimos nota fiscal para CNPJ ou CPF</span>
     </div>
   </div>
-
-  {% if procurados %}
-    <section class="destaques">
-      <div class="destaques-grupo">
-        <h2 class="destaques-titulo">⭐ Mais procurados</h2>
-        <div class="destaques-linha">
-          {% for produto in procurados %}
-            <a class="destaque-card" href="{{ url_for('produto', produto_id=produto.id) }}">
-              <img src="{{ url_for('static', filename=produto.thumbnail) }}" alt="{{ produto.nome }}" loading="lazy" decoding="async" width="150" height="150">
-              <span>{{ produto.nome }}</span>
-            </a>
-          {% endfor %}
-        </div>
-        <a href="#grid-produtos" class="botao-secundario">Ver catálogo completo (130+ santos) →</a>
-      </div>
-    </section>
-  {% endif %}
 
   {% if destaques %}
     <section class="destaques">
@@ -105,38 +88,27 @@
   </a>
 
   <div class="busca-wrap">
-    <input type="search" id="busca" placeholder="Qual santo você procura? (ex: José, Carlo, Fátima)" aria-label="Buscar santo ou devoção">
+    <input type="search" id="busca-home" placeholder="Qual santo você procura? (ex: José, Carlo, Fátima)" aria-label="Buscar santo ou devoção">
   </div>
 
-  <div class="filtros-categoria" id="filtros-categoria">
-    <a href="{{ url_for('index') }}" class="chip-categoria" data-categoria="" aria-pressed="true">Todos</a>
-    {% for categoria in categorias %}
-      <a href="{{ url_for('categoria', slug=categoria.slug) }}" class="chip-categoria" data-categoria="{{ categoria.nome }}" aria-pressed="false">{{ categoria.nome }}</a>
-    {% endfor %}
-  </div>
-
-  <p class="contagem" id="contagem"></p>
-
-  <div class="grid-produtos" id="grid-produtos">
-    {% for produto in produtos %}
-      <a class="card-produto" href="{{ url_for('produto', produto_id=produto.id) }}" data-nome="{{ produto.nome }}" data-categoria="{{ produto.categoria }}">
-        <div class="card-imagem-wrap">
-          <img src="{{ url_for('static', filename=produto.thumbnail) }}" alt="{{ produto.nome }}" loading="lazy" decoding="async">
-          <img class="card-imagem-alt" src="{{ url_for('static', filename=produto.thumbnail_chaveiro) }}" alt="" loading="lazy" decoding="async" aria-hidden="true">
-          <span class="badge-formatos">Medalha · Entremeio · Chaveiro</span>
+  {% if procurados %}
+    <section class="destaques">
+      <div class="destaques-grupo">
+        <h2 class="destaques-titulo">Conheça alguns santos do catálogo</h2>
+        <div class="destaques-linha">
+          {% for produto in procurados %}
+            <a class="destaque-card" href="{{ url_for('produto', produto_id=produto.id) }}">
+              <img src="{{ url_for('static', filename=produto.thumbnail) }}" alt="{{ produto.nome }}" loading="lazy" decoding="async" width="150" height="150">
+              <span>{{ produto.nome }}</span>
+            </a>
+          {% endfor %}
         </div>
-        <div class="card-corpo">
-          <h2>{{ produto.nome }}</h2>
-          <p class="preco">{{ preco_varejo | preco }} no varejo <span class="preco-atacado">· até 65% OFF no atacado</span></p>
-          <span class="ver-modelos">Ver modelos →</span>
-        </div>
-      </a>
-    {% endfor %}
-  </div>
-
-  <p class="sem-resultado" id="sem-resultado" hidden>Nenhum santo encontrado com esse nome.</p>
+        <a href="{{ url_for('catalogo_completo') }}" class="botao-secundario">Ver catálogo completo (130+ santos) →</a>
+      </div>
+    </section>
+  {% endif %}
 {% endblock %}
 
 {% block script %}
-  <script src="{{ url_for('static', filename='js/catalogo.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/home_busca.js') }}"></script>
 {% endblock %}

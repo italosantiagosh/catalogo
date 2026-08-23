@@ -253,7 +253,7 @@ def robots_txt():
 @app.route("/sitemap.xml", methods=["GET"])
 def sitemap_xml():
     produtos = carregar_produtos()
-    caminhos = [url_for("index"), url_for("carrinho"), url_for("personalizada")]
+    caminhos = [url_for("index"), url_for("catalogo_completo"), url_for("carrinho"), url_for("personalizada")]
     caminhos += [url_for("categoria", slug=c["slug"]) for c in categorias_com_slug(produtos)]
     caminhos += [url_for("produto", produto_id=p["id"]) for p in produtos]
     caminhos += [url_for("pagina_atendimento", slug=s) for s in PAGINAS_ATENDIMENTO]
@@ -269,10 +269,8 @@ def sitemap_xml():
     return Response(corpo, mimetype="application/xml")
 
 
-@app.route("/", methods=["GET"])
-def index():
-    produtos = carregar_produtos()
-    itens = [
+def _itens_do_grid(produtos: list[dict]) -> list[dict]:
+    return [
         {
             "id": p["id"],
             "nome": p["nome"],
@@ -282,17 +280,41 @@ def index():
         }
         for p in produtos
     ]
-    categorias = categorias_com_slug(produtos)
+
+
+@app.route("/", methods=["GET"])
+def index():
+    """Home -- landing page comercial (hero, vantagens, destaques, banners),
+    SEM a grade completa de produtos (fica em /catalogo, ver
+    catalogo_completo abaixo) -- pedido do usuario pra manter a home mais
+    limpa/curta, mostrando so 4 santos em destaque + botao pro catalogo
+    inteiro."""
+    produtos = carregar_produtos()
+    itens = _itens_do_grid(produtos)
     itens_por_id = {item["id"]: item for item in itens}
     destaques = _montar_destaques(itens_por_id)
     procurados = [itens_por_id[pid] for pid in PROCURADOS_HOME if pid in itens_por_id]
     return render_template(
         "index.html",
-        produtos=itens,
-        categorias=categorias,
         preco_varejo=preco_varejo(),
         destaques=destaques,
         procurados=procurados,
+    )
+
+
+@app.route("/catalogo", methods=["GET"])
+def catalogo_completo():
+    """Grade completa com busca + filtro por categoria -- o que antes
+    ficava direto na home. `?q=` (opcional) vem do campo de busca da home
+    e pre-preenche o filtro aqui (ver static/js/catalogo.js)."""
+    produtos = carregar_produtos()
+    itens = _itens_do_grid(produtos)
+    categorias = categorias_com_slug(produtos)
+    return render_template(
+        "catalogo.html",
+        produtos=itens,
+        categorias=categorias,
+        preco_varejo=preco_varejo(),
     )
 
 

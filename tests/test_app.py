@@ -37,6 +37,7 @@ def test_sitemap_xml_inclui_home_e_paginas_de_categoria(client):
     assert "<urlset" in corpo
     assert "/categoria/nossa-senhora" in corpo
     assert "/produto/sao-jose" in corpo
+    assert "/catalogo<" in corpo
 
 
 def test_categoria_existente(client):
@@ -50,9 +51,26 @@ def test_categoria_inexistente_404(client):
     assert resposta.status_code == 404
 
 
-def test_home_linka_paginas_de_categoria(client):
-    resposta = client.get("/")
-    assert b"/categoria/" in resposta.data
+def test_home_nao_tem_a_grade_completa_mas_linka_o_catalogo(client):
+    # a home virou landing page (hero, vantagens, destaques, 4 santos +
+    # botao) -- a grade dos 130+ produtos e o filtro por categoria saem
+    # daqui e vao pra /catalogo.
+    resposta = client.get("/").get_data(as_text=True)
+    assert 'id="grid-produtos"' not in resposta
+    assert 'id="filtros-categoria"' not in resposta
+    assert 'href="/catalogo"' in resposta
+
+
+def test_catalogo_completo_tem_grade_e_links_de_categoria(client):
+    resposta = client.get("/catalogo").get_data(as_text=True)
+    assert 'id="grid-produtos"' in resposta
+    assert "/categoria/" in resposta
+    assert "São José" in resposta or "sao-jose" in resposta
+
+
+def test_catalogo_completo_aceita_termo_de_busca_na_url(client):
+    resposta = client.get("/catalogo?q=jose").get_data(as_text=True)
+    assert resposta  # so confirma que nao quebra com o parametro
 
 
 def test_produto_tem_meta_description(client):

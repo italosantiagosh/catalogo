@@ -77,5 +77,10 @@ function normalizar(texto) {
     });
   }
 
+  // pre-preenche a busca se veio de ?q= (campo de busca da home, que
+  // redireciona pra ca -- ver static/js/home_busca.js)
+  const termoInicial = new URLSearchParams(window.location.search).get('q');
+  if (termoInicial) input.value = termoInicial;
+
   filtrar();
 })();
