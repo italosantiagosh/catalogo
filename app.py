@@ -60,6 +60,15 @@ from services.pricing import CHAVES_PRECO, calcular_carrinho, preco_varejo
 app = Flask(__name__)
 app.config["MAX_CONTENT_LENGTH"] = 60 * 1024 * 1024  # 60MB no total do upload
 
+
+@app.context_processor
+def _injetar_whatsapp_number():
+    # Disponivel em todo template (base.html usa pro botao flutuante,
+    # sem precisar que cada rota passe explicitamente) -- so /carrinho
+    # ja passava antes, mas o proprio numero nunca muda por rota.
+    return {"whatsapp_number": WHATSAPP_NUMBER}
+
+
 CropBox = tuple[float, float, float, float]
 
 # Formato/cor (escolhidos na tela, ver produto.js/personalizada.js) -> id de
@@ -190,7 +199,7 @@ def produto(produto_id: str):
 
 @app.route("/carrinho", methods=["GET"])
 def carrinho():
-    return render_template("carrinho.html", whatsapp_number=WHATSAPP_NUMBER)
+    return render_template("carrinho.html")
 
 
 @app.route("/catalogo.pdf", methods=["GET"])

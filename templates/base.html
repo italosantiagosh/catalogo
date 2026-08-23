@@ -29,6 +29,10 @@
   <main>
     {% block conteudo %}{% endblock %}
   </main>
+  {% if request.endpoint != 'carrinho' %}
+    <a class="whatsapp-flutuante" href="https://wa.me/{{ whatsapp_number }}" target="_blank"
+       rel="noopener" aria-label="Falar no WhatsApp">💬</a>
+  {% endif %}
   <script src="{{ url_for('static', filename='js/carrinho.js') }}"></script>
   {% block script %}{% endblock %}
 </body>
