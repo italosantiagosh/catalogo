@@ -104,10 +104,14 @@ def peso_total_kg(itens: list[dict]) -> float:
     return round(total, 3)
 
 
-def _preco_str_para_float(valor: str) -> float:
-    """Frenet manda o preco como string em formato BR ("25,90")."""
+def _preco_str_para_float(valor) -> float:
+    """Frenet manda o preco com ponto decimal (ex: "17.09"), NAO em
+    formato BR com virgula. Bug ja corrigido: o codigo tratava "." como
+    separador de milhar e removia, inflando o preco por 100x --
+    "17.09" virava "1709" (confirmado comparando com o valor real
+    mostrado no site oficial: R$1709 aqui vs R$17,09 la)."""
     try:
-        return float(str(valor).replace(".", "").replace(",", "."))
+        return round(float(valor), 2)
     except (TypeError, ValueError):
         return 0.0
 
@@ -160,13 +164,13 @@ def consultar_frenet(cep_destino: str, peso_kg: float, subtotal: float) -> dict:
 
     servicos = dados.get("ShippingSevicesArray", [])
     opcoes = []
-    descartadas = []  # (transportadora, preco) -- so pra diagnostico temporario
+    descartadas_por_preco_absurdo = 0
     for servico in servicos:
         if servico.get("Error"):
             continue
         preco = _preco_str_para_float(servico.get("ShippingPrice"))
         if preco > limite_preco:
-            descartadas.append((servico.get("Carrier", "?"), preco))
+            descartadas_por_preco_absurdo += 1
             continue
         opcoes.append(
             {
@@ -179,17 +183,10 @@ def consultar_frenet(cep_destino: str, peso_kg: float, subtotal: float) -> dict:
 
     opcoes.sort(key=lambda o: o["preco"])
     resultado = {"opcoes": opcoes}
-    if not opcoes and descartadas:
-        descartadas.sort(key=lambda d: d[1])
-        # DIAGNOSTICO TEMPORARIO (remover depois de descobrir a causa dos
-        # precos absurdos): mostra a transportadora/preco mais barato que
-        # foi descartado, pra dar pra ver o numero real sem precisar de
-        # acesso aos logs do servidor.
-        ref = descartadas[0]
+    if not opcoes and descartadas_por_preco_absurdo:
         resultado["erro"] = (
             "Não conseguimos calcular um frete confiável para esse CEP agora. "
-            "Fale com a gente pelo WhatsApp enviando seu carrinho para consultar o valor. "
-            f"(ref. interna: {ref[0]} R$ {ref[1]:.2f})"
+            "Fale com a gente pelo WhatsApp enviando seu carrinho para consultar o valor."
         )
     return resultado
 

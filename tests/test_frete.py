@@ -31,9 +31,17 @@ def test_peso_padrao_kg_acima_de_2kg_usa_peso_real():
     assert frete.peso_padrao_kg(5.0) == 5.0
 
 
-def test_preco_str_para_float_formato_br():
-    assert frete._preco_str_para_float("25,90") == 25.90
-    assert frete._preco_str_para_float("1.234,56") == 1234.56
+def test_preco_str_para_float_formato_frenet_ponto_decimal():
+    assert frete._preco_str_para_float("25.90") == 25.90
+    assert frete._preco_str_para_float("1234.56") == 1234.56
+    assert frete._preco_str_para_float(17.09) == 17.09  # tambem aceita numero, nao so string
+
+
+def test_preco_str_para_float_nao_confunde_ponto_com_separador_de_milhar():
+    # Bug real corrigido: "17.09" (formato real da Frenet) virava 1709.0
+    # quando o codigo tratava "." como separador de milhar do formato BR.
+    assert frete._preco_str_para_float("17.09") == 17.09
+    assert frete._preco_str_para_float("17.09") != 1709.0
 
 
 def test_calcular_frete_com_frete_gratis_nao_consulta_api():
@@ -76,13 +84,13 @@ def test_consultar_frenet_filtra_so_erro_mini_envio_fica_e_ordena_por_preco(monk
     monkeypatch.setattr(frete, "CEP_ORIGEM", "59000000")
 
     servicos = [
-        {"Carrier": "Correios", "ServiceDescription": "SEDEX", "ShippingPrice": "45,00",
+        {"Carrier": "Correios", "ServiceDescription": "SEDEX", "ShippingPrice": "45.00",
          "DeliveryTime": 3, "Error": False},
-        {"Carrier": "Correios", "ServiceDescription": "PAC", "ShippingPrice": "25,90",
+        {"Carrier": "Correios", "ServiceDescription": "PAC", "ShippingPrice": "25.90",
          "DeliveryTime": 8, "Error": False},
-        {"Carrier": "Correios", "ServiceDescription": "Mini Envios", "ShippingPrice": "12,00",
+        {"Carrier": "Correios", "ServiceDescription": "Mini Envios", "ShippingPrice": "12.00",
          "DeliveryTime": 12, "Error": False},
-        {"Carrier": "Jadlog", "ServiceDescription": ".Package", "ShippingPrice": "0,00",
+        {"Carrier": "Jadlog", "ServiceDescription": ".Package", "ShippingPrice": "0.00",
          "DeliveryTime": None, "Error": True, "Msg": "CEP fora de area de cobertura"},
     ]
 
@@ -116,11 +124,11 @@ def test_consultar_frenet_descarta_cotacao_absurda_de_transportadora_de_carga(mo
     monkeypatch.setattr(frete, "CEP_ORIGEM", "59000000")
 
     servicos = [
-        {"Carrier": "Correios", "ServiceDescription": "PAC", "ShippingPrice": "25,90",
+        {"Carrier": "Correios", "ServiceDescription": "PAC", "ShippingPrice": "25.90",
          "DeliveryTime": 8, "Error": False},
-        {"Carrier": "Jadlog", "ServiceDescription": "Jadlog Package", "ShippingPrice": "1709,00",
+        {"Carrier": "Jadlog", "ServiceDescription": "Jadlog Package", "ShippingPrice": "1709.00",
          "DeliveryTime": 11, "Error": False},
-        {"Carrier": "Loggi", "ServiceDescription": "Loggi", "ShippingPrice": "1898,00",
+        {"Carrier": "Loggi", "ServiceDescription": "Loggi", "ShippingPrice": "1898.00",
          "DeliveryTime": 7, "Error": False},
     ]
     with patch("services.frete.requests.post", return_value=_resposta_frenet_fake(*servicos)):
@@ -134,7 +142,7 @@ def test_consultar_frenet_sem_nenhuma_cotacao_confiavel_retorna_erro(monkeypatch
     monkeypatch.setattr(frete, "CEP_ORIGEM", "59000000")
 
     servicos = [
-        {"Carrier": "Jadlog", "ServiceDescription": "Jadlog Package", "ShippingPrice": "1709,00",
+        {"Carrier": "Jadlog", "ServiceDescription": "Jadlog Package", "ShippingPrice": "1709.00",
          "DeliveryTime": 11, "Error": False},
     ]
     with patch("services.frete.requests.post", return_value=_resposta_frenet_fake(*servicos)):
@@ -149,7 +157,7 @@ def test_calcular_frete_sem_frete_gratis_consulta_api(monkeypatch):
     monkeypatch.setattr(frete, "CEP_ORIGEM", "59000000")
 
     servicos = [
-        {"Carrier": "Correios", "ServiceDescription": "PAC", "ShippingPrice": "25,90",
+        {"Carrier": "Correios", "ServiceDescription": "PAC", "ShippingPrice": "25.90",
          "DeliveryTime": 8, "Error": False},
     ]
     with patch("services.frete.requests.post", return_value=_resposta_frenet_fake(*servicos)) as post_mock:
