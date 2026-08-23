@@ -46,3 +46,53 @@ MELHOR_ENVIO_TOKEN = os.environ.get("MELHOR_ENVIO_TOKEN", "")
 PIX_CHAVE = os.environ.get("PIX_CHAVE", "39390354000125")
 PIX_NOME_RECEBEDOR = os.environ.get("PIX_NOME_RECEBEDOR", "NOVE DE JULHO")
 PIX_CIDADE = os.environ.get("PIX_CIDADE", "NATAL")
+
+# Instagram da loja -- usado no bloco de prova social da pagina de
+# produto (ver templates/produto.html).
+INSTAGRAM_URL = "https://www.instagram.com/novedjulho/"
+
+# Video de apresentacao (bolinha flutuante, ver base.html/
+# video_flutuante.js). Hospedado pelo proprio usuario fora do
+# repositorio (Cloudflare R2) -- so o link, o navegador do visitante
+# busca direto, o servidor nunca baixa/processa esse arquivo.
+VIDEO_APRESENTACAO_URL = os.environ.get(
+    "VIDEO_APRESENTACAO_URL",
+    "https://pub-dedea83ede484eb2bb09060b6522aaa2.r2.dev/Video%20reduzido%20para%20shopee.mp4",
+)
+
+# Prova social (ver templates/produto.html) -- fotos e legendas que o
+# usuario ja usava no site oficial (Yampi), reaproveitadas aqui.
+# Imagens hospedadas externamente (ibb.co/postimg.cc) pelo proprio
+# usuario -- o servidor so referencia a URL, quem busca a imagem e o
+# navegador de quem esta vendo a pagina, entao nao depende de rede do
+# servidor pra funcionar.
+PROVA_SOCIAL = [
+    {
+        "src": "https://i.ibb.co/gZXzWrHM/Whats-App-Image-2026-01-21-at-18-39-05-4.jpg",
+        "texto": "Fornecemos para diversas livrarias",
+    },
+    {
+        "src": "https://i.postimg.cc/QCyCWrYV/Whats-App-Image-2026-01-21-at-18-59-47.jpg",
+        "texto": "Ótima qualidade e durável!",
+    },
+    {
+        "src": "https://i.postimg.cc/ncpD8HB5/Whats-App-Image-2026-01-21-at-18-39-05-5.jpg",
+        "texto": "Para presentear em retiros, grupos e eventos",
+    },
+    {
+        "src": "https://i.postimg.cc/R0HF68wL/Whats-App-Image-2026-01-21-at-18-39-05-3.jpg",
+        "texto": "Para devoção pessoal e colecionar",
+    },
+    {
+        "src": "https://i.postimg.cc/pTWwb5Vn/Whats-App-Image-2026-01-21-at-18-39-05.jpg",
+        "texto": "Presente em datas comemorativas",
+    },
+    {
+        "src": "https://i.postimg.cc/28sgjKjW/Whats-App-Image-2026-01-21-at-18-39-05-2.jpg",
+        "texto": "Presente entre namorados, agora casados",
+    },
+    {
+        "src": "https://i.postimg.cc/Y2Vs8sFF/Whats-App-Image-2026-01-21-at-18-39-05-1.jpg",
+        "texto": "Quem compra sempre quer mais uma depois!",
+    },
+]

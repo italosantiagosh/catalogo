@@ -34,6 +34,20 @@
        rel="noopener" aria-label="Falar no WhatsApp">
       <img src="{{ url_for('static', filename='img/whatsapp-icone.png') }}" alt="" width="56" height="56">
     </a>
+
+    <button type="button" class="video-flutuante" id="btn-video-flutuante" aria-label="Assistir vídeo de apresentação">
+      <video src="{{ video_apresentacao_url }}" autoplay loop muted playsinline></video>
+    </button>
+    <button type="button" class="video-flutuante-fechar" id="btn-video-fechar" aria-label="Fechar vídeo">×</button>
+
+    <div class="video-modal" id="video-modal" hidden>
+      <div class="video-modal-caixa">
+        <button type="button" class="video-modal-fechar" id="btn-video-modal-fechar" aria-label="Fechar">×</button>
+        <video id="video-modal-player" controls playsinline preload="none"></video>
+      </div>
+    </div>
+    <script>window.VIDEO_APRESENTACAO_URL = {{ video_apresentacao_url | tojson }};</script>
+    <script src="{{ url_for('static', filename='js/video_flutuante.js') }}"></script>
   {% endif %}
   <script src="{{ url_for('static', filename='js/carrinho.js') }}"></script>
   {% block script %}{% endblock %}

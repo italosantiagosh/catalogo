@@ -90,7 +90,44 @@
     <button type="button" class="botao-carrinho" id="btn-adicionar" disabled>
       Selecione um modelo e tamanho
     </button>
+
+    <div class="selo-confianca">
+      <div class="selo-item">
+        <span class="selo-icone">🏅</span>
+        <strong>+100 mil</strong>
+        medalhas vendidas
+      </div>
+      <div class="selo-divisor"></div>
+      <div class="selo-item">
+        <span class="selo-icone">✔</span>
+        <strong>Excelente</strong>
+        atendimento
+      </div>
+      <div class="selo-divisor"></div>
+      <div class="selo-item">
+        <span class="selo-icone">⏱</span>
+        <strong>No prazo</strong>
+        enviamos seu pedido
+      </div>
+    </div>
   </div>
+
+  <section class="prova-social">
+    <h3>Quem já comprou, recomenda ✨</h3>
+    <p>Mensagens reais de clientes e um pouco do que postamos no Instagram. Isso ajuda você a comprar com mais segurança.</p>
+    <div class="prova-social-linha">
+      {% for item in prova_social %}
+        <div class="prova-social-card">
+          <img src="{{ item.src }}" alt="Prova social — Medalhas Nove de Julho" loading="lazy">
+          <div class="prova-social-legenda">{{ item.texto }}</div>
+        </div>
+      {% endfor %}
+    </div>
+    <div class="prova-social-acoes">
+      <a class="botao-secundario" href="{{ instagram_url }}" target="_blank" rel="noopener">Ver mais no Instagram</a>
+      <a class="botao-secundario" href="https://wa.me/{{ whatsapp_number }}?text={{ 'Oi! Quero ajuda com um pedido.' | urlencode }}" target="_blank" rel="noopener">Falar no WhatsApp</a>
+    </div>
+  </section>
 {% endblock %}
 
 {% block script %}
