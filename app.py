@@ -48,7 +48,14 @@ from flask import Flask, abort, jsonify, render_template, request, send_file
 from PIL import Image
 from werkzeug.datastructures import FileStorage
 
-from config import INSTAGRAM_URL, PROVA_SOCIAL, VIDEO_APRESENTACAO_URL, WHATSAPP_NUMBER
+from config import (
+    GA4_MEASUREMENT_ID,
+    INSTAGRAM_URL,
+    META_PIXEL_ID,
+    PROVA_SOCIAL,
+    VIDEO_APRESENTACAO_URL,
+    WHATSAPP_NUMBER,
+)
 from services.catalogo import buscar_produto, carregar_produtos
 from services.catalogo_pdf import gerar_pdf_catalogo
 from services.frete import calcular_frete
@@ -64,9 +71,14 @@ app.config["MAX_CONTENT_LENGTH"] = 60 * 1024 * 1024  # 60MB no total do upload
 @app.context_processor
 def _injetar_globais_de_template():
     # Disponivel em todo template (base.html usa pro botao flutuante de
-    # WhatsApp e pela bolinha de video, sem precisar que cada rota passe
-    # explicitamente) -- nenhum dos dois muda por rota.
-    return {"whatsapp_number": WHATSAPP_NUMBER, "video_apresentacao_url": VIDEO_APRESENTACAO_URL}
+    # WhatsApp, pela bolinha de video e pelos scripts de analytics no
+    # <head>) -- nenhum desses muda por rota.
+    return {
+        "whatsapp_number": WHATSAPP_NUMBER,
+        "video_apresentacao_url": VIDEO_APRESENTACAO_URL,
+        "ga4_measurement_id": GA4_MEASUREMENT_ID,
+        "meta_pixel_id": META_PIXEL_ID,
+    }
 
 
 CropBox = tuple[float, float, float, float]

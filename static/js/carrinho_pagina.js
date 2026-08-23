@@ -396,6 +396,18 @@
     });
   }
 
+  function rastrearConversao(valor) {
+    // Conversao real desse site e "cliente manda o pedido pelo WhatsApp"
+    // -- nao ha compra confirmada aqui (isso acontece la fora, na
+    // conversa), entao o evento certo e "lead", nao "purchase".
+    if (typeof gtag === 'function') {
+      gtag('event', 'generate_lead', { currency: 'BRL', value: valor });
+    }
+    if (typeof fbq === 'function') {
+      fbq('track', 'Lead', { currency: 'BRL', value: valor });
+    }
+  }
+
   if (btnWhatsappFinalizar) {
     btnWhatsappFinalizar.addEventListener('click', () => {
       if (!ultimoCalculo) return;
@@ -403,6 +415,7 @@
         'Olá! Gostaria de fazer este pedido:\n\n' +
         montarCorpoPedido(ultimosItens, ultimoCalculo) +
         '\n\nGostaria de finalizar este pedido.';
+      rastrearConversao(ultimoCalculo.subtotal_total);
       abrirWhatsApp(mensagem);
     });
   }

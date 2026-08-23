@@ -47,6 +47,15 @@ PIX_CHAVE = os.environ.get("PIX_CHAVE", "39390354000125")
 PIX_NOME_RECEBEDOR = os.environ.get("PIX_NOME_RECEBEDOR", "NOVE DE JULHO")
 PIX_CIDADE = os.environ.get("PIX_CIDADE", "NATAL")
 
+# Analytics/rastreamento de conversao (ver templates/base.html). Nao
+# sao segredos -- IDs de rastreamento vao direto no HTML publico de
+# qualquer site que os usa, quem os ve nao ganha acesso a nada (so
+# permitem MANDAR eventos pra essas contas, e so funciona com a conta
+# ja logada do dono no painel do Google/Meta). Variavel de ambiente so
+# se quiser trocar sem redeploy.
+GA4_MEASUREMENT_ID = os.environ.get("GA4_MEASUREMENT_ID", "G-RXVM530CM6")
+META_PIXEL_ID = os.environ.get("META_PIXEL_ID", "28592446083693889")
+
 # Instagram da loja -- usado no bloco de prova social da pagina de
 # produto (ver templates/produto.html).
 INSTAGRAM_URL = "https://www.instagram.com/novedjulho/"

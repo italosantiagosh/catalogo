@@ -8,6 +8,37 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;1,9..144,500&family=Public+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+
+  {% if ga4_measurement_id %}
+    <!-- Google Analytics (GA4) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id={{ ga4_measurement_id }}"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', {{ ga4_measurement_id | tojson }});
+    </script>
+  {% endif %}
+
+  {% if meta_pixel_id %}
+    <!-- Meta Pixel -->
+    <script>
+      !function(f,b,e,v,n,t,s)
+      {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+      n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+      if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+      n.queue=[];t=b.createElement(e);t.async=!0;
+      t.src=v;s=b.getElementsByTagName(e)[0];
+      s.parentNode.insertBefore(t,s)}(window, document,'script',
+      'https://connect.facebook.net/en_US/fbevents.js');
+      fbq('init', {{ meta_pixel_id | tojson }});
+      fbq('track', 'PageView');
+    </script>
+    <noscript>
+      <img height="1" width="1" style="display:none"
+        src="https://www.facebook.com/tr?id={{ meta_pixel_id }}&ev=PageView&noscript=1">
+    </noscript>
+  {% endif %}
 </head>
 <body>
   <div class="topo-fixo">
@@ -17,8 +48,11 @@
     </div>
     <header class="topo">
       <a class="marca" href="{{ url_for('index') }}">
-        <span class="marca-nome">Nove de Julho</span>
-        <span class="marca-sub">Catálogo de atacado</span>
+        <img class="marca-logo" src="{{ url_for('static', filename='img/logo-icone.png') }}" alt="" width="34" height="40">
+        <span class="marca-texto">
+          <span class="marca-nome">Nove de Julho</span>
+          <span class="marca-sub">Catálogo de atacado</span>
+        </span>
       </a>
       <a class="link-carrinho" href="{{ url_for('carrinho') }}">
         🛒 Carrinho <span id="contador-carrinho">0</span>
