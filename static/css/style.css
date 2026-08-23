@@ -456,6 +456,31 @@ a.voltar {
   margin: 12px 0;
 }
 
+.breadcrumbs {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin: 12px 0;
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+.breadcrumbs a {
+  color: var(--muted);
+  text-decoration: none;
+}
+
+.breadcrumbs a:hover {
+  color: var(--accent);
+  text-decoration: underline;
+}
+
+.breadcrumbs [aria-current="page"] {
+  color: var(--ink);
+  font-weight: 600;
+}
+
 h1 {
   font-size: 1.3rem;
   margin: 0 0 4px;
@@ -726,6 +751,23 @@ button.botao-carrinho:disabled {
   border: 1px solid var(--border);
   background: var(--card);
   border-radius: 12px;
+}
+
+.relacionados {
+  margin: 20px 0 0;
+  padding: 16px;
+  border: 1px solid var(--border);
+  background: var(--card);
+  border-radius: 12px;
+}
+
+.relacionados h3 {
+  margin: 0 0 10px;
+  font-size: 1rem;
+}
+
+.relacionados .destaques-linha {
+  margin-bottom: 12px;
 }
 
 .prova-social h3 {
@@ -1079,6 +1121,17 @@ button.botao-carrinho:disabled {
   color: var(--ink);
 }
 
+.nudge-desconto {
+  background: var(--gold-soft);
+  color: #6b4a12;
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  line-height: 1.4;
+  margin: 0 0 8px;
+}
+
 .pix-bloco {
   margin: 0 0 16px;
 }
@@ -1200,6 +1253,72 @@ button.botao-carrinho:disabled {
   justify-content: center;
   cursor: pointer;
   z-index: 61;
+}
+
+.whatsapp-flutuante,
+.video-flutuante,
+.video-flutuante-fechar {
+  transition: transform 0.15s ease, bottom 0.15s ease;
+}
+
+/* pagina de produto: barra fixa de compra some pra cima os botoes
+   flutuantes (whatsapp/video), pra nao ficarem um em cima do outro */
+body.tem-barra-fixa-comprar .whatsapp-flutuante {
+  bottom: 84px;
+}
+
+body.tem-barra-fixa-comprar .video-flutuante {
+  bottom: 78px;
+}
+
+body.tem-barra-fixa-comprar .video-flutuante-fechar {
+  bottom: 122px;
+}
+
+body.tem-barra-fixa-comprar main {
+  padding-bottom: 90px;
+}
+
+.barra-fixa-comprar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 58;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 16px;
+  background: var(--card);
+  border-top: 1px solid var(--border);
+  box-shadow: 0 -4px 14px rgba(0, 0, 0, 0.08);
+}
+
+.barra-fixa-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  line-height: 1.25;
+}
+
+.barra-fixa-info strong {
+  font-size: 0.85rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.barra-fixa-info span {
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+
+.barra-fixa-comprar .botao-carrinho {
+  flex: 0 0 auto;
+  width: auto;
+  padding: 12px 20px;
+  white-space: nowrap;
 }
 
 .video-modal {

@@ -5,6 +5,19 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{% block titulo %}Nove de Julho — Catálogo de Atacado{% endblock %}</title>
   <meta name="description" content="{% block meta_descricao %}Catálogo de atacado de medalhas, entremeios e chaveiros religiosos — mais de 130 santos e devoções, com desconto progressivo automático e frete grátis acima de R$ 300.{% endblock %}">
+
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Nove de Julho">
+  <meta property="og:url" content="{{ request.url }}">
+  <meta property="og:title" content="{% block og_titulo %}{{ self.titulo() }}{% endblock %}">
+  <meta property="og:description" content="{% block og_descricao %}{{ self.meta_descricao() }}{% endblock %}">
+  <meta property="og:image" content="{% block og_imagem %}{{ url_for('static', filename='img/banner-hero.jpg', _external=True) }}{% endblock %}">
+  <meta property="og:locale" content="pt_BR">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="{{ self.og_titulo() }}">
+  <meta name="twitter:description" content="{{ self.og_descricao() }}">
+  <meta name="twitter:image" content="{{ self.og_imagem() }}">
+
   <link rel="icon" href="{{ url_for('static', filename='img/favicon.ico') }}" sizes="any">
   <link rel="icon" type="image/png" href="{{ url_for('static', filename='img/favicon-32.png') }}" sizes="32x32">
   <link rel="apple-touch-icon" href="{{ url_for('static', filename='img/apple-touch-icon.png') }}">

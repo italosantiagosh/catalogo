@@ -130,3 +130,45 @@ def test_schema_org_product_na_pagina_de_produto(client):
     assert produto["offers"]["priceCurrency"] == "BRL"
     assert produto["offers"]["availability"] == "https://schema.org/InStock"
     assert produto["image"].startswith("http")
+
+
+def test_open_graph_presente_em_toda_pagina(client):
+    for rota in ["/", "/carrinho", "/produto/sao-jose", "/categoria/nossa-senhora"]:
+        html = client.get(rota).get_data(as_text=True)
+        assert 'property="og:title"' in html, rota
+        assert 'property="og:image"' in html, rota
+        assert 'name="twitter:card"' in html, rota
+
+
+def test_open_graph_produto_usa_imagem_do_produto(client):
+    html = client.get("/produto/sao-jose").get_data(as_text=True)
+    m = re.search(r'property="og:image" content="([^"]+)"', html)
+    assert m is not None
+    assert "sao_jose" in m.group(1)
+
+
+def test_breadcrumb_schema_na_pagina_de_produto(client):
+    html = client.get("/produto/sao-jose").get_data(as_text=True)
+    blocos = _blocos_json_ld(html)
+    breadcrumbs = [b for b in blocos if b.get("@type") == "BreadcrumbList"]
+    assert len(breadcrumbs) == 1
+    itens = breadcrumbs[0]["itemListElement"]
+    assert [i["name"] for i in itens] == ["Catálogo", "Santos", "São José"]
+
+
+def test_breadcrumb_visual_na_pagina_de_categoria(client):
+    html = client.get("/categoria/nossa-senhora").get_data(as_text=True)
+    assert 'class="breadcrumbs"' in html
+    assert "Nossa Senhora" in html
+
+
+def test_produtos_relacionados_na_pagina_de_produto(client):
+    html = client.get("/produto/sao-jose").get_data(as_text=True)
+    assert 'class="relacionados"' in html
+    assert "Outros santos de Santos" in html
+
+
+def test_barra_fixa_comprar_presente_na_pagina_de_produto(client):
+    html = client.get("/produto/sao-jose").get_data(as_text=True)
+    assert 'id="barra-fixa-comprar"' in html
+    assert 'id="barra-fixa-btn-adicionar"' in html

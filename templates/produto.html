@@ -2,9 +2,17 @@
 
 {% block titulo %}{{ produto.nome }} — Catálogo de Atacado | Nove de Julho{% endblock %}
 {% block meta_descricao %}Medalha, entremeio e chaveiro de {{ produto.nome }} a partir de {{ preco_varejo | preco }} -- desconto de atacado automático conforme a quantidade, sem cupom. Peça pelo catálogo Nove de Julho.{% endblock %}
+{% block og_imagem %}{{ dados_produto.image }}{% endblock %}
 
 {% block conteudo %}
-  <a class="voltar" href="{{ url_for('index') }}">&larr; Voltar ao catálogo</a>
+  <script type="application/ld+json">{{ dados_breadcrumb | tojson }}</script>
+  <nav class="breadcrumbs" aria-label="Breadcrumb">
+    <a href="{{ url_for('index') }}">Catálogo</a>
+    <span>›</span>
+    <a href="{{ url_for('categoria', slug=categoria_slug) }}">{{ produto.categoria }}</a>
+    <span>›</span>
+    <span aria-current="page">{{ produto.nome }}</span>
+  </nav>
   <h1>{{ produto.nome }}</h1>
   <p class="instrucao">Escolha um modelo:</p>
 
@@ -122,6 +130,29 @@
       </div>
     </div>
   </div>
+
+  <div class="barra-fixa-comprar" id="barra-fixa-comprar" hidden>
+    <div class="barra-fixa-info">
+      <strong id="barra-fixa-nome">{{ produto.nome }}</strong>
+      <span id="barra-fixa-preco"></span>
+    </div>
+    <button type="button" id="barra-fixa-btn-adicionar" class="botao-carrinho">Adicionar ao carrinho</button>
+  </div>
+
+  {% if relacionados %}
+    <section class="relacionados">
+      <h3>Outros santos de {{ produto.categoria }}</h3>
+      <div class="destaques-linha">
+        {% for item in relacionados %}
+          <a class="destaque-card" href="{{ url_for('produto', produto_id=item.id) }}">
+            <img src="{{ url_for('static', filename=item.thumbnail) }}" alt="{{ item.nome }}" loading="lazy" decoding="async">
+            <span>{{ item.nome }}</span>
+          </a>
+        {% endfor %}
+      </div>
+      <a class="botao-secundario" href="{{ url_for('categoria', slug=categoria_slug) }}">Ver todos de {{ produto.categoria }} →</a>
+    </section>
+  {% endif %}
 
   <section class="prova-social">
     <h3>Quem já comprou, recomenda ✨</h3>

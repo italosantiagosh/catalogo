@@ -11,6 +11,9 @@
   const qtdMenos = document.getElementById('qtd-menos');
   const qtdMais = document.getElementById('qtd-mais');
   const btnAdicionar = document.getElementById('btn-adicionar');
+  const barraFixa = document.getElementById('barra-fixa-comprar');
+  const barraFixaPreco = document.getElementById('barra-fixa-preco');
+  const barraFixaBtn = document.getElementById('barra-fixa-btn-adicionar');
   if (!grid || !painel) return;
 
   const produtoId = grid.dataset.produtoId;
@@ -88,6 +91,17 @@
     } else {
       btnAdicionar.disabled = false;
       btnAdicionar.textContent = 'Adicionar ao carrinho';
+    }
+
+    // barra fixa (mobile, aparece quando o botao real sai da tela --
+    // ver IntersectionObserver mais abaixo) espelha o mesmo estado
+    if (barraFixaBtn) {
+      barraFixaBtn.disabled = btnAdicionar.disabled;
+      barraFixaBtn.textContent = btnAdicionar.disabled ? 'Complete a seleção acima' : 'Adicionar ao carrinho';
+    }
+    if (barraFixaPreco) {
+      const preco = formato === 'chaveiro' ? window.PRECO_VAREJO_CHAVEIRO : window.PRECO_VAREJO_PADRAO;
+      barraFixaPreco.textContent = `a partir de ${formatarPrecoLocal(preco)}`;
     }
   }
 
@@ -205,6 +219,26 @@
         btnAdicionar.textContent = textoOriginal;
       }, 1200);
     });
+  }
+
+  // barra fixa: aparece quando o botao "Adicionar ao carrinho" de
+  // verdade sai da tela (rolando pra baixo pra ver mais informacoes) e
+  // ja tem um modelo selecionado -- some de novo quando o botao real
+  // volta a aparecer. Clicar nela so aciona o botao real (mesma
+  // validacao/logica, sem duplicar estado).
+  if (barraFixa && btnAdicionar && 'IntersectionObserver' in window) {
+    const observer = new IntersectionObserver(
+      ([entrada]) => {
+        barraFixa.hidden = entrada.isIntersecting || painel.hidden;
+        document.body.classList.toggle('tem-barra-fixa-comprar', !barraFixa.hidden);
+      },
+      { threshold: 0 }
+    );
+    observer.observe(btnAdicionar);
+  }
+
+  if (barraFixaBtn) {
+    barraFixaBtn.addEventListener('click', () => btnAdicionar.click());
   }
 
   // seleciona o primeiro modelo automaticamente para quem tem só um --

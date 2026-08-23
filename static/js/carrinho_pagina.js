@@ -15,6 +15,7 @@
   const freteCepInput = document.getElementById('frete-cep');
   const btnCalcularFrete = document.getElementById('btn-calcular-frete');
   const freteResultadoEl = document.getElementById('frete-resultado');
+  const nudgeDescontoEl = document.getElementById('nudge-desconto');
   if (!listaEl) return;
 
   const TAMANHO_LABEL = { '12mm': '1,2 cm', '16mm': '1,6 cm' };
@@ -219,6 +220,24 @@
       bloco.appendChild(texto);
       bloco.appendChild(barra);
       progressoGruposEl.appendChild(bloco);
+    }
+
+    // nudge de desconto perto do botao de finalizar -- reforca, no
+    // momento da decisao de fechar o pedido, quanto falta pro proximo
+    // preco por unidade (mesmo dado da barra de progresso acima, so
+    // repetido onde importa mais pra conversao).
+    if (nudgeDescontoEl) {
+      nudgeDescontoEl.innerHTML = '';
+      for (const nomeGrupo of Object.keys(dados.grupos)) {
+        const grupo = dados.grupos[nomeGrupo];
+        if (grupo.quantidade_total === 0 || !grupo.proxima_faixa) continue;
+        const nudge = document.createElement('p');
+        nudge.className = 'nudge-desconto';
+        nudge.textContent =
+          `💰 Faltam ${grupo.proxima_faixa.faltam} ${GRUPO_LABEL[nomeGrupo] || nomeGrupo} para o preço cair ` +
+          `para ${formatarPreco(grupo.proxima_faixa.preco)}/un — adicione mais antes de finalizar!`;
+        nudgeDescontoEl.appendChild(nudge);
+      }
     }
 
     // barra de progresso: frete gratis

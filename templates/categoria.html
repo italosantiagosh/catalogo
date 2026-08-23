@@ -4,7 +4,12 @@
 {% block meta_descricao %}{{ categoria_descricao }}{% endblock %}
 
 {% block conteudo %}
-  <a class="voltar" href="{{ url_for('index') }}">&larr; Ver catálogo completo</a>
+  <script type="application/ld+json">{{ dados_breadcrumb | tojson }}</script>
+  <nav class="breadcrumbs" aria-label="Breadcrumb">
+    <a href="{{ url_for('index') }}">Catálogo</a>
+    <span>›</span>
+    <span aria-current="page">{{ categoria_nome }}</span>
+  </nav>
   <h1>{{ categoria_nome }}</h1>
   <p class="instrucao">{{ categoria_descricao }}</p>
   <p class="contagem">{{ produtos | length }} santos e devoções nesta categoria</p>

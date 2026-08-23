@@ -60,7 +60,13 @@ from config import (
     VIDEO_APRESENTACAO_URL,
     WHATSAPP_NUMBER,
 )
-from services.catalogo import buscar_produto, carregar_produtos, categoria_por_slug, categorias_com_slug
+from services.catalogo import (
+    buscar_produto,
+    carregar_produtos,
+    categoria_por_slug,
+    categorias_com_slug,
+    slugify,
+)
 from services.paginas_institucionais import PAGINAS_ATENDIMENTO
 from services.catalogo_pdf import gerar_pdf_catalogo
 from services.frete import calcular_frete
@@ -96,6 +102,20 @@ def _dados_organizacao() -> dict:
             "addressCountry": "BR",
         },
         "sameAs": [INSTAGRAM_URL],
+    }
+
+
+def _dados_breadcrumb(itens: list[tuple[str, str]]) -> dict:
+    """Schema.org BreadcrumbList a partir de uma lista [(nome, url_absoluta), ...],
+    na ordem Catalogo -> ... -> pagina atual. Ver produto()/categoria()/
+    pagina_atendimento() e o nav visual correspondente nos templates."""
+    return {
+        "@context": "https://schema.org",
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+            {"@type": "ListItem", "position": i + 1, "name": nome, "item": url}
+            for i, (nome, url) in enumerate(itens)
+        ],
     }
 
 
@@ -291,12 +311,19 @@ def categoria(slug: str):
         for p in produtos
         if p["categoria"] == nome_categoria
     ]
+    dados_breadcrumb = _dados_breadcrumb(
+        [
+            ("Catálogo", url_for("index", _external=True)),
+            (nome_categoria, url_for("categoria", slug=slug, _external=True)),
+        ]
+    )
     return render_template(
         "categoria.html",
         categoria_nome=nome_categoria,
         categoria_descricao=DESCRICOES_CATEGORIA.get(nome_categoria, ""),
         produtos=itens,
         preco_varejo=preco_varejo(),
+        dados_breadcrumb=dados_breadcrumb,
     )
 
 
@@ -306,6 +333,18 @@ def produto(produto_id: str):
     if produto is None:
         abort(404)
     preco = preco_varejo()
+    categoria_slug = slugify(produto["categoria"])
+
+    relacionados = [
+        {
+            "id": p["id"],
+            "nome": p["nome"],
+            "thumbnail": p["modelos"][0]["imagem"],
+        }
+        for p in carregar_produtos()
+        if p["categoria"] == produto["categoria"] and p["id"] != produto_id
+    ][:6]
+
     dados_produto = {
         "@context": "https://schema.org",
         "@type": "Product",
@@ -323,14 +362,24 @@ def produto(produto_id: str):
             "availability": "https://schema.org/InStock",
         },
     }
+    dados_breadcrumb = _dados_breadcrumb(
+        [
+            ("Catálogo", url_for("index", _external=True)),
+            (produto["categoria"], url_for("categoria", slug=categoria_slug, _external=True)),
+            (produto["nome"], url_for("produto", produto_id=produto_id, _external=True)),
+        ]
+    )
     return render_template(
         "produto.html",
         produto=produto,
+        categoria_slug=categoria_slug,
+        relacionados=relacionados,
         preco_varejo=preco,
         preco_varejo_chaveiro=preco_varejo("chaveiro"),
         prova_social=PROVA_SOCIAL,
         descricoes_formato=DESCRICOES_FORMATO,
         dados_produto=dados_produto,
+        dados_breadcrumb=dados_breadcrumb,
     )
 
 
@@ -344,7 +393,15 @@ def pagina_atendimento(slug: str):
     pagina = PAGINAS_ATENDIMENTO.get(slug)
     if pagina is None:
         abort(404)
-    return render_template("pagina_atendimento.html", pagina=pagina, slug=slug)
+    dados_breadcrumb = _dados_breadcrumb(
+        [
+            ("Catálogo", url_for("index", _external=True)),
+            (pagina["titulo"], url_for("pagina_atendimento", slug=slug, _external=True)),
+        ]
+    )
+    return render_template(
+        "pagina_atendimento.html", pagina=pagina, slug=slug, dados_breadcrumb=dados_breadcrumb
+    )
 
 
 @app.route("/catalogo.pdf", methods=["GET"])
