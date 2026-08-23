@@ -175,3 +175,75 @@ def test_calcular_frete_sem_frete_gratis_consulta_api(monkeypatch):
 
     assert resultado["frete_gratis"] is False
     assert resultado["opcoes"][0]["servico"] == "PAC"
+
+
+def test_consultar_melhor_envio_sem_token_retorna_lista_vazia(monkeypatch):
+    monkeypatch.setattr(frete, "MELHOR_ENVIO_TOKEN", "")
+    assert frete.consultar_melhor_envio("20040020", 0.3, 50.0) == []
+
+
+def _resposta_melhor_envio_fake(lista):
+    resp = Mock()
+    resp.raise_for_status = Mock()
+    resp.json = Mock(return_value=lista)
+    return resp
+
+
+def test_consultar_melhor_envio_filtra_so_azul_e_erros(monkeypatch):
+    monkeypatch.setattr(frete, "MELHOR_ENVIO_TOKEN", "token-me-fake")
+    monkeypatch.setattr(frete, "CEP_ORIGEM", "59088040")
+
+    servicos = [
+        {"name": "Azul Express e-commerce", "price": "29.86", "delivery_time": 6,
+         "company": {"name": "Azul Cargo Express"}, "error": None},
+        {"name": "PAC", "price": "20.70", "delivery_time": 6,
+         "company": {"name": "Correios"}, "error": None},
+        {"name": "Azul Cargo Expresso", "price": "0", "delivery_time": None,
+         "company": {"name": "Azul Cargo Express"}, "error": "Servico indisponivel"},
+    ]
+    with patch("services.frete.requests.post", return_value=_resposta_melhor_envio_fake(servicos)) as post_mock:
+        opcoes = frete.consultar_melhor_envio("20040020", 0.3, 50.0)
+
+    _, kwargs = post_mock.call_args
+    assert kwargs["headers"]["Authorization"] == "Bearer token-me-fake"
+    assert "User-Agent" in kwargs["headers"]
+    assert kwargs["json"]["from"]["postal_code"] == "59088040"
+    assert kwargs["json"]["to"]["postal_code"] == "20040020"
+
+    # so a Azul sem erro fica -- Correios (nao e Azul) e a Azul com
+    # erro ficam de fora
+    assert [o["transportadora"] for o in opcoes] == ["Azul Cargo Express"]
+    assert opcoes[0]["preco"] == 29.86
+
+
+def test_calcular_frete_combina_frenet_e_melhor_envio_ordenado_por_preco(monkeypatch):
+    monkeypatch.setattr(frete, "FRENET_TOKEN", "token-fake")
+    monkeypatch.setattr(frete, "CEP_ORIGEM", "59000000")
+    monkeypatch.setattr(frete, "MELHOR_ENVIO_TOKEN", "token-me-fake")
+
+    def post_fake(url, **kwargs):
+        if url == frete.FRENET_URL:
+            return _resposta_frenet_fake(
+                {"Carrier": "Correios", "ServiceDescription": "PAC", "ShippingPrice": "25.90",
+                 "DeliveryTime": 8, "Error": False},
+            )
+        if url == frete.MELHOR_ENVIO_URL:
+            return _resposta_melhor_envio_fake([
+                {"name": "Azul Express e-commerce", "price": "19.90", "delivery_time": 6,
+                 "company": {"name": "Azul Cargo Express"}, "error": None},
+            ])
+        raise AssertionError(f"URL inesperada: {url}")
+
+    with patch("services.frete.requests.post", side_effect=post_fake):
+        resultado = frete.calcular_frete(
+            itens=[{"chave_preco": "16mm", "quantidade": 10}],
+            cep_destino="20040020",
+            subtotal=50.0,
+            frete_gratis_atingido=False,
+        )
+
+    # a Azul (mais barata) vem primeiro, PAC depois -- fontes diferentes,
+    # uma lista so, ordenada por preco
+    assert [o["transportadora"] for o in resultado["opcoes"]] == ["Azul Cargo Express", "Correios"]
+    assert resultado["opcoes"][0]["preco"] == 19.90
+    assert resultado["opcoes"][1]["preco"] == 25.90

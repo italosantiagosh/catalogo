@@ -21,3 +21,15 @@ FRENET_TOKEN = os.environ.get("FRENET_TOKEN", "")
 # cotacao de frete. Nao e segredo, pode ficar no codigo -- variavel de
 # ambiente so se precisar sobrescrever sem redeploy.
 CEP_ORIGEM = os.environ.get("CEP_ORIGEM", "59088-040")
+
+# Token de acesso pessoal do Melhor Envio -- usado so pra cotar Azul
+# Express com a tarifa contratada pelo usuario ali (nao pra gerar
+# etiqueta/frete de verdade). Mesma regra do FRENET_TOKEN: NUNCA
+# gravar o valor aqui, so variavel de ambiente MELHOR_ENVIO_TOKEN no
+# servidor. Esse token em especial tem escopos bem mais amplos que o
+# necessario (inclui shipping-generate, products-write, users-write
+# etc.) -- o codigo aqui so chama o endpoint de cotacao
+# (shipping-calculate), mas se puder gerar um token so com esse
+# escopo no painel do Melhor Envio, e mais seguro trocar por um mais
+# restrito.
+MELHOR_ENVIO_TOKEN = os.environ.get("MELHOR_ENVIO_TOKEN", "")

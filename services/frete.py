@@ -1,10 +1,9 @@
 """
-Calculadora de frete do carrinho, via API da Frenet.
-
-So cobre a Frenet por enquanto -- Azul Express (Melhor Envio) fica pra
-depois, quando o token estiver em maos. O contrato proprio dos Correios
-nao precisa de integracao separada: o preco bate com a tabela publica
-que a propria Frenet ja retorna.
+Calculadora de frete do carrinho -- Frenet (Correios + demais
+transportadoras) + Melhor Envio (so Azul Express, com a tarifa
+contratada pelo usuario ali). O contrato proprio dos Correios nao
+precisa de integracao separada: o preco bate com a tabela publica que
+a propria Frenet ja retorna.
 
 Regras de negocio (pedidas pelo usuario):
     - Peso por peca (services/frete.py:PESO_KG_POR_CHAVE) e uma unica
@@ -41,9 +40,13 @@ import re
 
 import requests
 
-from config import CEP_ORIGEM, FRENET_TOKEN
+from config import CEP_ORIGEM, FRENET_TOKEN, MELHOR_ENVIO_TOKEN
 
 FRENET_URL = "https://api.frenet.com.br/shipping/quote"
+MELHOR_ENVIO_URL = "https://melhorenvio.com.br/api/v2/me/shipment/calculate"
+# Obrigatorio pela API do Melhor Envio -- requisicoes sem User-Agent
+# descritivo sao rejeitadas.
+MELHOR_ENVIO_USER_AGENT = "Catálogo Nove de Julho (contato@lojanovedejulho.com.br)"
 
 # Peso de cada peca, ja em kg -- confirmado pelo cadastro real dos
 # produtos na Yampi (mesma fonte que a cotacao que da certo por la usa).
@@ -168,6 +171,12 @@ def consultar_frenet(cep_destino: str, peso_kg: float, subtotal: float) -> dict:
     for servico in servicos:
         if servico.get("Error"):
             continue
+        # Azul Express vem do Melhor Envio (tarifa contratada pelo
+        # usuario ali, ver consultar_melhor_envio) -- ignora a versao
+        # generica da Frenet aqui pra nao duplicar/confundir com 2
+        # precos diferentes pra "Azul".
+        if "azul" in servico.get("Carrier", "").lower():
+            continue
         preco = _preco_str_para_float(servico.get("ShippingPrice"))
         if preco > limite_preco:
             descartadas_por_preco_absurdo += 1
@@ -189,6 +198,74 @@ def consultar_frenet(cep_destino: str, peso_kg: float, subtotal: float) -> dict:
             "Fale com a gente pelo WhatsApp enviando seu carrinho para consultar o valor."
         )
     return resultado
+
+
+def consultar_melhor_envio(cep_destino: str, peso_kg: float, subtotal: float) -> list[dict]:
+    """Cota so Azul Express no Melhor Envio (tarifa contratada pelo
+    usuario ali). Ao contrario da Frenet, a ausencia de token aqui NAO
+    e um erro -- essa fonte e complementar, o carrinho continua
+    funcionando so com a Frenet se nao estiver configurada. Retorna
+    uma lista de opcoes (pode ser vazia), nunca um erro visivel."""
+    if not MELHOR_ENVIO_TOKEN:
+        return []
+
+    cep_destino = _limpar_cep(cep_destino)
+    if len(cep_destino) != 8:
+        return []
+
+    corpo = {
+        "from": {"postal_code": _limpar_cep(CEP_ORIGEM)},
+        "to": {"postal_code": cep_destino},
+        "package": {
+            "height": CAIXA_CM["altura"],
+            "width": CAIXA_CM["largura"],
+            "length": CAIXA_CM["comprimento"],
+            "weight": round(peso_kg, 3),
+        },
+        "options": {"insurance_value": 0, "receipt": False, "own_hand": False},
+    }
+
+    try:
+        resposta = requests.post(
+            MELHOR_ENVIO_URL,
+            json=corpo,
+            headers={
+                "Content-Type": "application/json",
+                "Accept": "application/json",
+                "Authorization": f"Bearer {MELHOR_ENVIO_TOKEN}",
+                "User-Agent": MELHOR_ENVIO_USER_AGENT,
+            },
+            timeout=10,
+        )
+        resposta.raise_for_status()
+        servicos = resposta.json()
+    except (requests.RequestException, ValueError):
+        return []
+
+    if not isinstance(servicos, list):
+        return []
+
+    limite_preco = max(subtotal * LIMITE_MULTIPLICADOR_SUBTOTAL, LIMITE_MINIMO_REAIS)
+
+    opcoes = []
+    for servico in servicos:
+        if servico.get("error"):
+            continue
+        nome_transportadora = (servico.get("company") or {}).get("name", "")
+        if "azul" not in nome_transportadora.lower():
+            continue
+        preco = _preco_str_para_float(servico.get("price"))
+        if preco <= 0 or preco > limite_preco:
+            continue
+        opcoes.append(
+            {
+                "transportadora": nome_transportadora,
+                "servico": servico.get("name", ""),
+                "preco": preco,
+                "prazo_dias": servico.get("delivery_time"),
+            }
+        )
+    return opcoes
 
 
 def calcular_frete(
@@ -213,8 +290,13 @@ def calcular_frete(
 
     peso_real_kg = peso_total_kg(itens)
     peso_kg = peso_padrao_kg(peso_real_kg)
+
     resultado = consultar_frenet(cep_destino, peso_kg, subtotal)
-    if "erro" in resultado:
+    opcoes = list(resultado.get("opcoes", []))
+    opcoes += consultar_melhor_envio(cep_destino, peso_kg, subtotal)
+    opcoes.sort(key=lambda o: o["preco"])
+
+    if not opcoes and "erro" in resultado:
         return {"frete_gratis": False, "opcoes": [], "erro": resultado["erro"]}
 
-    return {"frete_gratis": False, "opcoes": resultado["opcoes"]}
+    return {"frete_gratis": False, "opcoes": opcoes}
