@@ -4,6 +4,7 @@ espalhados pelo codigo.
 """
 
 import os
+import re
 
 # Numero de WhatsApp para onde os pedidos sao enviados (ETAPA 9). So a
 # constante por enquanto -- os botoes de finalizar pedido/tirar duvida
@@ -73,7 +74,16 @@ GOOGLE_SITE_VERIFICATION = os.environ.get("GOOGLE_SITE_VERIFICATION", "")
 # que o dominio customizado estiver configurado no Render E o DNS
 # propagado -- ativar antes disso tira o site do ar (ninguem chega a
 # nenhum dos dois enderecos).
-CANONICAL_DOMAIN = os.environ.get("CANONICAL_DOMAIN", "")
+#
+# Tolera colar o valor com "http(s)://" na frente e/ou "/" no final
+# (jeito mais natural de copiar um endereco) -- sem isso, colar com o
+# esquema gera um redirect quebrado tipo "https://https://dominio/"
+# (o navegador mostra so "http" e da erro de DNS).
+def _normalizar_dominio(valor: str) -> str:
+    return re.sub(r"^https?://", "", valor.strip()).rstrip("/")
+
+
+CANONICAL_DOMAIN = _normalizar_dominio(os.environ.get("CANONICAL_DOMAIN", ""))
 
 # Instagram da loja -- usado no bloco de prova social da pagina de
 # produto (ver templates/produto.html).

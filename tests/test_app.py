@@ -116,6 +116,17 @@ def test_sitemap_xml_inclui_o_kit(client):
     assert "/kit-livraria-shalom" in resposta
 
 
+def test_normalizar_dominio_tolera_esquema_e_barra_no_final():
+    from config import _normalizar_dominio
+
+    esperado = "atacado.lojanovedejulho.com.br"
+    assert _normalizar_dominio("atacado.lojanovedejulho.com.br") == esperado
+    assert _normalizar_dominio("https://atacado.lojanovedejulho.com.br") == esperado
+    assert _normalizar_dominio("http://atacado.lojanovedejulho.com.br") == esperado
+    assert _normalizar_dominio("https://atacado.lojanovedejulho.com.br/") == esperado
+    assert _normalizar_dominio("  https://atacado.lojanovedejulho.com.br/  ") == esperado
+
+
 def test_healthz_sempre_200(client):
     resposta = client.get("/healthz")
     assert resposta.status_code == 200
