@@ -147,6 +147,7 @@ def test_feed_produtos_xml_bem_formado_e_com_todos_os_produtos(client):
     assert primeiro.find("g:availability", ns).text == "in stock"
     assert primeiro.find("link").text.startswith("http")
     assert primeiro.find("title").text.startswith("Medalha de ")
+    assert raiz.find("./channel/language").text == "pt-BR"
 
 
 def test_feed_produtos_chaveiro_tem_preco_diferente_de_medalha(client):

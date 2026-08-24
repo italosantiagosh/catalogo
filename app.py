@@ -373,6 +373,7 @@ def feed_produtos_xml():
         '<rss version="2.0" xmlns:g="http://base.google.com/ns/1.0"><channel>'
         "<title>Nove de Julho — Catálogo de Atacado</title>"
         f"<link>{base}/</link>"
+        "<language>pt-BR</language>"
         "<description>Medalhas, entremeios e chaveiros religiosos de atacado.</description>"
         + "".join(itens_xml)
         + "</channel></rss>"
