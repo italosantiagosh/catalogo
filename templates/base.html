@@ -5,6 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{% block titulo %}Nove de Julho — Catálogo de Atacado{% endblock %}</title>
   <meta name="description" content="{% block meta_descricao %}Catálogo de atacado de medalhas, entremeios e chaveiros religiosos — mais de 130 santos e devoções, com desconto progressivo automático e frete grátis acima de R$ 300.{% endblock %}">
+  {% if google_site_verification %}
+    <meta name="google-site-verification" content="{{ google_site_verification }}">
+  {% endif %}
 
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="Nove de Julho">

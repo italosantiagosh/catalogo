@@ -56,6 +56,12 @@ PIX_CIDADE = os.environ.get("PIX_CIDADE", "NATAL")
 GA4_MEASUREMENT_ID = os.environ.get("GA4_MEASUREMENT_ID", "G-RXVM530CM6")
 META_PIXEL_ID = os.environ.get("META_PIXEL_ID", "28592446083693889")
 
+# Codigo de verificacao de propriedade do Google Search Console (metodo
+# "tag HTML" -- cole so o valor do content="..." que o Search Console
+# mostra, sem o resto da tag). Vazio por padrao: o <meta> em base.html
+# so aparece quando essa variavel de ambiente estiver definida.
+GOOGLE_SITE_VERIFICATION = os.environ.get("GOOGLE_SITE_VERIFICATION", "")
+
 # Instagram da loja -- usado no bloco de prova social da pagina de
 # produto (ver templates/produto.html).
 INSTAGRAM_URL = "https://www.instagram.com/novedjulho/"
