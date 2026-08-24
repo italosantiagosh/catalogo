@@ -127,6 +127,26 @@ def test_normalizar_dominio_tolera_esquema_e_barra_no_final():
     assert _normalizar_dominio("  https://atacado.lojanovedejulho.com.br/  ") == esperado
 
 
+def test_feed_produtos_xml_bem_formado_e_com_todos_os_produtos(client):
+    import xml.etree.ElementTree as ET
+
+    from services.catalogo import carregar_produtos
+
+    produtos = len(carregar_produtos())
+    resposta = client.get("/feed-produtos.xml")
+    assert resposta.status_code == 200
+    assert resposta.mimetype == "application/xml"
+    raiz = ET.fromstring(resposta.get_data(as_text=True))
+    ns = {"g": "http://base.google.com/ns/1.0"}
+    itens = raiz.findall("./channel/item")
+    assert len(itens) == produtos
+    primeiro = itens[0]
+    assert primeiro.find("g:id", ns) is not None
+    assert primeiro.find("g:price", ns).text.endswith("BRL")
+    assert primeiro.find("g:availability", ns).text == "in stock"
+    assert primeiro.find("link").text.startswith("http")
+
+
 def test_healthz_sempre_200(client):
     resposta = client.get("/healthz")
     assert resposta.status_code == 200

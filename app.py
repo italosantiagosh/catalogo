@@ -44,6 +44,7 @@ import tempfile
 import time
 from datetime import datetime, timezone
 from pathlib import Path
+from xml.sax.saxutils import escape as escapar_xml
 
 from flask import Flask, Response, abort, jsonify, redirect, render_template, request, send_file, url_for
 from PIL import Image
@@ -306,6 +307,61 @@ def sitemap_xml():
     corpo = (
         '<?xml version="1.0" encoding="UTF-8"?>'
         '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' + itens_xml + "</urlset>"
+    )
+    return Response(corpo, mimetype="application/xml")
+
+
+@app.route("/feed-produtos.xml", methods=["GET"])
+def feed_produtos_xml():
+    """Feed de produtos no formato RSS 2.0 + namespace do Google (o mesmo
+    formato aceito tanto pelo Google Merchant Center/Shopping quanto pelo
+    Meta Commerce Manager, pra Loja do Instagram/Facebook) -- 1 item por
+    santo/devocao (mesma granularidade do card em /catalogo, nao por
+    modelo/tamanho), usando a foto e o preco de varejo da medalha como
+    referencia. `availability` sempre "in stock": o catalogo e feito sob
+    encomenda, nao ha controle de estoque real pra diferenciar (mesma
+    decisao ja tomada no schema.org Product de templates/produto.html)."""
+    produtos = carregar_produtos()
+    base = request.url_root.rstrip("/")
+    preco_referencia = f"{preco_varejo():.2f} BRL"
+
+    itens_xml = []
+    for produto in produtos:
+        modelo = produto["modelos"][0]
+        link = base + url_for("produto", produto_id=produto["id"])
+        imagem = base + url_for("static", filename=modelo["imagem"])
+        titulo = escapar_xml(produto["nome"])
+        descricao = escapar_xml(
+            f"Medalha de {produto['nome']} em atacado -- disponível em medalha, "
+            "entremeio (para terço) ou chaveiro, com desconto progressivo por "
+            "quantidade. Também fazemos medalha personalizada sob encomenda."
+        )
+        categoria = escapar_xml(produto["categoria"])
+        itens_xml.append(
+            "<item>"
+            f"<g:id>{escapar_xml(produto['id'])}</g:id>"
+            f"<title>{titulo}</title>"
+            f"<description>{descricao}</description>"
+            f"<link>{escapar_xml(link)}</link>"
+            f"<g:image_link>{escapar_xml(imagem)}</g:image_link>"
+            "<g:availability>in stock</g:availability>"
+            f"<g:price>{preco_referencia}</g:price>"
+            "<g:brand>Nove de Julho</g:brand>"
+            "<g:condition>new</g:condition>"
+            "<g:identifier_exists>no</g:identifier_exists>"
+            f"<g:product_type>{categoria}</g:product_type>"
+            "<g:google_product_category>Religious &amp; Ceremonial &gt; Religious Jewelry</g:google_product_category>"
+            "</item>"
+        )
+
+    corpo = (
+        '<?xml version="1.0" encoding="UTF-8"?>'
+        '<rss version="2.0" xmlns:g="http://base.google.com/ns/1.0"><channel>'
+        "<title>Nove de Julho — Catálogo de Atacado</title>"
+        f"<link>{base}/</link>"
+        "<description>Medalhas, entremeios e chaveiros religiosos de atacado.</description>"
+        + "".join(itens_xml)
+        + "</channel></rss>"
     )
     return Response(corpo, mimetype="application/xml")
 
