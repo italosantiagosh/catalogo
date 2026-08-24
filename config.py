@@ -164,13 +164,11 @@ KIT_LIVRARIA_SHALOM = [
     {"produto_id": "chiara-luce", "modelo_id": 1, "quantidade_sugerida": 2},
     {"produto_id": "chiara-corbella", "modelo_id": 1, "quantidade_sugerida": 2},
     {"produto_id": "carlo-acutis", "modelo_id": 1, "quantidade_sugerida": 4},
-    {"produto_id": "nossa-senhora-do-sorriso", "modelo_id": 1, "quantidade_sugerida": 4},
+    {"produto_id": "nossa-senhora-do-sorriso", "modelo_id": 1, "quantidade_sugerida": 2},
     {"produto_id": "sao-joao-paulo-ii", "modelo_id": 1, "quantidade_sugerida": 4},
     {"produto_id": "sao-miguel", "modelo_id": 1, "quantidade_sugerida": 4},
     {"produto_id": "santa-gianna", "modelo_id": 1, "quantidade_sugerida": 4},
     {"produto_id": "pais-de-teresinha", "modelo_id": 1, "quantidade_sugerida": 4},
-    {"produto_id": "jardim-fechado", "modelo_id": 1, "quantidade_sugerida": 4, "rotulo_extra": "modelo longe"},
-    {"produto_id": "jardim-fechado", "modelo_id": 2, "quantidade_sugerida": 4, "rotulo_extra": "modelo perto"},
     {"produto_id": "sao-padre-pio", "modelo_id": 1, "quantidade_sugerida": 4},
 ]
 
