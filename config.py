@@ -62,6 +62,19 @@ META_PIXEL_ID = os.environ.get("META_PIXEL_ID", "28592446083693889")
 # so aparece quando essa variavel de ambiente estiver definida.
 GOOGLE_SITE_VERIFICATION = os.environ.get("GOOGLE_SITE_VERIFICATION", "")
 
+# Dominio canonico definitivo do site (o custom domain configurado no
+# Render, ex: "atacado.lojanovedejulho.com.br", SEM "https://"). Quando
+# definido, todo acesso por outro host (o subdominio gratuito do
+# Render, catalogo-medalhas.onrender.com) e redirecionado 301 pra ca --
+# evita conteudo duplicado no Google (a mesma pagina acessivel por duas
+# URLs diferentes). Ver app.py:_redirecionar_para_dominio_canonico.
+#
+# Vazio por padrao = redirecionamento desligado. So defina isso DEPOIS
+# que o dominio customizado estiver configurado no Render E o DNS
+# propagado -- ativar antes disso tira o site do ar (ninguem chega a
+# nenhum dos dois enderecos).
+CANONICAL_DOMAIN = os.environ.get("CANONICAL_DOMAIN", "")
+
 # Instagram da loja -- usado no bloco de prova social da pagina de
 # produto (ver templates/produto.html).
 INSTAGRAM_URL = "https://www.instagram.com/novedjulho/"

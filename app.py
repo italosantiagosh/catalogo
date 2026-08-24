@@ -45,11 +45,12 @@ import time
 from datetime import datetime, timezone
 from pathlib import Path
 
-from flask import Flask, Response, abort, jsonify, render_template, request, send_file, url_for
+from flask import Flask, Response, abort, jsonify, redirect, render_template, request, send_file, url_for
 from PIL import Image
 from werkzeug.datastructures import FileStorage
 
 from config import (
+    CANONICAL_DOMAIN,
     DESCRICOES_CATEGORIA,
     DESCRICOES_FORMATO,
     DESTAQUES_HOME,
@@ -81,6 +82,36 @@ from services.pricing import CHAVES_PRECO, calcular_carrinho, preco_varejo
 
 app = Flask(__name__)
 app.config["MAX_CONTENT_LENGTH"] = 60 * 1024 * 1024  # 60MB no total do upload
+
+
+@app.route("/healthz", methods=["GET"])
+def healthz():
+    """Sempre 200, nunca redirecionado (ver _redirecionar_para_dominio_canonico
+    abaixo) -- se o Render tiver algum health check apontando pro host
+    antigo (catalogo-medalhas.onrender.com), configurar esse caminho como
+    Health Check Path evita que ele vire um redirect 301 depois que
+    CANONICAL_DOMAIN estiver ativo."""
+    return "ok", 200
+
+
+@app.before_request
+def _redirecionar_para_dominio_canonico():
+    """Com CANONICAL_DOMAIN configurado (ver config.py), manda qualquer
+    acesso por outro host pro dominio definitivo (301, preserva
+    caminho+query) -- evita as duas URLs (Render + dominio proprio)
+    ficarem indexadas como conteudo duplicado. So GET/HEAD de pagina:
+    /healthz e /api/* ficam de fora pra nao quebrar health check nem
+    chamadas fetch() em andamento durante a transicao."""
+    if not CANONICAL_DOMAIN:
+        return None
+    if request.host.lower() == CANONICAL_DOMAIN.lower():
+        return None
+    if request.method not in ("GET", "HEAD"):
+        return None
+    if request.path == "/healthz" or request.path.startswith("/api/"):
+        return None
+    destino = f"https://{CANONICAL_DOMAIN}{request.full_path if request.query_string else request.path}"
+    return redirect(destino, code=301)
 
 
 def _dados_organizacao() -> dict:

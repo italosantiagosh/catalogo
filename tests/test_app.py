@@ -116,6 +116,42 @@ def test_sitemap_xml_inclui_o_kit(client):
     assert "/kit-livraria-shalom" in resposta
 
 
+def test_healthz_sempre_200(client):
+    resposta = client.get("/healthz")
+    assert resposta.status_code == 200
+
+
+def test_sem_canonical_domain_configurado_nao_redireciona(client):
+    # comportamento padrao (CANONICAL_DOMAIN vazio) -- e o que todos os
+    # outros testes deste arquivo ja assumem implicitamente.
+    resposta = client.get("/", headers={"Host": "catalogo-medalhas.onrender.com"})
+    assert resposta.status_code == 200
+
+
+def test_com_canonical_domain_redireciona_host_diferente(client, monkeypatch):
+    monkeypatch.setattr("app.CANONICAL_DOMAIN", "atacado.lojanovedejulho.com.br")
+    resposta = client.get(
+        "/produto/sao-jose?ref=teste", headers={"Host": "catalogo-medalhas.onrender.com"}
+    )
+    assert resposta.status_code == 301
+    assert resposta.headers["Location"] == "https://atacado.lojanovedejulho.com.br/produto/sao-jose?ref=teste"
+
+
+def test_com_canonical_domain_nao_redireciona_o_proprio_dominio(client, monkeypatch):
+    monkeypatch.setattr("app.CANONICAL_DOMAIN", "atacado.lojanovedejulho.com.br")
+    resposta = client.get("/", headers={"Host": "atacado.lojanovedejulho.com.br"})
+    assert resposta.status_code == 200
+
+
+def test_com_canonical_domain_healthz_e_api_ficam_de_fora(client, monkeypatch):
+    monkeypatch.setattr("app.CANONICAL_DOMAIN", "atacado.lojanovedejulho.com.br")
+    assert client.get("/healthz", headers={"Host": "catalogo-medalhas.onrender.com"}).status_code == 200
+    resposta = client.post(
+        "/api/carrinho/calcular", json={"itens": []}, headers={"Host": "catalogo-medalhas.onrender.com"}
+    )
+    assert resposta.status_code == 200
+
+
 def test_catalogo_completo_tem_grade_e_links_de_categoria(client):
     resposta = client.get("/catalogo").get_data(as_text=True)
     assert 'id="grid-produtos"' in resposta
