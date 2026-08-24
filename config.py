@@ -141,6 +141,39 @@ DESTAQUES_HOME = [
     },
 ]
 
+# Kit inicial sugerido "Livraria Shalom" (ver app.py:kit_livraria_shalom,
+# templates/kit.html) -- sortimento que o cliente ja mandava manualmente
+# pelo WhatsApp pra quem pede em quantidade grande e nao sabe por onde
+# comecar. As quantidades aqui sao SO um ponto de partida: a pagina deixa
+# o cliente aumentar/diminuir/zerar cada item, e o tamanho da medalha
+# (12mm/16mm/misturado) e escolhido na propria pagina, nao aqui.
+# "rotulo_extra" desambigua quando o mesmo produto entra duas vezes com
+# modelos diferentes (Toda Pequena e Jardim Fechado, um modelo mais
+# "aberto"/de corpo inteiro e outro mais fechado/de rosto).
+KIT_LIVRARIA_SHALOM = [
+    {"produto_id": "santa-teresinha", "modelo_id": 1, "quantidade_sugerida": 20},
+    {"produto_id": "sao-jose", "modelo_id": 1, "quantidade_sugerida": 20},
+    {"produto_id": "sagrada-familia", "modelo_id": 1, "quantidade_sugerida": 8},
+    {"produto_id": "santa-teresa-davila", "modelo_id": 1, "quantidade_sugerida": 4},
+    {"produto_id": "sao-francisco", "modelo_id": 1, "quantidade_sugerida": 4},
+    {"produto_id": "nossa-senhora-toda-pequena", "modelo_id": 1, "quantidade_sugerida": 4, "rotulo_extra": "modelo longe"},
+    {"produto_id": "nossa-senhora-toda-pequena", "modelo_id": 2, "quantidade_sugerida": 4, "rotulo_extra": "modelo perto"},
+    {"produto_id": "esposa-do-espirito", "modelo_id": 1, "quantidade_sugerida": 2},
+    {"produto_id": "nossa-senhora-rainha-da-paz", "modelo_id": 1, "quantidade_sugerida": 2},
+    {"produto_id": "nossa-senhora-porta-do-ceu", "modelo_id": 1, "quantidade_sugerida": 2},
+    {"produto_id": "chiara-luce", "modelo_id": 1, "quantidade_sugerida": 2},
+    {"produto_id": "chiara-corbella", "modelo_id": 1, "quantidade_sugerida": 2},
+    {"produto_id": "carlo-acutis", "modelo_id": 1, "quantidade_sugerida": 4},
+    {"produto_id": "nossa-senhora-do-sorriso", "modelo_id": 1, "quantidade_sugerida": 4},
+    {"produto_id": "sao-joao-paulo-ii", "modelo_id": 1, "quantidade_sugerida": 4},
+    {"produto_id": "sao-miguel", "modelo_id": 1, "quantidade_sugerida": 4},
+    {"produto_id": "santa-gianna", "modelo_id": 1, "quantidade_sugerida": 4},
+    {"produto_id": "pais-de-teresinha", "modelo_id": 1, "quantidade_sugerida": 4},
+    {"produto_id": "jardim-fechado", "modelo_id": 1, "quantidade_sugerida": 4, "rotulo_extra": "modelo longe"},
+    {"produto_id": "jardim-fechado", "modelo_id": 2, "quantidade_sugerida": 4, "rotulo_extra": "modelo perto"},
+    {"produto_id": "sao-padre-pio", "modelo_id": 1, "quantidade_sugerida": 4},
+]
+
 # Descricoes por categoria -- usadas na pagina /categoria/<slug>
 # (app.py/templates/categoria.html) como H1/intro + meta description,
 # pra cada categoria virar uma URL indexavel de verdade (SEO), em vez

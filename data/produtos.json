@@ -406,7 +406,7 @@
   },
   {
     "id": "esposa-do-espirito",
-    "nome": "Esposa do Espírito",
+    "nome": "Nossa Senhora Esposa do Espírito",
     "modelos": [
       {
         "id": 1,
@@ -3540,5 +3540,24 @@
       }
     ],
     "categoria": "Beatos"
+  },
+  {
+    "id": "nossa-senhora-porta-do-ceu",
+    "nome": "Nossa Senhora Porta do Céu",
+    "modelos": [
+      {
+        "id": 1,
+        "nome": "Modelo 1",
+        "imagem": "img/produtos/nossa_senhora_porta_do_ceu_modelo_1_medalha.jpg",
+        "tamanhos": [
+          "12mm",
+          "16mm"
+        ],
+        "imagem_entremeio_prata": "img/produtos/nossa_senhora_porta_do_ceu_modelo_1_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/nossa_senhora_porta_do_ceu_modelo_1_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/nossa_senhora_porta_do_ceu_modelo_1_chaveiro.jpg"
+      }
+    ],
+    "categoria": "Nossa Senhora"
   }
 ]

@@ -56,6 +56,7 @@ from config import (
     GA4_MEASUREMENT_ID,
     GOOGLE_SITE_VERIFICATION,
     INSTAGRAM_URL,
+    KIT_LIVRARIA_SHALOM,
     META_PIXEL_ID,
     PROCURADOS_HOME,
     PROVA_SOCIAL,
@@ -256,7 +257,13 @@ def robots_txt():
 @app.route("/sitemap.xml", methods=["GET"])
 def sitemap_xml():
     produtos = carregar_produtos()
-    caminhos = [url_for("index"), url_for("catalogo_completo"), url_for("carrinho"), url_for("personalizada")]
+    caminhos = [
+        url_for("index"),
+        url_for("catalogo_completo"),
+        url_for("carrinho"),
+        url_for("personalizada"),
+        url_for("kit_livraria_shalom"),
+    ]
     caminhos += [url_for("categoria", slug=c["slug"]) for c in categorias_com_slug(produtos)]
     caminhos += [url_for("produto", produto_id=p["id"]) for p in produtos]
     caminhos += [url_for("pagina_atendimento", slug=s) for s in PAGINAS_ATENDIMENTO]
@@ -319,6 +326,43 @@ def catalogo_completo():
         "catalogo.html",
         produtos=itens,
         categorias=categorias,
+        preco_varejo=preco_varejo(),
+    )
+
+
+@app.route("/kit-livraria-shalom", methods=["GET"])
+def kit_livraria_shalom():
+    """Kit inicial sugerido (ver config.py:KIT_LIVRARIA_SHALOM) -- o
+    sortimento que o cliente ja mandava manualmente pelo WhatsApp vira
+    uma pagina com tudo pre-preenchido, editavel item a item, com um
+    botao que joga tudo no carrinho de uma vez (static/js/kit.js)."""
+    produtos_por_id = {p["id"]: p for p in carregar_produtos()}
+    itens = []
+    for entrada in KIT_LIVRARIA_SHALOM:
+        produto = produtos_por_id.get(entrada["produto_id"])
+        if produto is None:
+            continue
+        modelo = next((m for m in produto["modelos"] if m["id"] == entrada["modelo_id"]), None)
+        if modelo is None:
+            continue
+        nome_exibicao = produto["nome"]
+        if entrada.get("rotulo_extra"):
+            nome_exibicao = f"{nome_exibicao} ({entrada['rotulo_extra']})"
+        itens.append(
+            {
+                "produto_id": produto["id"],
+                "produto_nome": produto["nome"],
+                "nome_exibicao": nome_exibicao,
+                "modelo_id": modelo["id"],
+                "modelo_nome": modelo["nome"],
+                "imagem": url_for("static", filename=modelo["imagem"]),
+                "quantidade_sugerida": entrada["quantidade_sugerida"],
+            }
+        )
+    return render_template(
+        "kit.html",
+        itens=itens,
+        quantidade_total_sugerida=sum(i["quantidade_sugerida"] for i in itens),
         preco_varejo=preco_varejo(),
     )
 

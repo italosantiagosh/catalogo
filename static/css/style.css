@@ -1552,9 +1552,10 @@ body.tem-barra-fixa-comprar main {
   line-height: 1.25;
 }
 
-/* banner de destaque para a personalizada, na home */
+/* banner de destaque para a personalizada e o kit sugerido, na home */
 
-.banner-personalizada {
+.banner-personalizada,
+.banner-kit {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -1568,18 +1569,21 @@ body.tem-barra-fixa-comprar main {
   color: var(--ink);
 }
 
-.banner-personalizada .banner-texto strong {
+.banner-personalizada .banner-texto strong,
+.banner-kit .banner-texto strong {
   display: block;
   font-size: 0.95rem;
   margin-bottom: 2px;
 }
 
-.banner-personalizada .banner-texto span {
+.banner-personalizada .banner-texto span,
+.banner-kit .banner-texto span {
   font-size: 0.8rem;
   color: var(--muted);
 }
 
-.banner-personalizada .banner-seta {
+.banner-personalizada .banner-seta,
+.banner-kit .banner-seta {
   font-size: 1.4rem;
   color: var(--accent);
   flex-shrink: 0;
@@ -1975,4 +1979,88 @@ input[type="file"] {
   font-size: 0.8rem;
   color: var(--muted);
   line-height: 1.4;
+}
+
+/* kit sugerido (/kit-livraria-shalom) */
+
+.kit-tamanho {
+  border: none;
+  padding: 0;
+  margin: 0 0 18px;
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.kit-tamanho legend {
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin-bottom: 8px;
+  padding: 0;
+  width: 100%;
+}
+
+.kit-tamanho label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.kit-itens {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0 0 16px;
+}
+
+.kit-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--card);
+}
+
+.kit-item img {
+  width: 56px;
+  height: 56px;
+  border-radius: 8px;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.kit-item-nome {
+  flex: 1;
+  font-size: 0.85rem;
+  font-weight: 600;
+  line-height: 1.25;
+}
+
+.kit-item-stepper {
+  max-width: 132px;
+  flex-shrink: 0;
+}
+
+.kit-item-stepper button {
+  width: 36px;
+}
+
+.kit-item-stepper input {
+  padding: 8px 0;
+}
+
+.kit-resumo {
+  font-weight: 600;
+  margin: 0 0 14px;
+}
+
+.kit-adicionar {
+  margin-bottom: 24px;
 }

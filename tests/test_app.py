@@ -80,6 +80,42 @@ def test_api_busca_sem_termo_retorna_vazio(client):
     assert resposta.get_json() == []
 
 
+def test_kit_livraria_shalom_lista_todos_os_itens_configurados(client):
+    from config import KIT_LIVRARIA_SHALOM
+
+    resposta = client.get("/kit-livraria-shalom")
+    assert resposta.status_code == 200
+    corpo = resposta.get_data(as_text=True)
+    assert corpo.count('class="kit-item"') == len(KIT_LIVRARIA_SHALOM)
+    assert "Nossa Senhora Porta do Céu" in corpo
+    assert "modelo longe" in corpo and "modelo perto" in corpo
+
+
+def test_kit_livraria_shalom_soma_a_quantidade_sugerida_total(client):
+    from config import KIT_LIVRARIA_SHALOM
+
+    esperado = sum(item["quantidade_sugerida"] for item in KIT_LIVRARIA_SHALOM)
+    resposta = client.get("/kit-livraria-shalom").get_data(as_text=True)
+    assert f"{esperado} unidades no total" in resposta
+
+
+def test_produto_novo_porta_do_ceu_acessivel(client):
+    resposta = client.get("/produto/nossa-senhora-porta-do-ceu")
+    assert resposta.status_code == 200
+    assert "Nossa Senhora Porta do Céu".encode() in resposta.data
+
+
+def test_esposa_do_espirito_foi_renomeada(client):
+    resposta = client.get("/produto/esposa-do-espirito")
+    assert resposta.status_code == 200
+    assert "Nossa Senhora Esposa do Espírito".encode() in resposta.data
+
+
+def test_sitemap_xml_inclui_o_kit(client):
+    resposta = client.get("/sitemap.xml").get_data(as_text=True)
+    assert "/kit-livraria-shalom" in resposta
+
+
 def test_catalogo_completo_tem_grade_e_links_de_categoria(client):
     resposta = client.get("/catalogo").get_data(as_text=True)
     assert 'id="grid-produtos"' in resposta

@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+
+{% block titulo %}Kit Livraria Shalom — sortimento sugerido | Nove de Julho{% endblock %}
+{% block meta_descricao %}Kit de atacado com sortimento sugerido de medalhas religiosas, baseado nos santos que mais vendem. Quantidades e tamanho editáveis, tudo adicionado ao carrinho de uma vez.{% endblock %}
+
+{% block conteudo %}
+  <nav class="breadcrumbs" aria-label="Breadcrumb">
+    <a href="{{ url_for('index') }}">Início</a>
+    <span>›</span>
+    <span aria-current="page">Kit Livraria Shalom</span>
+  </nav>
+  <h1>Kit Livraria Shalom</h1>
+  <p class="instrucao">
+    Sortimento sugerido com os santos que mais saem pra quem revende —
+    é só uma base pra você não começar do zero. Aumente, diminua ou
+    zere qualquer item, escolha o tamanho da medalha, e adicione tudo
+    ao carrinho de uma vez.
+  </p>
+
+  <fieldset class="kit-tamanho" id="kit-tamanho">
+    <legend>Tamanho da medalha</legend>
+    <label><input type="radio" name="kit-tamanho" value="16mm" checked> Maior (1,6 cm)</label>
+    <label><input type="radio" name="kit-tamanho" value="12mm"> Menor (1,2 cm)</label>
+    <label><input type="radio" name="kit-tamanho" value="misturado"> Misturado (metade de cada tamanho)</label>
+  </fieldset>
+
+  <div class="kit-itens" id="kit-itens">
+    {% for item in itens %}
+      <div class="kit-item"
+        data-produto-id="{{ item.produto_id }}"
+        data-produto-nome="{{ item.produto_nome }}"
+        data-modelo-id="{{ item.modelo_id }}"
+        data-modelo-nome="{{ item.modelo_nome }}"
+        data-imagem="{{ item.imagem }}"
+      >
+        <img src="{{ item.imagem }}" alt="{{ item.nome_exibicao }}" loading="lazy" decoding="async" width="56" height="56">
+        <span class="kit-item-nome">{{ item.nome_exibicao }}</span>
+        <div class="stepper kit-item-stepper">
+          <button type="button" class="kit-qtd-menos" aria-label="Diminuir quantidade de {{ item.nome_exibicao }}">−</button>
+          <input type="number" class="kit-qtd-input" min="0" inputmode="numeric" value="{{ item.quantidade_sugerida }}">
+          <button type="button" class="kit-qtd-mais" aria-label="Aumentar quantidade de {{ item.nome_exibicao }}">+</button>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+
+  <div class="kit-resumo">
+    <span id="kit-total-unidades">{{ quantidade_total_sugerida }} unidades no total</span>
+  </div>
+
+  <button type="button" class="botao-carrinho kit-adicionar" id="kit-adicionar-btn">Adicionar kit ao carrinho</button>
+{% endblock %}
+
+{% block script %}
+  <script src="{{ url_for('static', filename='js/kit.js') }}"></script>
+{% endblock %}
