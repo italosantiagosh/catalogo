@@ -155,42 +155,72 @@ def test_normalizar_dominio_tolera_esquema_e_barra_no_final():
     assert _normalizar_dominio("  https://atacado.lojanovedejulho.com.br/  ") == esperado
 
 
-def test_feed_produtos_xml_bem_formado_e_com_todos_os_produtos(client):
+def test_feed_produtos_xml_bem_formado_e_uma_variacao_por_modelo(client):
     import xml.etree.ElementTree as ET
 
     from services.catalogo import carregar_produtos
 
-    produtos = len(carregar_produtos())
+    produtos = carregar_produtos()
+    total_modelos = sum(len(p["modelos"]) for p in produtos)
     resposta = client.get("/feed-produtos.xml")
     assert resposta.status_code == 200
     assert resposta.mimetype == "application/xml"
     raiz = ET.fromstring(resposta.get_data(as_text=True))
     ns = {"g": "http://base.google.com/ns/1.0"}
     itens = raiz.findall("./channel/item")
-    # 3 itens por produto: medalha, entremeio e chaveiro (ver _FORMATOS_FEED)
-    assert len(itens) == produtos * 3
+    # 5 variacoes por modelo: medalha 12mm, medalha 16mm, entremeio
+    # prata, entremeio ouro velho, chaveiro (ver _VARIANTES_FEED)
+    assert len(itens) == total_modelos * 5
     primeiro = itens[0]
     assert primeiro.find("g:id", ns) is not None
+    assert primeiro.find("g:item_group_id", ns) is not None
     assert primeiro.find("g:price", ns).text.endswith("BRL")
     assert primeiro.find("g:availability", ns).text == "in stock"
     assert primeiro.find("link").text.startswith("http")
-    assert primeiro.find("title").text.startswith("Medalha de ")
+    assert "Modelo 1" in primeiro.find("title").text
     assert raiz.find("./channel/language").text == "pt-BR"
 
 
-def test_feed_produtos_chaveiro_tem_preco_diferente_de_medalha(client):
+def test_feed_produtos_sao_jose_tem_30_variacoes_agrupadas(client):
     import xml.etree.ElementTree as ET
 
     ns = {"g": "http://base.google.com/ns/1.0"}
     resposta = client.get("/feed-produtos.xml")
     raiz = ET.fromstring(resposta.get_data(as_text=True))
     itens_sao_jose = [
-        item for item in raiz.findall("./channel/item") if item.find("g:id", ns).text.startswith("sao-jose-")
+        item for item in raiz.findall("./channel/item") if item.find("g:id", ns).text.startswith("sao-jose-modelo")
     ]
+    # 6 modelos x 5 variacoes
+    assert len(itens_sao_jose) == 30
+    assert all(item.find("g:item_group_id", ns).text == "sao-jose" for item in itens_sao_jose)
+
     precos = {item.find("g:id", ns).text: item.find("g:price", ns).text for item in itens_sao_jose}
-    assert precos["sao-jose-medalha"] == "5.00 BRL"
-    assert precos["sao-jose-entremeio"] == "5.00 BRL"
-    assert precos["sao-jose-chaveiro"] == "15.00 BRL"
+    assert precos["sao-jose-modelo1-medalha-12mm"] == "5.00 BRL"
+    assert precos["sao-jose-modelo1-chaveiro"] == "15.00 BRL"
+
+    medalha_16mm = next(i for i in itens_sao_jose if i.find("g:id", ns).text == "sao-jose-modelo1-medalha-16mm")
+    assert medalha_16mm.find("g:size", ns).text == "1,6 cm"
+    entremeio_ouro = next(
+        i for i in itens_sao_jose if i.find("g:id", ns).text == "sao-jose-modelo1-entremeio-ouro-velho"
+    )
+    assert entremeio_ouro.find("g:color", ns).text == "Ouro velho"
+
+
+def test_feed_produtos_tem_rotulo_de_conjunto_pra_colecoes(client):
+    import xml.etree.ElementTree as ET
+
+    ns = {"g": "http://base.google.com/ns/1.0"}
+    resposta = client.get("/feed-produtos.xml")
+    raiz = ET.fromstring(resposta.get_data(as_text=True))
+    itens_sao_jose = {
+        item.find("g:id", ns).text: item
+        for item in raiz.findall("./channel/item")
+        if item.find("g:id", ns).text.startswith("sao-jose-modelo1-")
+    }
+    assert itens_sao_jose["sao-jose-modelo1-medalha-12mm"].find("g:custom_label_0", ns).text == "Medalha"
+    assert itens_sao_jose["sao-jose-modelo1-entremeio-prata"].find("g:custom_label_0", ns).text == "Entremeio"
+    assert itens_sao_jose["sao-jose-modelo1-chaveiro"].find("g:custom_label_0", ns).text == "Chaveiro"
+    assert itens_sao_jose["sao-jose-modelo1-chaveiro"].find("g:product_type", ns).text == "Santos > Chaveiro"
 
 
 def test_healthz_sempre_200(client):

@@ -332,16 +332,18 @@ def sitemap_xml():
     return Response(corpo, mimetype="application/xml")
 
 
-# Um item de feed por FORMATO (nao so por santo): medalha, entremeio e
-# chaveiro sao produtos fisicos diferentes, com preco de varejo diferente
-# (chaveiro e R$15 contra R$5 de medalha/entremeio -- ver data/precos.json)
-# e o Google rejeita titulo generico tipo so "Sao Jose" sem dizer o que a
-# peca E. (sufixo do id, prefixo do titulo, campo da imagem no modelo,
-# chave_preco pra pegar o preco de varejo certo).
-_FORMATOS_FEED = (
-    ("medalha", "Medalha de", "imagem", "16mm"),
-    ("entremeio", "Entremeio de", "imagem_entremeio_prata", "entremeio"),
-    ("chaveiro", "Chaveiro de", "imagem_chaveiro", "chaveiro"),
+# Um item de feed por VARIACAO de verdade -- cada combinacao que o
+# cliente realmente escolhe na pagina de produto (formato, depois
+# tamanho ou cor) vira 1 item, pra cada MODELO do santo. Sao Jose, por
+# exemplo, tem 6 modelos x 5 variacoes = 30 itens. (sufixo do id,
+# prefixo do titulo, campo da imagem no modelo, chave_preco pro preco
+# de varejo, chave de DESCRICOES_FORMATO, g:size, g:color).
+_VARIANTES_FEED = (
+    ("medalha-12mm", "Medalha", "imagem", "12mm", "medalha", "1,2 cm", None),
+    ("medalha-16mm", "Medalha", "imagem", "16mm", "medalha", "1,6 cm", None),
+    ("entremeio-prata", "Entremeio", "imagem_entremeio_prata", "entremeio", "entremeio", None, "Prata"),
+    ("entremeio-ouro-velho", "Entremeio", "imagem_entremeio_ouro_velho", "entremeio", "entremeio", None, "Ouro velho"),
+    ("chaveiro", "Chaveiro", "imagem_chaveiro", "chaveiro", "chaveiro", None, None),
 )
 
 
@@ -349,45 +351,63 @@ _FORMATOS_FEED = (
 def feed_produtos_xml():
     """Feed de produtos no formato RSS 2.0 + namespace do Google (o mesmo
     formato aceito tanto pelo Google Merchant Center/Shopping quanto pelo
-    Meta Commerce Manager, pra Loja do Instagram/Facebook) -- 3 itens por
-    santo/devocao (um por formato, ver _FORMATOS_FEED acima), cada um com
-    seu proprio titulo/preco/imagem. `availability` sempre "in stock": o
-    catalogo e feito sob encomenda, nao ha controle de estoque real pra
-    diferenciar (mesma decisao ja tomada no schema.org Product de
-    templates/produto.html)."""
+    Meta Commerce Manager, pra Loja do Instagram/Facebook) -- 1 item por
+    modelo x variacao (ver _VARIANTES_FEED acima), todos agrupados por
+    g:item_group_id (o id do produto) pra aparecerem como variantes do
+    mesmo santo no Google/Meta, nao como produtos avulsos repetidos.
+    `availability` sempre "in stock": o catalogo e feito sob encomenda,
+    nao ha controle de estoque real pra diferenciar (mesma decisao ja
+    tomada no schema.org Product de templates/produto.html)."""
     produtos = carregar_produtos()
     base = request.url_root.rstrip("/")
 
     itens_xml = []
     for produto in produtos:
-        modelo = produto["modelos"][0]
         link = base + url_for("produto", produto_id=produto["id"])
         categoria = escapar_xml(produto["categoria"])
-        for sufixo, prefixo_titulo, campo_imagem, chave_preco in _FORMATOS_FEED:
-            imagem = base + url_for("static", filename=modelo[campo_imagem])
-            titulo = escapar_xml(f"{prefixo_titulo} {produto['nome']}")
-            descricao = escapar_xml(
-                f"{prefixo_titulo} {produto['nome']}, de atacado. "
-                f"{DESCRICOES_FORMATO[sufixo]} Desconto progressivo por "
-                "quantidade, sem cupom."
-            )
-            preco_item = f"{preco_varejo(chave_preco):.2f} BRL"
-            itens_xml.append(
-                "<item>"
-                f"<g:id>{escapar_xml(produto['id'])}-{sufixo}</g:id>"
-                f"<title>{titulo}</title>"
-                f"<description>{descricao}</description>"
-                f"<link>{escapar_xml(link)}</link>"
-                f"<g:image_link>{escapar_xml(imagem)}</g:image_link>"
-                "<g:availability>in stock</g:availability>"
-                f"<g:price>{preco_item}</g:price>"
-                "<g:brand>Nove de Julho</g:brand>"
-                "<g:condition>new</g:condition>"
-                "<g:identifier_exists>no</g:identifier_exists>"
-                f"<g:product_type>{categoria}</g:product_type>"
-                "<g:google_product_category>Religious &amp; Ceremonial &gt; Religious Jewelry</g:google_product_category>"
-                "</item>"
-            )
+        for modelo in produto["modelos"]:
+            for sufixo, prefixo_titulo, campo_imagem, chave_preco, chave_descricao, tamanho, cor in _VARIANTES_FEED:
+                imagem_relativa = modelo.get(campo_imagem)
+                if not imagem_relativa:
+                    continue
+                imagem = base + url_for("static", filename=imagem_relativa)
+                sufixo_titulo = f" — {tamanho}" if tamanho else (f" — {cor}" if cor else "")
+                titulo = escapar_xml(f"{prefixo_titulo} de {produto['nome']} — Modelo {modelo['id']}{sufixo_titulo}")
+                descricao = escapar_xml(
+                    f"{prefixo_titulo} de {produto['nome']}, modelo {modelo['id']}, de atacado. "
+                    f"{DESCRICOES_FORMATO[chave_descricao]} Desconto progressivo por "
+                    "quantidade, sem cupom."
+                )
+                preco_item = f"{preco_varejo(chave_preco):.2f} BRL"
+                # rotulo do conjunto (Medalha/Entremeio/Chaveiro) -- vai em
+                # custom_label_0 (campo feito pra isso, tanto Google quanto
+                # Meta deixam criar colecoes/product sets filtrando por ele)
+                # e tambem no product_type, como hierarquia categoria >
+                # formato, que ajuda a navegacao por facetas no Shopping.
+                rotulo_grupo = chave_descricao.capitalize()
+                item = [
+                    "<item>",
+                    f"<g:id>{escapar_xml(produto['id'])}-modelo{modelo['id']}-{sufixo}</g:id>",
+                    f"<g:item_group_id>{escapar_xml(produto['id'])}</g:item_group_id>",
+                    f"<title>{titulo}</title>",
+                    f"<description>{descricao}</description>",
+                    f"<link>{escapar_xml(link)}</link>",
+                    f"<g:image_link>{escapar_xml(imagem)}</g:image_link>",
+                    "<g:availability>in stock</g:availability>",
+                    f"<g:price>{preco_item}</g:price>",
+                    "<g:brand>Nove de Julho</g:brand>",
+                    "<g:condition>new</g:condition>",
+                    "<g:identifier_exists>no</g:identifier_exists>",
+                    f"<g:product_type>{categoria} &gt; {rotulo_grupo}</g:product_type>",
+                    "<g:google_product_category>Religious &amp; Ceremonial &gt; Religious Jewelry</g:google_product_category>",
+                    f"<g:custom_label_0>{rotulo_grupo}</g:custom_label_0>",
+                ]
+                if tamanho:
+                    item.append(f"<g:size>{escapar_xml(tamanho)}</g:size>")
+                if cor:
+                    item.append(f"<g:color>{escapar_xml(cor)}</g:color>")
+                item.append("</item>")
+                itens_xml.append("".join(item))
 
     corpo = (
         '<?xml version="1.0" encoding="UTF-8"?>'
