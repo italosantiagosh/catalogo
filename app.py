@@ -268,13 +268,34 @@ def _salvar_temp(arquivo: FileStorage) -> tempfile._TemporaryFileWrapper:
     return tmp
 
 
-def _montar_destaques(itens_por_id: dict) -> list[dict]:
+def _montar_destaques(produtos: list[dict], itens_por_id: dict) -> list[dict]:
     """Monta os grupos de destaques da home (DESTAQUES_HOME em config.py)
     a partir dos itens ja carregados -- ids que nao existirem mais no
-    catalogo sao ignorados silenciosamente, nao quebram a pagina."""
+    catalogo sao ignorados silenciosamente, nao quebram a pagina.
+
+    Um grupo normal lista "produtos" (ids diferentes, 1 card cada, foto do
+    modelo 1). Um grupo com "modelos_de" lista, em vez disso, os VARIOS
+    modelos de UM SO produto (cada card leva pra mesma pagina de produto,
+    so a foto/legenda mudam) -- usado no Ano Jubilar de Sao Francisco."""
+    produtos_por_id = {p["id"]: p for p in produtos}
     destaques = []
     for grupo in DESTAQUES_HOME:
-        produtos_grupo = [itens_por_id[pid] for pid in grupo["produtos"] if pid in itens_por_id]
+        if "modelos_de" in grupo:
+            produto = produtos_por_id.get(grupo["modelos_de"])
+            produtos_grupo = (
+                [
+                    {
+                        "id": produto["id"],
+                        "nome": f"{produto['nome']} — {modelo['nome']}",
+                        "thumbnail": modelo["imagem"],
+                    }
+                    for modelo in produto["modelos"]
+                ]
+                if produto
+                else []
+            )
+        else:
+            produtos_grupo = [itens_por_id[pid] for pid in grupo["produtos"] if pid in itens_por_id]
         if produtos_grupo:
             destaques.append({"titulo": grupo["titulo"], "produtos": produtos_grupo})
     return destaques
@@ -404,7 +425,7 @@ def index():
     produtos = carregar_produtos()
     itens = _itens_do_grid(produtos)
     itens_por_id = {item["id"]: item for item in itens}
-    destaques = _montar_destaques(itens_por_id)
+    destaques = _montar_destaques(produtos, itens_por_id)
     procurados = [itens_por_id[pid] for pid in PROCURADOS_HOME if pid in itens_por_id]
     categorias = categorias_com_slug(produtos)
     return render_template(

@@ -67,6 +67,34 @@ def test_home_mostra_so_4_cards_no_final(client):
     assert resposta.count('class="card-produto"') == 4
 
 
+def test_home_banners_usam_imagem_em_vez_de_texto(client):
+    resposta = client.get("/").get_data(as_text=True)
+    assert "img/banner-atacado.jpg" in resposta
+    assert "img/banner-kit.jpg" in resposta
+    assert "img/banner-personalizada.jpg" in resposta
+
+
+def test_rodape_icones_de_contato(client):
+    resposta = client.get("/").get_data(as_text=True)
+    assert "img/icone-whatsapp.png" in resposta
+    assert "img/icone-instagram.png" in resposta
+
+
+def test_destaque_ano_jubilar_mostra_modelos_de_sao_francisco(client):
+    resposta = client.get("/").get_data(as_text=True)
+    assert "São Francisco — Modelo 1" in resposta
+    assert "São Francisco — Modelo 4" in resposta
+    assert "Santa Clara" not in resposta
+
+
+def test_kit_livraria_shalom_tem_banner_nao_clicavel_no_topo(client):
+    resposta = client.get("/kit-livraria-shalom").get_data(as_text=True)
+    assert "img/banner-kit.jpg" in resposta
+    # na home essa mesma imagem fica dentro de <a class="banner-kit">
+    # (clicavel); na propria pagina do kit nao deve virar link.
+    assert 'class="banner-kit"' not in resposta
+
+
 def test_api_busca_encontra_por_nome_sem_acento(client):
     resposta = client.get("/api/busca?q=jose")
     assert resposta.status_code == 200

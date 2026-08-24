@@ -66,19 +66,11 @@
   {% endif %}
 
   <div class="banner-atacado">
-    <strong>💰 Preço de atacado automático</strong>
-    <p>Quanto mais medalhas e entremeios você adicionar ao carrinho — de
-    qualquer santo, inclusive personalizada — menor o preço por unidade.
-    Chaveiros têm tabela de atacado própria. O desconto é aplicado sozinho,
-    sem cupom, assim que você adiciona os itens.</p>
+    <img src="{{ url_for('static', filename='img/banner-atacado.jpg') }}" alt="Preço de atacado automático: quanto mais medalhas e entremeios você adicionar ao carrinho — de qualquer santo, inclusive personalizada — menor o preço por unidade. Chaveiros têm tabela de atacado própria. O desconto é aplicado sozinho, sem cupom, assim que você adiciona os itens." loading="lazy" decoding="async">
   </div>
 
   <a class="banner-kit" href="{{ url_for('kit_livraria_shalom') }}">
-    <div class="banner-texto">
-      <strong>📦 Kit Livraria Shalom</strong>
-      <span>Sortimento pronto com os santos que mais vendem — quantidades editáveis</span>
-    </div>
-    <span class="banner-seta">→</span>
+    <img src="{{ url_for('static', filename='img/banner-kit.jpg') }}" alt="Kit Livraria Shalom: sortimento pronto com os santos que mais vendem, quantidades editáveis" loading="lazy" decoding="async">
   </a>
 
   <div class="banner-urgencia">
@@ -88,11 +80,7 @@
   </div>
 
   <a class="banner-personalizada" href="{{ url_for('personalizada') }}">
-    <div class="banner-texto">
-      <strong>✨ Medalha Personalizada</strong>
-      <span>Envie sua foto e veja a simulação antes de pedir</span>
-    </div>
-    <span class="banner-seta">→</span>
+    <img src="{{ url_for('static', filename='img/banner-personalizada.jpg') }}" alt="Peças personalizadas: envie sua foto e veja a simulação antes de pedir" loading="lazy" decoding="async">
   </a>
 
   <div class="busca-wrap busca-wrap-home">

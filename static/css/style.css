@@ -1461,28 +1461,20 @@ body.tem-barra-fixa-comprar main {
   text-align: center;
 }
 
-/* banner do desconto de atacado automatico, bem no topo da home */
+/* banner do desconto de atacado automatico, bem no topo da home --
+   imagem fornecida pelo cliente, ver templates/index.html */
 
 .banner-atacado {
-  background: var(--accent);
-  color: white;
   border-radius: 14px;
-  padding: 16px 18px;
+  overflow: hidden;
   margin: 0 0 16px;
-  text-align: center;
+  line-height: 0;
 }
 
-.banner-atacado strong {
+.banner-atacado img {
+  width: 100%;
+  height: auto;
   display: block;
-  font-size: 1.05rem;
-  margin-bottom: 6px;
-}
-
-.banner-atacado p {
-  font-size: 0.85rem;
-  line-height: 1.4;
-  margin: 0;
-  opacity: 0.95;
 }
 
 .banner-urgencia {
@@ -1552,41 +1544,25 @@ body.tem-barra-fixa-comprar main {
   line-height: 1.25;
 }
 
-/* banner de destaque para a personalizada e o kit sugerido, na home */
+/* banner de destaque para a personalizada e o kit sugerido, na home --
+   imagens fornecidas pelo cliente, ver templates/index.html */
 
 .banner-personalizada,
-.banner-kit {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: 14px;
-  padding: 16px;
-  margin: 0 0 20px;
-  text-decoration: none;
-  color: var(--ink);
-}
-
-.banner-personalizada .banner-texto strong,
-.banner-kit .banner-texto strong {
+.banner-kit,
+.banner-kit-topo {
   display: block;
-  font-size: 0.95rem;
-  margin-bottom: 2px;
+  border-radius: 14px;
+  overflow: hidden;
+  margin: 0 0 20px;
+  line-height: 0;
 }
 
-.banner-personalizada .banner-texto span,
-.banner-kit .banner-texto span {
-  font-size: 0.8rem;
-  color: var(--muted);
-}
-
-.banner-personalizada .banner-seta,
-.banner-kit .banner-seta {
-  font-size: 1.4rem;
-  color: var(--accent);
-  flex-shrink: 0;
+.banner-personalizada img,
+.banner-kit img,
+.banner-kit-topo img {
+  width: 100%;
+  height: auto;
+  display: block;
 }
 
 /* pagina /personalizada -- upload */
@@ -1873,6 +1849,17 @@ input[type="file"] {
 .rodape-coluna a:hover {
   color: #fff;
   text-decoration: underline;
+}
+
+.rodape-link-icone {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.rodape-link-icone img {
+  flex-shrink: 0;
+  opacity: 0.8;
 }
 
 .rodape-marca p {

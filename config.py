@@ -156,7 +156,9 @@ DESTAQUES_HOME = [
     },
     {
         "titulo": "🕊️ Ano Jubilar de São Francisco",
-        "produtos": ["sao-francisco", "santa-clara"],
+        # mostra os modelos do proprio Sao Francisco (nao produtos
+        # diferentes) -- ver _montar_destaques em app.py.
+        "modelos_de": "sao-francisco",
     },
     {
         "titulo": "✨ Novidades",
