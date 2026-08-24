@@ -33,6 +33,7 @@ from reportlab.platypus import (
     TableStyle,
 )
 
+from config import KIT_LIVRARIA_SHALOM
 from services.catalogo import carregar_produtos
 from services.pricing import carregar_precos
 
@@ -247,6 +248,65 @@ def _grade(celulas: list[Table]) -> Table:
     return grade
 
 
+def _itens_kit(produtos: list[dict]) -> list[tuple[str, int]]:
+    """(nome de exibicao, quantidade sugerida) pra cada entrada do kit
+    (config.py:KIT_LIVRARIA_SHALOM) -- entradas cujo produto nao existir
+    mais no catalogo sao ignoradas, mesmo criterio de app.py:kit_livraria_shalom."""
+    produtos_por_id = {p["id"]: p for p in produtos}
+    itens = []
+    for entrada in KIT_LIVRARIA_SHALOM:
+        produto = produtos_por_id.get(entrada["produto_id"])
+        if produto is None:
+            continue
+        nome = produto["nome"]
+        if entrada.get("rotulo_extra"):
+            nome = f"{nome} ({entrada['rotulo_extra']})"
+        itens.append((nome, entrada["quantidade_sugerida"]))
+    return itens
+
+
+def _pagina_kit(produtos: list[dict], estilos: dict) -> list:
+    itens = _itens_kit(produtos)
+    if not itens:
+        return []
+    total = sum(qtd for _, qtd in itens)
+
+    linhas = [["Santo / devoção", "Quantidade sugerida"]]
+    linhas += [[nome, str(qtd)] for nome, qtd in itens]
+    linhas.append(["Total", str(total)])
+
+    tabela = Table(linhas, colWidths=[10 * cm, 4.5 * cm])
+    tabela.setStyle(
+        TableStyle(
+            [
+                ("BACKGROUND", (0, 0), (-1, 0), COR_MARCA),
+                ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
+                ("BACKGROUND", (0, -1), (-1, -1), COR_ZEBRA),
+                ("FONTNAME", (0, -1), (-1, -1), "Helvetica-Bold"),
+                ("FONTSIZE", (0, 0), (-1, -1), 9),
+                ("ALIGN", (1, 0), (1, -1), "CENTER"),
+                ("GRID", (0, 0), (-1, -1), 0.5, COR_LINHA),
+                ("ROWBACKGROUNDS", (0, 1), (-1, -2), [colors.white, COR_ZEBRA]),
+                ("TOPPADDING", (0, 0), (-1, -1), 5),
+                ("BOTTOMPADDING", (0, 0), (-1, -1), 5),
+            ]
+        )
+    )
+    return [
+        Paragraph("Kit Livraria Shalom", estilos["titulo"]),
+        Paragraph(
+            "Sortimento sugerido com os santos que mais saem pra quem revende — é só "
+            "uma base pra não começar do zero. As quantidades são livres: ajuste, "
+            "aumente ou diminua como quiser no catálogo online, e escolha lá o tamanho "
+            "da medalha (1,2 cm, 1,6 cm ou misturado) antes de adicionar ao carrinho.",
+            estilos["corpo"],
+        ),
+        Spacer(1, 0.4 * cm),
+        tabela,
+        PageBreak(),
+    ]
+
+
 def _paginas_catalogo(produtos: list[dict], estilos: dict) -> list:
     # Sem separar por categoria (pedido do usuario) -- uma grade so, com
     # todos os modelos/formatos de todos os santos, em ordem alfabetica.
@@ -273,11 +333,13 @@ def gerar_pdf_catalogo() -> bytes:
         title="Catálogo Nove de Julho",
     )
 
+    produtos = carregar_produtos()
     story: list = []
     story += _paragrafo_orientacoes(estilos)
     story.append(PageBreak())
     story += _paginas_precos(estilos)
-    story += _paginas_catalogo(carregar_produtos(), estilos)
+    story += _pagina_kit(produtos, estilos)
+    story += _paginas_catalogo(produtos, estilos)
     doc.build(story)
 
     _cache_pdf = buffer.getvalue()
