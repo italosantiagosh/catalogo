@@ -139,12 +139,29 @@ def test_feed_produtos_xml_bem_formado_e_com_todos_os_produtos(client):
     raiz = ET.fromstring(resposta.get_data(as_text=True))
     ns = {"g": "http://base.google.com/ns/1.0"}
     itens = raiz.findall("./channel/item")
-    assert len(itens) == produtos
+    # 3 itens por produto: medalha, entremeio e chaveiro (ver _FORMATOS_FEED)
+    assert len(itens) == produtos * 3
     primeiro = itens[0]
     assert primeiro.find("g:id", ns) is not None
     assert primeiro.find("g:price", ns).text.endswith("BRL")
     assert primeiro.find("g:availability", ns).text == "in stock"
     assert primeiro.find("link").text.startswith("http")
+    assert primeiro.find("title").text.startswith("Medalha de ")
+
+
+def test_feed_produtos_chaveiro_tem_preco_diferente_de_medalha(client):
+    import xml.etree.ElementTree as ET
+
+    ns = {"g": "http://base.google.com/ns/1.0"}
+    resposta = client.get("/feed-produtos.xml")
+    raiz = ET.fromstring(resposta.get_data(as_text=True))
+    itens_sao_jose = [
+        item for item in raiz.findall("./channel/item") if item.find("g:id", ns).text.startswith("sao-jose-")
+    ]
+    precos = {item.find("g:id", ns).text: item.find("g:price", ns).text for item in itens_sao_jose}
+    assert precos["sao-jose-medalha"] == "5.00 BRL"
+    assert precos["sao-jose-entremeio"] == "5.00 BRL"
+    assert precos["sao-jose-chaveiro"] == "15.00 BRL"
 
 
 def test_healthz_sempre_200(client):
