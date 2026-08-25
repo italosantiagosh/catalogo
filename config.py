@@ -67,6 +67,13 @@ INFINITEPAY_HANDLE = os.environ.get("INFINITEPAY_HANDLE", "novedejulho")
 # vazio ate ser necessario.
 INFINITEPAY_API_TOKEN = os.environ.get("INFINITEPAY_API_TOKEN", "")
 
+# Sincronizacao de pedidos pagos com a Tiny/Olist ERP (API v2, ver
+# services/tiny.py). Credencial de verdade -- NUNCA gravar o valor
+# aqui, so variavel de ambiente TINY_API_TOKEN no servidor. Sem ela, a
+# sincronizacao so fica desligada (o pedido continua sendo salvo
+# normalmente no site, so nao entra na Tiny sozinho).
+TINY_API_TOKEN = os.environ.get("TINY_API_TOKEN", "")
+
 GA4_MEASUREMENT_ID = os.environ.get("GA4_MEASUREMENT_ID", "G-RXVM530CM6")
 META_PIXEL_ID = os.environ.get("META_PIXEL_ID", "28592446083693889")
 

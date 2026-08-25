@@ -134,6 +134,43 @@ def test_webhook_pedido_desconhecido_404(client):
     assert resposta.status_code == 404
 
 
+def test_webhook_confirmado_sincroniza_com_a_tiny_uma_vez(client):
+    with patch("app.criar_link_pagamento", return_value={"url": "https://checkout.infinitepay.io/abc"}):
+        criado = client.post("/api/pedido/criar", json=_corpo_valido()).get_json()
+
+    corpo_webhook = {
+        "order_nsu": criado["token"], "paid_amount": 6000, "capture_method": "pix", "transaction_nsu": "tx-abc",
+    }
+    with patch("app.criar_pedido_tiny", return_value={"ok": True, "numero": 42, "id": 7}) as mock_tiny:
+        client.post("/webhook/infinitepay", json=corpo_webhook)
+        # webhook repetido (comum em integracoes de pagamento) nao deve
+        # sincronizar com a Tiny de novo
+        client.post("/webhook/infinitepay", json=corpo_webhook)
+
+    assert mock_tiny.call_count == 1
+
+    pedido = pedidos.obter_pedido(criado["token"])
+    assert pedido["tiny_sincronizado"] == 1
+    assert pedido["tiny_numero_pedido"] == "42"
+
+
+def test_webhook_falha_na_tiny_nao_impede_confirmacao_do_pagamento(client):
+    with patch("app.criar_link_pagamento", return_value={"url": "https://checkout.infinitepay.io/abc"}):
+        criado = client.post("/api/pedido/criar", json=_corpo_valido()).get_json()
+
+    with patch("app.criar_pedido_tiny", return_value={"erro": "CPF inválido"}):
+        resposta_webhook = client.post(
+            "/webhook/infinitepay",
+            json={"order_nsu": criado["token"], "paid_amount": 6000, "capture_method": "pix"},
+        )
+    assert resposta_webhook.status_code == 200
+
+    pedido = pedidos.obter_pedido(criado["token"])
+    assert pedido["status"] == "pago"
+    assert pedido["tiny_sincronizado"] == 1
+    assert pedido["tiny_erro"] == "CPF inválido"
+
+
 def test_webhook_e_idempotente_nao_reprocessa(client):
     with patch("app.criar_link_pagamento", return_value={"url": "https://checkout.infinitepay.io/abc"}):
         criado = client.post("/api/pedido/criar", json=_corpo_valido()).get_json()

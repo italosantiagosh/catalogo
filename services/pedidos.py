@@ -87,7 +87,10 @@ def inicializar_db() -> None:
                 valor_pago REAL,
                 transaction_nsu TEXT,
                 criado_em TEXT NOT NULL,
-                pago_em TEXT
+                pago_em TEXT,
+                tiny_sincronizado INTEGER NOT NULL DEFAULT 0,
+                tiny_numero_pedido TEXT,
+                tiny_erro TEXT
             )
             """
         )
@@ -172,5 +175,19 @@ def marcar_pago(
             WHERE token = ?
             """,
             (forma_pagamento, parcelas, valor_pago, transaction_nsu, agora, token),
+        )
+    return obter_pedido(token)
+
+
+def marcar_tiny_sincronizado(token: str, *, numero_pedido: str | None, erro: str | None) -> dict | None:
+    """Registra o resultado da tentativa de sincronizar com a Tiny (ver
+    services/tiny.py) -- so pra evitar reenviar o mesmo pedido pra Tiny
+    a cada webhook repetido (a InfinitePay pode reenviar). `erro` fica
+    guardado pra dar pra conferir manualmente quais pedidos falharam
+    a sincronizacao, mesmo sem reprocessar automaticamente."""
+    with _conexao() as conexao:
+        conexao.execute(
+            "UPDATE pedidos SET tiny_sincronizado = 1, tiny_numero_pedido = ?, tiny_erro = ? WHERE token = ?",
+            (numero_pedido, erro, token),
         )
     return obter_pedido(token)

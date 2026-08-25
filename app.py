@@ -77,8 +77,9 @@ from services.paginas_institucionais import PAGINAS_ATENDIMENTO
 from services.catalogo_pdf import gerar_pdf_catalogo
 from services.frete import calcular_frete
 from services.infinitepay import criar_link_pagamento
-from services.pedidos import criar_pedido, marcar_pago, obter_pedido
+from services.pedidos import criar_pedido, marcar_pago, marcar_tiny_sincronizado, obter_pedido
 from services.pix import gerar_copia_cola, gerar_qr_data_uri
+from services.tiny import criar_pedido_tiny
 from services.gerador.compositor import auto_cover_box, compose_medal, crop_to_box, load_rgba
 from services.gerador.config import IMAGE_EXTENSIONS, MEDAL_SPECS
 from services.pricing import CHAVES_PRECO, calcular_carrinho, preco_varejo
@@ -847,6 +848,12 @@ def api_pedido_criar():
     if endereco is None:
         return jsonify(erro="Preencha o endereço de entrega completo."), 400
 
+    # guarda o preco unitario junto de cada item persistido -- alem de
+    # registro, e o que services/tiny.py usa pra montar o pedido na
+    # sincronizacao (ver webhook_infinitepay abaixo).
+    for item_validado, item_calculado in zip(itens_validos, calculo["itens"]):
+        item_validado["valor_unitario"] = item_calculado["preco_unitario"]
+
     pedido = criar_pedido(
         itens=itens_validos,
         subtotal=calculo["subtotal_total"],
@@ -906,13 +913,27 @@ def webhook_infinitepay():
     if valor_pago_centavos < total_esperado_centavos:
         return jsonify(ok=True, aviso="valor pago menor que o esperado, pedido não confirmado"), 200
 
-    marcar_pago(
+    pedido_pago = marcar_pago(
         token,
         forma_pagamento=str(dados.get("capture_method", "")),
         parcelas=dados.get("installments"),
         valor_pago=valor_pago_centavos / 100,
         transaction_nsu=str(dados.get("transaction_nsu", "")),
     )
+
+    # sincroniza com a Tiny so na primeira confirmacao -- webhook
+    # repetido (comum em integracoes de pagamento) nao reenvia o
+    # mesmo pedido pra la de novo. Falha na Tiny nao derruba a
+    # confirmacao do pagamento (o pedido ja esta pago no site de
+    # qualquer forma) -- so fica registrado o erro pra conferir depois.
+    if pedido_pago and not pedido_pago["tiny_sincronizado"]:
+        resultado_tiny = criar_pedido_tiny(pedido_pago)
+        marcar_tiny_sincronizado(
+            token,
+            numero_pedido=resultado_tiny.get("numero"),
+            erro=resultado_tiny.get("erro"),
+        )
+
     return jsonify(ok=True), 200
 
 
