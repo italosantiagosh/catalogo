@@ -84,8 +84,17 @@ function carrinhoAdicionarItem(novoItem) {
 }
 
 function carrinhoRemoverItem(chave) {
-  const itens = carrinhoObterItens().filter((i) => i.chave !== chave);
+  const todos = carrinhoObterItens();
+  const removido = todos.find((i) => i.chave === chave);
+  const itens = todos.filter((i) => i.chave !== chave);
   carrinhoSalvarItens(itens);
+  if (removido) {
+    rastrearEventoGA4('remove_from_cart', {
+      item_id: removido.produtoId || removido.tipo,
+      item_name: removido.produtoNome || 'Medalha personalizada',
+      quantity: removido.quantidade,
+    });
+  }
   return itens;
 }
 

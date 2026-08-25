@@ -2051,3 +2051,38 @@ input[type="file"] {
 .kit-adicionar {
   margin-bottom: 24px;
 }
+
+/* pagina 404 */
+
+.pagina-404 {
+  text-align: center;
+  padding: 32px 0 8px;
+}
+
+.pagina-404-numero {
+  display: block;
+  font-size: 3.4rem;
+  font-weight: 700;
+  color: var(--border);
+  line-height: 1;
+  margin-bottom: 8px;
+}
+
+.pagina-404 h1 {
+  margin: 0 0 8px;
+}
+
+.pagina-404 .instrucao {
+  max-width: 44ch;
+  margin: 0 auto 24px;
+}
+
+.pagina-404 .busca-wrap {
+  max-width: 420px;
+  margin: 0 auto 20px;
+  text-align: left;
+}
+
+.pagina-404-botao {
+  margin: 0 6px 10px;
+}

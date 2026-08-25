@@ -393,3 +393,67 @@ def test_barra_fixa_comprar_presente_na_pagina_de_produto(client):
 def test_preview_preco_presente_na_pagina_de_produto(client):
     html = client.get("/produto/sao-jose").get_data(as_text=True)
     assert 'id="preview-preco"' in html
+
+
+def test_breadcrumb_schema_no_catalogo_completo_e_no_kit(client):
+    for rota, esperado in [
+        ("/catalogo", ["Início", "Catálogo completo"]),
+        ("/kit-livraria-shalom", ["Início", "Kit Livraria Shalom"]),
+    ]:
+        html = client.get(rota).get_data(as_text=True)
+        blocos = _blocos_json_ld(html)
+        breadcrumbs = [b for b in blocos if b.get("@type") == "BreadcrumbList"]
+        assert len(breadcrumbs) == 1, rota
+        assert [i["name"] for i in breadcrumbs[0]["itemListElement"]] == esperado
+
+
+def test_website_searchaction_em_toda_pagina(client):
+    for rota in ["/", "/carrinho", "/produto/sao-jose"]:
+        html = client.get(rota).get_data(as_text=True)
+        blocos = _blocos_json_ld(html)
+        websites = [b for b in blocos if b.get("@type") == "WebSite"]
+        assert len(websites) == 1, rota
+        acao = websites[0]["potentialAction"]
+        assert acao["@type"] == "SearchAction"
+        assert "/catalogo?q=" in acao["target"]["urlTemplate"]
+
+
+def test_pagina_perguntas_frequentes_existe_com_faq_schema(client):
+    resposta = client.get("/atendimento/perguntas-frequentes")
+    assert resposta.status_code == 200
+    corpo = resposta.get_data(as_text=True)
+    assert "liga de zinco" in corpo
+    assert "ouro velho" in corpo and "prata antigo" in corpo
+    assert "aço inoxidável" in corpo
+    blocos = _blocos_json_ld(corpo)
+    faqs = [b for b in blocos if b.get("@type") == "FAQPage"]
+    assert len(faqs) == 1
+    assert len(faqs[0]["mainEntity"]) == 6
+
+
+def test_perguntas_frequentes_no_rodape_e_no_sitemap(client):
+    rodape = client.get("/").get_data(as_text=True)
+    assert "/atendimento/perguntas-frequentes" in rodape
+    sitemap = client.get("/sitemap.xml").get_data(as_text=True)
+    assert "/atendimento/perguntas-frequentes" in sitemap
+
+
+def test_personalizada_tem_conteudo_e_faq_schema(client):
+    resposta = client.get("/personalizada")
+    corpo = resposta.get_data(as_text=True)
+    assert "devoção católica" in corpo
+    assert "relicário" in corpo.lower()
+    assert "santo menos conhecido" in corpo.lower()
+    blocos = _blocos_json_ld(corpo)
+    faqs = [b for b in blocos if b.get("@type") == "FAQPage"]
+    assert len(faqs) == 1
+    assert len(faqs[0]["mainEntity"]) == 5
+
+
+def test_pagina_404_personalizada(client):
+    resposta = client.get("/rota-que-nao-existe-nunca")
+    assert resposta.status_code == 404
+    corpo = resposta.get_data(as_text=True)
+    assert "Essa página não existe" in corpo
+    assert 'href="/catalogo"' in corpo
+    assert "Rua Furnas" in corpo  # confirma que usa o rodape/base.html normal, nao a pagina padrao do Flask

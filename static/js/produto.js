@@ -236,13 +236,25 @@
   });
 
   formatosFieldset.addEventListener('change', (evento) => {
-    if (evento.target.name === 'formato') atualizarSubSelecao();
+    if (evento.target.name === 'formato') {
+      atualizarSubSelecao();
+      rastrearEventoGA4('select_format', {
+        item_id: produtoId,
+        item_name: produtoNome,
+        formato: evento.target.value,
+      });
+    }
   });
 
   tamanhosFieldset.addEventListener('change', (evento) => {
     if (evento.target.name === 'tamanho') {
       atualizarBotao();
       atualizarPreviewPreco();
+      rastrearEventoGA4('select_size', {
+        item_id: produtoId,
+        item_name: produtoNome,
+        tamanho: evento.target.value,
+      });
     }
   });
 

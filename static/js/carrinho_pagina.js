@@ -257,6 +257,12 @@
         Math.min(100, (dados.subtotal_total / dados.frete_gratis_reais) * 100) + '%';
     }
 
+    // view_cart -- so na primeira renderizacao da pagina (carrinho ja
+    // tinha itens ao abrir/voltar pra ca), nao a cada recalculo.
+    if (primeiraRenderizacao && itens.length > 0) {
+      rastrearEventoGA4('view_cart', { currency: 'BRL', value: dados.subtotal_total, items: itens.length });
+    }
+
     // toast de comemoracao -- so depois da primeira renderizacao, pra nao
     // disparar assim que a pagina abre com um carrinho ja em faixa alta.
     if (!primeiraRenderizacao) {
@@ -462,6 +468,7 @@
         'Olá! Estou montando este pedido e gostaria de tirar uma dúvida:\n\n' +
         montarCorpoPedido(ultimosItens, ultimoCalculo) +
         '\n\nMinha dúvida é:';
+      rastrearEventoGA4('whatsapp_question', { currency: 'BRL', value: ultimoCalculo.subtotal_total });
       abrirWhatsApp(mensagem);
     });
   }

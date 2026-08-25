@@ -395,6 +395,7 @@
         ? 'Reenviar o arquivo "recorte (1:1)" baixado (não a foto original)'
         : 'Reenviar esta foto pelo WhatsApp ao finalizar',
     });
+    rastrearEventoGA4('add_custom_to_cart', { formato: r.formato, quantity: quantidade, com_foto: true });
 
     const textoOriginal = 'Adicionar ao carrinho';
     btnAdicionar.textContent = 'Adicionado ✓';
@@ -422,6 +423,7 @@
       quantidade,
       semImagem: true,
     });
+    rastrearEventoGA4('add_custom_to_cart', { formato: formatoAtual(), quantity: quantidade, com_foto: false });
 
     const textoOriginal = 'Adicionar ao carrinho sem foto (envio depois pelo WhatsApp)';
     btnSemFoto.textContent = 'Adicionado ✓ — não esqueça de enviar a foto depois';

@@ -243,4 +243,111 @@ PAGINAS_ATENDIMENTO = {
             página com regularidade para se manter atualizado.</p>
         """,
     },
+    "perguntas-frequentes": {
+        "titulo": "Perguntas Frequentes",
+        "resumo": (
+            "Material de cada peça, cuidados no dia a dia, desconto de atacado, "
+            "medalha personalizada, prazo de entrega e formas de pagamento."
+        ),
+        # versao texto-puro das mesmas perguntas do corpo_html abaixo, so pra
+        # montar o schema.org FAQPage (ver app.py:pagina_atendimento) --
+        # rich snippet no Google com a pergunta expansivel direto na busca.
+        "faq_items": [
+            (
+                "De que material são feitas as peças?",
+                "Medalha (1 lado): aço inoxidável, resinada. Chaveiro: liga de zinco, "
+                "resinado. Entremeio (para terço): liga de zinco, resinado, nas "
+                "colorações ouro velho ou prata antigo.",
+            ),
+            (
+                "Como cuidar da peça no dia a dia?",
+                "Vale para medalha, entremeio e chaveiro: pode molhar sem problema "
+                "(banho, chuva, suor), só evite exposição exagerada e constante, tipo "
+                "sol e praia todo dia. Evite passar produto químico ou perfume direto "
+                "em cima da peça, e guarde longe de umidade excessiva quando não "
+                "estiver usando.",
+            ),
+            (
+                "Como funciona o desconto de atacado?",
+                "Quanto mais peças você adiciona ao carrinho -- de qualquer santo, "
+                "inclusive personalizada -- menor o preço por unidade, aplicado "
+                "automaticamente, sem cupom. Medalhas e entremeios somam juntos pra "
+                "faixa de desconto; chaveiros têm tabela própria.",
+            ),
+            (
+                "Fazem medalha personalizada?",
+                "Sim -- inclusive foi assim que a Nove de Julho começou: santos que a "
+                "gente procurava e não encontrava prontos em lugar nenhum.",
+            ),
+            (
+                "Qual o prazo de entrega?",
+                "Produção em até 5 dias úteis após a confirmação do pagamento, mais o "
+                "prazo de transporte (2 a 20 dias úteis conforme o destino).",
+            ),
+            (
+                "Quais as formas de pagamento?",
+                "Os preços do catálogo são para pagamento à vista via Pix. Boleto "
+                "(também à vista) e cartão (com taxas à parte) são combinados direto "
+                "pelo WhatsApp.",
+            ),
+        ],
+        "corpo_html": """
+            <details class="acordeao" open>
+                <summary>De que material são feitas as peças?</summary>
+                <ul>
+                    <li><strong>Medalha (1 lado):</strong> aço inoxidável, resinada.</li>
+                    <li><strong>Chaveiro:</strong> liga de zinco, resinado.</li>
+                    <li><strong>Entremeio (para terço):</strong> liga de zinco, resinado,
+                        nas colorações <strong>ouro velho</strong> ou
+                        <strong>prata antigo</strong>.</li>
+                </ul>
+            </details>
+
+            <details class="acordeao">
+                <summary>Como cuidar da peça no dia a dia?</summary>
+                <p>Vale para medalha, entremeio e chaveiro:</p>
+                <ul>
+                    <li>Pode molhar sem problema (banho, chuva, suor) -- só evite
+                        exposição exagerada e constante, tipo sol e praia todo dia;</li>
+                    <li>Evite passar produto químico ou perfume direto em cima da
+                        peça;</li>
+                    <li>Guarde longe de umidade excessiva quando não estiver usando,
+                        pra manter o brilho por mais tempo.</li>
+                </ul>
+            </details>
+
+            <details class="acordeao">
+                <summary>Como funciona o desconto de atacado?</summary>
+                <p>Quanto mais peças você adiciona ao carrinho -- de qualquer santo,
+                inclusive personalizada -- menor o preço por unidade, aplicado
+                automaticamente, sem cupom. Medalhas e entremeios somam juntos pra
+                faixa de desconto; chaveiros têm tabela própria. Veja o
+                <a href="/kit-livraria-shalom">Kit Livraria Shalom</a> pra já começar
+                com um sortimento pronto.</p>
+            </details>
+
+            <details class="acordeao">
+                <summary>Fazem medalha personalizada?</summary>
+                <p>Sim -- inclusive foi assim que a Nove de Julho começou: santos que a
+                gente procurava e não encontrava prontos em lugar nenhum. Veja mais em
+                <a href="/personalizada">Medalha Personalizada</a>.</p>
+            </details>
+
+            <details class="acordeao">
+                <summary>Qual o prazo de entrega?</summary>
+                <p>Produção em até 5 dias úteis após a confirmação do pagamento, mais o
+                prazo de transporte. Detalhes completos em
+                <a href="/atendimento/envio-e-prazo-de-entrega">Envio e Prazo de
+                Entrega</a>.</p>
+            </details>
+
+            <details class="acordeao">
+                <summary>Quais as formas de pagamento?</summary>
+                <p>Os preços do catálogo são para pagamento à vista via Pix. Boleto
+                (também à vista) e cartão (com taxas à parte) são combinados direto
+                pelo WhatsApp. Veja mais em
+                <a href="/atendimento/formas-de-pagamento">Formas de Pagamento</a>.</p>
+            </details>
+        """,
+    },
 }

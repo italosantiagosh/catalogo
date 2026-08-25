@@ -1,8 +1,10 @@
 {% extends "base.html" %}
 
 {% block titulo %}Medalha Personalizada — Catálogo de Medalhas{% endblock %}
+{% block meta_descricao %}Medalha personalizada com foto: envie a imagem, veja a simulação antes de pedir e receba em medalha, entremeio ou chaveiro. Ideal pra santos menos conhecidos, retiros, paróquias ou relicário de casamento.{% endblock %}
 
 {% block conteudo %}
+  <script type="application/ld+json">{{ dados_faq | tojson }}</script>
   <h1>Medalha Personalizada</h1>
   <p class="instrucao">Envie uma foto, ajuste o recorte e veja a simulação da sua peça antes de pedir.</p>
 
@@ -119,6 +121,57 @@
     </button>
 
     <a class="voltar" href="{{ url_for('personalizada') }}">&larr; Gerar outra</a>
+  </section>
+
+  <section class="conteudo-institucional personalizada-info">
+    <h2>Por que a personalizada existe</h2>
+    <p>A Nove de Julho começou de uma busca pessoal: queríamos medalhas de
+    devoções que simplesmente não encontrávamos prontas em lugar nenhum. A
+    personalizada nasceu pra resolver exatamente isso -- pra você não passar
+    pelo mesmo perrengue.</p>
+
+    <h2>O que você pode personalizar</h2>
+    <ul>
+      <li><strong>Um santo menos conhecido</strong>, ou uma imagem diferente
+      de um santo que já está no catálogo, mas com outro traço ou obra que
+      você prefere;</li>
+      <li><strong>Retiro, grupo de oração ou paróquia</strong>, em quantidade,
+      com desconto de atacado igual ao resto do catálogo;</li>
+      <li><strong>Relicário de casamento</strong> ou lembrança de um ente
+      querido, com a foto da pessoa -- uma forma de guardar quem é
+      importante pra você sempre por perto.</li>
+    </ul>
+    <p>Se a imagem enviada for de cunho religioso, ela precisa ser de uma
+    devoção católica -- é a única exigência de conteúdo que fazemos, pra
+    manter a coerência do nosso catálogo.</p>
+
+    <h2>Perguntas frequentes sobre a personalizada</h2>
+    <details class="acordeao" open>
+      <summary>Posso enviar a foto de um santo menos conhecido, que não está no catálogo?</summary>
+      <p>Sim -- é literalmente pra isso que esse serviço existe. Envie a
+      imagem que você já tem e simule antes de pedir.</p>
+    </details>
+    <details class="acordeao">
+      <summary>Posso personalizar com foto de uma pessoa, não de um santo?</summary>
+      <p>Sim, pra casamentos, lembranças e relicários. Só imagens de cunho
+      religioso precisam ser de devoção católica.</p>
+    </details>
+    <details class="acordeao">
+      <summary>Vejo o resultado antes de pagar?</summary>
+      <p>Sim -- o simulador acima gera a prévia exata da peça, no formato
+      escolhido, antes de você decidir.</p>
+    </details>
+    <details class="acordeao">
+      <summary>Tem desconto de atacado pra personalizada?</summary>
+      <p>Tem sim -- a quantidade personalizada soma junto com o resto do
+      carrinho pra faixa de desconto, do mesmo jeito que qualquer outro
+      santo do catálogo.</p>
+    </details>
+    <details class="acordeao">
+      <summary>Quanto tempo demora?</summary>
+      <p>O mesmo prazo do catálogo: produção em até 5 dias úteis após a
+      confirmação do pagamento, mais o prazo de transporte.</p>
+    </details>
   </section>
 {% endblock %}
 

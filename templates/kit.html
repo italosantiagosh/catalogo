@@ -4,6 +4,7 @@
 {% block meta_descricao %}Kit de atacado com sortimento sugerido de medalhas religiosas, baseado nos santos que mais vendem. Quantidades e tamanho editáveis, tudo adicionado ao carrinho de uma vez.{% endblock %}
 
 {% block conteudo %}
+  <script type="application/ld+json">{{ dados_breadcrumb | tojson }}</script>
   <nav class="breadcrumbs" aria-label="Breadcrumb">
     <a href="{{ url_for('index') }}">Início</a>
     <span>›</span>

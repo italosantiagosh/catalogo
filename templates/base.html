@@ -32,6 +32,7 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 
   <script type="application/ld+json">{{ dados_organizacao | tojson }}</script>
+  <script type="application/ld+json">{{ dados_website | tojson }}</script>
 
   {% if ga4_measurement_id %}
     <!-- Google Analytics (GA4) -->
@@ -103,6 +104,7 @@
         <a href="{{ url_for('pagina_atendimento', slug='formas-de-pagamento') }}">Formas de pagamento</a>
         <a href="{{ url_for('pagina_atendimento', slug='quem-somos') }}">Quem somos</a>
         <a href="{{ url_for('pagina_atendimento', slug='termos-e-privacidade') }}">Termos e privacidade</a>
+        <a href="{{ url_for('pagina_atendimento', slug='perguntas-frequentes') }}">Perguntas frequentes</a>
       </div>
       <div class="rodape-coluna">
         <strong>Contato</strong>

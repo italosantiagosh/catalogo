@@ -5,6 +5,9 @@
 
 {% block conteudo %}
   <script type="application/ld+json">{{ dados_breadcrumb | tojson }}</script>
+  {% if dados_faq %}
+    <script type="application/ld+json">{{ dados_faq | tojson }}</script>
+  {% endif %}
   <nav class="breadcrumbs" aria-label="Breadcrumb">
     <a href="{{ url_for('index') }}">Catálogo</a>
     <span>›</span>

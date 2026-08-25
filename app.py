@@ -141,6 +141,46 @@ def _dados_organizacao() -> dict:
     }
 
 
+def _dados_website() -> dict:
+    """Schema.org WebSite + SearchAction (SEO -- habilita o Google a
+    considerar mostrar uma caixa de busca do proprio site direto no
+    resultado, "sitelinks searchbox"). Aponta pra /catalogo, que e onde
+    a busca de verdade filtra os produtos (ver static/js/catalogo.js)."""
+    base = request.url_root.rstrip("/")
+    return {
+        "@context": "https://schema.org",
+        "@type": "WebSite",
+        "name": "Nove de Julho",
+        "url": f"{base}/",
+        "potentialAction": {
+            "@type": "SearchAction",
+            "target": {
+                "@type": "EntryPoint",
+                "urlTemplate": f"{base}/catalogo?q={{termo_busca}}",
+            },
+            "query-input": "required name=termo_busca",
+        },
+    }
+
+
+def _dados_faq(faq_items: list[tuple[str, str]]) -> dict:
+    """Schema.org FAQPage -- so pra paginas de atendimento que tem
+    "faq_items" (ver services/paginas_institucionais.py). Habilita o
+    rich snippet de pergunta expansivel direto no resultado do Google."""
+    return {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": [
+            {
+                "@type": "Question",
+                "name": pergunta,
+                "acceptedAnswer": {"@type": "Answer", "text": resposta},
+            }
+            for pergunta, resposta in faq_items
+        ],
+    }
+
+
 def _dados_breadcrumb(itens: list[tuple[str, str]]) -> dict:
     """Schema.org BreadcrumbList a partir de uma lista [(nome, url_absoluta), ...],
     na ordem Catalogo -> ... -> pagina atual. Ver produto()/categoria()/
@@ -169,6 +209,7 @@ def _injetar_globais_de_template():
         "instagram_url": INSTAGRAM_URL,
         "ano_atual": datetime.now(timezone.utc).year,
         "dados_organizacao": _dados_organizacao(),
+        "dados_website": _dados_website(),
     }
 
 
@@ -465,11 +506,18 @@ def catalogo_completo():
     produtos = carregar_produtos()
     itens = _itens_do_grid(produtos)
     categorias = categorias_com_slug(produtos)
+    dados_breadcrumb = _dados_breadcrumb(
+        [
+            ("Início", url_for("index", _external=True)),
+            ("Catálogo completo", url_for("catalogo_completo", _external=True)),
+        ]
+    )
     return render_template(
         "catalogo.html",
         produtos=itens,
         categorias=categorias,
         preco_varejo=preco_varejo(),
+        dados_breadcrumb=dados_breadcrumb,
     )
 
 
@@ -502,11 +550,18 @@ def kit_livraria_shalom():
                 "quantidade_sugerida": entrada["quantidade_sugerida"],
             }
         )
+    dados_breadcrumb = _dados_breadcrumb(
+        [
+            ("Início", url_for("index", _external=True)),
+            ("Kit Livraria Shalom", url_for("kit_livraria_shalom", _external=True)),
+        ]
+    )
     return render_template(
         "kit.html",
         itens=itens,
         quantidade_total_sugerida=sum(i["quantidade_sugerida"] for i in itens),
         preco_varejo=preco_varejo(),
+        dados_breadcrumb=dados_breadcrumb,
     )
 
 
@@ -617,8 +672,13 @@ def pagina_atendimento(slug: str):
             (pagina["titulo"], url_for("pagina_atendimento", slug=slug, _external=True)),
         ]
     )
+    dados_faq = _dados_faq(pagina["faq_items"]) if pagina.get("faq_items") else None
     return render_template(
-        "pagina_atendimento.html", pagina=pagina, slug=slug, dados_breadcrumb=dados_breadcrumb
+        "pagina_atendimento.html",
+        pagina=pagina,
+        slug=slug,
+        dados_breadcrumb=dados_breadcrumb,
+        dados_faq=dados_faq,
     )
 
 
@@ -715,12 +775,42 @@ def api_pix_gerar():
     return jsonify(copia_cola=copia_cola, qr_data_uri=gerar_qr_data_uri(copia_cola))
 
 
+_FAQ_PERSONALIZADA = [
+    (
+        "Posso enviar a foto de um santo menos conhecido, que não está no catálogo?",
+        "Sim -- é literalmente pra isso que esse serviço existe. Envie a imagem que "
+        "você já tem e simule antes de pedir.",
+    ),
+    (
+        "Posso personalizar com foto de uma pessoa, não de um santo?",
+        "Sim, pra casamentos, lembranças e relicários. Só imagens de cunho religioso "
+        "precisam ser de devoção católica.",
+    ),
+    (
+        "Vejo o resultado antes de pagar?",
+        "Sim -- o simulador gera a prévia exata da peça, no formato escolhido, antes "
+        "de você decidir.",
+    ),
+    (
+        "Tem desconto de atacado pra personalizada?",
+        "Tem sim -- a quantidade personalizada soma junto com o resto do carrinho "
+        "pra faixa de desconto, do mesmo jeito que qualquer outro santo do catálogo.",
+    ),
+    (
+        "Quanto tempo demora?",
+        "O mesmo prazo do catálogo: produção em até 5 dias úteis após a confirmação "
+        "do pagamento, mais o prazo de transporte.",
+    ),
+]
+
+
 @app.route("/personalizada", methods=["GET"])
 def personalizada():
     return render_template(
         "personalizada.html",
         preco_varejo=preco_varejo(),
         preco_varejo_chaveiro=preco_varejo("chaveiro"),
+        dados_faq=_dados_faq(_FAQ_PERSONALIZADA),
     )
 
 
@@ -784,6 +874,11 @@ def api_personalizada_preview():
         url_preview=f"/download/{token_preview}",
         url_crop=f"/download/{token_crop}",
     )
+
+
+@app.errorhandler(404)
+def pagina_nao_encontrada(erro):
+    return render_template("404.html"), 404
 
 
 if __name__ == "__main__":

@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+
+{% block titulo %}Página não encontrada | Nove de Julho{% endblock %}
+{% block meta_descricao %}Essa página não existe ou o link mudou -- veja o catálogo completo de medalhas, entremeios e chaveiros católicos de atacado.{% endblock %}
+
+{% block conteudo %}
+  <div class="pagina-404">
+    <span class="pagina-404-numero">404</span>
+    <h1>Essa página não existe</h1>
+    <p class="instrucao">
+      O link pode ter mudado ou não existe mais. Procure o santo que você
+      queria ou explore o catálogo completo.
+    </p>
+
+    <div class="busca-wrap busca-wrap-home">
+      <input type="search" id="busca-home" placeholder="Qual santo você procura? (ex: José, Carlo, Fátima)" aria-label="Buscar santo ou devoção" autocomplete="off">
+      <div class="busca-resultados" id="busca-home-resultados" hidden></div>
+    </div>
+
+    <a href="{{ url_for('catalogo_completo') }}" class="botao-hero-primario pagina-404-botao">Ver catálogo completo →</a>
+    <a href="{{ url_for('index') }}" class="botao-hero-secundario pagina-404-botao">Voltar pra home</a>
+  </div>
+{% endblock %}
+
+{% block script %}
+  <script src="{{ url_for('static', filename='js/home_busca.js') }}"></script>
+{% endblock %}
