@@ -23,6 +23,7 @@
   const clienteDocumentoInput = document.getElementById('cliente-documento');
   const clienteTelefoneInput = document.getElementById('cliente-telefone');
   const clienteEmailInput = document.getElementById('cliente-email');
+  const enderecoDestinatarioInput = document.getElementById('endereco-destinatario');
   const enderecoLogradouroInput = document.getElementById('endereco-logradouro');
   const enderecoNumeroInput = document.getElementById('endereco-numero');
   const enderecoComplementoInput = document.getElementById('endereco-complemento');
@@ -489,6 +490,7 @@
       };
       const endereco = {
         cep: (freteCepInput.value || '').replace(/\D/g, ''),
+        destinatario: (enderecoDestinatarioInput.value || '').trim(),
         logradouro: (enderecoLogradouroInput.value || '').trim(),
         numero: (enderecoNumeroInput.value || '').trim(),
         complemento: (enderecoComplementoInput.value || '').trim(),

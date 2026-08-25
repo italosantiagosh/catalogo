@@ -75,6 +75,7 @@ def inicializar_db() -> None:
                 cliente_telefone TEXT,
                 cliente_email TEXT,
                 endereco_cep TEXT,
+                endereco_destinatario TEXT,
                 endereco_logradouro TEXT,
                 endereco_numero TEXT,
                 endereco_complemento TEXT,
@@ -112,9 +113,9 @@ def criar_pedido(
             INSERT INTO pedidos (
                 token, codigo, status, itens, subtotal, frete_descricao, frete_preco, total,
                 cliente_nome, cliente_tipo_pessoa, cliente_documento, cliente_telefone, cliente_email,
-                endereco_cep, endereco_logradouro, endereco_numero, endereco_complemento,
-                endereco_bairro, endereco_cidade, endereco_uf, criado_em
-            ) VALUES (?, ?, 'pendente', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                endereco_cep, endereco_destinatario, endereco_logradouro, endereco_numero,
+                endereco_complemento, endereco_bairro, endereco_cidade, endereco_uf, criado_em
+            ) VALUES (?, ?, 'pendente', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
             (
                 token,
@@ -130,6 +131,7 @@ def criar_pedido(
                 cliente.get("telefone", ""),
                 cliente.get("email", ""),
                 endereco.get("cep", ""),
+                endereco.get("destinatario", ""),
                 endereco.get("logradouro", ""),
                 endereco.get("numero", ""),
                 endereco.get("complemento", ""),

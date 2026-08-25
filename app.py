@@ -761,6 +761,9 @@ def _endereco_valido(dados: dict) -> dict | None:
     if any(not valores[campo] for campo in campos_obrigatorios):
         return None
     valores["complemento"] = str(endereco.get("complemento", "")).strip()
+    # opcional -- se vazio, quem recebe e´ o proprio cliente cadastrado
+    # (ver services.pedidos.criar_pedido/templates/pedido.html)
+    valores["destinatario"] = str(endereco.get("destinatario", "")).strip()
     return valores
 
 
