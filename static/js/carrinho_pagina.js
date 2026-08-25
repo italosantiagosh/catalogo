@@ -290,9 +290,12 @@
     primeiraRenderizacao = false;
 
     if (!dados.atinge_minimo) {
+      const faltamParaMinimo = dados.pedido_minimo_reais - dados.subtotal_total;
       avisoMinimoEl.hidden = false;
       avisoMinimoEl.textContent =
-        `Pedido mínimo de ${formatarPreco(dados.pedido_minimo_reais)} -- adicione mais itens para finalizar.`;
+        `Faltam ${formatarPreco(faltamParaMinimo)} em produtos para o pedido mínimo de ` +
+        `${formatarPreco(dados.pedido_minimo_reais)}. Esse valor é somente em produtos -- o frete ` +
+        `é calculado à parte e não entra nessa conta.`;
     } else {
       avisoMinimoEl.hidden = true;
     }
@@ -463,6 +466,15 @@
   if (btnWhatsappFinalizar) {
     btnWhatsappFinalizar.addEventListener('click', () => {
       if (!ultimoCalculo) return;
+      if (!ultimoCalculo.atinge_minimo) {
+        const faltamParaMinimo = ultimoCalculo.pedido_minimo_reais - ultimoCalculo.subtotal_total;
+        mostrarToast(
+          `⚠️ Faltam ${formatarPreco(faltamParaMinimo)} em produtos para o pedido mínimo de ` +
+          `${formatarPreco(ultimoCalculo.pedido_minimo_reais)} (o frete é à parte).`
+        );
+        if (avisoMinimoEl) avisoMinimoEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        return;
+      }
       const mensagem =
         'Olá! Gostaria de fazer este pedido:\n\n' +
         montarCorpoPedido(ultimosItens, ultimoCalculo) +
