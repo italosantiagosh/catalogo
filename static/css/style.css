@@ -12,6 +12,10 @@
   --accent-dark: #0d233f;
   --gold: #b8923d;
   --gold-soft: #f4ecd8;
+  /* --gold puro so tem ~2.9:1 de contraste sobre fundo claro (falha WCAG AA) --
+     as duas variantes abaixo sao pra uso como cor de TEXTO, nunca --gold puro. */
+  --gold-texto-claro: #8a6d2e; /* texto dourado sobre fundo claro (~4.9:1) */
+  --gold-texto-escuro: #d4ac5c; /* texto dourado sobre fundo escuro/--accent (~6:1) */
   --border: #dde3ec;
 
   --fonte-titulo: 'Fraunces', Georgia, 'Times New Roman', serif;
@@ -74,7 +78,7 @@ main {
 }
 
 .faixa-topo span:nth-child(2) {
-  color: var(--gold);
+  color: var(--gold-texto-escuro);
 }
 
 @media (max-width: 480px) {
@@ -163,7 +167,7 @@ a.marca {
   font-weight: 600;
   letter-spacing: 0.07em;
   text-transform: uppercase;
-  color: var(--gold);
+  color: var(--gold-texto-claro);
 }
 
 a.link-carrinho {
@@ -500,7 +504,7 @@ a.link-carrinho #contador-carrinho {
 }
 
 .preco-atacado {
-  color: var(--gold);
+  color: var(--gold-texto-claro);
   font-weight: 600;
 }
 
