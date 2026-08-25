@@ -28,8 +28,8 @@
     {% for produto in produtos %}
       <a class="card-produto" href="{{ url_for('produto', produto_id=produto.id) }}" data-nome="{{ produto.nome }}" data-categoria="{{ produto.categoria }}">
         <div class="card-imagem-wrap">
-          <img src="{{ url_for('static', filename=produto.thumbnail) }}" alt="{{ produto.nome }}" loading="lazy" decoding="async">
-          <img class="card-imagem-alt" src="{{ url_for('static', filename=produto.thumbnail_chaveiro) }}" alt="" loading="lazy" decoding="async" aria-hidden="true">
+          <img src="{{ url_for('static', filename=produto.thumbnail) }}" alt="{{ produto.nome }}" loading="lazy" decoding="async" width="480" height="480">
+          <img class="card-imagem-alt" src="{{ url_for('static', filename=produto.thumbnail_chaveiro) }}" alt="" loading="lazy" decoding="async" aria-hidden="true" width="480" height="480">
           <span class="badge-formatos">Medalha · Entremeio · Chaveiro</span>
         </div>
         <div class="card-corpo">

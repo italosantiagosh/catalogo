@@ -42,7 +42,7 @@
           "chaveiro": url_for("static", filename=modelo.imagem_chaveiro),
         } | tojson }}'
       >
-        <img src="{{ url_for('static', filename=modelo.imagem) }}" alt="{{ produto.nome }} — {{ modelo.nome }}" loading="lazy" decoding="async">
+        <img src="{{ url_for('static', filename=modelo.imagem) }}" alt="{{ produto.nome }} — {{ modelo.nome }}" loading="lazy" decoding="async" width="480" height="480">
         <span>{{ modelo.nome }}</span>
       </button>
     {% endfor %}
@@ -50,7 +50,7 @@
 
   <div class="painel-selecao" id="painel-selecao" hidden>
     <div class="preview-formato-wrap">
-      <img id="sel-preview-imagem" alt="">
+      <img id="sel-preview-imagem" alt="" width="480" height="480">
     </div>
 
     <h2>Modelo selecionado: <span id="sel-modelo-nome"></span></h2>
@@ -147,7 +147,7 @@
       <div class="destaques-linha">
         {% for item in relacionados %}
           <a class="destaque-card" href="{{ url_for('produto', produto_id=item.id) }}">
-            <img src="{{ url_for('static', filename=item.thumbnail) }}" alt="{{ item.nome }}" loading="lazy" decoding="async">
+            <img src="{{ url_for('static', filename=item.thumbnail) }}" alt="{{ item.nome }}" loading="lazy" decoding="async" width="480" height="480">
             <span>{{ item.nome }}</span>
           </a>
         {% endfor %}

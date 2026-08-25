@@ -6,6 +6,7 @@
       class="hero-banner"
       src="{{ url_for('static', filename='img/banner-hero.jpg') }}"
       alt="Nove de Julho — Catálogo de atacado. Medalhas que carregam histórias de fé. Mais de 130 santos e devoções, em medalha, entremeio ou chaveiro — ou crie a sua própria medalha personalizada."
+      width="900" height="507"
     >
     <div class="hero-acoes">
       <a href="{{ url_for('catalogo_completo') }}" class="botao-hero-primario">Explorar catálogo</a>
@@ -55,7 +56,7 @@
           <div class="destaques-linha">
             {% for produto in grupo.produtos %}
               <a class="destaque-card" href="{{ url_for('produto', produto_id=produto.id) }}">
-                <img src="{{ url_for('static', filename=produto.thumbnail) }}" alt="{{ produto.nome }}" loading="lazy" decoding="async">
+                <img src="{{ url_for('static', filename=produto.thumbnail) }}" alt="{{ produto.nome }}" loading="lazy" decoding="async" width="480" height="480">
                 <span>{{ produto.nome }}</span>
               </a>
             {% endfor %}
@@ -66,11 +67,11 @@
   {% endif %}
 
   <div class="banner-atacado">
-    <img src="{{ url_for('static', filename='img/banner-atacado.jpg') }}" alt="Preço de atacado automático: quanto mais medalhas e entremeios você adicionar ao carrinho — de qualquer santo, inclusive personalizada — menor o preço por unidade. Chaveiros têm tabela de atacado própria. O desconto é aplicado sozinho, sem cupom, assim que você adiciona os itens." loading="lazy" decoding="async">
+    <img src="{{ url_for('static', filename='img/banner-atacado.jpg') }}" alt="Preço de atacado automático: quanto mais medalhas e entremeios você adicionar ao carrinho — de qualquer santo, inclusive personalizada — menor o preço por unidade. Chaveiros têm tabela de atacado própria. O desconto é aplicado sozinho, sem cupom, assim que você adiciona os itens." loading="lazy" decoding="async" width="900" height="453">
   </div>
 
   <a class="banner-kit" href="{{ url_for('kit_livraria_shalom') }}">
-    <img src="{{ url_for('static', filename='img/banner-kit.jpg') }}" alt="Kit Livraria Shalom: sortimento pronto com os santos que mais vendem, quantidades editáveis" loading="lazy" decoding="async">
+    <img src="{{ url_for('static', filename='img/banner-kit.jpg') }}" alt="Kit Livraria Shalom: sortimento pronto com os santos que mais vendem, quantidades editáveis" loading="lazy" decoding="async" width="900" height="367">
   </a>
 
   <div class="banner-urgencia">
@@ -80,7 +81,7 @@
   </div>
 
   <a class="banner-personalizada" href="{{ url_for('personalizada') }}">
-    <img src="{{ url_for('static', filename='img/banner-personalizada.jpg') }}" alt="Peças personalizadas: envie sua foto e veja a simulação antes de pedir" loading="lazy" decoding="async">
+    <img src="{{ url_for('static', filename='img/banner-personalizada.jpg') }}" alt="Peças personalizadas: envie sua foto e veja a simulação antes de pedir" loading="lazy" decoding="async" width="900" height="300">
   </a>
 
   <div class="busca-wrap busca-wrap-home">
