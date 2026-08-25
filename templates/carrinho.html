@@ -41,8 +41,8 @@
 
     <p class="aviso-pagamento">
       💠 Os valores deste catálogo são para pagamento à vista via <strong>Pix</strong>.
-      Quer pagar no boleto ou cartão? É só pedir pelo WhatsApp ao finalizar — boleto também é
-      à vista (não parcelado/faturado), e cartão tem taxas à parte. Emitimos nota fiscal para
+      Quer pagar no cartão? Pague direto no site (Pix ou cartão em até 12x) ou peça pelo
+      WhatsApp — boleto também é à vista (não parcelado/faturado). Emitimos nota fiscal para
       CNPJ ou CPF.
     </p>
 
@@ -52,6 +52,66 @@
     </p>
 
     <div id="nudge-desconto"></div>
+
+    <div class="cadastro-cliente" id="cadastro-cliente">
+      <h2>Seus dados para pagar direto no site</h2>
+      <p class="cadastro-instrucao">
+        Preencha pra pagar agora (Pix ou cartão). Se preferir negociar pelo WhatsApp, pode
+        pular esta parte e usar o botão abaixo.
+      </p>
+
+      <fieldset class="cadastro-tipo-pessoa">
+        <legend>Tipo de pessoa</legend>
+        <label><input type="radio" name="tipo-pessoa" id="tipo-pessoa-fisica" value="fisica" checked> Física (CPF)</label>
+        <label><input type="radio" name="tipo-pessoa" id="tipo-pessoa-juridica" value="juridica"> Jurídica (CNPJ)</label>
+      </fieldset>
+
+      <div class="cadastro-campos">
+        <label for="cliente-nome">Nome completo / Razão social</label>
+        <input type="text" id="cliente-nome" autocomplete="name">
+
+        <label for="cliente-documento" id="label-cliente-documento">CPF</label>
+        <input type="text" id="cliente-documento" inputmode="numeric" autocomplete="off">
+
+        <label for="cliente-telefone">Telefone/WhatsApp</label>
+        <input type="text" id="cliente-telefone" inputmode="numeric" autocomplete="tel">
+
+        <label for="cliente-email">E-mail</label>
+        <input type="email" id="cliente-email" autocomplete="email">
+
+        <label for="endereco-logradouro">Endereço (rua/avenida) — usa o CEP calculado acima</label>
+        <input type="text" id="endereco-logradouro" autocomplete="address-line1">
+
+        <div class="cadastro-linha-dupla">
+          <div>
+            <label for="endereco-numero">Número</label>
+            <input type="text" id="endereco-numero" autocomplete="address-line2">
+          </div>
+          <div>
+            <label for="endereco-complemento">Complemento</label>
+            <input type="text" id="endereco-complemento">
+          </div>
+        </div>
+
+        <label for="endereco-bairro">Bairro</label>
+        <input type="text" id="endereco-bairro">
+
+        <div class="cadastro-linha-dupla">
+          <div>
+            <label for="endereco-cidade">Cidade</label>
+            <input type="text" id="endereco-cidade" autocomplete="address-level2">
+          </div>
+          <div>
+            <label for="endereco-uf">UF</label>
+            <input type="text" id="endereco-uf" maxlength="2" autocomplete="address-level1">
+          </div>
+        </div>
+      </div>
+
+      <button type="button" id="btn-pagar-agora" class="botao-pagar">💳 Pagar agora (Pix ou cartão)</button>
+    </div>
+
+    <p class="separador-ou">ou</p>
 
     <div class="whatsapp-acoes">
       <button type="button" id="btn-whatsapp-finalizar" class="botao-whatsapp">

@@ -3,3 +3,4 @@ __pycache__/
 *.pyc
 .pytest_cache/
 static/img/produtos/originais/
+data/pedidos.db

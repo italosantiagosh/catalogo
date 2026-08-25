@@ -54,6 +54,19 @@ PIX_CIDADE = os.environ.get("PIX_CIDADE", "NATAL")
 # permitem MANDAR eventos pra essas contas, e so funciona com a conta
 # ja logada do dono no painel do Google/Meta). Variavel de ambiente so
 # se quiser trocar sem redeploy.
+# Checkout automatico via InfinitePay (Pix + cartao, ver
+# services/infinitepay.py). O "handle" (@usuario) NAO e credencial --
+# aparece publico em todo link de pagamento gerado, mesmo raciocinio do
+# PIX_CHAVE acima. Sem o "$" do inicio (a API pede assim).
+INFINITEPAY_HANDLE = os.environ.get("INFINITEPAY_HANDLE", "novedejulho")
+
+# Token de API da InfinitePay -- esse SIM e credencial (Bearer token
+# opcional, ver services/infinitepay.py). NUNCA gravar o valor aqui, so
+# variavel de ambiente INFINITEPAY_API_TOKEN no servidor. A criacao de
+# link de pagamento funciona mesmo sem ele (endpoint publico) -- fica
+# vazio ate ser necessario.
+INFINITEPAY_API_TOKEN = os.environ.get("INFINITEPAY_API_TOKEN", "")
+
 GA4_MEASUREMENT_ID = os.environ.get("GA4_MEASUREMENT_ID", "G-RXVM530CM6")
 META_PIXEL_ID = os.environ.get("META_PIXEL_ID", "28592446083693889")
 

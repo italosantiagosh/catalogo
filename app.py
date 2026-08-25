@@ -76,6 +76,8 @@ from services.catalogo import (
 from services.paginas_institucionais import PAGINAS_ATENDIMENTO
 from services.catalogo_pdf import gerar_pdf_catalogo
 from services.frete import calcular_frete
+from services.infinitepay import criar_link_pagamento
+from services.pedidos import criar_pedido, marcar_pago, obter_pedido
 from services.pix import gerar_copia_cola, gerar_qr_data_uri
 from services.gerador.compositor import auto_cover_box, compose_medal, crop_to_box, load_rgba
 from services.gerador.config import IMAGE_EXTENSIONS, MEDAL_SPECS
@@ -710,6 +712,58 @@ def _itens_validos_do_corpo(dados: dict) -> list[dict]:
     return itens_validos
 
 
+def _itens_com_descricao_do_corpo(dados: dict) -> list[dict]:
+    """Mesma validacao de _itens_validos_do_corpo, mas guarda tambem uma
+    descricao legivel (nome do produto/modelo/formato) pra exibir no
+    pedido e no item de pagamento -- so cosmetico, NUNCA usado pra
+    calcular preco (isso continua vindo so de chave_preco+quantidade,
+    via calcular_carrinho)."""
+    itens_validos = []
+    for item in dados.get("itens", []):
+        try:
+            chave_preco = str(item["chave_preco"])
+            quantidade = int(item["quantidade"])
+        except (KeyError, TypeError, ValueError):
+            continue
+        if chave_preco not in CHAVES_PRECO or quantidade <= 0:
+            continue
+        partes = [str(item.get(campo, "")).strip() for campo in ("produtoNome", "modeloNome") if item.get(campo)]
+        formato = str(item.get("formato", "")).strip()
+        if formato and formato != "medalha":
+            partes.append(formato.capitalize())
+        descricao = " — ".join(p for p in partes if p) or chave_preco
+        itens_validos.append({"chave_preco": chave_preco, "quantidade": quantidade, "descricao": descricao[:120]})
+    return itens_validos
+
+
+def _cliente_valido(dados: dict) -> dict | None:
+    cliente = dados.get("cliente") or {}
+    nome = str(cliente.get("nome", "")).strip()
+    documento = str(cliente.get("documento", "")).strip()
+    telefone = str(cliente.get("telefone", "")).strip()
+    email = str(cliente.get("email", "")).strip()
+    if not nome or not documento or not telefone or not email:
+        return None
+    tipo_pessoa = str(cliente.get("tipo_pessoa", "fisica"))
+    return {
+        "nome": nome,
+        "tipo_pessoa": tipo_pessoa if tipo_pessoa in ("fisica", "juridica") else "fisica",
+        "documento": documento,
+        "telefone": telefone,
+        "email": email,
+    }
+
+
+def _endereco_valido(dados: dict) -> dict | None:
+    endereco = dados.get("endereco") or {}
+    campos_obrigatorios = ["cep", "logradouro", "numero", "bairro", "cidade", "uf"]
+    valores = {campo: str(endereco.get(campo, "")).strip() for campo in campos_obrigatorios}
+    if any(not valores[campo] for campo in campos_obrigatorios):
+        return None
+    valores["complemento"] = str(endereco.get("complemento", "")).strip()
+    return valores
+
+
 @app.route("/api/busca", methods=["GET"])
 def api_busca():
     """Busca ao vivo da home -- digitar no campo chama isso (debounced,
@@ -755,6 +809,116 @@ def api_calcular_frete():
         resumo_carrinho["frete_gratis_atingido"],
     )
     return jsonify(resultado)
+
+
+@app.route("/api/pedido/criar", methods=["POST"])
+def api_pedido_criar():
+    """Cria o pedido (persistido, ver services/pedidos.py) e gera o link
+    de pagamento da InfinitePay -- caminho automatico do "Pagar agora"
+    no carrinho, alternativa ao "Finalizar pelo WhatsApp" (que continua
+    funcionando do jeito que sempre funcionou, sem passar por aqui).
+    Preco sempre recalculado no servidor (calcular_carrinho) -- nunca
+    confia em subtotal/preco mandado pelo navegador."""
+    dados = request.get_json(silent=True) or {}
+    itens_validos = _itens_com_descricao_do_corpo(dados)
+    if not itens_validos:
+        return jsonify(erro="Carrinho vazio."), 400
+
+    calculo = calcular_carrinho(itens_validos)
+    if not calculo["atinge_minimo"]:
+        return jsonify(erro="Pedido abaixo do mínimo de produtos."), 400
+
+    frete = dados.get("frete") or {}
+    try:
+        frete_preco = float(frete.get("preco"))
+    except (TypeError, ValueError):
+        return jsonify(erro="Escolha uma opção de frete."), 400
+    frete_descricao = str(frete.get("texto", "")).strip()
+    if not frete_descricao:
+        return jsonify(erro="Escolha uma opção de frete."), 400
+
+    cliente = _cliente_valido(dados)
+    if cliente is None:
+        return jsonify(erro="Preencha seus dados completos (nome, documento, telefone e e-mail)."), 400
+    endereco = _endereco_valido(dados)
+    if endereco is None:
+        return jsonify(erro="Preencha o endereço de entrega completo."), 400
+
+    pedido = criar_pedido(
+        itens=itens_validos,
+        subtotal=calculo["subtotal_total"],
+        frete_descricao=frete_descricao,
+        frete_preco=frete_preco,
+        cliente=cliente,
+        endereco=endereco,
+    )
+
+    itens_pagamento = [
+        {
+            "id": item_validado["chave_preco"],
+            "description": item_validado["descricao"],
+            "quantity": item_validado["quantidade"],
+            "price": round(item_calculado["preco_unitario"] * 100),
+        }
+        for item_validado, item_calculado in zip(itens_validos, calculo["itens"])
+    ]
+    if frete_preco > 0:
+        itens_pagamento.append(
+            {"id": "frete", "description": frete_descricao, "quantity": 1, "price": round(frete_preco * 100)}
+        )
+
+    resultado = criar_link_pagamento(
+        order_nsu=pedido["token"],
+        redirect_url=url_for("ver_pedido", token=pedido["token"], _external=True),
+        webhook_url=url_for("webhook_infinitepay", _external=True),
+        itens_pagamento=itens_pagamento,
+        cliente=cliente,
+        endereco=endereco,
+    )
+    if "erro" in resultado:
+        return jsonify(erro=resultado["erro"]), 502
+    return jsonify(url=resultado["url"], token=pedido["token"], codigo=pedido["codigo"])
+
+
+@app.route("/webhook/infinitepay", methods=["POST"])
+def webhook_infinitepay():
+    """Recebido pela InfinitePay quando um pagamento e´ confirmado (ver
+    redirect_url/webhook_url em api_pedido_criar acima). So marca como
+    pago quando o valor pago cobre o total esperado -- e´ idempotente
+    (webhook repetido nao reprocessa, ver services.pedidos.marcar_pago),
+    entao sempre responde 200 mesmo quando nao ha nada a fazer, pra
+    InfinitePay nao ficar reenviando em loop."""
+    dados = request.get_json(silent=True) or {}
+    token = str(dados.get("order_nsu", ""))
+    pedido = obter_pedido(token) if token else None
+    if pedido is None:
+        return jsonify(erro="Pedido não encontrado."), 404
+
+    try:
+        valor_pago_centavos = float(dados.get("paid_amount", 0))
+    except (TypeError, ValueError):
+        valor_pago_centavos = 0.0
+
+    total_esperado_centavos = round(pedido["total"] * 100)
+    if valor_pago_centavos < total_esperado_centavos:
+        return jsonify(ok=True, aviso="valor pago menor que o esperado, pedido não confirmado"), 200
+
+    marcar_pago(
+        token,
+        forma_pagamento=str(dados.get("capture_method", "")),
+        parcelas=dados.get("installments"),
+        valor_pago=valor_pago_centavos / 100,
+        transaction_nsu=str(dados.get("transaction_nsu", "")),
+    )
+    return jsonify(ok=True), 200
+
+
+@app.route("/pedido/<token>", methods=["GET"])
+def ver_pedido(token: str):
+    pedido = obter_pedido(token)
+    if pedido is None:
+        abort(404)
+    return render_template("pedido.html", pedido=pedido)
 
 
 @app.route("/api/pix/gerar", methods=["POST"])

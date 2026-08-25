@@ -1779,6 +1779,98 @@ input[type="file"] {
   margin: 0 0 10px;
 }
 
+.cadastro-cliente {
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 16px;
+  margin: 0 0 14px;
+  background: var(--card);
+}
+
+.cadastro-cliente h2 {
+  font-size: 1rem;
+  margin: 0 0 4px;
+}
+
+.cadastro-instrucao {
+  font-size: 0.82rem;
+  color: var(--muted);
+  margin: 0 0 12px;
+}
+
+.cadastro-tipo-pessoa {
+  display: flex;
+  gap: 18px;
+  border: none;
+  padding: 0;
+  margin: 0 0 12px;
+  font-size: 0.88rem;
+}
+
+.cadastro-tipo-pessoa legend {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--muted);
+  padding: 0;
+  margin: 0 0 6px;
+}
+
+.cadastro-campos {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.cadastro-campos label {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--muted);
+  margin-top: 8px;
+}
+
+.cadastro-campos input {
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  font-size: 0.92rem;
+  font-family: inherit;
+}
+
+.cadastro-linha-dupla {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.botao-pagar {
+  width: 100%;
+  margin-top: 16px;
+  padding: 16px;
+  border: none;
+  border-radius: 12px;
+  background: var(--accent);
+  color: white;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.botao-pagar:active {
+  background: var(--accent-dark);
+}
+
+.botao-pagar:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.separador-ou {
+  text-align: center;
+  font-size: 0.78rem;
+  color: var(--muted);
+  margin: 0 0 14px;
+}
+
 .whatsapp-acoes {
   display: flex;
   flex-direction: column;
@@ -2095,4 +2187,63 @@ input[type="file"] {
 
 .pagina-404-botao {
   margin: 0 6px 10px;
+}
+
+/* pagina de acompanhamento de pedido (/pedido/<token>) */
+
+.pedido-status {
+  display: inline-block;
+  padding: 8px 14px;
+  border-radius: 999px;
+  font-weight: 700;
+  font-size: 0.9rem;
+  margin: 0 0 18px;
+}
+
+.pedido-status-pendente {
+  background: var(--gold-soft);
+  color: #7a5c1f;
+}
+
+.pedido-status-pago {
+  background: #e3f6ea;
+  color: #1e7a43;
+}
+
+.pedido-resumo,
+.pedido-entrega {
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 16px;
+  margin: 0 0 16px;
+  background: var(--card);
+}
+
+.pedido-resumo h2,
+.pedido-entrega h2 {
+  font-size: 1rem;
+  margin: 0 0 10px;
+}
+
+.pedido-itens {
+  margin: 0 0 12px;
+  padding-left: 20px;
+  font-size: 0.9rem;
+}
+
+.pedido-linha {
+  font-size: 0.9rem;
+  margin: 0 0 6px;
+}
+
+.pedido-total {
+  font-size: 1.05rem;
+  border-top: 1px solid var(--border);
+  padding-top: 8px;
+  margin-top: 8px;
+}
+
+.pedido-ajuda {
+  font-size: 0.88rem;
+  color: var(--muted);
 }

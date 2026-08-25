@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+
+{% block titulo %}Pedido {{ pedido.codigo }} — Nove de Julho{% endblock %}
+
+{% block conteudo %}
+  <h1>Pedido #{{ pedido.codigo }}</h1>
+
+  {% if pedido.status == 'pago' %}
+    <p class="pedido-status pedido-status-pago">✅ Pagamento confirmado</p>
+  {% else %}
+    <p class="pedido-status pedido-status-pendente">⏳ Aguardando confirmação do pagamento</p>
+  {% endif %}
+
+  <div class="pedido-resumo">
+    <h2>Itens do pedido</h2>
+    <ul class="pedido-itens">
+      {% for item in pedido.itens %}
+        <li>{{ item.descricao }} — {{ item.quantidade }}x</li>
+      {% endfor %}
+    </ul>
+
+    <p class="pedido-linha">Subtotal: <strong>{{ pedido.subtotal | preco }}</strong></p>
+    <p class="pedido-linha">Frete ({{ pedido.frete_descricao }}): <strong>{{ pedido.frete_preco | preco }}</strong></p>
+    <p class="pedido-linha pedido-total">Total: <strong>{{ pedido.total | preco }}</strong></p>
+
+    {% if pedido.status == 'pago' %}
+      <p class="pedido-linha">Forma de pagamento: <strong>{{ pedido.forma_pagamento }}</strong></p>
+    {% endif %}
+  </div>
+
+  <div class="pedido-entrega">
+    <h2>Endereço de entrega</h2>
+    <p>
+      {{ pedido.endereco_logradouro }}, {{ pedido.endereco_numero }}
+      {%- if pedido.endereco_complemento %} — {{ pedido.endereco_complemento }}{% endif %}<br>
+      {{ pedido.endereco_bairro }} — {{ pedido.endereco_cidade }}/{{ pedido.endereco_uf }}<br>
+      CEP {{ pedido.endereco_cep }}
+    </p>
+  </div>
+
+  <p class="pedido-ajuda">
+    Dúvidas sobre esse pedido? <a href="https://wa.me/{{ whatsapp_number }}" target="_blank" rel="noopener">Fale no WhatsApp</a>.
+  </p>
+{% endblock %}

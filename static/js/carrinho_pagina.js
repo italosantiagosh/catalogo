@@ -16,6 +16,20 @@
   const btnCalcularFrete = document.getElementById('btn-calcular-frete');
   const freteResultadoEl = document.getElementById('frete-resultado');
   const nudgeDescontoEl = document.getElementById('nudge-desconto');
+  const tipoPessoaFisica = document.getElementById('tipo-pessoa-fisica');
+  const tipoPessoaJuridica = document.getElementById('tipo-pessoa-juridica');
+  const labelClienteDocumento = document.getElementById('label-cliente-documento');
+  const clienteNomeInput = document.getElementById('cliente-nome');
+  const clienteDocumentoInput = document.getElementById('cliente-documento');
+  const clienteTelefoneInput = document.getElementById('cliente-telefone');
+  const clienteEmailInput = document.getElementById('cliente-email');
+  const enderecoLogradouroInput = document.getElementById('endereco-logradouro');
+  const enderecoNumeroInput = document.getElementById('endereco-numero');
+  const enderecoComplementoInput = document.getElementById('endereco-complemento');
+  const enderecoBairroInput = document.getElementById('endereco-bairro');
+  const enderecoCidadeInput = document.getElementById('endereco-cidade');
+  const enderecoUfInput = document.getElementById('endereco-uf');
+  const btnPagarAgora = document.getElementById('btn-pagar-agora');
   if (!listaEl) return;
 
   const TAMANHO_LABEL = { '12mm': '1,2 cm', '16mm': '1,6 cm' };
@@ -434,6 +448,84 @@
       } finally {
         btnCalcularFrete.disabled = false;
         btnCalcularFrete.textContent = 'Calcular';
+      }
+    });
+  }
+
+  // ---- cadastro + pagamento automatico (InfinitePay) ----
+
+  function atualizarLabelDocumento() {
+    if (!labelClienteDocumento) return;
+    labelClienteDocumento.textContent = (tipoPessoaJuridica && tipoPessoaJuridica.checked) ? 'CNPJ' : 'CPF';
+  }
+  if (tipoPessoaFisica) tipoPessoaFisica.addEventListener('change', atualizarLabelDocumento);
+  if (tipoPessoaJuridica) tipoPessoaJuridica.addEventListener('change', atualizarLabelDocumento);
+
+  if (btnPagarAgora) {
+    btnPagarAgora.addEventListener('click', async () => {
+      if (!ultimoCalculo) return;
+
+      if (!ultimoCalculo.atinge_minimo) {
+        const faltamParaMinimo = ultimoCalculo.pedido_minimo_reais - ultimoCalculo.subtotal_total;
+        mostrarToast(
+          `⚠️ Faltam ${formatarPreco(faltamParaMinimo)} em produtos para o pedido mínimo de ` +
+          `${formatarPreco(ultimoCalculo.pedido_minimo_reais)} (o frete é à parte).`
+        );
+        if (avisoMinimoEl) avisoMinimoEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        return;
+      }
+      if (!freteEscolhido) {
+        mostrarToast('⚠️ Calcule o frete e escolha uma opção antes de pagar.');
+        if (freteResultadoEl) freteResultadoEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        return;
+      }
+
+      const cliente = {
+        nome: (clienteNomeInput.value || '').trim(),
+        tipo_pessoa: (tipoPessoaJuridica && tipoPessoaJuridica.checked) ? 'juridica' : 'fisica',
+        documento: (clienteDocumentoInput.value || '').trim(),
+        telefone: (clienteTelefoneInput.value || '').trim(),
+        email: (clienteEmailInput.value || '').trim(),
+      };
+      const endereco = {
+        cep: (freteCepInput.value || '').replace(/\D/g, ''),
+        logradouro: (enderecoLogradouroInput.value || '').trim(),
+        numero: (enderecoNumeroInput.value || '').trim(),
+        complemento: (enderecoComplementoInput.value || '').trim(),
+        bairro: (enderecoBairroInput.value || '').trim(),
+        cidade: (enderecoCidadeInput.value || '').trim(),
+        uf: (enderecoUfInput.value || '').trim(),
+      };
+
+      if (!cliente.nome || !cliente.documento || !cliente.telefone || !cliente.email) {
+        mostrarToast('⚠️ Preencha seus dados completos antes de pagar.');
+        return;
+      }
+      if (!endereco.cep || !endereco.logradouro || !endereco.numero || !endereco.bairro || !endereco.cidade || !endereco.uf) {
+        mostrarToast('⚠️ Preencha o endereço completo (e o CEP no calculador de frete) antes de pagar.');
+        return;
+      }
+
+      btnPagarAgora.disabled = true;
+      btnPagarAgora.textContent = 'Gerando pagamento...';
+      try {
+        const resposta = await fetch('/api/pedido/criar', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ itens: ultimosItens, frete: freteEscolhido, cliente, endereco }),
+        });
+        const dados = await resposta.json();
+        if (!resposta.ok || dados.erro) {
+          mostrarToast(`⚠️ ${dados.erro || 'Não foi possível gerar o pagamento agora.'}`);
+          return;
+        }
+        rastrearEventoGA4('begin_checkout', { currency: 'BRL', value: ultimoCalculo.subtotal_total });
+        window.location.href = dados.url;
+      } catch (e) {
+        mostrarToast('⚠️ Não foi possível gerar o pagamento agora.');
+      } finally {
+        btnPagarAgora.disabled = false;
+        btnPagarAgora.textContent = '💳 Pagar agora (Pix ou cartão)';
       }
     });
   }
