@@ -320,6 +320,16 @@
     });
   }
 
+  // marca visualmente qual opcao esta selecionada e atualiza freteEscolhido
+  // -- compartilhado pelos dois formatos (frete gratis com opcoes / frete
+  // pago), pra clicar em qualquer uma trocar a escolha, nao so a primeira.
+  function selecionarOpcaoFrete(botao, escolha) {
+    freteResultadoEl.querySelectorAll('.frete-opcao').forEach((el) => {
+      el.setAttribute('aria-pressed', String(el === botao));
+    });
+    freteEscolhido = escolha;
+  }
+
   function renderizarFrete(dados) {
     freteEscolhido = null;
     if (!freteResultadoEl) return;
@@ -338,13 +348,15 @@
 
       freteResultadoEl.innerHTML = `<p class="frete-gratis-aviso">🎉 ${dados.aviso}</p>`;
       dados.opcoes.forEach((opcao, i) => {
-        const linha = document.createElement('div');
-        linha.className = 'frete-opcao';
+        const botao = document.createElement('button');
+        botao.type = 'button';
+        botao.className = 'frete-opcao';
+        botao.setAttribute('aria-pressed', 'false');
         const prazo = opcao.prazo_dias ? `${opcao.prazo_dias} dia(s) úteis` : '';
         const rotulo = opcao.gratis
           ? '<span class="frete-opcao-gratis">Grátis</span>'
           : `<span class="frete-opcao-por">Por ${formatarPreco(opcao.preco_final)}</span>`;
-        linha.innerHTML = `
+        botao.innerHTML = `
           <div>
             <div class="frete-opcao-nome">${opcao.transportadora} — ${opcao.servico}</div>
             <div class="frete-opcao-prazo">${prazo}</div>
@@ -354,13 +366,10 @@
             ${rotulo}
           </div>
         `;
-        freteResultadoEl.appendChild(linha);
-        if (i === 0) {
-          freteEscolhido = {
-            texto: `${opcao.transportadora} ${opcao.servico} — Grátis`,
-            preco: 0,
-          };
-        }
+        const escolha = { texto: `${opcao.transportadora} ${opcao.servico} — Grátis`, preco: 0 };
+        botao.addEventListener('click', () => selecionarOpcaoFrete(botao, escolha));
+        freteResultadoEl.appendChild(botao);
+        if (i === 0) selecionarOpcaoFrete(botao, escolha);
       });
       return;
     }
@@ -372,23 +381,25 @@
 
     freteResultadoEl.innerHTML = '';
     dados.opcoes.forEach((opcao, i) => {
-      const linha = document.createElement('div');
-      linha.className = 'frete-opcao';
+      const botao = document.createElement('button');
+      botao.type = 'button';
+      botao.className = 'frete-opcao';
+      botao.setAttribute('aria-pressed', 'false');
       const prazo = opcao.prazo_dias ? `${opcao.prazo_dias} dia(s) úteis` : '';
-      linha.innerHTML = `
+      botao.innerHTML = `
         <div>
           <div class="frete-opcao-nome">${opcao.transportadora} — ${opcao.servico}</div>
           <div class="frete-opcao-prazo">${prazo}</div>
         </div>
         <div class="frete-opcao-preco">${formatarPreco(opcao.preco)}</div>
       `;
-      freteResultadoEl.appendChild(linha);
-      if (i === 0) {
-        freteEscolhido = {
-          texto: `${opcao.transportadora} ${opcao.servico} — ${formatarPreco(opcao.preco)}`,
-          preco: opcao.preco,
-        };
-      }
+      const escolha = {
+        texto: `${opcao.transportadora} ${opcao.servico} — ${formatarPreco(opcao.preco)}`,
+        preco: opcao.preco,
+      };
+      botao.addEventListener('click', () => selecionarOpcaoFrete(botao, escolha));
+      freteResultadoEl.appendChild(botao);
+      if (i === 0) selecionarOpcaoFrete(botao, escolha);
     });
   }
 
