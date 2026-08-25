@@ -74,6 +74,19 @@ INFINITEPAY_API_TOKEN = os.environ.get("INFINITEPAY_API_TOKEN", "")
 # normalmente no site, so nao entra na Tiny sozinho).
 TINY_API_TOKEN = os.environ.get("TINY_API_TOKEN", "")
 
+# E-mail transacional via Brevo (ver services/email.py) -- disparado
+# quando o pagamento e´ confirmado, com o link de acompanhamento do
+# pedido (o site nao tem login, ver conversa que definiu essa escolha
+# -- sem o e-mail, se o cliente perder a aba/link, nao acha o pedido
+# de novo sozinho). Credencial de verdade -- NUNCA gravar o valor
+# aqui, so variavel de ambiente BREVO_API_KEY no servidor.
+BREVO_API_KEY = os.environ.get("BREVO_API_KEY", "")
+
+# Remetente dos e-mails -- nao e´ segredo (aparece publico em todo
+# e-mail enviado), pode ficar no codigo como padrao.
+EMAIL_REMETENTE = os.environ.get("EMAIL_REMETENTE", "9djulho@gmail.com")
+EMAIL_REMETENTE_NOME = os.environ.get("EMAIL_REMETENTE_NOME", "Nove de Julho")
+
 GA4_MEASUREMENT_ID = os.environ.get("GA4_MEASUREMENT_ID", "G-RXVM530CM6")
 META_PIXEL_ID = os.environ.get("META_PIXEL_ID", "28592446083693889")
 

@@ -90,7 +90,9 @@ def inicializar_db() -> None:
                 pago_em TEXT,
                 tiny_sincronizado INTEGER NOT NULL DEFAULT 0,
                 tiny_numero_pedido TEXT,
-                tiny_erro TEXT
+                tiny_erro TEXT,
+                email_enviado INTEGER NOT NULL DEFAULT 0,
+                email_erro TEXT
             )
             """
         )
@@ -175,6 +177,16 @@ def marcar_pago(
             WHERE token = ?
             """,
             (forma_pagamento, parcelas, valor_pago, transaction_nsu, agora, token),
+        )
+    return obter_pedido(token)
+
+
+def marcar_email_enviado(token: str, *, erro: str | None) -> dict | None:
+    """Mesma logica do marcar_tiny_sincronizado (ver abaixo) -- evita
+    reenviar o mesmo e-mail de confirmacao em webhook duplicado."""
+    with _conexao() as conexao:
+        conexao.execute(
+            "UPDATE pedidos SET email_enviado = 1, email_erro = ? WHERE token = ?", (erro, token)
         )
     return obter_pedido(token)
 

@@ -75,9 +75,16 @@ from services.catalogo import (
 )
 from services.paginas_institucionais import PAGINAS_ATENDIMENTO
 from services.catalogo_pdf import gerar_pdf_catalogo
+from services.email import enviar_confirmacao_pedido
 from services.frete import calcular_frete
 from services.infinitepay import criar_link_pagamento
-from services.pedidos import criar_pedido, marcar_pago, marcar_tiny_sincronizado, obter_pedido
+from services.pedidos import (
+    criar_pedido,
+    marcar_email_enviado,
+    marcar_pago,
+    marcar_tiny_sincronizado,
+    obter_pedido,
+)
 from services.pix import gerar_copia_cola, gerar_qr_data_uri
 from services.tiny import criar_pedido_tiny
 from services.gerador.compositor import auto_cover_box, compose_medal, crop_to_box, load_rgba
@@ -933,6 +940,14 @@ def webhook_infinitepay():
             numero_pedido=resultado_tiny.get("numero"),
             erro=resultado_tiny.get("erro"),
         )
+
+    # mesma logica -- so uma vez por pedido, falha nao derruba a
+    # confirmacao do pagamento (ver services/email.py).
+    if pedido_pago and not pedido_pago["email_enviado"]:
+        resultado_email = enviar_confirmacao_pedido(
+            pedido_pago, url_for("ver_pedido", token=token, _external=True)
+        )
+        marcar_email_enviado(token, erro=resultado_email.get("erro"))
 
     return jsonify(ok=True), 200
 
