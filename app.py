@@ -773,9 +773,14 @@ def _endereco_valido(dados: dict) -> dict | None:
     if any(not valores[campo] for campo in campos_obrigatorios):
         return None
     valores["complemento"] = str(endereco.get("complemento", "")).strip()
-    # opcional -- se vazio, quem recebe e´ o proprio cliente cadastrado
-    # (ver services.pedidos.criar_pedido/templates/pedido.html)
-    valores["destinatario"] = str(endereco.get("destinatario", "")).strip()
+    # opcional -- so preenchido quando o cliente marca "entregar em
+    # nome de outra pessoa/empresa" (ver static/js/carrinho_pagina.js).
+    # Se vazio, quem recebe e´ o proprio cliente cadastrado (ver
+    # services.pedidos.criar_pedido/templates/pedido.html).
+    valores["destinatario_nome"] = str(endereco.get("destinatario_nome", "")).strip()
+    tipo_pessoa_dest = str(endereco.get("destinatario_tipo_pessoa", "")).strip()
+    valores["destinatario_tipo_pessoa"] = tipo_pessoa_dest if tipo_pessoa_dest in ("fisica", "juridica") else ""
+    valores["destinatario_documento"] = str(endereco.get("destinatario_documento", "")).strip()
     return valores
 
 

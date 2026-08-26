@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import sqlite3
+
 import services.pedidos as pedidos
 
 
@@ -84,3 +86,56 @@ def test_marcar_pago_pedido_inexistente_devolve_none(monkeypatch, tmp_path):
         "token-que-nao-existe", forma_pagamento="pix", parcelas=None, valor_pago=10.0, transaction_nsu="x"
     )
     assert resultado is None
+
+
+def test_banco_antigo_ganha_as_colunas_novas_sem_quebrar(monkeypatch, tmp_path):
+    """Simula um pedidos.db criado antes das colunas tiny_*/email_*/
+    endereco_destinatario_* existirem -- CREATE TABLE IF NOT EXISTS
+    sozinho NAO adiciona coluna nova a uma tabela que ja existe, entao
+    isso so funciona por causa da migracao em inicializar_db()."""
+    caminho_db = str(tmp_path / "pedidos_antigo.db")
+    monkeypatch.setattr(pedidos, "DB_PATH", caminho_db)
+
+    conexao_antiga = sqlite3.connect(caminho_db)
+    conexao_antiga.execute(
+        """
+        CREATE TABLE pedidos (
+            token TEXT PRIMARY KEY,
+            codigo TEXT NOT NULL,
+            status TEXT NOT NULL DEFAULT 'pendente',
+            itens TEXT NOT NULL,
+            subtotal REAL NOT NULL,
+            frete_descricao TEXT,
+            frete_preco REAL NOT NULL DEFAULT 0,
+            total REAL NOT NULL,
+            cliente_nome TEXT,
+            cliente_tipo_pessoa TEXT,
+            cliente_documento TEXT,
+            cliente_telefone TEXT,
+            cliente_email TEXT,
+            endereco_cep TEXT,
+            endereco_logradouro TEXT,
+            endereco_numero TEXT,
+            endereco_complemento TEXT,
+            endereco_bairro TEXT,
+            endereco_cidade TEXT,
+            endereco_uf TEXT,
+            forma_pagamento TEXT,
+            parcelas INTEGER,
+            valor_pago REAL,
+            transaction_nsu TEXT,
+            criado_em TEXT NOT NULL,
+            pago_em TEXT
+        )
+        """
+    )
+    conexao_antiga.commit()
+    conexao_antiga.close()
+
+    # nao deve estourar "sqlite3.OperationalError: no such column"
+    pedido = pedidos.criar_pedido(**_pedido_exemplo())
+    assert pedido["tiny_sincronizado"] == 0
+    assert pedido["endereco_destinatario_nome"] == ""
+
+    atualizado = pedidos.marcar_tiny_sincronizado(pedido["token"], numero_pedido="42", erro=None)
+    assert atualizado["tiny_numero_pedido"] == "42"

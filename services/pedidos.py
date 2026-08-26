@@ -55,6 +55,24 @@ def _conexao():
         conexao.close()
 
 
+# Colunas adicionadas depois da criacao original da tabela -- "CREATE
+# TABLE IF NOT EXISTS" sozinho NAO adiciona coluna nova a um banco que
+# ja existe em disco (so cria do zero se o arquivo nao existir ainda).
+# Qualquer coluna nova a partir de agora entra aqui, nunca direto no
+# CREATE TABLE abaixo, senao quebra (sqlite3.OperationalError: no such
+# column) pra quem ja tem o pedidos.db criado em producao.
+_COLUNAS_ADICIONAIS: list[tuple[str, str]] = [
+    ("tiny_sincronizado", "INTEGER NOT NULL DEFAULT 0"),
+    ("tiny_numero_pedido", "TEXT"),
+    ("tiny_erro", "TEXT"),
+    ("email_enviado", "INTEGER NOT NULL DEFAULT 0"),
+    ("email_erro", "TEXT"),
+    ("endereco_destinatario_nome", "TEXT"),
+    ("endereco_destinatario_tipo_pessoa", "TEXT"),
+    ("endereco_destinatario_documento", "TEXT"),
+]
+
+
 def inicializar_db() -> None:
     Path(DB_PATH).parent.mkdir(parents=True, exist_ok=True)
     with _conexao() as conexao:
@@ -75,7 +93,6 @@ def inicializar_db() -> None:
                 cliente_telefone TEXT,
                 cliente_email TEXT,
                 endereco_cep TEXT,
-                endereco_destinatario TEXT,
                 endereco_logradouro TEXT,
                 endereco_numero TEXT,
                 endereco_complemento TEXT,
@@ -87,15 +104,14 @@ def inicializar_db() -> None:
                 valor_pago REAL,
                 transaction_nsu TEXT,
                 criado_em TEXT NOT NULL,
-                pago_em TEXT,
-                tiny_sincronizado INTEGER NOT NULL DEFAULT 0,
-                tiny_numero_pedido TEXT,
-                tiny_erro TEXT,
-                email_enviado INTEGER NOT NULL DEFAULT 0,
-                email_erro TEXT
+                pago_em TEXT
             )
             """
         )
+        colunas_existentes = {linha[1] for linha in conexao.execute("PRAGMA table_info(pedidos)").fetchall()}
+        for nome, tipo_sql in _COLUNAS_ADICIONAIS:
+            if nome not in colunas_existentes:
+                conexao.execute(f"ALTER TABLE pedidos ADD COLUMN {nome} {tipo_sql}")
 
 
 def criar_pedido(
@@ -118,9 +134,11 @@ def criar_pedido(
             INSERT INTO pedidos (
                 token, codigo, status, itens, subtotal, frete_descricao, frete_preco, total,
                 cliente_nome, cliente_tipo_pessoa, cliente_documento, cliente_telefone, cliente_email,
-                endereco_cep, endereco_destinatario, endereco_logradouro, endereco_numero,
-                endereco_complemento, endereco_bairro, endereco_cidade, endereco_uf, criado_em
-            ) VALUES (?, ?, 'pendente', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                endereco_cep, endereco_logradouro, endereco_numero, endereco_complemento,
+                endereco_bairro, endereco_cidade, endereco_uf,
+                endereco_destinatario_nome, endereco_destinatario_tipo_pessoa, endereco_destinatario_documento,
+                criado_em
+            ) VALUES (?, ?, 'pendente', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
             (
                 token,
@@ -136,13 +154,15 @@ def criar_pedido(
                 cliente.get("telefone", ""),
                 cliente.get("email", ""),
                 endereco.get("cep", ""),
-                endereco.get("destinatario", ""),
                 endereco.get("logradouro", ""),
                 endereco.get("numero", ""),
                 endereco.get("complemento", ""),
                 endereco.get("bairro", ""),
                 endereco.get("cidade", ""),
                 endereco.get("uf", ""),
+                endereco.get("destinatario_nome", ""),
+                endereco.get("destinatario_tipo_pessoa", ""),
+                endereco.get("destinatario_documento", ""),
                 agora,
             ),
         )

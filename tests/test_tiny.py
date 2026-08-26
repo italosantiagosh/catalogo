@@ -20,7 +20,9 @@ def _pedido_exemplo(**overrides):
         cliente_telefone="84999999999",
         cliente_email="maria@example.com",
         endereco_cep="59000000",
-        endereco_destinatario="",
+        endereco_destinatario_nome="",
+        endereco_destinatario_tipo_pessoa="",
+        endereco_destinatario_documento="",
         endereco_logradouro="Rua Teste",
         endereco_numero="100",
         endereco_complemento="",
@@ -81,9 +83,12 @@ def test_monta_payload_com_cliente_itens_e_numero_pedido_ecommerce(monkeypatch):
 def test_destinatario_diferente_entra_nas_observacoes(monkeypatch):
     monkeypatch.setattr(tiny, "TINY_API_TOKEN", "segredo123")
     with patch("services.tiny.requests.post", return_value=_resposta_ok()) as post_mock:
-        tiny.criar_pedido_tiny(_pedido_exemplo(endereco_destinatario="João Receptor"))
+        tiny.criar_pedido_tiny(_pedido_exemplo(
+            endereco_destinatario_nome="João Receptor", endereco_destinatario_documento="98765432100"
+        ))
     pedido_json = json.loads(post_mock.call_args.kwargs["data"]["pedido"])["pedido"]
     assert "João Receptor" in pedido_json["obs"]
+    assert "98765432100" in pedido_json["obs"]
 
 
 def test_tipo_pessoa_juridica_mapeia_para_j(monkeypatch):

@@ -77,8 +77,12 @@ def criar_pedido_tiny(pedido: dict) -> dict:
         return {"erro": "Sincronização com a Tiny não configurada (falta TINY_API_TOKEN)."}
 
     observacoes = [f"Pedido site #{pedido['codigo']}"]
-    if pedido.get("endereco_destinatario"):
-        observacoes.append(f"Destinatário: {pedido['endereco_destinatario']}")
+    if pedido.get("endereco_destinatario_nome"):
+        doc_dest = pedido.get("endereco_destinatario_documento", "")
+        observacoes.append(
+            f"Entregar aos cuidados de: {pedido['endereco_destinatario_nome']}"
+            + (f" ({doc_dest})" if doc_dest else "")
+        )
     if pedido.get("transaction_nsu"):
         observacoes.append(f"Pagamento InfinitePay: {pedido['transaction_nsu']}")
 

@@ -1842,6 +1842,27 @@ input[type="file"] {
   gap: 12px;
 }
 
+.cadastro-checkbox {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin-top: 14px;
+  font-size: 0.85rem;
+  line-height: 1.35;
+  cursor: pointer;
+}
+
+.cadastro-checkbox input {
+  margin-top: 3px;
+  flex-shrink: 0;
+}
+
+.cadastro-destinatario {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px dashed var(--border);
+}
+
 .botao-pagar {
   width: 100%;
   margin-top: 16px;

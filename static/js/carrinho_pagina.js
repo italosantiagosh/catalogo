@@ -23,13 +23,19 @@
   const clienteDocumentoInput = document.getElementById('cliente-documento');
   const clienteTelefoneInput = document.getElementById('cliente-telefone');
   const clienteEmailInput = document.getElementById('cliente-email');
-  const enderecoDestinatarioInput = document.getElementById('endereco-destinatario');
   const enderecoLogradouroInput = document.getElementById('endereco-logradouro');
   const enderecoNumeroInput = document.getElementById('endereco-numero');
   const enderecoComplementoInput = document.getElementById('endereco-complemento');
   const enderecoBairroInput = document.getElementById('endereco-bairro');
   const enderecoCidadeInput = document.getElementById('endereco-cidade');
   const enderecoUfInput = document.getElementById('endereco-uf');
+  const checkboxEntregaOutraPessoa = document.getElementById('entrega-outra-pessoa');
+  const camposDestinatarioEl = document.getElementById('campos-destinatario');
+  const destinatarioNomeInput = document.getElementById('destinatario-nome');
+  const destinatarioTipoPessoaFisica = document.getElementById('destinatario-tipo-pessoa-fisica');
+  const destinatarioTipoPessoaJuridica = document.getElementById('destinatario-tipo-pessoa-juridica');
+  const labelDestinatarioDocumento = document.getElementById('label-destinatario-documento');
+  const destinatarioDocumentoInput = document.getElementById('destinatario-documento');
   const btnPagarAgora = document.getElementById('btn-pagar-agora');
   if (!listaEl) return;
 
@@ -332,9 +338,30 @@
     return digitos.length > 5 ? `${digitos.slice(0, 5)}-${digitos.slice(5)}` : digitos;
   }
 
+  // preenche endereco/bairro/cidade/UF automaticamente a partir do CEP
+  // (ViaCEP -- servico publico gratuito, sem chave) assim que o cliente
+  // termina de digitar os 8 digitos. Falha silenciosamente (CEP nao
+  // encontrado, ou servico fora do ar) -- o cliente sempre pode
+  // preencher esses campos na mao, o autopreenchimento e so conveniencia.
+  async function preencherEnderecoPorCep(cep) {
+    try {
+      const resposta = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
+      const dados = await resposta.json();
+      if (dados.erro) return;
+      if (enderecoLogradouroInput) enderecoLogradouroInput.value = dados.logradouro || '';
+      if (enderecoBairroInput) enderecoBairroInput.value = dados.bairro || '';
+      if (enderecoCidadeInput) enderecoCidadeInput.value = dados.localidade || '';
+      if (enderecoUfInput) enderecoUfInput.value = dados.uf || '';
+    } catch (e) {
+      // silencioso -- ver comentario acima
+    }
+  }
+
   if (freteCepInput) {
     freteCepInput.addEventListener('input', () => {
       freteCepInput.value = mascararCep(freteCepInput.value);
+      const digitos = freteCepInput.value.replace(/\D/g, '');
+      if (digitos.length === 8) preencherEnderecoPorCep(digitos);
     });
   }
 
@@ -462,6 +489,20 @@
   if (tipoPessoaFisica) tipoPessoaFisica.addEventListener('change', atualizarLabelDocumento);
   if (tipoPessoaJuridica) tipoPessoaJuridica.addEventListener('change', atualizarLabelDocumento);
 
+  if (checkboxEntregaOutraPessoa && camposDestinatarioEl) {
+    checkboxEntregaOutraPessoa.addEventListener('change', () => {
+      camposDestinatarioEl.hidden = !checkboxEntregaOutraPessoa.checked;
+    });
+  }
+
+  function atualizarLabelDocumentoDestinatario() {
+    if (!labelDestinatarioDocumento) return;
+    labelDestinatarioDocumento.textContent =
+      (destinatarioTipoPessoaJuridica && destinatarioTipoPessoaJuridica.checked) ? 'CNPJ' : 'CPF';
+  }
+  if (destinatarioTipoPessoaFisica) destinatarioTipoPessoaFisica.addEventListener('change', atualizarLabelDocumentoDestinatario);
+  if (destinatarioTipoPessoaJuridica) destinatarioTipoPessoaJuridica.addEventListener('change', atualizarLabelDocumentoDestinatario);
+
   if (btnPagarAgora) {
     btnPagarAgora.addEventListener('click', async () => {
       if (!ultimoCalculo) return;
@@ -490,7 +531,6 @@
       };
       const endereco = {
         cep: (freteCepInput.value || '').replace(/\D/g, ''),
-        destinatario: (enderecoDestinatarioInput.value || '').trim(),
         logradouro: (enderecoLogradouroInput.value || '').trim(),
         numero: (enderecoNumeroInput.value || '').trim(),
         complemento: (enderecoComplementoInput.value || '').trim(),
@@ -506,6 +546,17 @@
       if (!endereco.cep || !endereco.logradouro || !endereco.numero || !endereco.bairro || !endereco.cidade || !endereco.uf) {
         mostrarToast('⚠️ Preencha o endereço completo (e o CEP no calculador de frete) antes de pagar.');
         return;
+      }
+
+      if (checkboxEntregaOutraPessoa && checkboxEntregaOutraPessoa.checked) {
+        endereco.destinatario_nome = (destinatarioNomeInput.value || '').trim();
+        endereco.destinatario_tipo_pessoa =
+          (destinatarioTipoPessoaJuridica && destinatarioTipoPessoaJuridica.checked) ? 'juridica' : 'fisica';
+        endereco.destinatario_documento = (destinatarioDocumentoInput.value || '').trim();
+        if (!endereco.destinatario_nome || !endereco.destinatario_documento) {
+          mostrarToast('⚠️ Preencha o nome e o documento de quem vai receber.');
+          return;
+        }
       }
 
       btnPagarAgora.disabled = true;

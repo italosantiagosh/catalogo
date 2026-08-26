@@ -31,7 +31,9 @@
   <div class="pedido-entrega">
     <h2>Endereço de entrega</h2>
     <p>
-      {% if pedido.endereco_destinatario %}Destinatário: {{ pedido.endereco_destinatario }}<br>{% endif %}
+      {% if pedido.endereco_destinatario_nome %}Destinatário: {{ pedido.endereco_destinatario_nome }}
+        {%- if pedido.endereco_destinatario_documento %} ({{ pedido.endereco_destinatario_documento }}){% endif %}<br>
+      {% endif %}
       {{ pedido.endereco_logradouro }}, {{ pedido.endereco_numero }}
       {%- if pedido.endereco_complemento %} — {{ pedido.endereco_complemento }}{% endif %}<br>
       {{ pedido.endereco_bairro }} — {{ pedido.endereco_cidade }}/{{ pedido.endereco_uf }}<br>

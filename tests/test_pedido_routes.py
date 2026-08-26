@@ -45,6 +45,33 @@ def test_criar_pedido_com_link_mockado(client):
     assert any("São José" in d for d in descricoes)
 
 
+def test_criar_pedido_com_destinatario_diferente(client):
+    corpo = _corpo_valido(endereco={
+        "cep": "59000000", "logradouro": "Rua Teste", "numero": "100", "complemento": "",
+        "bairro": "Centro", "cidade": "Natal", "uf": "RN",
+        "destinatario_nome": "Ana Coordenadora", "destinatario_tipo_pessoa": "fisica",
+        "destinatario_documento": "98765432100",
+    })
+    with patch("app.criar_link_pagamento", return_value={"url": "https://checkout.infinitepay.io/abc"}):
+        criado = client.post("/api/pedido/criar", json=corpo).get_json()
+    assert criado.get("token")
+
+    pedido = pedidos.obter_pedido(criado["token"])
+    assert pedido["endereco_destinatario_nome"] == "Ana Coordenadora"
+    assert pedido["endereco_destinatario_tipo_pessoa"] == "fisica"
+    assert pedido["endereco_destinatario_documento"] == "98765432100"
+
+    pagina = client.get(f"/pedido/{criado['token']}")
+    assert "Ana Coordenadora" in pagina.get_data(as_text=True)
+
+
+def test_criar_pedido_sem_destinatario_fica_vazio(client):
+    with patch("app.criar_link_pagamento", return_value={"url": "https://checkout.infinitepay.io/abc"}):
+        criado = client.post("/api/pedido/criar", json=_corpo_valido()).get_json()
+    pedido = pedidos.obter_pedido(criado["token"])
+    assert pedido["endereco_destinatario_nome"] == ""
+
+
 def test_criar_pedido_carrinho_vazio_400(client):
     resposta = client.post("/api/pedido/criar", json=_corpo_valido(itens=[]))
     assert resposta.status_code == 400
