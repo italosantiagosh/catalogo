@@ -6,17 +6,19 @@ evita reenviar em webhook duplicado).
 
 Endpoint e layout do parametro `pedido` conferidos no exemplo oficial
 da documentacao (colado pelo usuario -- o ambiente onde isso foi
-desenvolvido nao alcanca tiny.com.br pra acessar direto). Dois pontos
-NAO totalmente confirmados, sinalizados abaixo:
-  - os valores aceitos pelo campo `forma_pagamento` (o exemplo oficial
-    so mostrava "boleto"/"dinheiro"/"multiplas" -- "pix" e
-    "cartao_credito" sao a suposicao mais razoavel, nao confirmada);
-  - o significado exato de `frete_por_conta` ("E" assumido como "loja
-    contrata o frete", que e´ o caso daqui).
-Conferir os dois no primeiro pedido de teste real antes de confiar
-cegamente -- se a Tiny rejeitar algum valor, ainda assim preferimos
-deixar o pedido salvo no site (ver chamada em app.py) a travar o
-webhook por causa disso.
+desenvolvido nao alcanca tiny.com.br pra acessar direto).
+
+CONFIRMADO com pedido de teste real (pedido Tiny #1113, status "OK"):
+  - `forma_pagamento="pix"` aparece na Tiny como "Forma de recebimento:
+    Pix";
+  - `frete_por_conta="E"` e´ guardado como "Contratação do Frete por
+    conta do Remetente (CIF)" -- exatamente "loja contrata o frete",
+    como pretendido.
+NAO confirmado ainda: `forma_pagamento="cartao_credito"` (mapeamento
+pra pagamento via cartao na InfinitePay) -- so testamos Pix ate agora.
+Se a Tiny rejeitar esse valor, ainda assim preferimos deixar o pedido
+salvo no site (ver chamada em app.py) a travar o webhook por causa
+disso.
 """
 
 from __future__ import annotations
@@ -31,8 +33,9 @@ API_URL = "https://api.tiny.com.br/api2/pedido.incluir.php"
 
 _TIPO_PESSOA = {"fisica": "F", "juridica": "J"}
 
-# capture_method (InfinitePay) -> forma_pagamento (Tiny) -- ver aviso
-# no topo do arquivo sobre essa suposicao nao estar 100% confirmada.
+# capture_method (InfinitePay) -> forma_pagamento (Tiny) -- "pix"
+# confirmado com pedido de teste real, "cartao_credito" ainda nao (ver
+# aviso no topo do arquivo).
 _FORMA_PAGAMENTO = {"pix": "pix", "credit_card": "cartao_credito"}
 
 
