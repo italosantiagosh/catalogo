@@ -38,6 +38,7 @@ diferente do que gerou a previa.
 from __future__ import annotations
 
 import base64
+import csv
 import hmac
 import io
 import secrets
@@ -737,12 +738,33 @@ def _itens_validos_do_corpo(dados: dict) -> list[dict]:
     return itens_validos
 
 
+# Mesmos rotulos usados no carrinho (static/js/carrinho_pagina.js --
+# TAMANHO_LABEL/COR_LABEL/FORMATO_LABEL/detalheFormato) -- mantidos
+# identicos aqui pra descricao do pedido bater com o que o cliente ja
+# viu no carrinho, incluindo a variacao (tamanho/cor), que antes nao
+# aparecia no pedido persistido (so produto + modelo).
+_TAMANHO_LABEL = {"12mm": "1,2 cm", "16mm": "1,6 cm"}
+_COR_LABEL = {"prata": "Prata", "ouro_velho": "Ouro velho"}
+_FORMATO_LABEL = {"medalha": "Medalha", "entremeio": "Entremeio", "chaveiro": "Chaveiro"}
+
+
+def _detalhe_formato_do_item(item: dict) -> str:
+    formato = str(item.get("formato") or "medalha")
+    if formato == "entremeio":
+        cor = str(item.get("cor", ""))
+        return f"{_FORMATO_LABEL['entremeio']} · {_COR_LABEL.get(cor, cor)}"
+    if formato == "chaveiro":
+        return _FORMATO_LABEL["chaveiro"]
+    tamanho = str(item.get("tamanho", ""))
+    return f"{_FORMATO_LABEL['medalha']} · {_TAMANHO_LABEL.get(tamanho, tamanho)}"
+
+
 def _itens_com_descricao_do_corpo(dados: dict) -> list[dict]:
-    """Mesma validacao de _itens_validos_do_corpo, mas guarda tambem uma
-    descricao legivel (nome do produto/modelo/formato) pra exibir no
-    pedido e no item de pagamento -- so cosmetico, NUNCA usado pra
-    calcular preco (isso continua vindo so de chave_preco+quantidade,
-    via calcular_carrinho)."""
+    """Mesma validacao de _itens_validos_do_corpo, mas guarda tambem
+    campos legiveis (nome do produto/modelo/variacao/imagem) pra exibir
+    no pedido, no e-mail, no item de pagamento e no CSV do admin -- so
+    cosmetico, NUNCA usado pra calcular preco (isso continua vindo so
+    de chave_preco+quantidade, via calcular_carrinho)."""
     itens_validos = []
     for item in dados.get("itens", []):
         try:
@@ -752,12 +774,25 @@ def _itens_com_descricao_do_corpo(dados: dict) -> list[dict]:
             continue
         if chave_preco not in CHAVES_PRECO or quantidade <= 0:
             continue
-        partes = [str(item.get(campo, "")).strip() for campo in ("produtoNome", "modeloNome") if item.get(campo)]
-        formato = str(item.get("formato", "")).strip()
-        if formato and formato != "medalha":
-            partes.append(formato.capitalize())
-        descricao = " — ".join(p for p in partes if p) or chave_preco
-        itens_validos.append({"chave_preco": chave_preco, "quantidade": quantidade, "descricao": descricao[:120]})
+        produto_nome = str(item.get("produtoNome", "")).strip()
+        modelo_nome = str(item.get("modeloNome", "")).strip()
+        detalhe = _detalhe_formato_do_item(item)
+        partes = [p for p in (produto_nome, modelo_nome, detalhe) if p]
+        descricao = " — ".join(partes) or chave_preco
+        itens_validos.append(
+            {
+                "chave_preco": chave_preco,
+                "quantidade": quantidade,
+                "descricao": descricao[:160],
+                "produtoNome": produto_nome,
+                "modeloNome": modelo_nome,
+                "detalhe": detalhe,
+                # imagem NUNCA truncada -- pode ser um data URI (medalha
+                # personalizada, ver static/js/personalizada.js), cortar
+                # no meio corrompe a imagem inteira.
+                "imagem": str(item.get("imagem", "")),
+            }
+        )
     return itens_validos
 
 
@@ -1088,6 +1123,35 @@ def admin_pedido_detalhe(token: str):
     if pedido is None:
         abort(404)
     return render_template("admin_pedido_detalhe.html", pedido=pedido)
+
+
+@app.route("/admin/pedidos/<token>/csv", methods=["GET"])
+def admin_pedido_csv(token: str):
+    """CSV pra produção/expedição (uso interno, nao pro cliente) -- ver
+    conversa: o usuario ja usa uma planilha com essas colunas pra
+    organizar a produção."""
+    if not _autenticacao_admin_valida(request.authorization):
+        return Response(
+            "Autenticação necessária.", 401, {"WWW-Authenticate": 'Basic realm="Painel de pedidos"'}
+        )
+    pedido = obter_pedido(token)
+    if pedido is None:
+        abort(404)
+
+    buffer = io.StringIO()
+    escritor = csv.writer(buffer, delimiter=";")
+    escritor.writerow(["Produto", "Modelo", "Variação", "Quantidade"])
+    for item in pedido["itens"]:
+        escritor.writerow(
+            [item.get("produtoNome", ""), item.get("modeloNome", ""), item.get("detalhe", ""), item["quantidade"]]
+        )
+
+    # utf-8-sig (BOM no inicio) -- Excel no Windows so reconhece acento
+    # certo em CSV com esse prefixo, senao mostra "Variacao" quebrado.
+    conteudo_bytes = buffer.getvalue().encode("utf-8-sig")
+    resposta = Response(conteudo_bytes, mimetype="text/csv")
+    resposta.headers["Content-Disposition"] = f'attachment; filename="pedido-{pedido["codigo"]}.csv"'
+    return resposta
 
 
 @app.route("/admin/pedidos/<token>/status", methods=["POST"])

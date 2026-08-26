@@ -31,7 +31,15 @@
     <h2>Itens do pedido</h2>
     <ul class="pedido-itens">
       {% for item in pedido.itens %}
-        <li>{{ item.descricao }} — {{ item.quantidade }}x</li>
+        <li class="pedido-item">
+          {% if item.imagem %}<img src="{{ item.imagem }}" alt="" loading="lazy">{% endif %}
+          <div>
+            <strong>{{ item.produtoNome or item.descricao }}</strong>
+            {% if item.modeloNome %}<span>{{ item.modeloNome }}</span>{% endif %}
+            {% if item.detalhe %}<span>{{ item.detalhe }}</span>{% endif %}
+            <span class="pedido-item-qtd">{{ item.quantidade }}x</span>
+          </div>
+        </li>
       {% endfor %}
     </ul>
 

@@ -41,6 +41,13 @@
       <h2>Rastreio atual</h2>
       <p>{{ pedido.codigo_rastreio }}{% if pedido.link_rastreio %} — <a href="{{ pedido.link_rastreio }}" target="_blank" rel="noopener">link</a>{% endif %}</p>
     {% endif %}
+    <h2>Itens (produção)</h2>
+    <ul>
+      {% for item in pedido.itens %}
+        <li>{{ item.produtoNome }} — {{ item.modeloNome }} — {{ item.detalhe }} — {{ item.quantidade }}x</li>
+      {% endfor %}
+    </ul>
+    <a class="voltar" href="{{ url_for('admin_pedido_csv', token=pedido.token) }}">⬇ Baixar CSV pra produção</a>
   </div>
 
   <div class="bloco">

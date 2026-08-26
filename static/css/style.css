@@ -2262,9 +2262,51 @@ input[type="file"] {
 }
 
 .pedido-itens {
+  list-style: none;
   margin: 0 0 12px;
-  padding-left: 20px;
+  padding: 0;
   font-size: 0.9rem;
+}
+
+.pedido-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.pedido-item:last-child {
+  border-bottom: none;
+}
+
+.pedido-item img {
+  width: 52px;
+  height: 52px;
+  border-radius: 8px;
+  object-fit: cover;
+  flex-shrink: 0;
+  background: var(--bg);
+}
+
+.pedido-item div {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.pedido-item strong {
+  font-size: 0.9rem;
+}
+
+.pedido-item span {
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+
+.pedido-item-qtd {
+  font-weight: 600;
+  color: var(--ink) !important;
 }
 
 .pedido-linha {

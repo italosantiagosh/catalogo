@@ -45,6 +45,78 @@ def test_criar_pedido_com_link_mockado(client):
     assert any("São José" in d for d in descricoes)
 
 
+def test_item_medalha_guarda_tamanho_na_descricao_e_detalhe(client):
+    corpo = _corpo_valido(itens=[{
+        "chave_preco": "16mm", "quantidade": 10, "produtoNome": "São José", "modeloNome": "Modelo 1",
+        "formato": "medalha", "tamanho": "16mm", "imagem": "/static/img/produtos/sao-jose-1.jpg",
+    }])
+    with patch("app.criar_link_pagamento", return_value={"url": "https://checkout.infinitepay.io/abc"}):
+        criado = client.post("/api/pedido/criar", json=corpo).get_json()
+
+    pedido = pedidos.obter_pedido(criado["token"])
+    item = pedido["itens"][0]
+    assert item["detalhe"] == "Medalha · 1,6 cm"
+    assert "1,6 cm" in item["descricao"]
+    assert item["imagem"] == "/static/img/produtos/sao-jose-1.jpg"
+
+
+def test_item_entremeio_guarda_cor_na_descricao_e_detalhe(client):
+    corpo = _corpo_valido(itens=[{
+        "chave_preco": "entremeio", "quantidade": 10, "produtoNome": "São José", "modeloNome": "Modelo 1",
+        "formato": "entremeio", "cor": "ouro_velho",
+    }])
+    with patch("app.criar_link_pagamento", return_value={"url": "https://checkout.infinitepay.io/abc"}):
+        criado = client.post("/api/pedido/criar", json=corpo).get_json()
+
+    pedido = pedidos.obter_pedido(criado["token"])
+    item = pedido["itens"][0]
+    assert item["detalhe"] == "Entremeio · Ouro velho"
+    assert "Ouro velho" in item["descricao"]
+
+
+def test_item_chaveiro_detalhe_simples(client):
+    corpo = _corpo_valido(itens=[{
+        "chave_preco": "chaveiro", "quantidade": 10, "produtoNome": "São José", "modeloNome": "Modelo 1",
+        "formato": "chaveiro",
+    }])
+    with patch("app.criar_link_pagamento", return_value={"url": "https://checkout.infinitepay.io/abc"}):
+        criado = client.post("/api/pedido/criar", json=corpo).get_json()
+
+    pedido = pedidos.obter_pedido(criado["token"])
+    assert pedido["itens"][0]["detalhe"] == "Chaveiro"
+
+
+def test_admin_csv_exige_autenticacao(client, monkeypatch):
+    import app as app_module
+
+    monkeypatch.setattr(app_module, "ADMIN_USER", "admin")
+    monkeypatch.setattr(app_module, "ADMIN_PASSWORD", "segredo123")
+    with patch("app.criar_link_pagamento", return_value={"url": "https://checkout.infinitepay.io/abc"}):
+        criado = client.post("/api/pedido/criar", json=_corpo_valido()).get_json()
+    resposta = client.get(f"/admin/pedidos/{criado['token']}/csv")
+    assert resposta.status_code == 401
+
+
+def test_admin_csv_conteudo(client, monkeypatch):
+    import app as app_module
+
+    monkeypatch.setattr(app_module, "ADMIN_USER", "admin")
+    monkeypatch.setattr(app_module, "ADMIN_PASSWORD", "segredo123")
+    corpo = _corpo_valido(itens=[{
+        "chave_preco": "16mm", "quantidade": 10, "produtoNome": "São José", "modeloNome": "Modelo 1",
+        "formato": "medalha", "tamanho": "16mm",
+    }])
+    with patch("app.criar_link_pagamento", return_value={"url": "https://checkout.infinitepay.io/abc"}):
+        criado = client.post("/api/pedido/criar", json=corpo).get_json()
+
+    resposta = client.get(f"/admin/pedidos/{criado['token']}/csv", auth=("admin", "segredo123"))
+    assert resposta.status_code == 200
+    assert resposta.mimetype == "text/csv"
+    corpo_csv = resposta.get_data().decode("utf-8-sig")
+    assert "Produto;Modelo;Variação;Quantidade" in corpo_csv
+    assert "São José;Modelo 1;Medalha · 1,6 cm;10" in corpo_csv
+
+
 def test_criar_pedido_envia_email_com_link_uma_vez(client):
     with patch("app.criar_link_pagamento", return_value={"url": "https://checkout.infinitepay.io/abc"}), \
          patch("app.enviar_link_pagamento", return_value={"ok": True}) as mock_email:
