@@ -14,11 +14,16 @@ CONFIRMADO com pedido de teste real (pedido Tiny #1113, status "OK"):
   - `frete_por_conta="E"` e´ guardado como "Contratação do Frete por
     conta do Remetente (CIF)" -- exatamente "loja contrata o frete",
     como pretendido.
-NAO confirmado ainda: `forma_pagamento="cartao_credito"` (mapeamento
-pra pagamento via cartao na InfinitePay) -- so testamos Pix ate agora.
-Se a Tiny rejeitar esse valor, ainda assim preferimos deixar o pedido
-salvo no site (ver chamada em app.py) a travar o webhook por causa
-disso.
+NAO confirmado ainda:
+  - `forma_pagamento="cartao_credito"` (mapeamento pra pagamento via
+    cartao na InfinitePay) -- so testamos Pix ate agora;
+  - o bloco `endereco_entrega` (nome dos campos), usado quando o
+    cliente pede entrega num endereco diferente do proprio (ver
+    criar_pedido_tiny) -- ainda sem pedido de teste real com isso
+    preenchido.
+Se a Tiny rejeitar algum desses valores, ainda assim preferimos deixar
+o pedido salvo no site (ver chamada em app.py) a travar o webhook por
+causa disso.
 """
 
 from __future__ import annotations
@@ -139,6 +144,30 @@ def criar_pedido_tiny(pedido: dict) -> dict:
     forma_pagamento = _FORMA_PAGAMENTO.get(pedido.get("forma_pagamento"))
     if forma_pagamento:
         corpo_pedido["forma_pagamento"] = forma_pagamento
+
+    # Endereco de entrega DIFERENTE do endereco do cliente (ver
+    # conversa/services.pedidos._COLUNAS_ADICIONAIS) -- so manda esse
+    # bloco quando o cliente realmente preencheu um endereco de entrega
+    # separado no checkout (ver app.py:_endereco_valido). NAO
+    # CONFIRMADO ainda com pedido de teste real (diferente de
+    # forma_pagamento/frete_por_conta, ja confirmados -- ver topo do
+    # arquivo): nome exato dos campos de "endereco_entrega" seguindo o
+    # padrao ja usado em `_cliente_para_tiny`, mas precisa ser
+    # conferido no primeiro pedido de verdade com destinatario
+    # diferente. Se a Tiny rejeitar/ignorar, o pedido continua sendo
+    # criado sem endereco de entrega estruturado -- a observacao
+    # "Entregar aos cuidados de" acima ja cobre isso em texto livre.
+    if pedido.get("endereco_destinatario_logradouro"):
+        corpo_pedido["endereco_entrega"] = {
+            "nome_destinatario": pedido.get("endereco_destinatario_nome", ""),
+            "endereco": pedido.get("endereco_destinatario_logradouro", ""),
+            "numero": pedido.get("endereco_destinatario_numero", ""),
+            "complemento": pedido.get("endereco_destinatario_complemento", ""),
+            "bairro": pedido.get("endereco_destinatario_bairro", ""),
+            "cep": pedido.get("endereco_destinatario_cep", ""),
+            "cidade": pedido.get("endereco_destinatario_cidade", ""),
+            "uf": pedido.get("endereco_destinatario_uf", ""),
+        }
 
     try:
         resposta = requests.post(

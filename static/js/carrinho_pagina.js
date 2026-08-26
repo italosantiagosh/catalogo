@@ -39,6 +39,13 @@
   const destinatarioTipoPessoaJuridica = document.getElementById('destinatario-tipo-pessoa-juridica');
   const labelDestinatarioDocumento = document.getElementById('label-destinatario-documento');
   const destinatarioDocumentoInput = document.getElementById('destinatario-documento');
+  const destinatarioCepInput = document.getElementById('destinatario-cep');
+  const destinatarioLogradouroInput = document.getElementById('destinatario-logradouro');
+  const destinatarioNumeroInput = document.getElementById('destinatario-numero');
+  const destinatarioComplementoInput = document.getElementById('destinatario-complemento');
+  const destinatarioBairroInput = document.getElementById('destinatario-bairro');
+  const destinatarioCidadeInput = document.getElementById('destinatario-cidade');
+  const destinatarioUfInput = document.getElementById('destinatario-uf');
   const btnPagarAgora = document.getElementById('btn-pagar-agora');
   if (!listaEl) return;
 
@@ -351,17 +358,43 @@
   // termina de digitar os 8 digitos. Falha silenciosamente (CEP nao
   // encontrado, ou servico fora do ar) -- o cliente sempre pode
   // preencher esses campos na mao, o autopreenchimento e so conveniencia.
-  async function preencherEnderecoPorCep(cep) {
+  // Recebe os inputs de destino (endereco principal ou destinatario,
+  // ver os dois listeners logo abaixo) pra reaproveitar a mesma logica.
+  async function preencherEnderecoPorCep(cep, inputs) {
     try {
       const resposta = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
       const dados = await resposta.json();
       if (dados.erro) return;
-      if (enderecoLogradouroInput) enderecoLogradouroInput.value = dados.logradouro || '';
-      if (enderecoBairroInput) enderecoBairroInput.value = dados.bairro || '';
-      if (enderecoCidadeInput) enderecoCidadeInput.value = dados.localidade || '';
-      if (enderecoUfInput) enderecoUfInput.value = dados.uf || '';
+      if (inputs.logradouro) inputs.logradouro.value = dados.logradouro || '';
+      if (inputs.bairro) inputs.bairro.value = dados.bairro || '';
+      if (inputs.cidade) inputs.cidade.value = dados.localidade || '';
+      if (inputs.uf) inputs.uf.value = dados.uf || '';
     } catch (e) {
       // silencioso -- ver comentario acima
+    }
+  }
+
+  // ---- calculo de frete reaproveitavel (endereco principal OU de
+  // entrega -- ver destinatario-cep abaixo: quando a entrega e´ num
+  // endereco diferente, o frete tem que refletir o CEP de verdade pra
+  // onde o pacote vai, nao o CEP do endereco principal) ----
+  async function calcularFreteParaCep(cep) {
+    if (!cep || cep.length !== 8) return;
+    const itens = carrinhoObterItens();
+    if (itens.length === 0) return;
+    try {
+      const resposta = await fetch('/api/frete/calcular', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          cep,
+          itens: itens.map((item) => ({ chave_preco: item.chave_preco, quantidade: item.quantidade })),
+        }),
+      });
+      const dados = await resposta.json();
+      renderizarFrete(dados);
+    } catch (e) {
+      if (freteResultadoEl) freteResultadoEl.innerHTML = '<p class="frete-erro">Não foi possível calcular o frete agora.</p>';
     }
   }
 
@@ -369,7 +402,28 @@
     freteCepInput.addEventListener('input', () => {
       freteCepInput.value = mascararCep(freteCepInput.value);
       const digitos = freteCepInput.value.replace(/\D/g, '');
-      if (digitos.length === 8) preencherEnderecoPorCep(digitos);
+      if (digitos.length === 8) {
+        preencherEnderecoPorCep(digitos, {
+          logradouro: enderecoLogradouroInput, bairro: enderecoBairroInput,
+          cidade: enderecoCidadeInput, uf: enderecoUfInput,
+        });
+      }
+    });
+  }
+
+  if (destinatarioCepInput) {
+    destinatarioCepInput.addEventListener('input', () => {
+      destinatarioCepInput.value = mascararCep(destinatarioCepInput.value);
+      const digitos = destinatarioCepInput.value.replace(/\D/g, '');
+      if (digitos.length === 8) {
+        preencherEnderecoPorCep(digitos, {
+          logradouro: destinatarioLogradouroInput, bairro: destinatarioBairroInput,
+          cidade: destinatarioCidadeInput, uf: destinatarioUfInput,
+        });
+        // entrega vai pra esse CEP, entao o frete precisa ser
+        // recalculado com base nele, nao no CEP do endereco principal
+        calcularFreteParaCep(digitos);
+      }
     });
   }
 
@@ -463,28 +517,11 @@
         freteResultadoEl.innerHTML = '<p class="frete-erro">Digite um CEP válido.</p>';
         return;
       }
-      const itens = carrinhoObterItens();
-      if (itens.length === 0) return;
-
       btnCalcularFrete.disabled = true;
       btnCalcularFrete.textContent = 'Calculando...';
-      try {
-        const resposta = await fetch('/api/frete/calcular', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            cep,
-            itens: itens.map((item) => ({ chave_preco: item.chave_preco, quantidade: item.quantidade })),
-          }),
-        });
-        const dados = await resposta.json();
-        renderizarFrete(dados);
-      } catch (e) {
-        freteResultadoEl.innerHTML = '<p class="frete-erro">Não foi possível calcular o frete agora.</p>';
-      } finally {
-        btnCalcularFrete.disabled = false;
-        btnCalcularFrete.textContent = 'Calcular';
-      }
+      await calcularFreteParaCep(cep);
+      btnCalcularFrete.disabled = false;
+      btnCalcularFrete.textContent = 'Calcular';
     });
   }
 
@@ -500,6 +537,13 @@
   if (checkboxEntregaOutraPessoa && camposDestinatarioEl) {
     checkboxEntregaOutraPessoa.addEventListener('change', () => {
       camposDestinatarioEl.hidden = !checkboxEntregaOutraPessoa.checked;
+      // desmarcou -- volta o frete a refletir o CEP do endereco
+      // principal (pode ter ficado calculado pro CEP de entrega
+      // enquanto a caixa estava marcada, ver destinatario-cep acima)
+      if (!checkboxEntregaOutraPessoa.checked) {
+        const cepPrincipal = (freteCepInput.value || '').replace(/\D/g, '');
+        if (cepPrincipal.length === 8) calcularFreteParaCep(cepPrincipal);
+      }
     });
   }
 
@@ -576,6 +620,29 @@
         if (!endereco.destinatario_nome || !endereco.destinatario_documento) {
           mostrarToast('⚠️ Preencha o nome e o documento de quem vai receber.');
           return;
+        }
+
+        // endereco de entrega diferente e´ opcional -- se nenhum campo
+        // foi preenchido, a entrega usa o endereco principal acima
+        // (mesmo destinatario, endereco igual). Se algum foi, todos
+        // (menos complemento) precisam vir, senao falta dado na etiqueta.
+        const enderecoDestCampos = {
+          destinatario_cep: (destinatarioCepInput.value || '').replace(/\D/g, ''),
+          destinatario_logradouro: (destinatarioLogradouroInput.value || '').trim(),
+          destinatario_numero: (destinatarioNumeroInput.value || '').trim(),
+          destinatario_bairro: (destinatarioBairroInput.value || '').trim(),
+          destinatario_cidade: (destinatarioCidadeInput.value || '').trim(),
+          destinatario_uf: (destinatarioUfInput.value || '').trim(),
+        };
+        const algumPreenchido = Object.values(enderecoDestCampos).some((v) => v);
+        const todosPreenchidos = Object.values(enderecoDestCampos).every((v) => v);
+        if (algumPreenchido && !todosPreenchidos) {
+          mostrarToast('⚠️ Preencha o endereço de entrega completo (ou deixe tudo em branco pra usar o endereço principal).');
+          return;
+        }
+        if (todosPreenchidos) {
+          Object.assign(endereco, enderecoDestCampos);
+          endereco.destinatario_complemento = (destinatarioComplementoInput.value || '').trim();
         }
       }
 

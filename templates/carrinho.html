@@ -133,6 +133,42 @@
 
         <label for="destinatario-documento" id="label-destinatario-documento">CPF</label>
         <input type="text" id="destinatario-documento" inputmode="numeric" autocomplete="off">
+
+        <p class="cadastro-instrucao-destinatario">
+          Se a entrega for num endereço diferente do seu (ex: outra casa, outra cidade),
+          preencha abaixo. O frete é recalculado por esse CEP.
+        </p>
+
+        <label for="destinatario-cep">CEP de entrega</label>
+        <input type="text" id="destinatario-cep" inputmode="numeric" autocomplete="off" placeholder="00000-000" maxlength="9">
+
+        <label for="destinatario-logradouro">Endereço (rua/avenida)</label>
+        <input type="text" id="destinatario-logradouro" autocomplete="off">
+
+        <div class="cadastro-linha-dupla">
+          <div>
+            <label for="destinatario-numero">Número</label>
+            <input type="text" id="destinatario-numero" autocomplete="off">
+          </div>
+          <div>
+            <label for="destinatario-complemento">Complemento</label>
+            <input type="text" id="destinatario-complemento" autocomplete="off">
+          </div>
+        </div>
+
+        <label for="destinatario-bairro">Bairro</label>
+        <input type="text" id="destinatario-bairro" autocomplete="off">
+
+        <div class="cadastro-linha-dupla">
+          <div>
+            <label for="destinatario-cidade">Cidade</label>
+            <input type="text" id="destinatario-cidade" autocomplete="off">
+          </div>
+          <div>
+            <label for="destinatario-uf">UF</label>
+            <input type="text" id="destinatario-uf" maxlength="2" autocomplete="off">
+          </div>
+        </div>
       </div>
 
       <button type="button" id="btn-pagar-agora" class="botao-pagar">💳 Pagar agora (Pix ou cartão)</button>

@@ -41,6 +41,25 @@
     <h2>Cliente</h2>
     <p>{{ pedido.cliente_nome }} — {{ pedido.cliente_email }}</p>
     <p>{{ pedido.cliente_telefone }}</p>
+    <h2>Endereço de entrega</h2>
+    {% if pedido.endereco_destinatario_nome %}
+      <p>Destinatário: {{ pedido.endereco_destinatario_nome }}{% if pedido.endereco_destinatario_documento %} ({{ pedido.endereco_destinatario_documento }}){% endif %}</p>
+    {% endif %}
+    {% if pedido.endereco_destinatario_logradouro %}
+      <p>
+        {{ pedido.endereco_destinatario_logradouro }}, {{ pedido.endereco_destinatario_numero }}
+        {%- if pedido.endereco_destinatario_complemento %} — {{ pedido.endereco_destinatario_complemento }}{% endif %}<br>
+        {{ pedido.endereco_destinatario_bairro }} — {{ pedido.endereco_destinatario_cidade }}/{{ pedido.endereco_destinatario_uf }}<br>
+        CEP {{ pedido.endereco_destinatario_cep }}
+      </p>
+    {% else %}
+      <p>
+        {{ pedido.endereco_logradouro }}, {{ pedido.endereco_numero }}
+        {%- if pedido.endereco_complemento %} — {{ pedido.endereco_complemento }}{% endif %}<br>
+        {{ pedido.endereco_bairro }} — {{ pedido.endereco_cidade }}/{{ pedido.endereco_uf }}<br>
+        CEP {{ pedido.endereco_cep }}
+      </p>
+    {% endif %}
     <h2>Total</h2>
     <p>{{ pedido.total | preco }}</p>
     {% if pedido.codigo_rastreio %}

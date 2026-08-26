@@ -109,6 +109,33 @@ def test_entremeio_prata_e_ouro_velho_viram_codigos_diferentes(monkeypatch):
     assert pedido_json["itens"][1]["item"]["codigo"] == "entremeio_ouro_velho"
 
 
+def test_sem_endereco_de_entrega_diferente_nao_manda_bloco(monkeypatch):
+    monkeypatch.setattr(tiny, "TINY_API_TOKEN", "segredo123")
+    with patch("services.tiny.requests.post", return_value=_resposta_ok()) as post_mock:
+        tiny.criar_pedido_tiny(_pedido_exemplo())
+    pedido_json = json.loads(post_mock.call_args.kwargs["data"]["pedido"])["pedido"]
+    assert "endereco_entrega" not in pedido_json
+
+
+def test_endereco_de_entrega_diferente_monta_bloco_endereco_entrega(monkeypatch):
+    monkeypatch.setattr(tiny, "TINY_API_TOKEN", "segredo123")
+    with patch("services.tiny.requests.post", return_value=_resposta_ok()) as post_mock:
+        tiny.criar_pedido_tiny(_pedido_exemplo(
+            endereco_destinatario_nome="Ana Coordenadora",
+            endereco_destinatario_cep="59100000",
+            endereco_destinatario_logradouro="Rua da Livraria",
+            endereco_destinatario_numero="200",
+            endereco_destinatario_complemento="Sala 2",
+            endereco_destinatario_bairro="Cidade Alta",
+            endereco_destinatario_cidade="Natal",
+            endereco_destinatario_uf="RN",
+        ))
+    pedido_json = json.loads(post_mock.call_args.kwargs["data"]["pedido"])["pedido"]
+    assert pedido_json["endereco_entrega"]["nome_destinatario"] == "Ana Coordenadora"
+    assert pedido_json["endereco_entrega"]["endereco"] == "Rua da Livraria"
+    assert pedido_json["endereco_entrega"]["cep"] == "59100000"
+
+
 def test_destinatario_diferente_entra_nas_observacoes(monkeypatch):
     monkeypatch.setattr(tiny, "TINY_API_TOKEN", "segredo123")
     with patch("services.tiny.requests.post", return_value=_resposta_ok()) as post_mock:

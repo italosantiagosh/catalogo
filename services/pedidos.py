@@ -88,6 +88,19 @@ _COLUNAS_ADICIONAIS: list[tuple[str, str]] = [
     ("email_upsell_erro", "TEXT"),
     ("email_avaliacao_enviado", "INTEGER NOT NULL DEFAULT 0"),
     ("email_avaliacao_erro", "TEXT"),
+    # Endereco de entrega DIFERENTE do endereco principal (ver conversa
+    # -- pode ser um CEP fisicamente diferente, nao so outro nome na
+    # mesma casa; ex: coordenadora da livraria recebe no endereco dela,
+    # nota fiscal sai no nome/endereco da paroquia). Sempre opcional em
+    # conjunto -- se vazio, a entrega usa o endereco_* principal acima
+    # mesmo com destinatario_nome preenchido (ver app.py:_endereco_valido).
+    ("endereco_destinatario_cep", "TEXT"),
+    ("endereco_destinatario_logradouro", "TEXT"),
+    ("endereco_destinatario_numero", "TEXT"),
+    ("endereco_destinatario_complemento", "TEXT"),
+    ("endereco_destinatario_bairro", "TEXT"),
+    ("endereco_destinatario_cidade", "TEXT"),
+    ("endereco_destinatario_uf", "TEXT"),
 ]
 
 # Fluxo de status depois de "pago" -- alteravel manualmente pelo painel
@@ -163,8 +176,11 @@ def criar_pedido(
                 endereco_cep, endereco_logradouro, endereco_numero, endereco_complemento,
                 endereco_bairro, endereco_cidade, endereco_uf,
                 endereco_destinatario_nome, endereco_destinatario_tipo_pessoa, endereco_destinatario_documento,
+                endereco_destinatario_cep, endereco_destinatario_logradouro, endereco_destinatario_numero,
+                endereco_destinatario_complemento, endereco_destinatario_bairro, endereco_destinatario_cidade,
+                endereco_destinatario_uf,
                 criado_em
-            ) VALUES (?, ?, 'pendente', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ) VALUES (?, ?, 'pendente', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
             (
                 token,
@@ -189,6 +205,13 @@ def criar_pedido(
                 endereco.get("destinatario_nome", ""),
                 endereco.get("destinatario_tipo_pessoa", ""),
                 endereco.get("destinatario_documento", ""),
+                endereco.get("destinatario_cep", ""),
+                endereco.get("destinatario_logradouro", ""),
+                endereco.get("destinatario_numero", ""),
+                endereco.get("destinatario_complemento", ""),
+                endereco.get("destinatario_bairro", ""),
+                endereco.get("destinatario_cidade", ""),
+                endereco.get("destinatario_uf", ""),
                 agora,
             ),
         )

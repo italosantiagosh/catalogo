@@ -201,6 +201,51 @@ def test_criar_pedido_sem_destinatario_fica_vazio(client):
     assert pedido["endereco_destinatario_nome"] == ""
 
 
+def test_criar_pedido_com_endereco_de_entrega_diferente(client):
+    """Destinatario com endereco fisicamente diferente do principal --
+    nao so outro nome na mesma casa (ver conversa: coordenadora recebe
+    na casa dela, nota fiscal no nome/endereco da paroquia)."""
+    corpo = _corpo_valido(endereco={
+        "cep": "59000000", "logradouro": "Rua Teste", "numero": "100", "complemento": "",
+        "bairro": "Centro", "cidade": "Natal", "uf": "RN",
+        "destinatario_nome": "Ana Coordenadora", "destinatario_tipo_pessoa": "fisica",
+        "destinatario_documento": "98765432100",
+        "destinatario_cep": "59100000", "destinatario_logradouro": "Rua da Livraria",
+        "destinatario_numero": "200", "destinatario_complemento": "Sala 2",
+        "destinatario_bairro": "Cidade Alta", "destinatario_cidade": "Natal", "destinatario_uf": "RN",
+    })
+    with patch("app.criar_link_pagamento", return_value={"url": "https://checkout.infinitepay.io/abc"}):
+        criado = client.post("/api/pedido/criar", json=corpo).get_json()
+    assert criado.get("token")
+
+    pedido = pedidos.obter_pedido(criado["token"])
+    assert pedido["endereco_destinatario_cep"] == "59100000"
+    assert pedido["endereco_destinatario_logradouro"] == "Rua da Livraria"
+    assert pedido["endereco_destinatario_numero"] == "200"
+    assert pedido["endereco_destinatario_complemento"] == "Sala 2"
+    assert pedido["endereco_destinatario_bairro"] == "Cidade Alta"
+    # endereco principal continua guardado, sem ser sobrescrito
+    assert pedido["endereco_logradouro"] == "Rua Teste"
+
+    pagina = client.get(f"/pedido/{criado['token']}").get_data(as_text=True)
+    assert "Rua da Livraria" in pagina
+    assert "Rua Teste" not in pagina  # a pagina mostra o endereco de entrega, nao o principal, quando os dois existem
+
+
+def test_criar_pedido_endereco_de_entrega_incompleto_400(client):
+    """Endereco de entrega e´ tudo ou nada -- preencher so uma parte
+    (ex: so o CEP) nunca vira um pedido com etiqueta incompleta."""
+    corpo = _corpo_valido(endereco={
+        "cep": "59000000", "logradouro": "Rua Teste", "numero": "100", "complemento": "",
+        "bairro": "Centro", "cidade": "Natal", "uf": "RN",
+        "destinatario_nome": "Ana Coordenadora", "destinatario_tipo_pessoa": "fisica",
+        "destinatario_documento": "98765432100",
+        "destinatario_cep": "59100000",  # so o CEP, sem o resto
+    })
+    resposta = client.post("/api/pedido/criar", json=corpo)
+    assert resposta.status_code == 400
+
+
 def test_criar_pedido_carrinho_vazio_400(client):
     resposta = client.post("/api/pedido/criar", json=_corpo_valido(itens=[]))
     assert resposta.status_code == 400

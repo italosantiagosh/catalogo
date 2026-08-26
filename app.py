@@ -983,6 +983,27 @@ def _endereco_valido(dados: dict) -> dict | None:
     tipo_pessoa_dest = str(endereco.get("destinatario_tipo_pessoa", "")).strip()
     valores["destinatario_tipo_pessoa"] = tipo_pessoa_dest if tipo_pessoa_dest in ("fisica", "juridica") else ""
     valores["destinatario_documento"] = str(endereco.get("destinatario_documento", "")).strip()
+
+    # Endereco de entrega DIFERENTE do endereco principal (ver conversa
+    # -- pode ser fisicamente outro endereco, nao so outro nome na
+    # mesma casa: ex. a coordenadora da livraria recebe no endereco
+    # dela, a nota fiscal sai no nome/endereco da paroquia). Sempre
+    # opcional EM CONJUNTO: se nenhum campo vier preenchido, a entrega
+    # usa o endereco_* principal acima mesmo com destinatario_nome
+    # preenchido (ver templates/pedido.html). Se algum vier, todos os
+    # obrigatorios (menos complemento) precisam vir -- mesmo criterio
+    # do endereco principal, pra nunca faltar dado na etiqueta.
+    campos_endereco_destinatario = [
+        "destinatario_cep", "destinatario_logradouro", "destinatario_numero",
+        "destinatario_bairro", "destinatario_cidade", "destinatario_uf",
+    ]
+    valores_endereco_dest = {campo: str(endereco.get(campo, "")).strip() for campo in campos_endereco_destinatario}
+    algum_preenchido = any(valores_endereco_dest.values())
+    todos_preenchidos = all(valores_endereco_dest.values())
+    if algum_preenchido and not todos_preenchidos:
+        return None
+    valores.update(valores_endereco_dest)
+    valores["destinatario_complemento"] = str(endereco.get("destinatario_complemento", "")).strip()
     return valores
 
 
