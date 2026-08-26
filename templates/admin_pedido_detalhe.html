@@ -15,6 +15,7 @@
     .status-faturado { background: #e0eefc; color: #14548c; }
     .status-enviado { background: #e6e0fc; color: #4a2e9c; }
     .status-entregue { background: #d9f2e3; color: #14602f; }
+    .status-cancelado { background: #fbe3e0; color: #a13a2a; }
     .bloco { background: #fff; border-radius: 10px; padding: 16px; margin: 0 0 16px; }
     .bloco h2 { font-size: 0.95rem; margin: 0 0 8px; }
     .bloco p { font-size: 0.88rem; margin: 0 0 4px; }
@@ -39,6 +40,7 @@
     <p>{{ pedido.total | preco }}</p>
     {% if pedido.codigo_rastreio %}
       <h2>Rastreio atual</h2>
+      {% if pedido.transportadora %}<p>Transportadora: {{ pedido.transportadora }}</p>{% endif %}
       <p>{{ pedido.codigo_rastreio }}{% if pedido.link_rastreio %} — <a href="{{ pedido.link_rastreio }}" target="_blank" rel="noopener">link</a>{% endif %}</p>
     {% endif %}
     <h2>Itens (produção)</h2>
@@ -62,6 +64,8 @@
       </select>
 
       <div class="campos-rastreio" id="campos-rastreio">
+        <label for="transportadora">Transportadora</label>
+        <input type="text" name="transportadora" id="transportadora" value="{{ pedido.transportadora or '' }}">
         <label for="codigo_rastreio">Código de rastreio</label>
         <input type="text" name="codigo_rastreio" id="codigo_rastreio" value="{{ pedido.codigo_rastreio or '' }}">
         <label for="link_rastreio">Link de rastreio (opcional)</label>

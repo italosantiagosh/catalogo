@@ -21,6 +21,7 @@
     .status-faturado { background: #e0eefc; color: #14548c; }
     .status-enviado { background: #e6e0fc; color: #4a2e9c; }
     .status-entregue { background: #d9f2e3; color: #14602f; }
+    .status-cancelado { background: #fbe3e0; color: #a13a2a; }
     a.ver, a.editar { color: #14335c; font-weight: 600; text-decoration: none; margin-right: 10px; }
     .vazio { padding: 24px; text-align: center; color: #5b6b82; }
     .cliente-email { color: #5b6b82; font-size: 0.78rem; }
@@ -36,6 +37,7 @@
     <a href="{{ url_for('admin_pedidos', status='faturado') }}" class="{{ 'ativo' if status_filtro == 'faturado' else '' }}">Faturados</a>
     <a href="{{ url_for('admin_pedidos', status='enviado') }}" class="{{ 'ativo' if status_filtro == 'enviado' else '' }}">Enviados</a>
     <a href="{{ url_for('admin_pedidos', status='entregue') }}" class="{{ 'ativo' if status_filtro == 'entregue' else '' }}">Entregues</a>
+    <a href="{{ url_for('admin_pedidos', status='cancelado') }}" class="{{ 'ativo' if status_filtro == 'cancelado' else '' }}">Cancelados</a>
   </div>
 
   {% if pedidos %}
@@ -81,7 +83,10 @@
                 {% if pedido.email_enviado %}
                   {{ '⚠️ confirmação' if pedido.email_erro else '✅ confirmação' }}
                 {% endif %}
-                {% if not pedido.email_pedido_criado_enviado and not pedido.email_enviado %}—{% endif %}
+                {% if pedido.email_cancelado_enviado %}
+                  {{ '⚠️ cancelamento' if pedido.email_cancelado_erro else '✅ cancelamento' }}
+                {% endif %}
+                {% if not pedido.email_pedido_criado_enviado and not pedido.email_enviado and not pedido.email_cancelado_enviado %}—{% endif %}
               </td>
               <td>{{ pedido.criado_em[:16] }}</td>
               <td>

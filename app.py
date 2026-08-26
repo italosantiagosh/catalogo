@@ -57,6 +57,7 @@ from apscheduler.schedulers.background import BackgroundScheduler
 from config import (
     ADMIN_PASSWORD,
     ADMIN_USER,
+    CANCELAMENTO_MINUTOS_APOS_LEMBRETE,
     CANONICAL_DOMAIN,
     DESCRICOES_CATEGORIA,
     DESCRICOES_FORMATO,
@@ -87,15 +88,19 @@ from services.email import (
     enviar_confirmacao_pedido,
     enviar_lembrete_pedido_pendente,
     enviar_link_pagamento,
+    enviar_pedido_cancelado,
     enviar_pedido_enviado,
 )
 from services.frete import calcular_frete
 from services.infinitepay import criar_link_pagamento
 from services.pedidos import (
     atualizar_status,
+    cancelar_pedido,
     criar_pedido,
     listar_pedidos,
+    listar_pedidos_pendentes_para_cancelar,
     listar_pedidos_pendentes_para_lembrete,
+    marcar_email_cancelado_enviado,
     marcar_email_enviado,
     marcar_email_lembrete_enviado,
     marcar_email_pedido_criado_enviado,
@@ -417,6 +422,52 @@ def sitemap_xml():
         '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' + itens_xml + "</urlset>"
     )
     return Response(corpo, mimetype="application/xml")
+
+
+@app.route("/llms.txt", methods=["GET"])
+def llms_txt():
+    base = request.url_root.rstrip("/")
+    produtos = carregar_produtos()
+    categorias = categorias_com_slug(produtos)
+    linhas_categorias = "\n".join(
+        f"- [{c['nome']}]({base}{url_for('categoria', slug=c['slug'])})" for c in categorias
+    )
+    corpo = f"""# Nove de Julho -- Catálogo de Atacado
+
+> Catálogo de atacado de medalhas, entremeios e chaveiros religiosos católicos,
+> em aço inox de qualidade. Mais de 130 santos e devoções, com desconto de
+> atacado automático por quantidade (sem cupom) e opção de peça personalizada
+> a partir de foto enviada pelo cliente.
+
+Site institucional/loja da Nove de Julho, empresa brasileira. Preços em Real
+(R$), pagamento via Pix (padrão) ou cartão sob consulta, com nota fiscal para
+CPF ou CNPJ. Pedido mínimo de R$ 30 em produtos (frete calculado à parte);
+frete grátis para o Brasil todo acima de R$ 300 em compras. Produção sob
+encomenda em até 5 dias úteis após confirmação do pagamento.
+
+## Páginas principais
+
+- [Catálogo completo]({base}{url_for('catalogo_completo')}): todos os santos e devoções disponíveis
+- [Medalha personalizada]({base}{url_for('personalizada')}): envio de foto própria, com simulação antes de pedir
+- [Kit Livraria Shalom]({base}{url_for('kit_livraria_shalom')}): sortimento pronto com os santos mais vendidos
+- [Quem somos]({base}{url_for('pagina_atendimento', slug='quem-somos')}): história da marca e do fundador
+
+## Categorias
+
+{linhas_categorias}
+
+## Formatos disponíveis por santo/devoção
+
+Medalha, entremeio (para terço) e chaveiro -- cada um com opções de tamanho
+e/ou cor conforme o modelo.
+
+## Observações para agentes
+
+- Preços de atacado variam por faixa de quantidade total no carrinho e são
+  calculados automaticamente; não há tabela estática confiável fora do site.
+- Sitemap completo em [/sitemap.xml]({base}/sitemap.xml).
+"""
+    return Response(corpo, mimetype="text/plain")
 
 
 # Um item de feed por VARIACAO de verdade -- cada combinacao que o
@@ -1190,9 +1241,14 @@ def admin_pedido_status(token: str):
     novo_status = str(request.form.get("status", "")).strip()
     codigo_rastreio = str(request.form.get("codigo_rastreio", "")).strip() or None
     link_rastreio = str(request.form.get("link_rastreio", "")).strip() or None
+    transportadora = str(request.form.get("transportadora", "")).strip() or None
 
     pedido_atualizado = atualizar_status(
-        token, novo_status, codigo_rastreio=codigo_rastreio, link_rastreio=link_rastreio
+        token,
+        novo_status,
+        codigo_rastreio=codigo_rastreio,
+        link_rastreio=link_rastreio,
+        transportadora=transportadora,
     )
     if pedido_atualizado is None:
         abort(400, description="Status inválido.")
@@ -1203,6 +1259,7 @@ def admin_pedido_status(token: str):
             pedido_atualizado.get("codigo_rastreio") or "",
             pedido_atualizado.get("link_rastreio") or "",
             url_for("ver_pedido", token=token, _external=True),
+            pedido_atualizado.get("transportadora") or "",
         )
 
     return redirect(url_for("admin_pedido_detalhe", token=token))
@@ -1363,9 +1420,31 @@ def _enviar_lembretes_pedidos_pendentes() -> None:
             marcar_email_lembrete_enviado(pedido["token"], erro=resultado_email.get("erro"))
 
 
-def _iniciar_scheduler_lembretes() -> None:
+def _cancelar_pedidos_abandonados() -> None:
+    """Job agendado (ver _iniciar_scheduler_jobs abaixo) -- roda a cada
+    10min, cancela pedido "pendente" que continua sem pagar
+    CANCELAMENTO_MINUTOS_APOS_LEMBRETE minutos depois do 2o link
+    (lembrete) ter sido enviado, e manda um e-mail motivacional de
+    recuperacao linkando de volta pro catalogo. Sem CANONICAL_DOMAIN
+    configurado nao ha´ como montar um link de verdade pro e-mail,
+    entao so nao faz nada nesse caso (mesmo criterio do lembrete)."""
+    if not CANONICAL_DOMAIN:
+        return
+    candidatos = listar_pedidos_pendentes_para_cancelar(CANCELAMENTO_MINUTOS_APOS_LEMBRETE)
+    if not candidatos:
+        return
+    with app.test_request_context(base_url=f"https://{CANONICAL_DOMAIN}"):
+        url_catalogo = url_for("catalogo_completo", _external=True)
+        for pedido in candidatos:
+            cancelar_pedido(pedido["token"])
+            resultado_email = enviar_pedido_cancelado(pedido, url_catalogo)
+            marcar_email_cancelado_enviado(pedido["token"], erro=resultado_email.get("erro"))
+
+
+def _iniciar_scheduler_jobs() -> None:
     scheduler = BackgroundScheduler(timezone="UTC")
     scheduler.add_job(_enviar_lembretes_pedidos_pendentes, "interval", minutes=10, id="lembretes_pedidos_pendentes")
+    scheduler.add_job(_cancelar_pedidos_abandonados, "interval", minutes=10, id="cancelar_pedidos_abandonados")
     scheduler.start()
 
 
@@ -1373,7 +1452,7 @@ def _iniciar_scheduler_lembretes() -> None:
 # nunca em teste/dev, senao sobe uma thread de fundo rodando de
 # verdade a cada import do modulo (ver config.py).
 if ENABLE_SCHEDULER:
-    _iniciar_scheduler_lembretes()
+    _iniciar_scheduler_jobs()
 
 
 if __name__ == "__main__":

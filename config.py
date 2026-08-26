@@ -106,6 +106,14 @@ ENABLE_SCHEDULER = os.environ.get("ENABLE_SCHEDULER", "").lower() in ("1", "true
 # Quanto tempo esperar (pedido "pendente" sem pagar) antes do lembrete.
 LEMBRETE_MINUTOS = int(os.environ.get("LEMBRETE_MINUTOS", "30"))
 
+# Quanto tempo esperar DEPOIS do lembrete (2o link) antes de cancelar
+# automaticamente um pedido que continua "pendente" -- job agendado
+# junto com o lembrete acima (ver app.py). Contagem a partir de
+# email_lembrete_enviado_em, nao de criado_em -- ou seja, o pedido e´
+# cancelado LEMBRETE_MINUTOS + CANCELAMENTO_MINUTOS_APOS_LEMBRETE
+# depois de criado, no total.
+CANCELAMENTO_MINUTOS_APOS_LEMBRETE = int(os.environ.get("CANCELAMENTO_MINUTOS_APOS_LEMBRETE", "30"))
+
 GA4_MEASUREMENT_ID = os.environ.get("GA4_MEASUREMENT_ID", "G-RXVM530CM6")
 META_PIXEL_ID = os.environ.get("META_PIXEL_ID", "28592446083693889")
 

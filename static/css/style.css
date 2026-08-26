@@ -1517,6 +1517,28 @@ body.tem-barra-fixa-comprar main {
   color: #6b4a12;
 }
 
+.nossa-historia {
+  max-width: 68ch;
+  margin: 0 0 20px;
+  padding: 14px 16px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+}
+
+.nossa-historia h2 {
+  font-size: 1.02rem;
+  margin: 0 0 8px;
+  color: var(--accent);
+}
+
+.nossa-historia p {
+  font-size: 0.9rem;
+  line-height: 1.6;
+  color: var(--ink);
+  margin: 0 0 10px;
+}
+
 /* destaques da home (mais vendidos / novidades / etc) */
 
 .destaques {
@@ -1879,6 +1901,7 @@ input[type="file"] {
 }
 
 .botao-pagar {
+  display: block;
   width: 100%;
   margin-top: 16px;
   padding: 16px;
@@ -1888,6 +1911,9 @@ input[type="file"] {
   color: white;
   font-size: 1rem;
   font-weight: 700;
+  text-align: center;
+  text-decoration: none;
+  box-sizing: border-box;
   cursor: pointer;
 }
 
@@ -2259,6 +2285,11 @@ input[type="file"] {
 .pedido-status-entregue {
   background: #d9f2e3;
   color: #14602f;
+}
+
+.pedido-status-cancelado {
+  background: #fbe3e0;
+  color: #a13a2a;
 }
 
 .pedido-resumo,

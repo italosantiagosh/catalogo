@@ -135,17 +135,21 @@ def enviar_lembrete_pedido_pendente(pedido: dict, url_pagamento: str, url_acompa
     )
 
 
-def _corpo_html_pedido_enviado(pedido: dict, codigo_rastreio: str, link_rastreio: str, url_acompanhamento: str) -> str:
+def _corpo_html_pedido_enviado(
+    pedido: dict, codigo_rastreio: str, link_rastreio: str, url_acompanhamento: str, transportadora: str = ""
+) -> str:
     rastreio_html = (
         f'<p>Código de rastreio: <strong>{codigo_rastreio}</strong><br>'
         f'<a href="{link_rastreio}">{link_rastreio}</a></p>'
         if link_rastreio
         else f"<p>Código de rastreio: <strong>{codigo_rastreio}</strong></p>"
     )
+    transportadora_html = f"<p>Transportadora: <strong>{transportadora}</strong></p>" if transportadora else ""
     return (
         f"<p>Olá, {pedido.get('cliente_nome', '')}! Seu pedido foi enviado. 📦</p>"
         f"<p><strong>Pedido #{pedido['codigo']}</strong></p>"
         f"<ul>{_itens_html(pedido)}</ul>"
+        f"{transportadora_html}"
         f"{rastreio_html}"
         f"<p>Acompanhe seu pedido a qualquer momento por aqui:<br>"
         f'<a href="{url_acompanhamento}">{url_acompanhamento}</a></p>'
@@ -154,7 +158,7 @@ def _corpo_html_pedido_enviado(pedido: dict, codigo_rastreio: str, link_rastreio
 
 
 def enviar_pedido_enviado(
-    pedido: dict, codigo_rastreio: str, link_rastreio: str, url_acompanhamento: str
+    pedido: dict, codigo_rastreio: str, link_rastreio: str, url_acompanhamento: str, transportadora: str = ""
 ) -> dict:
     """Disparado quando o pedido passa pro status "enviado" -- hoje via
     painel admin (ver app.py:admin_pedido_status), no futuro tambem
@@ -164,5 +168,32 @@ def enviar_pedido_enviado(
         email_cliente=pedido.get("cliente_email", ""),
         nome_cliente=pedido.get("cliente_nome", ""),
         assunto=f"Pedido enviado — Pedido #{pedido['codigo']}",
-        corpo_html=_corpo_html_pedido_enviado(pedido, codigo_rastreio, link_rastreio, url_acompanhamento),
+        corpo_html=_corpo_html_pedido_enviado(
+            pedido, codigo_rastreio, link_rastreio, url_acompanhamento, transportadora
+        ),
+    )
+
+
+def _corpo_html_pedido_cancelado(pedido: dict, url_catalogo: str) -> str:
+    return (
+        f"<p>Olá, {pedido.get('cliente_nome', '')}! Seu pedido #{pedido['codigo']} não foi pago a "
+        f"tempo e acabou sendo cancelado automaticamente.</p>"
+        f"<p>Mas as medalhas continuam esperando por você -- e cada uma carrega uma história de fé "
+        f"que vale a pena levar adiante. 🙏</p>"
+        f'<p><a href="{url_catalogo}">👉 Voltar ao catálogo e fazer um novo pedido</a></p>'
+        f"<p>Se o pagamento deu algum problema ou você tiver qualquer dúvida, é só chamar no "
+        f"WhatsApp -- a gente ajuda a resolver.</p>"
+    )
+
+
+def enviar_pedido_cancelado(pedido: dict, url_catalogo: str) -> dict:
+    """Disparado pelo job agendado (ver app.py) quando um pedido "pendente"
+    e´ cancelado automaticamente por falta de pagamento apos o lembrete
+    -- e-mail motivacional de recuperacao, linkando de volta pro
+    catalogo. Devolve {"ok": True} ou {"erro": "..."}."""
+    return _enviar(
+        email_cliente=pedido.get("cliente_email", ""),
+        nome_cliente=pedido.get("cliente_nome", ""),
+        assunto=f"Seu pedido #{pedido['codigo']} foi cancelado -- mas ainda dá tempo",
+        corpo_html=_corpo_html_pedido_cancelado(pedido, url_catalogo),
     )

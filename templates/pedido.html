@@ -17,6 +17,9 @@
     <p class="pedido-status pedido-status-faturado">🧾 Nota fiscal emitida</p>
   {% elif pedido.status == 'enviado' %}
     <p class="pedido-status pedido-status-enviado">📦 Pedido enviado</p>
+    {% if pedido.transportadora %}
+      <p class="pedido-linha">Transportadora: <strong>{{ pedido.transportadora }}</strong></p>
+    {% endif %}
     {% if pedido.codigo_rastreio %}
       <p class="pedido-linha">
         Código de rastreio: <strong>{{ pedido.codigo_rastreio }}</strong>
@@ -25,6 +28,9 @@
     {% endif %}
   {% elif pedido.status == 'entregue' %}
     <p class="pedido-status pedido-status-entregue">🎉 Pedido entregue</p>
+  {% elif pedido.status == 'cancelado' %}
+    <p class="pedido-status pedido-status-cancelado">❌ Cancelado — pagamento não foi concluído a tempo</p>
+    <a href="{{ url_for('catalogo_completo') }}" class="botao-pagar">Ver catálogo e fazer um novo pedido</a>
   {% endif %}
 
   <div class="pedido-resumo">

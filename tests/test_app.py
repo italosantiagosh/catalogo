@@ -48,6 +48,16 @@ def test_sitemap_xml_tem_lastmod_changefreq_priority(client):
     assert "<changefreq>monthly</changefreq>" in corpo
 
 
+def test_llms_txt(client):
+    resposta = client.get("/llms.txt")
+    assert resposta.status_code == 200
+    assert resposta.content_type.startswith("text/plain")
+    corpo = resposta.get_data(as_text=True)
+    assert "Nove de Julho" in corpo
+    assert "/catalogo" in corpo
+    assert "/sitemap.xml" in corpo
+
+
 def test_home_tem_h1_semantico(client):
     corpo = client.get("/").get_data(as_text=True)
     assert "<h1" in corpo

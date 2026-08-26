@@ -182,6 +182,28 @@ def test_alterar_status_para_enviado_dispara_email_uma_vez(client, monkeypatch):
     mock_email2.assert_not_called()
 
 
+def test_alterar_status_para_enviado_salva_e_envia_transportadora(client, monkeypatch):
+    _preparar_admin(monkeypatch)
+    with patch("app.criar_link_pagamento", return_value={"url": "https://checkout.infinitepay.io/abc"}):
+        criado = client.post("/api/pedido/criar", json=_corpo_valido()).get_json()
+
+    with patch("app.enviar_pedido_enviado", return_value={"ok": True}) as mock_email:
+        client.post(
+            f"/admin/pedidos/{criado['token']}/status",
+            data={
+                "status": "enviado",
+                "transportadora": "Correios",
+                "codigo_rastreio": "BR123456789BR",
+                "link_rastreio": "https://rastreio.exemplo/BR123",
+            },
+            auth=("admin", "segredo123"),
+        )
+    assert mock_email.call_args.args[4] == "Correios"
+
+    pedido = pedidos.obter_pedido(criado["token"])
+    assert pedido["transportadora"] == "Correios"
+
+
 def test_alterar_status_invalido_400(client, monkeypatch):
     _preparar_admin(monkeypatch)
     with patch("app.criar_link_pagamento", return_value={"url": "https://checkout.infinitepay.io/abc"}):
