@@ -87,6 +87,14 @@ BREVO_API_KEY = os.environ.get("BREVO_API_KEY", "")
 EMAIL_REMETENTE = os.environ.get("EMAIL_REMETENTE", "9djulho@gmail.com")
 EMAIL_REMETENTE_NOME = os.environ.get("EMAIL_REMETENTE_NOME", "Nove de Julho")
 
+# Painel interno de pedidos (/admin/pedidos, ver app.py) -- autenticacao
+# HTTP Basic simples (um usuario so, sem sessao/cookie). As duas
+# credenciais SAO segredo -- NUNCA gravar aqui, so variavel de
+# ambiente no servidor. Sem as duas configuradas, o painel fica
+# bloqueado por padrao (nunca expõe pedido de ninguem sem senha).
+ADMIN_USER = os.environ.get("ADMIN_USER", "")
+ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "")
+
 GA4_MEASUREMENT_ID = os.environ.get("GA4_MEASUREMENT_ID", "G-RXVM530CM6")
 META_PIXEL_ID = os.environ.get("META_PIXEL_ID", "28592446083693889")
 

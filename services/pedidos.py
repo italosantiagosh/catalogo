@@ -149,6 +149,27 @@ def criar_pedido(
     return obter_pedido(token)
 
 
+def listar_pedidos(*, status: str | None = None, limite: int = 200) -> list[dict]:
+    """Usado pelo painel interno (/admin/pedidos, ver app.py) -- mais
+    recentes primeiro."""
+    inicializar_db()
+    consulta = "SELECT * FROM pedidos"
+    parametros: tuple = ()
+    if status:
+        consulta += " WHERE status = ?"
+        parametros = (status,)
+    consulta += " ORDER BY criado_em DESC LIMIT ?"
+    parametros = parametros + (limite,)
+    with _conexao() as conexao:
+        linhas = conexao.execute(consulta, parametros).fetchall()
+    pedidos = []
+    for linha in linhas:
+        pedido = dict(linha)
+        pedido["itens"] = json.loads(pedido["itens"])
+        pedidos.append(pedido)
+    return pedidos
+
+
 def obter_pedido(token: str) -> dict | None:
     inicializar_db()
     with _conexao() as conexao:

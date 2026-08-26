@@ -38,6 +38,7 @@ diferente do que gerou a previa.
 from __future__ import annotations
 
 import base64
+import hmac
 import io
 import secrets
 import tempfile
@@ -51,6 +52,8 @@ from PIL import Image
 from werkzeug.datastructures import FileStorage
 
 from config import (
+    ADMIN_PASSWORD,
+    ADMIN_USER,
     CANONICAL_DOMAIN,
     DESCRICOES_CATEGORIA,
     DESCRICOES_FORMATO,
@@ -80,6 +83,7 @@ from services.frete import calcular_frete
 from services.infinitepay import criar_link_pagamento
 from services.pedidos import (
     criar_pedido,
+    listar_pedidos,
     marcar_email_enviado,
     marcar_pago,
     marcar_tiny_sincronizado,
@@ -958,6 +962,31 @@ def ver_pedido(token: str):
     if pedido is None:
         abort(404)
     return render_template("pedido.html", pedido=pedido)
+
+
+def _autenticacao_admin_valida(auth) -> bool:
+    # sem as duas credenciais configuradas, o painel fica bloqueado
+    # por padrao (nunca expõe pedido de ninguem sem senha definida).
+    if not ADMIN_USER or not ADMIN_PASSWORD or auth is None:
+        return False
+    usuario_ok = hmac.compare_digest(auth.username or "", ADMIN_USER)
+    senha_ok = hmac.compare_digest(auth.password or "", ADMIN_PASSWORD)
+    return usuario_ok and senha_ok
+
+
+@app.route("/admin/pedidos", methods=["GET"])
+def admin_pedidos():
+    """Painel interno pra ver os pedidos sem precisar consultar o
+    SQLite direto -- autenticacao HTTP Basic simples (ver
+    _autenticacao_admin_valida acima), pensado pra uso ocasional por
+    uma unica pessoa, nao um sistema de contas."""
+    if not _autenticacao_admin_valida(request.authorization):
+        return Response(
+            "Autenticação necessária.", 401, {"WWW-Authenticate": 'Basic realm="Painel de pedidos"'}
+        )
+    status_filtro = request.args.get("status") or None
+    pedidos = listar_pedidos(status=status_filtro)
+    return render_template("admin_pedidos.html", pedidos=pedidos, status_filtro=status_filtro)
 
 
 @app.route("/api/pix/gerar", methods=["POST"])
