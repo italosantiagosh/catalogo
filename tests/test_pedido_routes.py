@@ -72,6 +72,7 @@ def test_item_entremeio_guarda_cor_na_descricao_e_detalhe(client):
     item = pedido["itens"][0]
     assert item["detalhe"] == "Entremeio · Ouro velho"
     assert "Ouro velho" in item["descricao"]
+    assert item["cor"] == "ouro_velho"
 
 
 def test_item_chaveiro_detalhe_simples(client):

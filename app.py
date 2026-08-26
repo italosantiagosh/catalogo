@@ -856,6 +856,12 @@ def _itens_com_descricao_do_corpo(dados: dict) -> list[dict]:
                 "produtoNome": produto_nome,
                 "modeloNome": modelo_nome,
                 "detalhe": detalhe,
+                # so tem sentido pra formato="entremeio" -- prata e ouro
+                # velho sao materia-prima comprada separada (ver conversa),
+                # entao precisa sobreviver ate a sincronizacao com a Tiny
+                # (services.tiny._codigo_estoque_tiny), que roda so depois
+                # do pagamento confirmado, bem depois da criacao do pedido.
+                "cor": str(item.get("cor", "")).strip(),
                 # imagem NUNCA truncada -- pode ser um data URI (medalha
                 # personalizada, ver static/js/personalizada.js), cortar
                 # no meio corrompe a imagem inteira.

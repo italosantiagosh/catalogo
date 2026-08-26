@@ -54,11 +54,29 @@ def _cliente_para_tiny(pedido: dict) -> dict:
     }
 
 
+# O `codigo` mandado pra Tiny controla ESTOQUE (materia-prima comprada),
+# nao precisa (nem deve) ter um por santo -- o catalogo inteiro usa so
+# 4 chave_preco (12mm/16mm/entremeio/chaveiro, ver services/pricing.py),
+# entao cadastrando so esses produtos na Tiny o estoque ja fica agrupado
+# do jeito que a compra de material realmente acontece. Excecao:
+# entremeio prata e ouro velho sao materia-prima comprada SEPARADA (ver
+# conversa), entao viram 2 codigos diferentes aqui mesmo sem existir 2
+# chave_preco (chave_preco so afeta PRECO/desconto, que e igual pros
+# dois -- nao mexer nisso). O nome do santo continua so na `descricao`
+# de cada linha, nunca no `codigo` (ver _itens_com_descricao_do_corpo
+# em app.py, que ja monta essa descricao com produto+modelo+detalhe).
+def _codigo_estoque_tiny(item: dict) -> str:
+    chave_preco = item.get("chave_preco", "")
+    if chave_preco == "entremeio" and item.get("cor"):
+        return f"entremeio_{item['cor']}"
+    return chave_preco
+
+
 def _itens_para_tiny(itens: list[dict]) -> list[dict]:
     return [
         {
             "item": {
-                "codigo": item.get("chave_preco", ""),
+                "codigo": _codigo_estoque_tiny(item),
                 "descricao": item.get("descricao") or item.get("chave_preco", ""),
                 "unidade": "UN",
                 "quantidade": str(item.get("quantidade", 1)),

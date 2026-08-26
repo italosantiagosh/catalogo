@@ -80,6 +80,35 @@ def test_monta_payload_com_cliente_itens_e_numero_pedido_ecommerce(monkeypatch):
     assert "tx-abc" in pedido_json["obs"]
 
 
+def test_codigo_do_item_e_o_chave_preco_nao_o_santo(monkeypatch):
+    """Estoque na Tiny e´ por material (chave_preco), nao por santo --
+    o nome do santo so entra na descricao da linha."""
+    monkeypatch.setattr(tiny, "TINY_API_TOKEN", "segredo123")
+    with patch("services.tiny.requests.post", return_value=_resposta_ok()) as post_mock:
+        tiny.criar_pedido_tiny(_pedido_exemplo(
+            itens=[{"chave_preco": "16mm", "quantidade": 10, "descricao": "São José — Modelo 1", "valor_unitario": 5.0}]
+        ))
+    pedido_json = json.loads(post_mock.call_args.kwargs["data"]["pedido"])["pedido"]
+    assert pedido_json["itens"][0]["item"]["codigo"] == "16mm"
+
+
+def test_entremeio_prata_e_ouro_velho_viram_codigos_diferentes(monkeypatch):
+    """Materia-prima comprada separada (ver conversa) -- mesmo chave_preco
+    ("entremeio"), mas codigo de estoque diferente na Tiny pra cor."""
+    monkeypatch.setattr(tiny, "TINY_API_TOKEN", "segredo123")
+    itens = [
+        {"chave_preco": "entremeio", "quantidade": 5, "descricao": "São José — Entremeio · Prata",
+         "valor_unitario": 3.0, "cor": "prata"},
+        {"chave_preco": "entremeio", "quantidade": 7, "descricao": "Santa Rita — Entremeio · Ouro velho",
+         "valor_unitario": 3.0, "cor": "ouro_velho"},
+    ]
+    with patch("services.tiny.requests.post", return_value=_resposta_ok()) as post_mock:
+        tiny.criar_pedido_tiny(_pedido_exemplo(itens=itens))
+    pedido_json = json.loads(post_mock.call_args.kwargs["data"]["pedido"])["pedido"]
+    assert pedido_json["itens"][0]["item"]["codigo"] == "entremeio_prata"
+    assert pedido_json["itens"][1]["item"]["codigo"] == "entremeio_ouro_velho"
+
+
 def test_destinatario_diferente_entra_nas_observacoes(monkeypatch):
     monkeypatch.setattr(tiny, "TINY_API_TOKEN", "segredo123")
     with patch("services.tiny.requests.post", return_value=_resposta_ok()) as post_mock:
