@@ -376,23 +376,41 @@ def robots_txt():
     return Response("\n".join(linhas), mimetype="text/plain")
 
 
+# Data usada como <lastmod> pra tudo no sitemap -- calculada uma vez
+# quando o processo sobe (proxy de "conteudo como estava nesse
+# deploy"). Nao ha data de edicao por produto (data/produtos.json nao
+# guarda isso, e adicionar so pra isso seria manutencao manual sujeita
+# a erro) -- um lastmod unico e honesto e´ melhor que nenhum ou que um
+# inventado por item.
+_SITEMAP_LASTMOD = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+
+
 @app.route("/sitemap.xml", methods=["GET"])
 def sitemap_xml():
     produtos = carregar_produtos()
-    caminhos = [
-        url_for("index"),
-        url_for("catalogo_completo"),
-        url_for("carrinho"),
-        url_for("personalizada"),
-        url_for("kit_livraria_shalom"),
+    # (caminho, changefreq, priority) -- home/catalogo primeiro (mais
+    # importantes e mudam mais), produto/categoria no meio, paginas
+    # institucionais e carrinho (nao e´ conteudo de busca) por ultimo.
+    entradas = [
+        (url_for("index"), "weekly", "0.8"),
+        (url_for("catalogo_completo"), "weekly", "0.8"),
+        (url_for("personalizada"), "monthly", "0.7"),
+        (url_for("kit_livraria_shalom"), "monthly", "0.6"),
+        (url_for("carrinho"), "yearly", "0.1"),
     ]
-    caminhos += [url_for("categoria", slug=c["slug"]) for c in categorias_com_slug(produtos)]
-    caminhos += [url_for("produto", produto_id=p["id"]) for p in produtos]
-    caminhos += [url_for("pagina_atendimento", slug=s) for s in PAGINAS_ATENDIMENTO]
+    entradas += [
+        (url_for("categoria", slug=c["slug"]), "weekly", "0.7") for c in categorias_com_slug(produtos)
+    ]
+    entradas += [(url_for("produto", produto_id=p["id"]), "monthly", "0.6") for p in produtos]
+    entradas += [(url_for("pagina_atendimento", slug=s), "yearly", "0.3") for s in PAGINAS_ATENDIMENTO]
 
     base = request.url_root.rstrip("/")
     itens_xml = "".join(
-        f"<url><loc>{(base + caminho).replace('&', '&amp;')}</loc></url>" for caminho in caminhos
+        f"<url><loc>{(base + caminho).replace('&', '&amp;')}</loc>"
+        f"<lastmod>{_SITEMAP_LASTMOD}</lastmod>"
+        f"<changefreq>{changefreq}</changefreq>"
+        f"<priority>{priority}</priority></url>"
+        for caminho, changefreq, priority in entradas
     )
     corpo = (
         '<?xml version="1.0" encoding="UTF-8"?>'
@@ -1239,11 +1257,18 @@ _FAQ_PERSONALIZADA = [
 
 @app.route("/personalizada", methods=["GET"])
 def personalizada():
+    dados_breadcrumb = _dados_breadcrumb(
+        [
+            ("Catálogo", url_for("index", _external=True)),
+            ("Medalha personalizada", url_for("personalizada", _external=True)),
+        ]
+    )
     return render_template(
         "personalizada.html",
         preco_varejo=preco_varejo(),
         preco_varejo_chaveiro=preco_varejo("chaveiro"),
         dados_faq=_dados_faq(_FAQ_PERSONALIZADA),
+        dados_breadcrumb=dados_breadcrumb,
     )
 
 

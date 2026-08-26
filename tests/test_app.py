@@ -40,6 +40,25 @@ def test_sitemap_xml_inclui_home_e_paginas_de_categoria(client):
     assert "/catalogo<" in corpo
 
 
+def test_sitemap_xml_tem_lastmod_changefreq_priority(client):
+    corpo = client.get("/sitemap.xml").get_data(as_text=True)
+    assert "<lastmod>" in corpo
+    assert "<changefreq>weekly</changefreq>" in corpo
+    assert "<priority>0.8</priority>" in corpo
+    assert "<changefreq>monthly</changefreq>" in corpo
+
+
+def test_home_tem_h1_semantico(client):
+    corpo = client.get("/").get_data(as_text=True)
+    assert "<h1" in corpo
+
+
+def test_personalizada_tem_breadcrumb(client):
+    corpo = client.get("/personalizada").get_data(as_text=True)
+    assert 'class="breadcrumbs"' in corpo
+    assert "BreadcrumbList" in corpo
+
+
 def test_categoria_existente(client):
     resposta = client.get("/categoria/nossa-senhora")
     assert resposta.status_code == 200

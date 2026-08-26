@@ -5,6 +5,12 @@
 
 {% block conteudo %}
   <script type="application/ld+json">{{ dados_faq | tojson }}</script>
+  <script type="application/ld+json">{{ dados_breadcrumb | tojson }}</script>
+  <nav class="breadcrumbs" aria-label="Breadcrumb">
+    <a href="{{ url_for('index') }}">Catálogo</a>
+    <span>›</span>
+    <span aria-current="page">Medalha personalizada</span>
+  </nav>
   <h1>Medalha Personalizada</h1>
   <p class="instrucao">Envie uma foto, ajuste o recorte e veja a simulação da sua peça antes de pedir.</p>
 
