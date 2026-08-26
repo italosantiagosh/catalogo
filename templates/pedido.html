@@ -9,6 +9,10 @@
     <p class="pedido-status pedido-status-pago">✅ Pagamento confirmado</p>
   {% else %}
     <p class="pedido-status pedido-status-pendente">⏳ Aguardando confirmação do pagamento</p>
+    <button type="button" class="botao-pagar" id="btn-novo-link" data-token="{{ pedido.token }}">
+      💳 Gerar novo link de pagamento
+    </button>
+    <p class="pedido-ajuda" id="novo-link-aviso" hidden></p>
   {% endif %}
 
   <div class="pedido-resumo">
@@ -44,4 +48,37 @@
   <p class="pedido-ajuda">
     Dúvidas sobre esse pedido? <a href="https://wa.me/{{ whatsapp_number }}" target="_blank" rel="noopener">Fale no WhatsApp</a>.
   </p>
+{% endblock %}
+
+{% block script %}
+  <script>
+    const btnNovoLink = document.getElementById('btn-novo-link');
+    if (btnNovoLink) {
+      btnNovoLink.addEventListener('click', async () => {
+        const aviso = document.getElementById('novo-link-aviso');
+        btnNovoLink.disabled = true;
+        btnNovoLink.textContent = 'Gerando...';
+        try {
+          const resposta = await fetch(`/api/pedido/${btnNovoLink.dataset.token}/novo-link`, { method: 'POST' });
+          const dados = await resposta.json();
+          if (!resposta.ok || dados.erro) {
+            if (aviso) {
+              aviso.hidden = false;
+              aviso.textContent = `⚠️ ${dados.erro || 'Não foi possível gerar um novo link agora.'}`;
+            }
+            return;
+          }
+          window.location.href = dados.url;
+        } catch (e) {
+          if (aviso) {
+            aviso.hidden = false;
+            aviso.textContent = '⚠️ Não foi possível gerar um novo link agora.';
+          }
+        } finally {
+          btnNovoLink.disabled = false;
+          btnNovoLink.textContent = '💳 Gerar novo link de pagamento';
+        }
+      });
+    }
+  </script>
 {% endblock %}

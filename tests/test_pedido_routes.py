@@ -45,6 +45,61 @@ def test_criar_pedido_com_link_mockado(client):
     assert any("São José" in d for d in descricoes)
 
 
+def test_criar_pedido_envia_email_com_link_uma_vez(client):
+    with patch("app.criar_link_pagamento", return_value={"url": "https://checkout.infinitepay.io/abc"}), \
+         patch("app.enviar_link_pagamento", return_value={"ok": True}) as mock_email:
+        criado = client.post("/api/pedido/criar", json=_corpo_valido()).get_json()
+
+    assert mock_email.call_count == 1
+    url_pagamento_enviada = mock_email.call_args.args[1]
+    assert url_pagamento_enviada == "https://checkout.infinitepay.io/abc"
+
+    pedido = pedidos.obter_pedido(criado["token"])
+    assert pedido["email_pedido_criado_enviado"] == 1
+
+
+def test_criar_pedido_com_erro_no_email_nao_impede_criacao(client):
+    with patch("app.criar_link_pagamento", return_value={"url": "https://checkout.infinitepay.io/abc"}), \
+         patch("app.enviar_link_pagamento", return_value={"erro": "falha no envio"}):
+        resposta = client.post("/api/pedido/criar", json=_corpo_valido())
+    assert resposta.status_code == 200
+    dados = resposta.get_json()
+    assert dados["url"] == "https://checkout.infinitepay.io/abc"
+
+    pedido = pedidos.obter_pedido(dados["token"])
+    assert pedido["email_pedido_criado_erro"] == "falha no envio"
+
+
+def test_novo_link_gera_outro_link_pro_pedido_pendente(client):
+    with patch("app.criar_link_pagamento", return_value={"url": "https://checkout.infinitepay.io/primeiro"}):
+        criado = client.post("/api/pedido/criar", json=_corpo_valido()).get_json()
+
+    with patch("app.criar_link_pagamento", return_value={"url": "https://checkout.infinitepay.io/segundo"}) as mock_link:
+        resposta = client.post(f"/api/pedido/{criado['token']}/novo-link")
+    assert resposta.status_code == 200
+    assert resposta.get_json()["url"] == "https://checkout.infinitepay.io/segundo"
+    assert mock_link.call_args.kwargs["order_nsu"] == criado["token"]
+
+
+def test_novo_link_pedido_inexistente_404(client):
+    resposta = client.post("/api/pedido/token-que-nao-existe/novo-link")
+    assert resposta.status_code == 404
+
+
+def test_novo_link_pedido_ja_pago_400(client):
+    with patch("app.criar_link_pagamento", return_value={"url": "https://checkout.infinitepay.io/abc"}):
+        criado = client.post("/api/pedido/criar", json=_corpo_valido()).get_json()
+    with patch("app.criar_pedido_tiny", return_value={"erro": "não configurado"}), \
+         patch("app.enviar_confirmacao_pedido", return_value={"erro": "não configurado"}):
+        client.post(
+            "/webhook/infinitepay",
+            json={"order_nsu": criado["token"], "paid_amount": 6000, "capture_method": "pix"},
+        )
+
+    resposta = client.post(f"/api/pedido/{criado['token']}/novo-link")
+    assert resposta.status_code == 400
+
+
 def test_criar_pedido_com_destinatario_diferente(client):
     corpo = _corpo_valido(endereco={
         "cep": "59000000", "logradouro": "Rua Teste", "numero": "100", "complemento": "",

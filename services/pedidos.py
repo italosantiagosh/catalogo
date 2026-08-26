@@ -70,6 +70,8 @@ _COLUNAS_ADICIONAIS: list[tuple[str, str]] = [
     ("endereco_destinatario_nome", "TEXT"),
     ("endereco_destinatario_tipo_pessoa", "TEXT"),
     ("endereco_destinatario_documento", "TEXT"),
+    ("email_pedido_criado_enviado", "INTEGER NOT NULL DEFAULT 0"),
+    ("email_pedido_criado_erro", "TEXT"),
 ]
 
 
@@ -223,11 +225,25 @@ def marcar_pago(
 
 
 def marcar_email_enviado(token: str, *, erro: str | None) -> dict | None:
-    """Mesma logica do marcar_tiny_sincronizado (ver abaixo) -- evita
-    reenviar o mesmo e-mail de confirmacao em webhook duplicado."""
+    """E-mail de PAGAMENTO CONFIRMADO -- mesma logica do
+    marcar_tiny_sincronizado (ver abaixo), evita reenviar em webhook
+    duplicado. Ver marcar_email_pedido_criado_enviado pro e-mail
+    disparado na CRIACAO do pedido (com o link de pagamento)."""
     with _conexao() as conexao:
         conexao.execute(
             "UPDATE pedidos SET email_enviado = 1, email_erro = ? WHERE token = ?", (erro, token)
+        )
+    return obter_pedido(token)
+
+
+def marcar_email_pedido_criado_enviado(token: str, *, erro: str | None) -> dict | None:
+    """E-mail com o link de pagamento, disparado assim que o pedido e´
+    criado (ver app.py:api_pedido_criar) -- diferente do
+    marcar_email_enviado acima (esse e´ o de pagamento confirmado)."""
+    with _conexao() as conexao:
+        conexao.execute(
+            "UPDATE pedidos SET email_pedido_criado_enviado = 1, email_pedido_criado_erro = ? WHERE token = ?",
+            (erro, token),
         )
     return obter_pedido(token)
 

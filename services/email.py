@@ -26,36 +26,53 @@ def _preco(valor: float) -> str:
     return f"R$ {valor:.2f}".replace(".", ",")
 
 
-def _corpo_html(pedido: dict, url_pedido: str) -> str:
-    itens_html = "".join(
+def _itens_html(pedido: dict) -> str:
+    return "".join(
         f"<li>{item.get('descricao') or item.get('chave_preco', '')} — {item['quantidade']}x</li>"
         for item in pedido["itens"]
     )
+
+
+def _corpo_html_confirmacao(pedido: dict, url_pedido: str) -> str:
     return (
         f"<p>Olá, {pedido.get('cliente_nome', '')}! Recebemos seu pagamento. 🎉</p>"
         f"<p><strong>Pedido #{pedido['codigo']}</strong></p>"
-        f"<ul>{itens_html}</ul>"
+        f"<ul>{_itens_html(pedido)}</ul>"
         f"<p>Frete ({pedido.get('frete_descricao', '')}): {_preco(pedido.get('frete_preco', 0))}</p>"
         f"<p><strong>Total: {_preco(pedido['total'])}</strong></p>"
+        f"<p>🛠️ Seu pedido já está em produção -- prazo de até <strong>5 dias úteis</strong> antes do envio.</p>"
         f"<p>Acompanhe seu pedido a qualquer momento por este link:<br>"
         f'<a href="{url_pedido}">{url_pedido}</a></p>'
         f"<p>Qualquer dúvida, é só chamar no WhatsApp.</p>"
     )
 
 
-def enviar_confirmacao_pedido(pedido: dict, url_pedido: str) -> dict:
-    """Devolve {"ok": True} ou {"erro": "..."}."""
+def _corpo_html_link_pagamento(pedido: dict, url_pagamento: str, url_acompanhamento: str) -> str:
+    return (
+        f"<p>Olá, {pedido.get('cliente_nome', '')}! Recebemos seu pedido, falta só o pagamento pra confirmar.</p>"
+        f"<p><strong>Pedido #{pedido['codigo']}</strong></p>"
+        f"<ul>{_itens_html(pedido)}</ul>"
+        f"<p>Frete ({pedido.get('frete_descricao', '')}): {_preco(pedido.get('frete_preco', 0))}</p>"
+        f"<p><strong>Total: {_preco(pedido['total'])}</strong></p>"
+        f'<p><a href="{url_pagamento}">👉 Clique aqui pra pagar (Pix ou cartão)</a></p>'
+        f"<p>Se esse link não abrir mais (expirou), é só acompanhar seu pedido "
+        f"por aqui e gerar um novo:<br>"
+        f'<a href="{url_acompanhamento}">{url_acompanhamento}</a></p>'
+        f"<p>Qualquer dúvida, é só chamar no WhatsApp.</p>"
+    )
+
+
+def _enviar(*, email_cliente: str, nome_cliente: str, assunto: str, corpo_html: str) -> dict:
     if not BREVO_API_KEY:
         return {"erro": "Envio de e-mail não configurado (falta BREVO_API_KEY)."}
-    email_cliente = pedido.get("cliente_email")
     if not email_cliente:
         return {"erro": "Pedido sem e-mail do cliente."}
 
     payload = {
         "sender": {"name": EMAIL_REMETENTE_NOME, "email": EMAIL_REMETENTE},
-        "to": [{"email": email_cliente, "name": pedido.get("cliente_nome", "")}],
-        "subject": f"Pagamento confirmado — Pedido #{pedido['codigo']}",
-        "htmlContent": _corpo_html(pedido, url_pedido),
+        "to": [{"email": email_cliente, "name": nome_cliente}],
+        "subject": assunto,
+        "htmlContent": corpo_html,
     }
     try:
         resposta = requests.post(
@@ -68,3 +85,26 @@ def enviar_confirmacao_pedido(pedido: dict, url_pedido: str) -> dict:
     except requests.RequestException as exc:
         return {"erro": f"Não foi possível enviar o e-mail agora ({exc})."}
     return {"ok": True}
+
+
+def enviar_confirmacao_pedido(pedido: dict, url_pedido: str) -> dict:
+    """Disparado quando o webhook confirma o pagamento. Devolve
+    {"ok": True} ou {"erro": "..."}."""
+    return _enviar(
+        email_cliente=pedido.get("cliente_email", ""),
+        nome_cliente=pedido.get("cliente_nome", ""),
+        assunto=f"Pagamento confirmado — Pedido #{pedido['codigo']}",
+        corpo_html=_corpo_html_confirmacao(pedido, url_pedido),
+    )
+
+
+def enviar_link_pagamento(pedido: dict, url_pagamento: str, url_acompanhamento: str) -> dict:
+    """Disparado assim que o pedido e´ criado (ainda pendente) -- pro
+    cliente ter o link mesmo se fechar a aba antes de terminar de
+    pagar. Devolve {"ok": True} ou {"erro": "..."}."""
+    return _enviar(
+        email_cliente=pedido.get("cliente_email", ""),
+        nome_cliente=pedido.get("cliente_nome", ""),
+        assunto=f"Finalize seu pagamento — Pedido #{pedido['codigo']}",
+        corpo_html=_corpo_html_link_pagamento(pedido, url_pagamento, url_acompanhamento),
+    )

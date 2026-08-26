@@ -43,6 +43,7 @@
             <th>Total</th>
             <th>Frete</th>
             <th>Tiny</th>
+            <th>E-mail</th>
             <th>Criado em</th>
             <th></th>
           </tr>
@@ -66,6 +67,15 @@
                 {% else %}
                   ✅ #{{ pedido.tiny_numero_pedido }}
                 {% endif %}
+              </td>
+              <td>
+                {% if pedido.email_pedido_criado_enviado %}
+                  {{ '⚠️ link' if pedido.email_pedido_criado_erro else '✅ link' }}
+                {% endif %}
+                {% if pedido.email_enviado %}
+                  {{ '⚠️ confirmação' if pedido.email_erro else '✅ confirmação' }}
+                {% endif %}
+                {% if not pedido.email_pedido_criado_enviado and not pedido.email_enviado %}—{% endif %}
               </td>
               <td>{{ pedido.criado_em[:16] }}</td>
               <td><a class="ver" href="{{ url_for('ver_pedido', token=pedido.token) }}" target="_blank" rel="noopener">ver →</a></td>

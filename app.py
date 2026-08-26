@@ -78,13 +78,14 @@ from services.catalogo import (
 )
 from services.paginas_institucionais import PAGINAS_ATENDIMENTO
 from services.catalogo_pdf import gerar_pdf_catalogo
-from services.email import enviar_confirmacao_pedido
+from services.email import enviar_confirmacao_pedido, enviar_link_pagamento
 from services.frete import calcular_frete
 from services.infinitepay import criar_link_pagamento
 from services.pedidos import (
     criar_pedido,
     listar_pedidos,
     marcar_email_enviado,
+    marcar_email_pedido_criado_enviado,
     marcar_pago,
     marcar_tiny_sincronizado,
     obter_pedido,
@@ -865,8 +866,9 @@ def api_pedido_criar():
         return jsonify(erro="Preencha o endereço de entrega completo."), 400
 
     # guarda o preco unitario junto de cada item persistido -- alem de
-    # registro, e o que services/tiny.py usa pra montar o pedido na
-    # sincronizacao (ver webhook_infinitepay abaixo).
+    # registro, e o que os dois pontos abaixo usam pra reconstruir o
+    # pedido sem precisar recalcular tudo de novo (ver
+    # _itens_pagamento_de_pedido e o webhook mais abaixo).
     for item_validado, item_calculado in zip(itens_validos, calculo["itens"]):
         item_validado["valor_unitario"] = item_calculado["preco_unitario"]
 
@@ -879,31 +881,90 @@ def api_pedido_criar():
         endereco=endereco,
     )
 
+    resultado = _gerar_link_pagamento_para_pedido(pedido, cliente, endereco)
+    if "erro" in resultado:
+        return jsonify(erro=resultado["erro"]), 502
+
+    # e-mail com o link, caso o cliente feche a aba antes de terminar
+    # de pagar -- best-effort, mesmo tratamento das outras integracoes
+    # do fluxo (nao bloqueia a resposta se falhar).
+    resultado_email = enviar_link_pagamento(
+        pedido, resultado["url"], url_for("ver_pedido", token=pedido["token"], _external=True)
+    )
+    marcar_email_pedido_criado_enviado(pedido["token"], erro=resultado_email.get("erro"))
+
+    return jsonify(url=resultado["url"], token=pedido["token"], codigo=pedido["codigo"])
+
+
+def _itens_pagamento_de_pedido(pedido: dict) -> list[dict]:
+    """Reconstroi a lista de itens no formato que a InfinitePay espera a
+    partir de um pedido ja persistido (ver services.pedidos) -- usado
+    tanto na criacao quanto em /api/pedido/<token>/novo-link, sem
+    precisar do carrinho original de novo."""
     itens_pagamento = [
         {
-            "id": item_validado["chave_preco"],
-            "description": item_validado["descricao"],
-            "quantity": item_validado["quantidade"],
-            "price": round(item_calculado["preco_unitario"] * 100),
+            "id": item["chave_preco"],
+            "description": item.get("descricao") or item["chave_preco"],
+            "quantity": item["quantidade"],
+            "price": round(item["valor_unitario"] * 100),
         }
-        for item_validado, item_calculado in zip(itens_validos, calculo["itens"])
+        for item in pedido["itens"]
     ]
-    if frete_preco > 0:
+    if pedido.get("frete_preco", 0) > 0:
         itens_pagamento.append(
-            {"id": "frete", "description": frete_descricao, "quantity": 1, "price": round(frete_preco * 100)}
+            {
+                "id": "frete",
+                "description": pedido.get("frete_descricao", ""),
+                "quantity": 1,
+                "price": round(pedido["frete_preco"] * 100),
+            }
         )
+    return itens_pagamento
 
-    resultado = criar_link_pagamento(
+
+def _gerar_link_pagamento_para_pedido(pedido: dict, cliente: dict, endereco: dict) -> dict:
+    return criar_link_pagamento(
         order_nsu=pedido["token"],
         redirect_url=url_for("ver_pedido", token=pedido["token"], _external=True),
         webhook_url=url_for("webhook_infinitepay", _external=True),
-        itens_pagamento=itens_pagamento,
+        itens_pagamento=_itens_pagamento_de_pedido(pedido),
         cliente=cliente,
         endereco=endereco,
     )
+
+
+@app.route("/api/pedido/<token>/novo-link", methods=["POST"])
+def api_pedido_novo_link(token: str):
+    """Gera um novo link de pagamento pro mesmo pedido -- pro caso do
+    link original ter expirado (a InfinitePay nao documenta um prazo
+    fixo, entao em vez de tentar adivinhar, so oferecemos gerar de
+    novo quando precisar). So funciona pra pedido ainda pendente."""
+    pedido = obter_pedido(token)
+    if pedido is None:
+        return jsonify(erro="Pedido não encontrado."), 404
+    if pedido["status"] != "pendente":
+        return jsonify(erro="Esse pedido não está mais aguardando pagamento."), 400
+
+    cliente = {
+        "nome": pedido.get("cliente_nome", ""),
+        "tipo_pessoa": pedido.get("cliente_tipo_pessoa", ""),
+        "documento": pedido.get("cliente_documento", ""),
+        "telefone": pedido.get("cliente_telefone", ""),
+        "email": pedido.get("cliente_email", ""),
+    }
+    endereco = {
+        "cep": pedido.get("endereco_cep", ""),
+        "logradouro": pedido.get("endereco_logradouro", ""),
+        "numero": pedido.get("endereco_numero", ""),
+        "complemento": pedido.get("endereco_complemento", ""),
+        "bairro": pedido.get("endereco_bairro", ""),
+        "cidade": pedido.get("endereco_cidade", ""),
+        "uf": pedido.get("endereco_uf", ""),
+    }
+    resultado = _gerar_link_pagamento_para_pedido(pedido, cliente, endereco)
     if "erro" in resultado:
         return jsonify(erro=resultado["erro"]), 502
-    return jsonify(url=resultado["url"], token=pedido["token"], codigo=pedido["codigo"])
+    return jsonify(url=resultado["url"])
 
 
 @app.route("/webhook/infinitepay", methods=["POST"])

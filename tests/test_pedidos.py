@@ -88,6 +88,18 @@ def test_marcar_pago_pedido_inexistente_devolve_none(monkeypatch, tmp_path):
     assert resultado is None
 
 
+def test_marcar_email_pedido_criado_enviado(monkeypatch, tmp_path):
+    _reapontar_db(monkeypatch, tmp_path)
+    pedido = pedidos.criar_pedido(**_pedido_exemplo())
+    assert pedido["email_pedido_criado_enviado"] == 0
+
+    atualizado = pedidos.marcar_email_pedido_criado_enviado(pedido["token"], erro=None)
+    assert atualizado["email_pedido_criado_enviado"] == 1
+    assert atualizado["email_pedido_criado_erro"] is None
+    # nao mexe no e-mail de confirmacao de pagamento (coluna separada)
+    assert atualizado["email_enviado"] == 0
+
+
 def test_banco_antigo_ganha_as_colunas_novas_sem_quebrar(monkeypatch, tmp_path):
     """Simula um pedidos.db criado antes das colunas tiny_*/email_*/
     endereco_destinatario_* existirem -- CREATE TABLE IF NOT EXISTS

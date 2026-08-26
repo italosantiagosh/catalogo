@@ -48,6 +48,7 @@ def test_envia_com_payload_correto(monkeypatch):
     assert "ABC123" in corpo["subject"]
     assert "https://site/pedido/token" in corpo["htmlContent"]
     assert "R$ 60,00" in corpo["htmlContent"]
+    assert "produção" in corpo["htmlContent"]
     assert post_mock.call_args.kwargs["headers"]["api-key"] == "segredo"
 
 
@@ -58,3 +59,27 @@ def test_erro_de_rede(monkeypatch):
     with patch("services.email.requests.post", side_effect=requests.RequestException("timeout")):
         resultado = email.enviar_confirmacao_pedido(_pedido_exemplo(), "https://site/pedido/token")
     assert "erro" in resultado
+
+
+def test_link_pagamento_sem_api_key_devolve_erro(monkeypatch):
+    monkeypatch.setattr(email, "BREVO_API_KEY", "")
+    resultado = email.enviar_link_pagamento(
+        _pedido_exemplo(), "https://checkout.infinitepay.io/abc", "https://site/pedido/token"
+    )
+    assert "erro" in resultado
+
+
+def test_link_pagamento_envia_com_payload_correto(monkeypatch):
+    monkeypatch.setattr(email, "BREVO_API_KEY", "segredo")
+    resposta_mock = Mock()
+    resposta_mock.raise_for_status = Mock()
+    with patch("services.email.requests.post", return_value=resposta_mock) as post_mock:
+        resultado = email.enviar_link_pagamento(
+            _pedido_exemplo(), "https://checkout.infinitepay.io/abc", "https://site/pedido/token"
+        )
+
+    assert resultado == {"ok": True}
+    corpo = post_mock.call_args.kwargs["json"]
+    assert "ABC123" in corpo["subject"]
+    assert "https://checkout.infinitepay.io/abc" in corpo["htmlContent"]
+    assert "https://site/pedido/token" in corpo["htmlContent"]
