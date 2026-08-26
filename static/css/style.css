@@ -1975,12 +1975,6 @@ input[type="file"] {
   margin: 0 0 4px;
 }
 
-.cadastro-instrucao {
-  font-size: 0.82rem;
-  color: var(--muted);
-  margin: 0 0 12px;
-}
-
 .cadastro-tipo-pessoa {
   display: flex;
   gap: 18px;
@@ -2070,13 +2064,6 @@ input[type="file"] {
 .botao-pagar:disabled {
   opacity: 0.6;
   cursor: default;
-}
-
-.separador-ou {
-  text-align: center;
-  font-size: 0.78rem;
-  color: var(--muted);
-  margin: 0 0 14px;
 }
 
 .whatsapp-acoes {

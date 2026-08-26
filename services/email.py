@@ -17,7 +17,7 @@ from __future__ import annotations
 
 import requests
 
-from config import BREVO_API_KEY, EMAIL_REMETENTE, EMAIL_REMETENTE_NOME
+from config import BREVO_API_KEY, EMAIL_NOTIFICACAO_VENDA, EMAIL_REMETENTE, EMAIL_REMETENTE_NOME
 
 API_URL = "https://api.brevo.com/v3/smtp/email"
 
@@ -259,4 +259,31 @@ def enviar_pedido_cancelado(pedido: dict, url_catalogo: str) -> dict:
         nome_cliente=pedido.get("cliente_nome", ""),
         assunto=f"Seu pedido #{pedido['codigo']} foi cancelado -- mas ainda dá tempo",
         corpo_html=_corpo_html_pedido_cancelado(pedido, url_catalogo),
+    )
+
+
+def _corpo_html_notificacao_venda(pedido: dict, url_admin: str) -> str:
+    return (
+        f"<p>🎉 Nova venda confirmada!</p>"
+        f"<p><strong>Pedido #{pedido['codigo']}</strong> -- {_preco(pedido['total'])} "
+        f"({pedido.get('forma_pagamento', '')})</p>"
+        f"<p>Cliente: {pedido.get('cliente_nome', '')} -- {pedido.get('cliente_telefone', '')}</p>"
+        f"<ul>{_itens_html(pedido)}</ul>"
+        f'<p><a href="{url_admin}">👉 Ver pedido no painel</a></p>'
+    )
+
+
+def enviar_notificacao_venda(pedido: dict, url_admin: str) -> dict:
+    """Aviso interno pra loja quando uma venda e´ confirmada (ver
+    app.py:webhook_infinitepay) -- vai pra EMAIL_NOTIFICACAO_VENDA
+    (config.py), nao pro cliente. Nunca deve derrubar o webhook: quem
+    chama isso ja´ trata qualquer excecao/erro como nao-critico.
+    Devolve {"ok": True} ou {"erro": "..."}."""
+    if not EMAIL_NOTIFICACAO_VENDA:
+        return {"erro": "Notificação de venda não configurada (falta EMAIL_NOTIFICACAO_VENDA)."}
+    return _enviar(
+        email_cliente=EMAIL_NOTIFICACAO_VENDA,
+        nome_cliente="",
+        assunto=f"🎉 Nova venda — Pedido #{pedido['codigo']} ({_preco(pedido['total'])})",
+        corpo_html=_corpo_html_notificacao_venda(pedido, url_admin),
     )

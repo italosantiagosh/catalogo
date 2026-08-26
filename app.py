@@ -104,6 +104,7 @@ from services.email import (
     enviar_confirmacao_pedido,
     enviar_lembrete_pedido_pendente,
     enviar_link_pagamento,
+    enviar_notificacao_venda,
     enviar_oportunidade_upsell,
     enviar_pedido_avaliacao,
     enviar_pedido_cancelado,
@@ -1220,6 +1221,16 @@ def webhook_infinitepay():
             pedido_pago, url_for("ver_pedido", token=token, _external=True)
         )
         marcar_email_enviado(token, erro=resultado_email.get("erro"))
+
+        # aviso interno pra loja (ver services/email.py) -- reaproveita
+        # o mesmo gate acima (so roda na primeira confirmacao) em vez
+        # de criar uma coluna nova so pra isso. Nunca derruba o webhook.
+        try:
+            enviar_notificacao_venda(
+                pedido_pago, url_for("admin_pedido_detalhe", token=token, _external=True)
+            )
+        except Exception:
+            pass
 
     return jsonify(ok=True), 200
 

@@ -11,6 +11,9 @@
   const pedidoIdTexto = document.getElementById('pedido-id-texto');
   const btnWhatsappFinalizar = document.getElementById('btn-whatsapp-finalizar');
   const btnWhatsappDuvida = document.getElementById('btn-whatsapp-duvida');
+  const formaPagamentoRadios = document.querySelectorAll('input[name="forma-pagamento"]');
+  const cadastroClienteEl = document.getElementById('cadastro-cliente');
+  const whatsappFinalizarWrapEl = document.getElementById('whatsapp-finalizar-wrap');
   const btnLimpar = document.getElementById('btn-limpar');
   const freteCepInput = document.getElementById('frete-cep');
   const btnCalcularFrete = document.getElementById('btn-calcular-frete');
@@ -85,8 +88,13 @@
   }
 
   function montarLinhasFrete() {
-    if (!freteEscolhido) return [];
-    return ['Frete:', freteEscolhido.texto, ''];
+    if (freteEscolhido) return ['Frete:', freteEscolhido.texto, ''];
+    // Frete nao simulado (comum em quem fecha direto pelo WhatsApp) --
+    // se ja tiver digitado o CEP no calculo, manda mesmo assim, pra
+    // quem for atender ja ter o dado sem precisar perguntar de novo.
+    const cepDigitado = freteCepInput ? freteCepInput.value.trim() : '';
+    if (!cepDigitado) return [];
+    return ['CEP informado (frete ainda não calculado):', cepDigitado, ''];
   }
 
   function montarCorpoPedido(itens, calculo) {
@@ -492,6 +500,18 @@
   if (checkboxEntregaOutraPessoa && camposDestinatarioEl) {
     checkboxEntregaOutraPessoa.addEventListener('change', () => {
       camposDestinatarioEl.hidden = !checkboxEntregaOutraPessoa.checked;
+    });
+  }
+
+  if (formaPagamentoRadios.length && cadastroClienteEl && whatsappFinalizarWrapEl) {
+    formaPagamentoRadios.forEach((radio) => {
+      radio.addEventListener('change', () => {
+        cadastroClienteEl.hidden = radio.value !== 'site';
+        whatsappFinalizarWrapEl.hidden = radio.value !== 'whatsapp';
+        if (radio.checked && radio.value === 'site') {
+          cadastroClienteEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      });
     });
   }
 

@@ -87,6 +87,11 @@ BREVO_API_KEY = os.environ.get("BREVO_API_KEY", "")
 EMAIL_REMETENTE = os.environ.get("EMAIL_REMETENTE", "pedidos@lojanovedejulho.com.br")
 EMAIL_REMETENTE_NOME = os.environ.get("EMAIL_REMETENTE_NOME", "Nove de Julho")
 
+# Pra onde manda o aviso de "nova venda confirmada" (ver
+# services/email.py:enviar_notificacao_venda) -- nao e´ segredo, padrao
+# ja´ e´ o e-mail que voce ja monitora hoje.
+EMAIL_NOTIFICACAO_VENDA = os.environ.get("EMAIL_NOTIFICACAO_VENDA", "9djulho@gmail.com")
+
 # Painel interno de pedidos (/admin/pedidos, ver app.py) -- autenticacao
 # HTTP Basic simples (um usuario so, sem sessao/cookie). As duas
 # credenciais SAO segredo -- NUNCA gravar aqui, so variavel de

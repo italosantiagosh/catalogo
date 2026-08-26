@@ -294,6 +294,22 @@ def test_obrigado_nao_aparece_se_pedido_nao_esta_pago(client):
     assert "Obrigado pela sua compra!" not in corpo
 
 
+def test_webhook_confirma_pagamento_dispara_notificacao_de_venda_uma_vez(client):
+    with patch("app.criar_link_pagamento", return_value={"url": "https://checkout.infinitepay.io/abc"}):
+        criado = client.post("/api/pedido/criar", json=_corpo_valido()).get_json()
+
+    corpo_webhook = {
+        "order_nsu": criado["token"], "paid_amount": 6000, "capture_method": "pix", "transaction_nsu": "tx-abc",
+    }
+    with patch("app.enviar_notificacao_venda", return_value={"ok": True}) as mock_notificacao:
+        client.post("/webhook/infinitepay", json=corpo_webhook)
+        # webhook repetido nao deve notificar de novo
+        client.post("/webhook/infinitepay", json=corpo_webhook)
+
+    assert mock_notificacao.call_count == 1
+    assert mock_notificacao.call_args.args[0]["codigo"] == criado["codigo"]
+
+
 def test_webhook_valor_insuficiente_nao_confirma(client):
     with patch("app.criar_link_pagamento", return_value={"url": "https://checkout.infinitepay.io/abc"}):
         criado = client.post("/api/pedido/criar", json=_corpo_valido()).get_json()

@@ -53,12 +53,20 @@
 
     <div id="nudge-desconto"></div>
 
-    <div class="cadastro-cliente" id="cadastro-cliente">
+    <fieldset class="formatos forma-pagamento" id="forma-pagamento">
+      <legend>Como você quer fechar o pedido?</legend>
+      <label class="opcao-formato">
+        <input type="radio" name="forma-pagamento" id="forma-pagamento-site" value="site">
+        💳 Pix ou cartão no site
+      </label>
+      <label class="opcao-formato">
+        <input type="radio" name="forma-pagamento" id="forma-pagamento-whatsapp" value="whatsapp">
+        💬 Combinar pelo WhatsApp
+      </label>
+    </fieldset>
+
+    <div class="cadastro-cliente" id="cadastro-cliente" hidden>
       <h2>Seus dados para pagar direto no site</h2>
-      <p class="cadastro-instrucao">
-        Preencha pra pagar agora (Pix ou cartão). Se preferir negociar pelo WhatsApp, pode
-        pular esta parte e usar o botão abaixo.
-      </p>
 
       <fieldset class="cadastro-tipo-pessoa">
         <legend>Tipo de pessoa</legend>
@@ -130,12 +138,13 @@
       <button type="button" id="btn-pagar-agora" class="botao-pagar">💳 Pagar agora (Pix ou cartão)</button>
     </div>
 
-    <p class="separador-ou">ou</p>
-
-    <div class="whatsapp-acoes">
+    <div class="whatsapp-acoes" id="whatsapp-finalizar-wrap" hidden>
       <button type="button" id="btn-whatsapp-finalizar" class="botao-whatsapp">
         Finalizar pedido pelo WhatsApp
       </button>
+    </div>
+
+    <div class="whatsapp-acoes">
       <button type="button" id="btn-whatsapp-duvida" class="botao-whatsapp-secundario">
         Tirar uma dúvida sobre este carrinho
       </button>
