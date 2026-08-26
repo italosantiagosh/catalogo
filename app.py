@@ -412,7 +412,7 @@ def _montar_destaques(produtos: list[dict], itens_por_id: dict) -> list[dict]:
         else:
             produtos_grupo = [itens_por_id[pid] for pid in grupo["produtos"] if pid in itens_por_id]
         if produtos_grupo:
-            destaques.append({"titulo": grupo["titulo"], "produtos": produtos_grupo})
+            destaques.append({"chave": grupo.get("chave", ""), "titulo": grupo["titulo"], "produtos": produtos_grupo})
     return destaques
 
 
@@ -625,12 +625,20 @@ def index():
     itens = _itens_do_grid(produtos)
     itens_por_id = {item["id"]: item for item in itens}
     destaques = _montar_destaques(produtos, itens_por_id)
+    # A home intercala esses 3 grupos com outras secoes (historia,
+    # banner de preco automatico -- ver templates/index.html), entao
+    # cada um precisa ser endereçavel por "chave" em vez de so um loop
+    # unico -- um grupo sem produtos hoje (id removido do catalogo)
+    # simplesmente some da home, sem quebrar nada.
+    destaques_por_chave = {d["chave"]: d for d in destaques if d.get("chave")}
     procurados = [itens_por_id[pid] for pid in PROCURADOS_HOME if pid in itens_por_id]
     categorias = categorias_com_slug(produtos)
     return render_template(
         "index.html",
         preco_varejo=preco_varejo(),
-        destaques=destaques,
+        destaque_mais_vendidos=destaques_por_chave.get("mais_vendidos"),
+        destaque_ano_jubilar=destaques_por_chave.get("ano_jubilar"),
+        destaque_novidades=destaques_por_chave.get("novidades"),
         procurados=procurados,
         categorias=categorias,
     )

@@ -1,5 +1,23 @@
 {% extends "base.html" %}
 
+{% macro render_destaque(grupo) %}
+  {% if grupo %}
+    <section class="destaques">
+      <div class="destaques-grupo">
+        <h2 class="destaques-titulo">{{ grupo.titulo }}</h2>
+        <div class="destaques-linha">
+          {% for produto in grupo.produtos %}
+            <a class="destaque-card" href="{{ url_for('produto', produto_id=produto.id) }}">
+              <img src="{{ url_for('static', filename=produto.thumbnail) }}" alt="{{ produto.nome }}" loading="lazy" decoding="async" width="480" height="480">
+              <span>{{ produto.nome }}</span>
+            </a>
+          {% endfor %}
+        </div>
+      </div>
+    </section>
+  {% endif %}
+{% endmacro %}
+
 {% block conteudo %}
   <h1 class="sr-only">Catálogo de atacado de medalhas, entremeios e chaveiros religiosos</h1>
   <section class="hero">
@@ -49,6 +67,8 @@
     </div>
   </div>
 
+  {{ render_destaque(destaque_mais_vendidos) }}
+
   <section class="nossa-historia">
     <h2>Quem faz a Nove de Julho</h2>
     <p>
@@ -64,27 +84,13 @@
     <a href="{{ url_for('pagina_atendimento', slug='quem-somos') }}" class="botao-secundario">Conheça nossa história completa →</a>
   </section>
 
-  {% if destaques %}
-    <section class="destaques">
-      {% for grupo in destaques %}
-        <div class="destaques-grupo">
-          <h2 class="destaques-titulo">{{ grupo.titulo }}</h2>
-          <div class="destaques-linha">
-            {% for produto in grupo.produtos %}
-              <a class="destaque-card" href="{{ url_for('produto', produto_id=produto.id) }}">
-                <img src="{{ url_for('static', filename=produto.thumbnail) }}" alt="{{ produto.nome }}" loading="lazy" decoding="async" width="480" height="480">
-                <span>{{ produto.nome }}</span>
-              </a>
-            {% endfor %}
-          </div>
-        </div>
-      {% endfor %}
-    </section>
-  {% endif %}
+  {{ render_destaque(destaque_ano_jubilar) }}
 
   <div class="banner-atacado">
     <img src="{{ url_for('static', filename='img/banner-atacado.jpg') }}" alt="Preço de atacado automático: quanto mais medalhas e entremeios você adicionar ao carrinho — de qualquer santo, inclusive personalizada — menor o preço por unidade. Chaveiros têm tabela de atacado própria. O desconto é aplicado sozinho, sem cupom, assim que você adiciona os itens." loading="lazy" decoding="async" width="900" height="453">
   </div>
+
+  {{ render_destaque(destaque_novidades) }}
 
   <a class="banner-kit" href="{{ url_for('kit_livraria_shalom') }}">
     <img src="{{ url_for('static', filename='img/banner-kit.jpg') }}" alt="Kit Livraria Shalom: sortimento pronto com os santos que mais vendem, quantidades editáveis" loading="lazy" decoding="async" width="900" height="367">

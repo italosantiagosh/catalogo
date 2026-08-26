@@ -226,16 +226,22 @@ PROCURADOS_HOME = ["sao-miguel", "sao-bento", "nossa-senhora-aparecida", "nossa-
 # nao existir mais e simplesmente ignorado (nao quebra a pagina).
 DESTAQUES_HOME = [
     {
+        # "chave" e´ so uso interno (template da home intercala esses 3
+        # grupos com outras secoes, ver index() em app.py) -- nao
+        # aparece pro usuario, so o "titulo" abaixo.
+        "chave": "mais_vendidos",
         "titulo": "🔥 Mais vendidos",
         "produtos": ["sao-jose", "santa-teresinha", "carlo-acutis", "sagrada-familia", "sao-joao-paulo-ii"],
     },
     {
+        "chave": "ano_jubilar",
         "titulo": "🕊️ Ano Jubilar de São Francisco",
         # mostra os modelos do proprio Sao Francisco (nao produtos
         # diferentes) -- ver _montar_destaques em app.py.
         "modelos_de": "sao-francisco",
     },
     {
+        "chave": "novidades",
         "titulo": "✨ Novidades",
         "produtos": ["sao-pier-giorgio-frassati", "beata-sandra-sabatine", "filho-prodigo-acamps"],
     },

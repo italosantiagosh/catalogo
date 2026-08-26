@@ -63,6 +63,18 @@ def test_home_tem_h1_semantico(client):
     assert "<h1" in corpo
 
 
+def test_home_ordem_das_secoes(client):
+    corpo = client.get("/").get_data(as_text=True)
+    marcadores = [
+        "vantagens", "Mais vendidos", "Quem faz a Nove de Julho", "Ano Jubilar",
+        "Preço de atacado automático", "Novidades", "Kit Livraria Shalom",
+        "Preços e frete grátis podem mudar", "Peças personalizadas: envie sua foto",
+    ]
+    posicoes = [corpo.find(m) for m in marcadores]
+    assert all(p != -1 for p in posicoes), "algum marcador da home não foi encontrado"
+    assert posicoes == sorted(posicoes), "seções da home fora da ordem esperada"
+
+
 def test_personalizada_tem_breadcrumb(client):
     corpo = client.get("/personalizada").get_data(as_text=True)
     assert 'class="breadcrumbs"' in corpo
