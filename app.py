@@ -71,6 +71,7 @@ from config import (
     META_PIXEL_ID,
     PROCURADOS_HOME,
     PROVA_SOCIAL,
+    UPSELL_HORAS_APOS_PAGAMENTO,
     VIDEO_APRESENTACAO_URL,
     WHATSAPP_NUMBER,
 )
@@ -88,6 +89,7 @@ from services.email import (
     enviar_confirmacao_pedido,
     enviar_lembrete_pedido_pendente,
     enviar_link_pagamento,
+    enviar_oportunidade_upsell,
     enviar_pedido_cancelado,
     enviar_pedido_enviado,
 )
@@ -98,12 +100,14 @@ from services.pedidos import (
     cancelar_pedido,
     criar_pedido,
     listar_pedidos,
+    listar_pedidos_pagos_para_upsell,
     listar_pedidos_pendentes_para_cancelar,
     listar_pedidos_pendentes_para_lembrete,
     marcar_email_cancelado_enviado,
     marcar_email_enviado,
     marcar_email_lembrete_enviado,
     marcar_email_pedido_criado_enviado,
+    marcar_email_upsell_enviado,
     marcar_pago,
     marcar_tiny_sincronizado,
     obter_pedido,
@@ -1169,7 +1173,10 @@ def ver_pedido(token: str):
     # confere o status de verdade no banco tambem -- o parametro na
     # URL sozinho nao prova nada.
     mostrar_obrigado = request.args.get("obrigado") == "1" and pedido["status"] == "pago"
-    return render_template("pedido.html", pedido=pedido, mostrar_obrigado=mostrar_obrigado)
+    oportunidades_upsell = _oportunidades_upsell_do_pedido(pedido) if mostrar_obrigado else []
+    return render_template(
+        "pedido.html", pedido=pedido, mostrar_obrigado=mostrar_obrigado, oportunidades_upsell=oportunidades_upsell
+    )
 
 
 def _autenticacao_admin_valida(auth) -> bool:
@@ -1437,6 +1444,61 @@ def _enviar_lembretes_pedidos_pendentes() -> None:
             marcar_email_lembrete_enviado(pedido["token"], erro=resultado_email.get("erro"))
 
 
+# Rotulo por grupo de atacado (ver services/pricing.py) -- mesmo texto
+# usado no nudge de desconto do carrinho (GRUPO_LABEL em
+# static/js/carrinho_pagina.js), so que reaproveitado aqui pro
+# empurrao pos-compra (pagina de obrigado + e-mail de oportunidade).
+_GRUPO_LABEL = {"padrao": "medalhas/entremeios", "chaveiro": "chaveiros"}
+
+
+def _oportunidades_upsell_do_pedido(pedido: dict) -> list[dict]:
+    """Pra cada grupo de atacado com item nesse pedido, calcula quanto
+    falta pro PROXIMO pedido cair numa faixa de desconto melhor --
+    mesma logica de services.pricing.calcular_carrinho ja usada no
+    nudge do carrinho, so que aplicada a um pedido ja fechado, como
+    sugestao pra proxima compra (nunca muda o pedido em si). Devolve
+    lista vazia se o pedido ja estava na melhor faixa em todos os
+    grupos que comprou (nesse caso nao ha´ oportunidade real pra
+    oferecer)."""
+    resultado = calcular_carrinho(pedido["itens"])
+    oportunidades = []
+    for nome_grupo, grupo in resultado["grupos"].items():
+        if grupo["quantidade_total"] == 0 or not grupo["proxima_faixa"]:
+            continue
+        oportunidades.append(
+            {
+                "label": _GRUPO_LABEL.get(nome_grupo, nome_grupo),
+                "faltam": grupo["proxima_faixa"]["faltam"],
+                "preco": grupo["proxima_faixa"]["preco"],
+                "economia": grupo["proxima_faixa"]["economia"],
+            }
+        )
+    return oportunidades
+
+
+def _enviar_upsell_pedidos_pagos() -> None:
+    """Job agendado (ver _iniciar_scheduler_jobs abaixo) -- roda a cada
+    10min, manda o e-mail de oportunidade (empurrao pra proxima faixa
+    de desconto no PROXIMO pedido) UPSELL_HORAS_APOS_PAGAMENTO horas
+    depois do pagamento confirmado. So manda quando ha´ oportunidade
+    real (ver _oportunidades_upsell_do_pedido) -- senao so marca como
+    processado, sem mandar e-mail vazio."""
+    if not CANONICAL_DOMAIN:
+        return
+    candidatos = listar_pedidos_pagos_para_upsell(UPSELL_HORAS_APOS_PAGAMENTO)
+    if not candidatos:
+        return
+    with app.test_request_context(base_url=f"https://{CANONICAL_DOMAIN}"):
+        url_catalogo = url_for("catalogo_completo", _external=True)
+        for pedido in candidatos:
+            oportunidades = _oportunidades_upsell_do_pedido(pedido)
+            if not oportunidades:
+                marcar_email_upsell_enviado(pedido["token"], erro=None)
+                continue
+            resultado_email = enviar_oportunidade_upsell(pedido, oportunidades, url_catalogo)
+            marcar_email_upsell_enviado(pedido["token"], erro=resultado_email.get("erro"))
+
+
 def _cancelar_pedidos_abandonados() -> None:
     """Job agendado (ver _iniciar_scheduler_jobs abaixo) -- roda a cada
     10min, cancela pedido "pendente" que continua sem pagar
@@ -1462,6 +1524,7 @@ def _iniciar_scheduler_jobs() -> None:
     scheduler = BackgroundScheduler(timezone="UTC")
     scheduler.add_job(_enviar_lembretes_pedidos_pendentes, "interval", minutes=10, id="lembretes_pedidos_pendentes")
     scheduler.add_job(_cancelar_pedidos_abandonados, "interval", minutes=10, id="cancelar_pedidos_abandonados")
+    scheduler.add_job(_enviar_upsell_pedidos_pagos, "interval", minutes=10, id="upsell_pedidos_pagos")
     scheduler.start()
 
 

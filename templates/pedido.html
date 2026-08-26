@@ -22,6 +22,20 @@
           <span>De 1 a 5 dias úteis, com todo cuidado e atenção aos detalhes.</span>
         </div>
         <p>Desde 2020, a Nove de Julho já produziu e enviou milhares de medalhas para todo o Brasil.</p>
+        {% if oportunidades_upsell %}
+          <div class="pedido-obrigado-upsell">
+            <strong>💰 Uma dica pro seu próximo pedido</strong>
+            <ul>
+              {% for oportunidade in oportunidades_upsell %}
+                <li>
+                  Em {{ oportunidade.label }}: peça mais {{ oportunidade.faltam }} peças e o preço cai
+                  pra {{ oportunidade.preco | preco }}/un
+                  {%- if oportunidade.economia > 0 %} — economia de até {{ oportunidade.economia | preco }}!{% else %}!{% endif %}
+                </li>
+              {% endfor %}
+            </ul>
+          </div>
+        {% endif %}
         <p>Se o seu pedido tem alguma peça personalizada, você pode enviar a imagem ou tirar dúvidas pelo WhatsApp.</p>
         <a class="botao-pagar" href="https://wa.me/{{ whatsapp_number }}?text={{ ('Oi! Acabei de finalizar meu pedido #' ~ pedido.codigo ~ ' e preciso de ajuda.') | urlencode }}" target="_blank" rel="noopener">Falar no WhatsApp</a>
         <a class="botao-secundario pedido-obrigado-instagram" href="{{ instagram_url }}" target="_blank" rel="noopener">Seguir no Instagram</a>

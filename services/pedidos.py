@@ -84,6 +84,8 @@ _COLUNAS_ADICIONAIS: list[tuple[str, str]] = [
     ("cancelado_em", "TEXT"),
     ("email_cancelado_enviado", "INTEGER NOT NULL DEFAULT 0"),
     ("email_cancelado_erro", "TEXT"),
+    ("email_upsell_enviado", "INTEGER NOT NULL DEFAULT 0"),
+    ("email_upsell_erro", "TEXT"),
 ]
 
 # Fluxo de status depois de "pago" -- alteravel manualmente pelo painel
@@ -262,6 +264,44 @@ def listar_pedidos_pendentes_para_cancelar(minutos: int) -> list[dict]:
         pedido["itens"] = json.loads(pedido["itens"])
         pedidos.append(pedido)
     return pedidos
+
+
+def listar_pedidos_pagos_para_upsell(horas: int) -> list[dict]:
+    """Pedidos "pago" ha´ pelo menos `horas`, que ainda nao receberam o
+    e-mail de oportunidade (empurrao pra proxima faixa de desconto no
+    proximo pedido) -- usado pelo job agendado em app.py (ver
+    services/email.py:enviar_oportunidade_upsell)."""
+    inicializar_db()
+    limite = (datetime.now(timezone.utc) - timedelta(hours=horas)).isoformat()
+    with _conexao() as conexao:
+        linhas = conexao.execute(
+            """
+            SELECT * FROM pedidos
+            WHERE status = 'pago' AND email_upsell_enviado = 0 AND pago_em <= ?
+            ORDER BY pago_em ASC
+            """,
+            (limite,),
+        ).fetchall()
+    pedidos = []
+    for linha in linhas:
+        pedido = dict(linha)
+        pedido["itens"] = json.loads(pedido["itens"])
+        pedidos.append(pedido)
+    return pedidos
+
+
+def marcar_email_upsell_enviado(token: str, *, erro: str | None) -> dict | None:
+    """E-mail de oportunidade (empurrao de desconto) enviado horas depois
+    do pagamento confirmado (ver listar_pedidos_pagos_para_upsell acima)
+    -- garante que o job agendado so manda uma vez por pedido, mesmo
+    quando nao havia oportunidade real pra oferecer (erro=None nesse
+    caso tambem, so nao chega a chamar a Brevo)."""
+    with _conexao() as conexao:
+        conexao.execute(
+            "UPDATE pedidos SET email_upsell_enviado = 1, email_upsell_erro = ? WHERE token = ?",
+            (erro, token),
+        )
+    return obter_pedido(token)
 
 
 def obter_pedido(token: str) -> dict | None:

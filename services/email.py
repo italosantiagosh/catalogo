@@ -186,6 +186,41 @@ def _corpo_html_pedido_cancelado(pedido: dict, url_catalogo: str) -> str:
     )
 
 
+def _corpo_html_oportunidade_upsell(pedido: dict, oportunidades: list[dict], url_catalogo: str) -> str:
+    linhas_oportunidade = "".join(
+        f"<li>Em <strong>{o['label']}</strong>: peça mais <strong>{o['faltam']}</strong> peças no seu "
+        f"próximo pedido e o preço cai pra <strong>{_preco(o['preco'])}/un</strong>"
+        + (f" — economia de até <strong>{_preco(o['economia'])}</strong>!" if o["economia"] > 0 else "!")
+        + "</li>"
+        for o in oportunidades
+    )
+    return (
+        f"<p>Olá, {pedido.get('cliente_nome', '')}! Esperamos que esteja aproveitando as peças do "
+        f"pedido #{pedido['codigo']}.</p>"
+        f"<p>Separamos uma oportunidade pro seu próximo pedido:</p>"
+        f"<ul>{linhas_oportunidade}</ul>"
+        f'<p><a href="{url_catalogo}">👉 Ver o catálogo completo</a></p>'
+        f"<p>Qualquer dúvida, é só chamar no WhatsApp.</p>"
+    )
+
+
+def enviar_oportunidade_upsell(pedido: dict, oportunidades: list[dict], url_catalogo: str) -> dict:
+    """Disparado pelo job agendado (ver app.py) algumas horas depois do
+    pagamento confirmado -- empurrao pra proxima faixa de desconto de
+    atacado no PROXIMO pedido. `oportunidades` vem de
+    app.py:_oportunidades_upsell_do_pedido (lista de
+    {"label", "faltam", "preco", "economia"}, uma por grupo de atacado
+    com item nesse pedido). So chamado quando ja´ existe pelo menos 1
+    oportunidade real -- nunca com lista vazia. Devolve {"ok": True} ou
+    {"erro": "..."}."""
+    return _enviar(
+        email_cliente=pedido.get("cliente_email", ""),
+        nome_cliente=pedido.get("cliente_nome", ""),
+        assunto="Uma oportunidade pro seu próximo pedido — Nove de Julho",
+        corpo_html=_corpo_html_oportunidade_upsell(pedido, oportunidades, url_catalogo),
+    )
+
+
 def enviar_pedido_cancelado(pedido: dict, url_catalogo: str) -> dict:
     """Disparado pelo job agendado (ver app.py) quando um pedido "pendente"
     e´ cancelado automaticamente por falta de pagamento apos o lembrete

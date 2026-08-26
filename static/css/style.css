@@ -2341,6 +2341,32 @@ input[type="file"] {
   background: #27ae60;
 }
 
+.pedido-obrigado-upsell {
+  text-align: left;
+  background: var(--gold-soft);
+  border-radius: 12px;
+  padding: 12px 14px;
+  margin: 0 0 16px;
+}
+
+.pedido-obrigado-upsell strong {
+  display: block;
+  font-size: 0.85rem;
+  color: var(--ink);
+  margin: 0 0 6px;
+}
+
+.pedido-obrigado-upsell ul {
+  margin: 0;
+  padding-left: 18px;
+}
+
+.pedido-obrigado-upsell li {
+  font-size: 0.83rem;
+  color: var(--muted);
+  margin-bottom: 4px;
+}
+
 .pedido-obrigado-instagram {
   display: block;
   width: 100%;
