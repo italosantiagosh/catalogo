@@ -64,6 +64,7 @@ from apscheduler.schedulers.background import BackgroundScheduler
 from config import (
     ADMIN_PASSWORD,
     ADMIN_USER,
+    AVALIACAO_DIAS_APOS_PAGAMENTO,
     CANCELAMENTO_MINUTOS_APOS_LEMBRETE,
     CANONICAL_DOMAIN,
     DESCRICOES_CATEGORIA,
@@ -104,6 +105,7 @@ from services.email import (
     enviar_lembrete_pedido_pendente,
     enviar_link_pagamento,
     enviar_oportunidade_upsell,
+    enviar_pedido_avaliacao,
     enviar_pedido_cancelado,
     enviar_pedido_enviado,
 )
@@ -114,9 +116,11 @@ from services.pedidos import (
     cancelar_pedido,
     criar_pedido,
     listar_pedidos,
+    listar_pedidos_pagos_para_avaliacao,
     listar_pedidos_pagos_para_upsell,
     listar_pedidos_pendentes_para_cancelar,
     listar_pedidos_pendentes_para_lembrete,
+    marcar_email_avaliacao_enviado,
     marcar_email_cancelado_enviado,
     marcar_email_enviado,
     marcar_email_lembrete_enviado,
@@ -913,6 +917,7 @@ def _itens_com_descricao_do_corpo(dados: dict) -> list[dict]:
                 "quantidade": quantidade,
                 "descricao": descricao[:160],
                 "produtoNome": produto_nome,
+                "produtoId": str(item.get("produtoId", "")).strip(),
                 "modeloNome": modelo_nome,
                 "detalhe": detalhe,
                 # so tem sentido pra formato="entremeio" -- prata e ouro
@@ -1684,6 +1689,46 @@ def _enviar_upsell_pedidos_pagos() -> None:
             marcar_email_upsell_enviado(pedido["token"], erro=resultado_email.get("erro"))
 
 
+def _produto_para_avaliacao_do_pedido(pedido: dict) -> dict | None:
+    """Escolhe um santo do pedido pra pedir avaliacao (ver
+    _enviar_pedidos_para_avaliacao abaixo) -- o primeiro item com um
+    produtoId valido no catalogo atual (itens de medalha personalizada
+    nao tem produtoId, e um produto pode ter sido removido do catalogo
+    desde a compra). Devolve None se nenhum item do pedido tiver um
+    produto valido hoje."""
+    for item in pedido["itens"]:
+        produto_id = item.get("produtoId")
+        if not produto_id:
+            continue
+        produto = buscar_produto(produto_id)
+        if produto is not None:
+            return {"id": produto_id, "nome": produto["nome"]}
+    return None
+
+
+def _enviar_pedidos_para_avaliacao() -> None:
+    """Job agendado (ver _iniciar_scheduler_jobs abaixo) -- roda a cada
+    10min, pede avaliacao por e-mail AVALIACAO_DIAS_APOS_PAGAMENTO dias
+    depois do pagamento confirmado, linkando pra secao de avaliacoes de
+    um dos santos do pedido (ver _produto_para_avaliacao_do_pedido).
+    Sem produto valido pra linkar, so marca como processado sem mandar
+    e-mail vazio."""
+    if not CANONICAL_DOMAIN:
+        return
+    candidatos = listar_pedidos_pagos_para_avaliacao(AVALIACAO_DIAS_APOS_PAGAMENTO)
+    if not candidatos:
+        return
+    with app.test_request_context(base_url=f"https://{CANONICAL_DOMAIN}"):
+        for pedido in candidatos:
+            produto = _produto_para_avaliacao_do_pedido(pedido)
+            if produto is None:
+                marcar_email_avaliacao_enviado(pedido["token"], erro=None)
+                continue
+            url_produto = url_for("produto", produto_id=produto["id"], _external=True) + "#avaliacoes"
+            resultado_email = enviar_pedido_avaliacao(pedido, produto["nome"], url_produto)
+            marcar_email_avaliacao_enviado(pedido["token"], erro=resultado_email.get("erro"))
+
+
 def _cancelar_pedidos_abandonados() -> None:
     """Job agendado (ver _iniciar_scheduler_jobs abaixo) -- roda a cada
     10min, cancela pedido "pendente" que continua sem pagar
@@ -1710,6 +1755,7 @@ def _iniciar_scheduler_jobs() -> None:
     scheduler.add_job(_enviar_lembretes_pedidos_pendentes, "interval", minutes=10, id="lembretes_pedidos_pendentes")
     scheduler.add_job(_cancelar_pedidos_abandonados, "interval", minutes=10, id="cancelar_pedidos_abandonados")
     scheduler.add_job(_enviar_upsell_pedidos_pagos, "interval", minutes=10, id="upsell_pedidos_pagos")
+    scheduler.add_job(_enviar_pedidos_para_avaliacao, "interval", minutes=10, id="pedidos_para_avaliacao")
     scheduler.start()
 
 

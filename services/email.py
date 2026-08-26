@@ -221,6 +221,34 @@ def enviar_oportunidade_upsell(pedido: dict, oportunidades: list[dict], url_cata
     )
 
 
+def _corpo_html_pedido_avaliacao(pedido: dict, produto_nome: str, url_produto: str) -> str:
+    return (
+        f"<p>Olá, {pedido.get('cliente_nome', '')}! Já faz um tempinho desde o seu pedido "
+        f"#{pedido['codigo']} -- esperamos que as peças estejam alegrando o dia a dia de quem "
+        f"recebeu. 🙏</p>"
+        f"<p>Poderia contar pra gente como foi sua experiência com a <strong>{produto_nome}</strong>? "
+        f"Leva menos de 1 minuto -- nome, uma nota de 1 a 5 estrelas, uma foto (se quiser) e um "
+        f"comentário (opcional).</p>"
+        f'<p><a href="{url_produto}">👉 Avaliar {produto_nome}</a></p>'
+        f"<p>Sua avaliação ajuda outras pessoas a comprar com mais confiança. Muito obrigado!</p>"
+    )
+
+
+def enviar_pedido_avaliacao(pedido: dict, produto_nome: str, url_produto: str) -> dict:
+    """Disparado pelo job agendado (ver app.py) AVALIACAO_DIAS_APOS_PAGAMENTO
+    dias depois do pagamento confirmado -- pede avaliacao de um dos
+    produtos do pedido (ver app.py:_produto_para_avaliacao_do_pedido),
+    linkando direto pra secao de avaliacoes desse produto
+    (templates/produto.html#avaliacoes). Devolve {"ok": True} ou
+    {"erro": "..."}."""
+    return _enviar(
+        email_cliente=pedido.get("cliente_email", ""),
+        nome_cliente=pedido.get("cliente_nome", ""),
+        assunto=f"O que você achou da sua {produto_nome}?",
+        corpo_html=_corpo_html_pedido_avaliacao(pedido, produto_nome, url_produto),
+    )
+
+
 def enviar_pedido_cancelado(pedido: dict, url_catalogo: str) -> dict:
     """Disparado pelo job agendado (ver app.py) quando um pedido "pendente"
     e´ cancelado automaticamente por falta de pagamento apos o lembrete

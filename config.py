@@ -119,6 +119,11 @@ CANCELAMENTO_MINUTOS_APOS_LEMBRETE = int(os.environ.get("CANCELAMENTO_MINUTOS_AP
 # proximo pedido) -- ver app.py:_enviar_upsell_pedidos_pagos.
 UPSELL_HORAS_APOS_PAGAMENTO = int(os.environ.get("UPSELL_HORAS_APOS_PAGAMENTO", "24"))
 
+# Quanto tempo esperar depois do pagamento antes de pedir avaliacao por
+# e-mail (link pra um dos santos do pedido) -- ver
+# app.py:_enviar_pedidos_para_avaliacao.
+AVALIACAO_DIAS_APOS_PAGAMENTO = int(os.environ.get("AVALIACAO_DIAS_APOS_PAGAMENTO", "30"))
+
 GA4_MEASUREMENT_ID = os.environ.get("GA4_MEASUREMENT_ID", "G-RXVM530CM6")
 META_PIXEL_ID = os.environ.get("META_PIXEL_ID", "28592446083693889")
 

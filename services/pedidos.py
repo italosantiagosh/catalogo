@@ -86,6 +86,8 @@ _COLUNAS_ADICIONAIS: list[tuple[str, str]] = [
     ("email_cancelado_erro", "TEXT"),
     ("email_upsell_enviado", "INTEGER NOT NULL DEFAULT 0"),
     ("email_upsell_erro", "TEXT"),
+    ("email_avaliacao_enviado", "INTEGER NOT NULL DEFAULT 0"),
+    ("email_avaliacao_erro", "TEXT"),
 ]
 
 # Fluxo de status depois de "pago" -- alteravel manualmente pelo painel
@@ -299,6 +301,45 @@ def marcar_email_upsell_enviado(token: str, *, erro: str | None) -> dict | None:
     with _conexao() as conexao:
         conexao.execute(
             "UPDATE pedidos SET email_upsell_enviado = 1, email_upsell_erro = ? WHERE token = ?",
+            (erro, token),
+        )
+    return obter_pedido(token)
+
+
+def listar_pedidos_pagos_para_avaliacao(dias: int) -> list[dict]:
+    """Pedidos "pago" (ou ja adiante no fluxo -- faturado/enviado/entregue)
+    ha´ pelo menos `dias`, que ainda nao receberam o pedido de avaliacao
+    -- usado pelo job agendado em app.py (ver
+    services/email.py:enviar_pedido_avaliacao). Inclui os 4 status
+    porque o pedido pode ter avancado no fluxo antes dos 30 dias
+    passarem -- nao faz sentido esperar continuar "pago" especificamente."""
+    inicializar_db()
+    limite = (datetime.now(timezone.utc) - timedelta(days=dias)).isoformat()
+    with _conexao() as conexao:
+        linhas = conexao.execute(
+            """
+            SELECT * FROM pedidos
+            WHERE status IN ('pago', 'faturado', 'enviado', 'entregue')
+                AND email_avaliacao_enviado = 0 AND pago_em <= ?
+            ORDER BY pago_em ASC
+            """,
+            (limite,),
+        ).fetchall()
+    pedidos = []
+    for linha in linhas:
+        pedido = dict(linha)
+        pedido["itens"] = json.loads(pedido["itens"])
+        pedidos.append(pedido)
+    return pedidos
+
+
+def marcar_email_avaliacao_enviado(token: str, *, erro: str | None) -> dict | None:
+    """E-mail pedindo avaliacao, disparado dias depois do pagamento (ver
+    listar_pedidos_pagos_para_avaliacao acima) -- garante que o job
+    agendado so manda uma vez por pedido."""
+    with _conexao() as conexao:
+        conexao.execute(
+            "UPDATE pedidos SET email_avaliacao_enviado = 1, email_avaliacao_erro = ? WHERE token = ?",
             (erro, token),
         )
     return obter_pedido(token)
