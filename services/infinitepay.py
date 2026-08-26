@@ -20,7 +20,12 @@ import requests
 
 from config import INFINITEPAY_API_TOKEN, INFINITEPAY_HANDLE
 
-API_URL = "https://api.infinitepay.io/invoices/public/checkout/links"
+# URL atualizada (ver e-mail da InfinitePay 26/08/2026: "Seu Checkout
+# Integrado está desatualizado e pode ser desativado a qualquer
+# momento" -- a antiga era api.infinitepay.io/invoices/public/checkout/links,
+# desativada a qualquer momento). Payload e webhooks continuam os
+# mesmos, so a URL mudou.
+API_URL = "https://api.checkout.infinitepay.io/links"
 
 
 def criar_link_pagamento(
