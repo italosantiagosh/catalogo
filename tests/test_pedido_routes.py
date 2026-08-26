@@ -43,6 +43,7 @@ def test_criar_pedido_com_link_mockado(client):
     descricoes = [item["description"] for item in corpo_infinitepay["itens_pagamento"]]
     assert "Correios PAC — R$ 10,00" in descricoes
     assert any("São José" in d for d in descricoes)
+    assert corpo_infinitepay["redirect_url"].endswith(f"/pedido/{dados['token']}?obrigado=1")
 
 
 def test_item_medalha_guarda_tamanho_na_descricao_e_detalhe(client):
@@ -268,6 +269,29 @@ def test_webhook_confirma_pagamento_e_pedido_passa_a_pago(client):
     pagina = client.get(f"/pedido/{criado['token']}")
     corpo = pagina.get_data(as_text=True)
     assert "Pagamento confirmado" in corpo
+
+
+def test_obrigado_aparece_so_com_query_param_e_pedido_pago(client):
+    with patch("app.criar_link_pagamento", return_value={"url": "https://checkout.infinitepay.io/abc"}):
+        criado = client.post("/api/pedido/criar", json=_corpo_valido()).get_json()
+    client.post(
+        "/webhook/infinitepay",
+        json={"order_nsu": criado["token"], "paid_amount": 6000, "capture_method": "pix", "transaction_nsu": "tx-abc"},
+    )
+
+    com_param = client.get(f"/pedido/{criado['token']}?obrigado=1").get_data(as_text=True)
+    assert "Obrigado pela sua compra!" in com_param
+
+    sem_param = client.get(f"/pedido/{criado['token']}").get_data(as_text=True)
+    assert "Obrigado pela sua compra!" not in sem_param
+
+
+def test_obrigado_nao_aparece_se_pedido_nao_esta_pago(client):
+    with patch("app.criar_link_pagamento", return_value={"url": "https://checkout.infinitepay.io/abc"}):
+        criado = client.post("/api/pedido/criar", json=_corpo_valido()).get_json()
+
+    corpo = client.get(f"/pedido/{criado['token']}?obrigado=1").get_data(as_text=True)
+    assert "Obrigado pela sua compra!" not in corpo
 
 
 def test_webhook_valor_insuficiente_nao_confirma(client):

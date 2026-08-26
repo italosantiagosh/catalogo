@@ -13,6 +13,21 @@
     <p class="pedido-ajuda" id="novo-link-aviso" hidden></p>
   {% elif pedido.status == 'pago' %}
     <p class="pedido-status pedido-status-pago">✅ Pagamento confirmado — pedido em produção</p>
+    {% if mostrar_obrigado %}
+      <div class="pedido-obrigado">
+        <h2>Obrigado pela sua compra!</h2>
+        <p>Seu pedido foi recebido com sucesso e já está na fila de produção.</p>
+        <div class="pedido-obrigado-prazo">
+          <strong>Prazo de produção</strong>
+          <span>De 1 a 5 dias úteis, com todo cuidado e atenção aos detalhes.</span>
+        </div>
+        <p>Desde 2020, a Nove de Julho já produziu e enviou milhares de medalhas para todo o Brasil.</p>
+        <p>Se o seu pedido tem alguma peça personalizada, você pode enviar a imagem ou tirar dúvidas pelo WhatsApp.</p>
+        <a class="botao-pagar" href="https://wa.me/{{ whatsapp_number }}?text={{ ('Oi! Acabei de finalizar meu pedido #' ~ pedido.codigo ~ ' e preciso de ajuda.') | urlencode }}" target="_blank" rel="noopener">Falar no WhatsApp</a>
+        <a class="botao-secundario pedido-obrigado-instagram" href="{{ instagram_url }}" target="_blank" rel="noopener">Seguir no Instagram</a>
+        <p class="pedido-obrigado-bencao">Obrigado por confiar no nosso trabalho. Deus abençoe!</p>
+      </div>
+    {% endif %}
   {% elif pedido.status == 'faturado' %}
     <p class="pedido-status pedido-status-faturado">🧾 Nota fiscal emitida</p>
   {% elif pedido.status == 'enviado' %}

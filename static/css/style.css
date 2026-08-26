@@ -2292,6 +2292,68 @@ input[type="file"] {
   color: #a13a2a;
 }
 
+.pedido-obrigado {
+  margin: 0 0 20px;
+  padding: 20px;
+  background: var(--card);
+  border: 1px solid var(--gold-soft);
+  border-radius: 16px;
+  text-align: center;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+}
+
+.pedido-obrigado h2 {
+  margin: 0 0 10px;
+  color: var(--ink);
+}
+
+.pedido-obrigado p {
+  font-size: 0.88rem;
+  color: var(--muted);
+  line-height: 1.5;
+  margin: 0 0 14px;
+}
+
+.pedido-obrigado-prazo {
+  display: block;
+  background: var(--bg);
+  border: 1px dashed var(--gold);
+  border-radius: 12px;
+  padding: 14px;
+  margin: 0 0 16px;
+}
+
+.pedido-obrigado-prazo strong {
+  display: block;
+  font-size: 0.85rem;
+  color: var(--ink);
+  margin: 0 0 6px;
+}
+
+.pedido-obrigado-prazo span {
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.pedido-obrigado .botao-pagar {
+  margin-top: 0;
+  margin-bottom: 12px;
+  background: #27ae60;
+}
+
+.pedido-obrigado-instagram {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  text-align: center;
+}
+
+.pedido-obrigado-bencao {
+  font-size: 0.76rem;
+  color: var(--muted);
+  margin: 16px 0 0;
+}
+
 .pedido-resumo,
 .pedido-entrega {
   border: 1px solid var(--border);

@@ -1047,7 +1047,11 @@ def _itens_pagamento_de_pedido(pedido: dict) -> list[dict]:
 def _gerar_link_pagamento_para_pedido(pedido: dict, cliente: dict, endereco: dict) -> dict:
     return criar_link_pagamento(
         order_nsu=pedido["token"],
-        redirect_url=url_for("ver_pedido", token=pedido["token"], _external=True),
+        # ?obrigado=1 so serve pra decidir se mostra o bloco completo de
+        # "obrigado pela compra" (ver_pedido/pedido.html) no primeiro
+        # retorno apos o pagamento -- nunca usado sozinho pra provar que
+        # o pedido foi pago de verdade, so o status no banco importa.
+        redirect_url=url_for("ver_pedido", token=pedido["token"], obrigado="1", _external=True),
         webhook_url=url_for("webhook_infinitepay", _external=True),
         itens_pagamento=_itens_pagamento_de_pedido(pedido),
         cliente=cliente,
@@ -1158,7 +1162,14 @@ def ver_pedido(token: str):
     pedido = obter_pedido(token)
     if pedido is None:
         abort(404)
-    return render_template("pedido.html", pedido=pedido)
+    # ?obrigado=1 vem do redirect_url da InfinitePay (ver
+    # _gerar_link_pagamento_para_pedido) -- so mostra o bloco de
+    # "obrigado pela compra" nesse primeiro retorno, nao em toda
+    # visita futura a essa mesma pagina de acompanhamento. Sempre
+    # confere o status de verdade no banco tambem -- o parametro na
+    # URL sozinho nao prova nada.
+    mostrar_obrigado = request.args.get("obrigado") == "1" and pedido["status"] == "pago"
+    return render_template("pedido.html", pedido=pedido, mostrar_obrigado=mostrar_obrigado)
 
 
 def _autenticacao_admin_valida(auth) -> bool:
