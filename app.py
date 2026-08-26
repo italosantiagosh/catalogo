@@ -82,10 +82,16 @@ from services.catalogo import (
 )
 from services.paginas_institucionais import PAGINAS_ATENDIMENTO
 from services.catalogo_pdf import gerar_pdf_catalogo
-from services.email import enviar_confirmacao_pedido, enviar_lembrete_pedido_pendente, enviar_link_pagamento
+from services.email import (
+    enviar_confirmacao_pedido,
+    enviar_lembrete_pedido_pendente,
+    enviar_link_pagamento,
+    enviar_pedido_enviado,
+)
 from services.frete import calcular_frete
 from services.infinitepay import criar_link_pagamento
 from services.pedidos import (
+    atualizar_status,
     criar_pedido,
     listar_pedidos,
     listar_pedidos_pendentes_para_lembrete,
@@ -1068,6 +1074,56 @@ def admin_pedidos():
     status_filtro = request.args.get("status") or None
     pedidos = listar_pedidos(status=status_filtro)
     return render_template("admin_pedidos.html", pedidos=pedidos, status_filtro=status_filtro)
+
+
+@app.route("/admin/pedidos/<token>", methods=["GET"])
+def admin_pedido_detalhe(token: str):
+    """Tela de um pedido so, com formulario pra avancar o status na mao
+    (faturado/enviado/entregue -- ver admin_pedido_status abaixo)."""
+    if not _autenticacao_admin_valida(request.authorization):
+        return Response(
+            "Autenticação necessária.", 401, {"WWW-Authenticate": 'Basic realm="Painel de pedidos"'}
+        )
+    pedido = obter_pedido(token)
+    if pedido is None:
+        abort(404)
+    return render_template("admin_pedido_detalhe.html", pedido=pedido)
+
+
+@app.route("/admin/pedidos/<token>/status", methods=["POST"])
+def admin_pedido_status(token: str):
+    """Avanca o status manualmente (ver services.pedidos.atualizar_status
+    -- a MESMA funcao que um futuro webhook da Tiny vai chamar, so que
+    automaticamente). Pra novo_status="enviado", so dispara o e-mail
+    de "pedido enviado" se realmente for uma transicao nova (evita
+    reenviar se o formulario for reenviado sem querer)."""
+    if not _autenticacao_admin_valida(request.authorization):
+        return Response(
+            "Autenticação necessária.", 401, {"WWW-Authenticate": 'Basic realm="Painel de pedidos"'}
+        )
+    pedido_antes = obter_pedido(token)
+    if pedido_antes is None:
+        abort(404)
+
+    novo_status = str(request.form.get("status", "")).strip()
+    codigo_rastreio = str(request.form.get("codigo_rastreio", "")).strip() or None
+    link_rastreio = str(request.form.get("link_rastreio", "")).strip() or None
+
+    pedido_atualizado = atualizar_status(
+        token, novo_status, codigo_rastreio=codigo_rastreio, link_rastreio=link_rastreio
+    )
+    if pedido_atualizado is None:
+        abort(400, description="Status inválido.")
+
+    if novo_status == "enviado" and pedido_antes["status"] != "enviado":
+        enviar_pedido_enviado(
+            pedido_atualizado,
+            pedido_atualizado.get("codigo_rastreio") or "",
+            pedido_atualizado.get("link_rastreio") or "",
+            url_for("ver_pedido", token=token, _external=True),
+        )
+
+    return redirect(url_for("admin_pedido_detalhe", token=token))
 
 
 @app.route("/api/pix/gerar", methods=["POST"])

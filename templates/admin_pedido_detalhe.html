@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Pedido #{{ pedido.codigo }} — Painel — Nove de Julho</title>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #f5f7fa; color: #142238; margin: 0; padding: 24px; max-width: 560px; }
+    a.voltar { color: #14335c; font-weight: 600; text-decoration: none; font-size: 0.88rem; }
+    h1 { font-size: 1.2rem; margin: 12px 0 4px; }
+    .status { display: inline-block; padding: 3px 10px; border-radius: 999px; font-size: 0.78rem; font-weight: 700; margin-bottom: 16px; }
+    .status-pendente { background: #f4ecd8; color: #7a5c1f; }
+    .status-pago { background: #e3f6ea; color: #1e7a43; }
+    .status-faturado { background: #e0eefc; color: #14548c; }
+    .status-enviado { background: #e6e0fc; color: #4a2e9c; }
+    .status-entregue { background: #d9f2e3; color: #14602f; }
+    .bloco { background: #fff; border-radius: 10px; padding: 16px; margin: 0 0 16px; }
+    .bloco h2 { font-size: 0.95rem; margin: 0 0 8px; }
+    .bloco p { font-size: 0.88rem; margin: 0 0 4px; }
+    label { display: block; font-size: 0.78rem; font-weight: 600; color: #5b6b82; margin: 12px 0 4px; }
+    select, input[type="text"] { width: 100%; padding: 9px 10px; border: 1px solid #dde3ec; border-radius: 8px; font-size: 0.9rem; box-sizing: border-box; }
+    .campos-rastreio { display: none; }
+    .campos-rastreio.ativo { display: block; }
+    button { margin-top: 16px; padding: 12px 18px; border: none; border-radius: 10px; background: #14335c; color: #fff; font-weight: 700; cursor: pointer; }
+    .aviso-tiny { font-size: 0.78rem; color: #5b6b82; margin-top: 20px; }
+  </style>
+</head>
+<body>
+  <a class="voltar" href="{{ url_for('admin_pedidos') }}">← Todos os pedidos</a>
+  <h1>Pedido #{{ pedido.codigo }}</h1>
+  <span class="status status-{{ pedido.status }}">{{ pedido.status }}</span>
+
+  <div class="bloco">
+    <h2>Cliente</h2>
+    <p>{{ pedido.cliente_nome }} — {{ pedido.cliente_email }}</p>
+    <p>{{ pedido.cliente_telefone }}</p>
+    <h2>Total</h2>
+    <p>{{ pedido.total | preco }}</p>
+    {% if pedido.codigo_rastreio %}
+      <h2>Rastreio atual</h2>
+      <p>{{ pedido.codigo_rastreio }}{% if pedido.link_rastreio %} — <a href="{{ pedido.link_rastreio }}" target="_blank" rel="noopener">link</a>{% endif %}</p>
+    {% endif %}
+  </div>
+
+  <div class="bloco">
+    <h2>Alterar status</h2>
+    <form method="post" action="{{ url_for('admin_pedido_status', token=pedido.token) }}" id="form-status">
+      <label for="status">Novo status</label>
+      <select name="status" id="status">
+        <option value="pago" {{ "selected" if pedido.status == "pago" }}>Pago</option>
+        <option value="faturado" {{ "selected" if pedido.status == "faturado" }}>Faturado (nota fiscal emitida)</option>
+        <option value="enviado" {{ "selected" if pedido.status == "enviado" }}>Enviado</option>
+        <option value="entregue" {{ "selected" if pedido.status == "entregue" }}>Entregue</option>
+      </select>
+
+      <div class="campos-rastreio" id="campos-rastreio">
+        <label for="codigo_rastreio">Código de rastreio</label>
+        <input type="text" name="codigo_rastreio" id="codigo_rastreio" value="{{ pedido.codigo_rastreio or '' }}">
+        <label for="link_rastreio">Link de rastreio (opcional)</label>
+        <input type="text" name="link_rastreio" id="link_rastreio" value="{{ pedido.link_rastreio or '' }}">
+      </div>
+
+      <button type="submit">Salvar</button>
+    </form>
+  </div>
+
+  <p class="aviso-tiny">
+    Selecionar "Enviado" pela primeira vez dispara o e-mail de pedido enviado pro cliente, com o
+    código/link preenchidos aqui. Quando a integração com a Tiny estiver completa, ela vai poder
+    fazer essa mesma atualização sozinha (mesmo mecanismo por trás) -- esse formulário continua
+    funcionando do mesmo jeito pra correção manual.
+  </p>
+
+  <script>
+    const selectStatus = document.getElementById('status');
+    const camposRastreio = document.getElementById('campos-rastreio');
+    function atualizarCamposRastreio() {
+      camposRastreio.classList.toggle('ativo', selectStatus.value === 'enviado');
+    }
+    selectStatus.addEventListener('change', atualizarCamposRastreio);
+    atualizarCamposRastreio();
+  </script>
+</body>
+</html>

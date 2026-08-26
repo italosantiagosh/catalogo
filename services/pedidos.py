@@ -74,7 +74,20 @@ _COLUNAS_ADICIONAIS: list[tuple[str, str]] = [
     ("email_pedido_criado_erro", "TEXT"),
     ("email_lembrete_enviado", "INTEGER NOT NULL DEFAULT 0"),
     ("email_lembrete_erro", "TEXT"),
+    ("codigo_rastreio", "TEXT"),
+    ("link_rastreio", "TEXT"),
+    ("faturado_em", "TEXT"),
+    ("enviado_em", "TEXT"),
+    ("entregue_em", "TEXT"),
 ]
+
+# Fluxo de status depois de "pago" -- alteravel manualmente pelo painel
+# (/admin/pedidos/<token>, ver app.py) e pensado pra tambem poder ser
+# disparado automaticamente pela Tiny mais pra frente (webhook de
+# situacao/rastreio/NF-e, deixado pra depois -- ver conversa). Os dois
+# caminhos (manual e futuro automatico) devem chamar a MESMA
+# atualizar_status abaixo, nunca duplicar essa logica em outro lugar.
+STATUS_VALIDOS = ("pago", "faturado", "enviado", "entregue")
 
 
 def inicializar_db() -> None:
@@ -246,6 +259,37 @@ def marcar_pago(
             """,
             (forma_pagamento, parcelas, valor_pago, transaction_nsu, agora, token),
         )
+    return obter_pedido(token)
+
+
+def atualizar_status(
+    token: str, novo_status: str, *, codigo_rastreio: str | None = None, link_rastreio: str | None = None
+) -> dict | None:
+    """Avanca o status manualmente (painel admin) ou automaticamente
+    (futuro webhook da Tiny) -- as duas origens devem usar essa mesma
+    funcao, nunca duplicar a logica. `codigo_rastreio`/`link_rastreio`
+    so fazem sentido pra novo_status="enviado" (ver app.py, que dispara
+    o e-mail de "pedido enviado" so quando esses dois vierem
+    preenchidos)."""
+    if novo_status not in STATUS_VALIDOS:
+        return None
+    pedido = obter_pedido(token)
+    if pedido is None:
+        return None
+    agora = datetime.now(timezone.utc).isoformat()
+    coluna_data = {"faturado": "faturado_em", "enviado": "enviado_em", "entregue": "entregue_em"}.get(novo_status)
+    with _conexao() as conexao:
+        if coluna_data:
+            conexao.execute(
+                f"""
+                UPDATE pedidos SET status = ?, {coluna_data} = ?,
+                    codigo_rastreio = COALESCE(?, codigo_rastreio), link_rastreio = COALESCE(?, link_rastreio)
+                WHERE token = ?
+                """,
+                (novo_status, agora, codigo_rastreio, link_rastreio, token),
+            )
+        else:
+            conexao.execute("UPDATE pedidos SET status = ? WHERE token = ?", (novo_status, token))
     return obter_pedido(token)
 
 

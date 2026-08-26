@@ -141,6 +141,49 @@ def test_listar_pendentes_para_lembrete_ignora_pedido_pago(monkeypatch, tmp_path
     assert pedidos.listar_pedidos_pendentes_para_lembrete(30) == []
 
 
+def test_atualizar_status_faturado_grava_timestamp(monkeypatch, tmp_path):
+    _reapontar_db(monkeypatch, tmp_path)
+    pedido = pedidos.criar_pedido(**_pedido_exemplo())
+    atualizado = pedidos.atualizar_status(pedido["token"], "faturado")
+    assert atualizado["status"] == "faturado"
+    assert atualizado["faturado_em"] is not None
+    assert atualizado["enviado_em"] is None
+
+
+def test_atualizar_status_enviado_grava_rastreio(monkeypatch, tmp_path):
+    _reapontar_db(monkeypatch, tmp_path)
+    pedido = pedidos.criar_pedido(**_pedido_exemplo())
+    atualizado = pedidos.atualizar_status(
+        pedido["token"], "enviado", codigo_rastreio="BR123456789BR", link_rastreio="https://rastreio.exemplo/BR123"
+    )
+    assert atualizado["status"] == "enviado"
+    assert atualizado["enviado_em"] is not None
+    assert atualizado["codigo_rastreio"] == "BR123456789BR"
+    assert atualizado["link_rastreio"] == "https://rastreio.exemplo/BR123"
+
+
+def test_atualizar_status_entregue_preserva_rastreio_anterior(monkeypatch, tmp_path):
+    _reapontar_db(monkeypatch, tmp_path)
+    pedido = pedidos.criar_pedido(**_pedido_exemplo())
+    pedidos.atualizar_status(pedido["token"], "enviado", codigo_rastreio="BR123456789BR", link_rastreio=None)
+    atualizado = pedidos.atualizar_status(pedido["token"], "entregue")
+    assert atualizado["status"] == "entregue"
+    assert atualizado["entregue_em"] is not None
+    # nao apaga o rastreio ja registrado, so nao veio um novo dessa vez
+    assert atualizado["codigo_rastreio"] == "BR123456789BR"
+
+
+def test_atualizar_status_invalido_devolve_none(monkeypatch, tmp_path):
+    _reapontar_db(monkeypatch, tmp_path)
+    pedido = pedidos.criar_pedido(**_pedido_exemplo())
+    assert pedidos.atualizar_status(pedido["token"], "cancelado_inventado") is None
+
+
+def test_atualizar_status_pedido_inexistente_devolve_none(monkeypatch, tmp_path):
+    _reapontar_db(monkeypatch, tmp_path)
+    assert pedidos.atualizar_status("token-que-nao-existe", "faturado") is None
+
+
 def test_marcar_email_lembrete_enviado(monkeypatch, tmp_path):
     _reapontar_db(monkeypatch, tmp_path)
     pedido = pedidos.criar_pedido(**_pedido_exemplo())

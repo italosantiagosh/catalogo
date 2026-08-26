@@ -2231,6 +2231,21 @@ input[type="file"] {
   color: #1e7a43;
 }
 
+.pedido-status-faturado {
+  background: #e0eefc;
+  color: #14548c;
+}
+
+.pedido-status-enviado {
+  background: #e6e0fc;
+  color: #4a2e9c;
+}
+
+.pedido-status-entregue {
+  background: #d9f2e3;
+  color: #14602f;
+}
+
 .pedido-resumo,
 .pedido-entrega {
   border: 1px solid var(--border);

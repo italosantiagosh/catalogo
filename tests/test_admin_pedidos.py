@@ -107,3 +107,95 @@ def test_sem_pedidos_mostra_mensagem_vazia(client, monkeypatch):
     monkeypatch.setattr(app_module, "ADMIN_PASSWORD", "segredo123")
     resposta = client.get("/admin/pedidos", auth=("admin", "segredo123"))
     assert "Nenhum pedido ainda." in resposta.get_data(as_text=True)
+
+
+def _preparar_admin(monkeypatch):
+    import app as app_module
+
+    monkeypatch.setattr(app_module, "ADMIN_USER", "admin")
+    monkeypatch.setattr(app_module, "ADMIN_PASSWORD", "segredo123")
+
+
+def test_detalhe_exige_autenticacao(client, monkeypatch):
+    _preparar_admin(monkeypatch)
+    with patch("app.criar_link_pagamento", return_value={"url": "https://checkout.infinitepay.io/abc"}):
+        criado = client.post("/api/pedido/criar", json=_corpo_valido()).get_json()
+    resposta = client.get(f"/admin/pedidos/{criado['token']}")
+    assert resposta.status_code == 401
+
+
+def test_detalhe_pedido_inexistente_404(client, monkeypatch):
+    _preparar_admin(monkeypatch)
+    resposta = client.get("/admin/pedidos/token-que-nao-existe", auth=("admin", "segredo123"))
+    assert resposta.status_code == 404
+
+
+def test_detalhe_mostra_dados_do_pedido(client, monkeypatch):
+    _preparar_admin(monkeypatch)
+    with patch("app.criar_link_pagamento", return_value={"url": "https://checkout.infinitepay.io/abc"}):
+        criado = client.post("/api/pedido/criar", json=_corpo_valido()).get_json()
+    resposta = client.get(f"/admin/pedidos/{criado['token']}", auth=("admin", "segredo123"))
+    assert resposta.status_code == 200
+    assert "Maria Teste" in resposta.get_data(as_text=True)
+
+
+def test_alterar_status_para_faturado(client, monkeypatch):
+    _preparar_admin(monkeypatch)
+    with patch("app.criar_link_pagamento", return_value={"url": "https://checkout.infinitepay.io/abc"}):
+        criado = client.post("/api/pedido/criar", json=_corpo_valido()).get_json()
+
+    resposta = client.post(
+        f"/admin/pedidos/{criado['token']}/status", data={"status": "faturado"}, auth=("admin", "segredo123")
+    )
+    assert resposta.status_code == 302
+
+    pedido = pedidos.obter_pedido(criado["token"])
+    assert pedido["status"] == "faturado"
+
+
+def test_alterar_status_para_enviado_dispara_email_uma_vez(client, monkeypatch):
+    _preparar_admin(monkeypatch)
+    with patch("app.criar_link_pagamento", return_value={"url": "https://checkout.infinitepay.io/abc"}):
+        criado = client.post("/api/pedido/criar", json=_corpo_valido()).get_json()
+
+    with patch("app.enviar_pedido_enviado", return_value={"ok": True}) as mock_email:
+        client.post(
+            f"/admin/pedidos/{criado['token']}/status",
+            data={"status": "enviado", "codigo_rastreio": "BR123456789BR", "link_rastreio": "https://rastreio.exemplo/BR123"},
+            auth=("admin", "segredo123"),
+        )
+    assert mock_email.call_count == 1
+    assert mock_email.call_args.args[1] == "BR123456789BR"
+    assert mock_email.call_args.args[2] == "https://rastreio.exemplo/BR123"
+
+    pedido = pedidos.obter_pedido(criado["token"])
+    assert pedido["status"] == "enviado"
+    assert pedido["codigo_rastreio"] == "BR123456789BR"
+
+    # reenviar o mesmo status (ex: form reenviado) nao dispara o e-mail de novo
+    with patch("app.enviar_pedido_enviado") as mock_email2:
+        client.post(
+            f"/admin/pedidos/{criado['token']}/status",
+            data={"status": "enviado", "codigo_rastreio": "BR123456789BR"},
+            auth=("admin", "segredo123"),
+        )
+    mock_email2.assert_not_called()
+
+
+def test_alterar_status_invalido_400(client, monkeypatch):
+    _preparar_admin(monkeypatch)
+    with patch("app.criar_link_pagamento", return_value={"url": "https://checkout.infinitepay.io/abc"}):
+        criado = client.post("/api/pedido/criar", json=_corpo_valido()).get_json()
+
+    resposta = client.post(
+        f"/admin/pedidos/{criado['token']}/status", data={"status": "invalido"}, auth=("admin", "segredo123")
+    )
+    assert resposta.status_code == 400
+
+
+def test_alterar_status_exige_autenticacao(client, monkeypatch):
+    _preparar_admin(monkeypatch)
+    with patch("app.criar_link_pagamento", return_value={"url": "https://checkout.infinitepay.io/abc"}):
+        criado = client.post("/api/pedido/criar", json=_corpo_valido()).get_json()
+    resposta = client.post(f"/admin/pedidos/{criado['token']}/status", data={"status": "faturado"})
+    assert resposta.status_code == 401

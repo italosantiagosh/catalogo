@@ -133,3 +133,36 @@ def enviar_lembrete_pedido_pendente(pedido: dict, url_pagamento: str, url_acompa
         assunto=f"Seu pedido ainda não foi pago — Pedido #{pedido['codigo']}",
         corpo_html=_corpo_html_lembrete(pedido, url_pagamento, url_acompanhamento),
     )
+
+
+def _corpo_html_pedido_enviado(pedido: dict, codigo_rastreio: str, link_rastreio: str, url_acompanhamento: str) -> str:
+    rastreio_html = (
+        f'<p>Código de rastreio: <strong>{codigo_rastreio}</strong><br>'
+        f'<a href="{link_rastreio}">{link_rastreio}</a></p>'
+        if link_rastreio
+        else f"<p>Código de rastreio: <strong>{codigo_rastreio}</strong></p>"
+    )
+    return (
+        f"<p>Olá, {pedido.get('cliente_nome', '')}! Seu pedido foi enviado. 📦</p>"
+        f"<p><strong>Pedido #{pedido['codigo']}</strong></p>"
+        f"<ul>{_itens_html(pedido)}</ul>"
+        f"{rastreio_html}"
+        f"<p>Acompanhe seu pedido a qualquer momento por aqui:<br>"
+        f'<a href="{url_acompanhamento}">{url_acompanhamento}</a></p>'
+        f"<p>Qualquer dúvida, é só chamar no WhatsApp.</p>"
+    )
+
+
+def enviar_pedido_enviado(
+    pedido: dict, codigo_rastreio: str, link_rastreio: str, url_acompanhamento: str
+) -> dict:
+    """Disparado quando o pedido passa pro status "enviado" -- hoje via
+    painel admin (ver app.py:admin_pedido_status), no futuro tambem
+    podera´ vir de um webhook da Tiny (ver services.pedidos.atualizar_status).
+    Devolve {"ok": True} ou {"erro": "..."}."""
+    return _enviar(
+        email_cliente=pedido.get("cliente_email", ""),
+        nome_cliente=pedido.get("cliente_nome", ""),
+        assunto=f"Pedido enviado — Pedido #{pedido['codigo']}",
+        corpo_html=_corpo_html_pedido_enviado(pedido, codigo_rastreio, link_rastreio, url_acompanhamento),
+    )

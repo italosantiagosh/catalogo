@@ -106,3 +106,29 @@ def test_lembrete_envia_com_payload_correto(monkeypatch):
     corpo = post_mock.call_args.kwargs["json"]
     assert "ainda não foi pago" in corpo["subject"]
     assert "https://checkout.infinitepay.io/novo" in corpo["htmlContent"]
+
+
+def test_pedido_enviado_com_link_de_rastreio(monkeypatch):
+    monkeypatch.setattr(email, "BREVO_API_KEY", "segredo")
+    resposta_mock = Mock()
+    resposta_mock.raise_for_status = Mock()
+    with patch("services.email.requests.post", return_value=resposta_mock) as post_mock:
+        resultado = email.enviar_pedido_enviado(
+            _pedido_exemplo(), "BR123456789BR", "https://rastreio.exemplo/BR123", "https://site/pedido/token"
+        )
+
+    assert resultado == {"ok": True}
+    corpo = post_mock.call_args.kwargs["json"]
+    assert "enviado" in corpo["subject"].lower()
+    assert "BR123456789BR" in corpo["htmlContent"]
+    assert "https://rastreio.exemplo/BR123" in corpo["htmlContent"]
+
+
+def test_pedido_enviado_sem_link_de_rastreio(monkeypatch):
+    monkeypatch.setattr(email, "BREVO_API_KEY", "segredo")
+    resposta_mock = Mock()
+    resposta_mock.raise_for_status = Mock()
+    with patch("services.email.requests.post", return_value=resposta_mock) as post_mock:
+        email.enviar_pedido_enviado(_pedido_exemplo(), "BR123456789BR", "", "https://site/pedido/token")
+    corpo = post_mock.call_args.kwargs["json"]
+    assert "BR123456789BR" in corpo["htmlContent"]

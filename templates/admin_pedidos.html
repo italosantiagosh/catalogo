@@ -18,7 +18,10 @@
     .status { display: inline-block; padding: 3px 10px; border-radius: 999px; font-size: 0.75rem; font-weight: 700; }
     .status-pago { background: #e3f6ea; color: #1e7a43; }
     .status-pendente { background: #f4ecd8; color: #7a5c1f; }
-    a.ver { color: #14335c; font-weight: 600; text-decoration: none; }
+    .status-faturado { background: #e0eefc; color: #14548c; }
+    .status-enviado { background: #e6e0fc; color: #4a2e9c; }
+    .status-entregue { background: #d9f2e3; color: #14602f; }
+    a.ver, a.editar { color: #14335c; font-weight: 600; text-decoration: none; margin-right: 10px; }
     .vazio { padding: 24px; text-align: center; color: #5b6b82; }
     .cliente-email { color: #5b6b82; font-size: 0.78rem; }
     .tiny-erro { color: #7a2118; }
@@ -28,8 +31,11 @@
   <h1>Pedidos ({{ pedidos | length }})</h1>
   <div class="filtros">
     <a href="{{ url_for('admin_pedidos') }}" class="{{ 'ativo' if not status_filtro else '' }}">Todos</a>
-    <a href="{{ url_for('admin_pedidos', status='pago') }}" class="{{ 'ativo' if status_filtro == 'pago' else '' }}">Pagos</a>
     <a href="{{ url_for('admin_pedidos', status='pendente') }}" class="{{ 'ativo' if status_filtro == 'pendente' else '' }}">Pendentes</a>
+    <a href="{{ url_for('admin_pedidos', status='pago') }}" class="{{ 'ativo' if status_filtro == 'pago' else '' }}">Pagos</a>
+    <a href="{{ url_for('admin_pedidos', status='faturado') }}" class="{{ 'ativo' if status_filtro == 'faturado' else '' }}">Faturados</a>
+    <a href="{{ url_for('admin_pedidos', status='enviado') }}" class="{{ 'ativo' if status_filtro == 'enviado' else '' }}">Enviados</a>
+    <a href="{{ url_for('admin_pedidos', status='entregue') }}" class="{{ 'ativo' if status_filtro == 'entregue' else '' }}">Entregues</a>
   </div>
 
   {% if pedidos %}
@@ -78,7 +84,10 @@
                 {% if not pedido.email_pedido_criado_enviado and not pedido.email_enviado %}—{% endif %}
               </td>
               <td>{{ pedido.criado_em[:16] }}</td>
-              <td><a class="ver" href="{{ url_for('ver_pedido', token=pedido.token) }}" target="_blank" rel="noopener">ver →</a></td>
+              <td>
+                <a class="editar" href="{{ url_for('admin_pedido_detalhe', token=pedido.token) }}">editar</a>
+                <a class="ver" href="{{ url_for('ver_pedido', token=pedido.token) }}" target="_blank" rel="noopener">ver →</a>
+              </td>
             </tr>
           {% endfor %}
         </tbody>
