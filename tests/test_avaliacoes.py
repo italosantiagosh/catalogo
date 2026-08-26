@@ -126,6 +126,26 @@ def test_recusar_avaliacao_nao_aparece(client, monkeypatch):
     assert "Maria Teste" not in pagina
 
 
+def test_envio_com_foto_heic_do_iphone_funciona(client):
+    """Fotos de iPhone vem em HEIC por padrao (nao JPEG) -- ver
+    app.py:register_heif_opener. Sem isso, esse upload falhava com
+    "Não foi possível processar a foto enviada."."""
+    import io
+
+    import pillow_heif
+    from PIL import Image
+
+    pillow_heif.register_heif_opener()
+    buffer = io.BytesIO()
+    Image.new("RGB", (50, 50), color="blue").save(buffer, format="HEIF")
+    buffer.seek(0)
+
+    dados = _corpo_avaliacao()
+    resposta = client.post("/api/avaliacoes", data={**dados, "foto": (buffer, "IMG_1234.HEIC")})
+    assert resposta.status_code == 200
+    assert resposta.get_json()["ok"] is True
+
+
 def test_admin_avaliacoes_exige_autenticacao(client, monkeypatch):
     _preparar_admin(monkeypatch)
     resposta = client.get("/admin/avaliacoes")

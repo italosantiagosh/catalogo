@@ -26,7 +26,7 @@ ENTRADA_DIR = BASE_DIR / "entrada"
 SAIDA_DIR = BASE_DIR / "saida"
 REFERENCIAS_DIR = BASE_DIR / "referencias"
 
-IMAGE_EXTENSIONS = (".jpg", ".jpeg", ".png", ".webp", ".bmp", ".tif", ".tiff")
+IMAGE_EXTENSIONS = (".jpg", ".jpeg", ".png", ".webp", ".bmp", ".tif", ".tiff", ".heic", ".heif")
 
 # Geometria nativa de cada arquivo de efeito de resina: onde o domo de
 # vidro fica DENTRO dos proprios pixels do arquivo (centro_x, centro_y,

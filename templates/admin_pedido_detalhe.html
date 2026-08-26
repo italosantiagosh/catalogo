@@ -25,6 +25,11 @@
     .campos-rastreio.ativo { display: block; }
     button { margin-top: 16px; padding: 12px 18px; border: none; border-radius: 10px; background: #14335c; color: #fff; font-weight: 700; cursor: pointer; }
     .aviso-tiny { font-size: 0.78rem; color: #5b6b82; margin-top: 20px; }
+    .integracao { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 1px solid #eef1f5; }
+    .integracao:last-child { border-bottom: none; }
+    .integracao-texto { font-size: 0.85rem; }
+    .integracao-erro { color: #a13a2a; font-size: 0.78rem; margin-top: 2px; }
+    .integracao button { margin-top: 0; padding: 8px 14px; font-size: 0.82rem; background: #5b6b82; flex-shrink: 0; }
   </style>
 </head>
 <body>
@@ -51,6 +56,44 @@
     </ul>
     <a class="voltar" href="{{ url_for('admin_pedido_csv', token=pedido.token) }}">⬇ Baixar CSV pra produção</a>
   </div>
+
+  {% if pedido.status != 'pendente' and pedido.status != 'cancelado' %}
+    <div class="bloco">
+      <h2>Integrações</h2>
+
+      <div class="integracao">
+        <div class="integracao-texto">
+          <strong>Tiny:</strong>
+          {% if not pedido.tiny_sincronizado %}
+            ainda não sincronizado
+          {% elif pedido.tiny_erro %}
+            <span class="integracao-erro">⚠️ {{ pedido.tiny_erro }}</span>
+          {% else %}
+            ✅ pedido #{{ pedido.tiny_numero_pedido }}
+          {% endif %}
+        </div>
+        <form method="post" action="{{ url_for('admin_pedido_reenviar_tiny', token=pedido.token) }}">
+          <button type="submit">{{ "Reenviar" if pedido.tiny_sincronizado else "Sincronizar" }}</button>
+        </form>
+      </div>
+
+      <div class="integracao">
+        <div class="integracao-texto">
+          <strong>E-mail de confirmação:</strong>
+          {% if not pedido.email_enviado %}
+            ainda não enviado
+          {% elif pedido.email_erro %}
+            <span class="integracao-erro">⚠️ {{ pedido.email_erro }}</span>
+          {% else %}
+            ✅ enviado
+          {% endif %}
+        </div>
+        <form method="post" action="{{ url_for('admin_pedido_reenviar_email', token=pedido.token) }}">
+          <button type="submit">Reenviar</button>
+        </form>
+      </div>
+    </div>
+  {% endif %}
 
   <div class="bloco">
     <h2>Alterar status</h2>

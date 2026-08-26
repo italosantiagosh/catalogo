@@ -204,6 +204,89 @@ def test_alterar_status_para_enviado_salva_e_envia_transportadora(client, monkey
     assert pedido["transportadora"] == "Correios"
 
 
+def test_reenviar_tiny_manualmente(client, monkeypatch):
+    _preparar_admin(monkeypatch)
+    with patch("app.criar_link_pagamento", return_value={"url": "https://checkout.infinitepay.io/abc"}):
+        criado = client.post("/api/pedido/criar", json=_corpo_valido()).get_json()
+    with patch("app.criar_pedido_tiny", return_value={"erro": "Tiny fora do ar"}), \
+         patch("app.enviar_confirmacao_pedido", return_value={"ok": True}):
+        client.post(
+            "/webhook/infinitepay",
+            json={"order_nsu": criado["token"], "paid_amount": 6000, "capture_method": "pix"},
+        )
+    pedido = pedidos.obter_pedido(criado["token"])
+    assert pedido["tiny_erro"] == "Tiny fora do ar"
+
+    with patch("app.criar_pedido_tiny", return_value={"ok": True, "numero": 99, "id": 1}) as mock_tiny:
+        resposta = client.post(
+            f"/admin/pedidos/{criado['token']}/reenviar-tiny", auth=("admin", "segredo123")
+        )
+    assert resposta.status_code == 302
+    assert mock_tiny.call_count == 1
+
+    pedido = pedidos.obter_pedido(criado["token"])
+    assert pedido["tiny_erro"] is None
+    assert pedido["tiny_numero_pedido"] == "99"
+
+
+def test_reenviar_tiny_exige_pedido_pago(client, monkeypatch):
+    _preparar_admin(monkeypatch)
+    with patch("app.criar_link_pagamento", return_value={"url": "https://checkout.infinitepay.io/abc"}):
+        criado = client.post("/api/pedido/criar", json=_corpo_valido()).get_json()
+
+    resposta = client.post(f"/admin/pedidos/{criado['token']}/reenviar-tiny", auth=("admin", "segredo123"))
+    assert resposta.status_code == 400
+
+
+def test_reenviar_tiny_exige_autenticacao(client, monkeypatch):
+    _preparar_admin(monkeypatch)
+    with patch("app.criar_link_pagamento", return_value={"url": "https://checkout.infinitepay.io/abc"}):
+        criado = client.post("/api/pedido/criar", json=_corpo_valido()).get_json()
+    resposta = client.post(f"/admin/pedidos/{criado['token']}/reenviar-tiny")
+    assert resposta.status_code == 401
+
+
+def test_reenviar_email_manualmente(client, monkeypatch):
+    _preparar_admin(monkeypatch)
+    with patch("app.criar_link_pagamento", return_value={"url": "https://checkout.infinitepay.io/abc"}):
+        criado = client.post("/api/pedido/criar", json=_corpo_valido()).get_json()
+    with patch("app.criar_pedido_tiny", return_value={"ok": True}), \
+         patch("app.enviar_confirmacao_pedido", return_value={"erro": "IP não autorizado na Brevo"}):
+        client.post(
+            "/webhook/infinitepay",
+            json={"order_nsu": criado["token"], "paid_amount": 6000, "capture_method": "pix"},
+        )
+    pedido = pedidos.obter_pedido(criado["token"])
+    assert pedido["email_erro"] == "IP não autorizado na Brevo"
+
+    with patch("app.enviar_confirmacao_pedido", return_value={"ok": True}) as mock_email:
+        resposta = client.post(
+            f"/admin/pedidos/{criado['token']}/reenviar-email", auth=("admin", "segredo123")
+        )
+    assert resposta.status_code == 302
+    assert mock_email.call_count == 1
+
+    pedido = pedidos.obter_pedido(criado["token"])
+    assert pedido["email_erro"] is None
+
+
+def test_reenviar_email_exige_pedido_nao_pendente(client, monkeypatch):
+    _preparar_admin(monkeypatch)
+    with patch("app.criar_link_pagamento", return_value={"url": "https://checkout.infinitepay.io/abc"}):
+        criado = client.post("/api/pedido/criar", json=_corpo_valido()).get_json()
+
+    resposta = client.post(f"/admin/pedidos/{criado['token']}/reenviar-email", auth=("admin", "segredo123"))
+    assert resposta.status_code == 400
+
+
+def test_reenviar_email_exige_autenticacao(client, monkeypatch):
+    _preparar_admin(monkeypatch)
+    with patch("app.criar_link_pagamento", return_value={"url": "https://checkout.infinitepay.io/abc"}):
+        criado = client.post("/api/pedido/criar", json=_corpo_valido()).get_json()
+    resposta = client.post(f"/admin/pedidos/{criado['token']}/reenviar-email")
+    assert resposta.status_code == 401
+
+
 def test_alterar_status_invalido_400(client, monkeypatch):
     _preparar_admin(monkeypatch)
     with patch("app.criar_link_pagamento", return_value={"url": "https://checkout.infinitepay.io/abc"}):

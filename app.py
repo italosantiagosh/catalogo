@@ -50,7 +50,14 @@ from xml.sax.saxutils import escape as escapar_xml
 
 from flask import Flask, Response, abort, jsonify, redirect, render_template, request, send_file, url_for
 from PIL import Image
+from pillow_heif import register_heif_opener
 from werkzeug.datastructures import FileStorage
+
+# Fotos de iPhone vem em HEIC/HEIF por padrao (nao JPEG) -- sem isso,
+# Image.open() nao reconhece o arquivo e tanto o upload da personalizada
+# quanto o de avaliacoes (ver /api/avaliacoes abaixo) falham pra quem
+# manda foto direto da galeria do iPhone sem converter antes.
+register_heif_opener()
 
 from apscheduler.schedulers.background import BackgroundScheduler
 
@@ -1334,6 +1341,54 @@ def admin_pedido_status(token: str):
             pedido_atualizado.get("transportadora") or "",
         )
 
+    return redirect(url_for("admin_pedido_detalhe", token=token))
+
+
+@app.route("/admin/pedidos/<token>/reenviar-tiny", methods=["POST"])
+def admin_pedido_reenviar_tiny(token: str):
+    """Sincroniza (ou tenta de novo) com a Tiny na mao -- normalmente
+    isso acontece sozinho quando o webhook da InfinitePay confirma o
+    pagamento (ver webhook_infinitepay), mas so uma vez por pedido. Esse
+    botao existe pra reprocessar quando a primeira tentativa falhou (ex:
+    Tiny fora do ar, token invalido na hora) ou quando o pedido nunca
+    passou pelo webhook (pagamento registrado por fora, teste manual)."""
+    if not _autenticacao_admin_valida(request.authorization):
+        return Response(
+            "Autenticação necessária.", 401, {"WWW-Authenticate": 'Basic realm="Painel de pedidos"'}
+        )
+    pedido = obter_pedido(token)
+    if pedido is None:
+        abort(404)
+    if pedido["status"] not in ("pago", "faturado", "enviado", "entregue"):
+        abort(400, description="Só dá pra sincronizar com a Tiny um pedido já pago.")
+
+    resultado_tiny = criar_pedido_tiny(pedido)
+    marcar_tiny_sincronizado(
+        token, numero_pedido=resultado_tiny.get("numero"), erro=resultado_tiny.get("erro")
+    )
+    return redirect(url_for("admin_pedido_detalhe", token=token))
+
+
+@app.route("/admin/pedidos/<token>/reenviar-email", methods=["POST"])
+def admin_pedido_reenviar_email(token: str):
+    """Reenvia o e-mail de pagamento confirmado na mao -- util quando a
+    primeira tentativa falhou por um motivo que ja foi resolvido (ex:
+    Brevo bloqueou o IP do servidor por ser novo e precisar de
+    autorizacao manual na conta -- depois de autorizado, os envios
+    seguintes funcionam sozinhos; esse botao so serve pra reenviar o
+    que ja tinha falhado antes da autorizacao)."""
+    if not _autenticacao_admin_valida(request.authorization):
+        return Response(
+            "Autenticação necessária.", 401, {"WWW-Authenticate": 'Basic realm="Painel de pedidos"'}
+        )
+    pedido = obter_pedido(token)
+    if pedido is None:
+        abort(404)
+    if pedido["status"] == "pendente":
+        abort(400, description="Esse pedido ainda não foi pago.")
+
+    resultado_email = enviar_confirmacao_pedido(pedido, url_for("ver_pedido", token=token, _external=True))
+    marcar_email_enviado(token, erro=resultado_email.get("erro"))
     return redirect(url_for("admin_pedido_detalhe", token=token))
 
 
