@@ -75,6 +75,25 @@ def _codigo_estoque_tiny(item: dict) -> str:
     return chave_preco
 
 
+def _primeiro_registro(registros_bruto) -> dict:
+    """`retorno.registros` da Tiny vem ora como lista (`[{"registro": {...}}]`),
+    ora como um unico objeto (`{"registro": {...}}`) -- confirmado na
+    pratica com pedido de teste real, tanto em resposta de sucesso
+    quanto de erro (duplicidade). Sem tratar os dois formatos,
+    `registros[0]` quebra com KeyError quando vem objeto, derrubando o
+    endpoint que chamou isso (ver app.py:admin_pedido_reenviar_tiny --
+    foi exatamente esse crash que apareceu como Internal Server Error
+    pro usuario, mesmo com a Tiny tendo processado o pedido certinho)."""
+    if isinstance(registros_bruto, dict):
+        primeiro = registros_bruto
+    elif isinstance(registros_bruto, list) and registros_bruto and isinstance(registros_bruto[0], dict):
+        primeiro = registros_bruto[0]
+    else:
+        primeiro = {}
+    registro = primeiro.get("registro")
+    return registro if isinstance(registro, dict) else {}
+
+
 def _itens_para_tiny(itens: list[dict]) -> list[dict]:
     return [
         {
@@ -139,11 +158,10 @@ def criar_pedido_tiny(pedido: dict) -> dict:
         return {"erro": "Resposta inválida da Tiny."}
 
     retorno = dados.get("retorno", {})
+    primeiro_registro = _primeiro_registro(retorno.get("registros"))
     if retorno.get("status") != "OK":
-        registros = retorno.get("registros") or [{}]
-        erros = retorno.get("erros") or registros[0].get("registro", {}).get("erros", [])
+        erros = retorno.get("erros") or primeiro_registro.get("erros", [])
         mensagens = [e.get("erro", "") for e in erros] if erros else ["erro desconhecido"]
         return {"erro": "; ".join(m for m in mensagens if m) or "erro desconhecido"}
 
-    registro = (retorno.get("registros") or [{}])[0].get("registro", {})
-    return {"ok": True, "numero": registro.get("numero"), "id": registro.get("id")}
+    return {"ok": True, "numero": primeiro_registro.get("numero"), "id": primeiro_registro.get("id")}

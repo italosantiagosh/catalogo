@@ -153,6 +153,51 @@ def test_resposta_com_erro_da_tiny(monkeypatch):
     assert resultado == {"erro": "CPF inválido"}
 
 
+def test_resposta_ok_com_registros_como_objeto_nao_lista(monkeypatch):
+    """A Tiny as vezes manda `retorno.registros` como um objeto unico
+    (`{"registro": {...}}`) em vez de lista -- confirmado com pedido de
+    teste real. Sem tratar isso, `registros[0]` quebrava com KeyError."""
+    monkeypatch.setattr(tiny, "TINY_API_TOKEN", "segredo123")
+    resposta = Mock()
+    resposta.raise_for_status = Mock()
+    resposta.json.return_value = {
+        "retorno": {
+            "status_processamento": 3,
+            "status": "OK",
+            "registros": {"registro": {"status": "OK", "id": 858847926, "numero": "1113"}},
+        }
+    }
+    with patch("services.tiny.requests.post", return_value=resposta):
+        resultado = tiny.criar_pedido_tiny(_pedido_exemplo())
+    assert resultado == {"ok": True, "numero": "1113", "id": 858847926}
+
+
+def test_resposta_com_erro_e_registros_como_objeto_nao_lista(monkeypatch):
+    """Mesmo formato do teste acima, mas pro caso de erro (ex: pedido
+    duplicado) -- a mensagem de erro real da Tiny vem dentro de
+    registros.registro.erros, nao em retorno.erros direto."""
+    monkeypatch.setattr(tiny, "TINY_API_TOKEN", "segredo123")
+    resposta = Mock()
+    resposta.raise_for_status = Mock()
+    resposta.json.return_value = {
+        "retorno": {
+            "status_processamento": 2,
+            "status": "Erro",
+            "registros": {
+                "registro": {
+                    "sequencia": "1",
+                    "status": "Erro",
+                    "codigo_erro": "30",
+                    "erros": [{"erro": "Registro em duplicidade – Pedido de Venda já cadastrado"}],
+                }
+            },
+        }
+    }
+    with patch("services.tiny.requests.post", return_value=resposta):
+        resultado = tiny.criar_pedido_tiny(_pedido_exemplo())
+    assert resultado == {"erro": "Registro em duplicidade – Pedido de Venda já cadastrado"}
+
+
 def test_erro_de_rede(monkeypatch):
     import requests
 

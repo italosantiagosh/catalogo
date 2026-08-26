@@ -1203,7 +1203,10 @@ def webhook_infinitepay():
     # confirmacao do pagamento (o pedido ja esta pago no site de
     # qualquer forma) -- so fica registrado o erro pra conferir depois.
     if pedido_pago and not pedido_pago["tiny_sincronizado"]:
-        resultado_tiny = criar_pedido_tiny(pedido_pago)
+        try:
+            resultado_tiny = criar_pedido_tiny(pedido_pago)
+        except Exception as exc:  # ver comentario acima -- Tiny nunca derruba o webhook
+            resultado_tiny = {"erro": f"Erro inesperado ao sincronizar: {exc}"}
         marcar_tiny_sincronizado(
             token,
             numero_pedido=resultado_tiny.get("numero"),
@@ -1367,7 +1370,10 @@ def admin_pedido_reenviar_tiny(token: str):
     if pedido["status"] not in ("pago", "faturado", "enviado", "entregue"):
         abort(400, description="Só dá pra sincronizar com a Tiny um pedido já pago.")
 
-    resultado_tiny = criar_pedido_tiny(pedido)
+    try:
+        resultado_tiny = criar_pedido_tiny(pedido)
+    except Exception as exc:  # nunca deixa o operador numa tela de erro generica
+        resultado_tiny = {"erro": f"Erro inesperado ao sincronizar: {exc}"}
     marcar_tiny_sincronizado(
         token, numero_pedido=resultado_tiny.get("numero"), erro=resultado_tiny.get("erro")
     )
@@ -1392,7 +1398,12 @@ def admin_pedido_reenviar_email(token: str):
     if pedido["status"] == "pendente":
         abort(400, description="Esse pedido ainda não foi pago.")
 
-    resultado_email = enviar_confirmacao_pedido(pedido, url_for("ver_pedido", token=token, _external=True))
+    try:
+        resultado_email = enviar_confirmacao_pedido(
+            pedido, url_for("ver_pedido", token=token, _external=True)
+        )
+    except Exception as exc:  # nunca deixa o operador numa tela de erro generica
+        resultado_email = {"erro": f"Erro inesperado ao enviar: {exc}"}
     marcar_email_enviado(token, erro=resultado_email.get("erro"))
     return redirect(url_for("admin_pedido_detalhe", token=token))
 

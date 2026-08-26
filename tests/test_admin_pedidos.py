@@ -229,6 +229,31 @@ def test_reenviar_tiny_manualmente(client, monkeypatch):
     assert pedido["tiny_numero_pedido"] == "99"
 
 
+def test_reenviar_tiny_com_excecao_inesperada_nao_500(client, monkeypatch):
+    """Se criar_pedido_tiny estourar uma excecao nao prevista (ex: o bug
+    real do formato de registros da Tiny), o operador nunca deve cair
+    numa tela de Internal Server Error -- o erro fica registrado no
+    pedido e a pagina redireciona normalmente."""
+    _preparar_admin(monkeypatch)
+    with patch("app.criar_link_pagamento", return_value={"url": "https://checkout.infinitepay.io/abc"}):
+        criado = client.post("/api/pedido/criar", json=_corpo_valido()).get_json()
+    with patch("app.criar_pedido_tiny", return_value={"ok": True}), \
+         patch("app.enviar_confirmacao_pedido", return_value={"ok": True}):
+        client.post(
+            "/webhook/infinitepay",
+            json={"order_nsu": criado["token"], "paid_amount": 6000, "capture_method": "pix"},
+        )
+
+    with patch("app.criar_pedido_tiny", side_effect=KeyError(0)):
+        resposta = client.post(
+            f"/admin/pedidos/{criado['token']}/reenviar-tiny", auth=("admin", "segredo123")
+        )
+    assert resposta.status_code == 302
+
+    pedido = pedidos.obter_pedido(criado["token"])
+    assert "Erro inesperado" in pedido["tiny_erro"]
+
+
 def test_reenviar_tiny_exige_pedido_pago(client, monkeypatch):
     _preparar_admin(monkeypatch)
     with patch("app.criar_link_pagamento", return_value={"url": "https://checkout.infinitepay.io/abc"}):
