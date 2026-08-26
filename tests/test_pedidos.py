@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import sqlite3
+from datetime import datetime, timedelta, timezone
 
 import services.pedidos as pedidos
 
@@ -98,6 +99,54 @@ def test_marcar_email_pedido_criado_enviado(monkeypatch, tmp_path):
     assert atualizado["email_pedido_criado_erro"] is None
     # nao mexe no e-mail de confirmacao de pagamento (coluna separada)
     assert atualizado["email_enviado"] == 0
+
+
+def _envelhecer_pedido(token: str, minutos: int) -> None:
+    passado = (datetime.now(timezone.utc) - timedelta(minutes=minutos)).isoformat()
+    with pedidos._conexao() as conexao:
+        conexao.execute("UPDATE pedidos SET criado_em = ? WHERE token = ?", (passado, token))
+
+
+def test_listar_pendentes_para_lembrete_ignora_pedido_recente(monkeypatch, tmp_path):
+    _reapontar_db(monkeypatch, tmp_path)
+    pedidos.criar_pedido(**_pedido_exemplo())
+    assert pedidos.listar_pedidos_pendentes_para_lembrete(30) == []
+
+
+def test_listar_pendentes_para_lembrete_pega_pedido_antigo(monkeypatch, tmp_path):
+    _reapontar_db(monkeypatch, tmp_path)
+    pedido = pedidos.criar_pedido(**_pedido_exemplo())
+    _envelhecer_pedido(pedido["token"], 40)
+
+    resultado = pedidos.listar_pedidos_pendentes_para_lembrete(30)
+    assert len(resultado) == 1
+    assert resultado[0]["token"] == pedido["token"]
+
+
+def test_listar_pendentes_para_lembrete_ignora_ja_notificado(monkeypatch, tmp_path):
+    _reapontar_db(monkeypatch, tmp_path)
+    pedido = pedidos.criar_pedido(**_pedido_exemplo())
+    _envelhecer_pedido(pedido["token"], 40)
+    pedidos.marcar_email_lembrete_enviado(pedido["token"], erro=None)
+    assert pedidos.listar_pedidos_pendentes_para_lembrete(30) == []
+
+
+def test_listar_pendentes_para_lembrete_ignora_pedido_pago(monkeypatch, tmp_path):
+    _reapontar_db(monkeypatch, tmp_path)
+    pedido = pedidos.criar_pedido(**_pedido_exemplo())
+    _envelhecer_pedido(pedido["token"], 40)
+    pedidos.marcar_pago(
+        pedido["token"], forma_pagamento="pix", parcelas=None, valor_pago=140.0, transaction_nsu="x"
+    )
+    assert pedidos.listar_pedidos_pendentes_para_lembrete(30) == []
+
+
+def test_marcar_email_lembrete_enviado(monkeypatch, tmp_path):
+    _reapontar_db(monkeypatch, tmp_path)
+    pedido = pedidos.criar_pedido(**_pedido_exemplo())
+    atualizado = pedidos.marcar_email_lembrete_enviado(pedido["token"], erro="falhou")
+    assert atualizado["email_lembrete_enviado"] == 1
+    assert atualizado["email_lembrete_erro"] == "falhou"
 
 
 def test_banco_antigo_ganha_as_colunas_novas_sem_quebrar(monkeypatch, tmp_path):

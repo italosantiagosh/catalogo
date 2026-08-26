@@ -51,6 +51,8 @@ from flask import Flask, Response, abort, jsonify, redirect, render_template, re
 from PIL import Image
 from werkzeug.datastructures import FileStorage
 
+from apscheduler.schedulers.background import BackgroundScheduler
+
 from config import (
     ADMIN_PASSWORD,
     ADMIN_USER,
@@ -58,10 +60,12 @@ from config import (
     DESCRICOES_CATEGORIA,
     DESCRICOES_FORMATO,
     DESTAQUES_HOME,
+    ENABLE_SCHEDULER,
     GA4_MEASUREMENT_ID,
     GOOGLE_SITE_VERIFICATION,
     INSTAGRAM_URL,
     KIT_LIVRARIA_SHALOM,
+    LEMBRETE_MINUTOS,
     META_PIXEL_ID,
     PROCURADOS_HOME,
     PROVA_SOCIAL,
@@ -78,13 +82,15 @@ from services.catalogo import (
 )
 from services.paginas_institucionais import PAGINAS_ATENDIMENTO
 from services.catalogo_pdf import gerar_pdf_catalogo
-from services.email import enviar_confirmacao_pedido, enviar_link_pagamento
+from services.email import enviar_confirmacao_pedido, enviar_lembrete_pedido_pendente, enviar_link_pagamento
 from services.frete import calcular_frete
 from services.infinitepay import criar_link_pagamento
 from services.pedidos import (
     criar_pedido,
     listar_pedidos,
+    listar_pedidos_pendentes_para_lembrete,
     marcar_email_enviado,
+    marcar_email_lembrete_enviado,
     marcar_email_pedido_criado_enviado,
     marcar_pago,
     marcar_tiny_sincronizado,
@@ -933,18 +939,11 @@ def _gerar_link_pagamento_para_pedido(pedido: dict, cliente: dict, endereco: dic
     )
 
 
-@app.route("/api/pedido/<token>/novo-link", methods=["POST"])
-def api_pedido_novo_link(token: str):
-    """Gera um novo link de pagamento pro mesmo pedido -- pro caso do
-    link original ter expirado (a InfinitePay nao documenta um prazo
-    fixo, entao em vez de tentar adivinhar, so oferecemos gerar de
-    novo quando precisar). So funciona pra pedido ainda pendente."""
-    pedido = obter_pedido(token)
-    if pedido is None:
-        return jsonify(erro="Pedido não encontrado."), 404
-    if pedido["status"] != "pendente":
-        return jsonify(erro="Esse pedido não está mais aguardando pagamento."), 400
-
+def _cliente_e_endereco_do_pedido(pedido: dict) -> tuple[dict, dict]:
+    """Reconstroi os dicts de cliente/endereco a partir de um pedido ja
+    persistido -- usado pra gerar um novo link de pagamento sem
+    precisar do carrinho original de novo (ver
+    api_pedido_novo_link e _enviar_lembretes_pedidos_pendentes)."""
     cliente = {
         "nome": pedido.get("cliente_nome", ""),
         "tipo_pessoa": pedido.get("cliente_tipo_pessoa", ""),
@@ -961,6 +960,22 @@ def api_pedido_novo_link(token: str):
         "cidade": pedido.get("endereco_cidade", ""),
         "uf": pedido.get("endereco_uf", ""),
     }
+    return cliente, endereco
+
+
+@app.route("/api/pedido/<token>/novo-link", methods=["POST"])
+def api_pedido_novo_link(token: str):
+    """Gera um novo link de pagamento pro mesmo pedido -- pro caso do
+    link original ter expirado (a InfinitePay nao documenta um prazo
+    fixo, entao em vez de tentar adivinhar, so oferecemos gerar de
+    novo quando precisar). So funciona pra pedido ainda pendente."""
+    pedido = obter_pedido(token)
+    if pedido is None:
+        return jsonify(erro="Pedido não encontrado."), 404
+    if pedido["status"] != "pendente":
+        return jsonify(erro="Esse pedido não está mais aguardando pagamento."), 400
+
+    cliente, endereco = _cliente_e_endereco_do_pedido(pedido)
     resultado = _gerar_link_pagamento_para_pedido(pedido, cliente, endereco)
     if "erro" in resultado:
         return jsonify(erro=resultado["erro"]), 502
@@ -1177,6 +1192,43 @@ def api_personalizada_preview():
 @app.errorhandler(404)
 def pagina_nao_encontrada(erro):
     return render_template("404.html"), 404
+
+
+def _enviar_lembretes_pedidos_pendentes() -> None:
+    """Job agendado (ver _iniciar_scheduler_lembretes abaixo) -- roda a
+    cada 10min, manda um lembrete (com link novo) pra pedido "pendente"
+    ha´ mais de LEMBRETE_MINUTOS sem pagar. Sem CANONICAL_DOMAIN
+    configurado nao ha´ como montar um link de verdade pro e-mail, entao
+    so nao faz nada nesse caso (nunca manda um link quebrado)."""
+    if not CANONICAL_DOMAIN:
+        return
+    candidatos = listar_pedidos_pendentes_para_lembrete(LEMBRETE_MINUTOS)
+    if not candidatos:
+        return
+    with app.test_request_context(base_url=f"https://{CANONICAL_DOMAIN}"):
+        for pedido in candidatos:
+            cliente, endereco = _cliente_e_endereco_do_pedido(pedido)
+            resultado_link = _gerar_link_pagamento_para_pedido(pedido, cliente, endereco)
+            if "erro" in resultado_link:
+                marcar_email_lembrete_enviado(pedido["token"], erro=resultado_link["erro"])
+                continue
+            resultado_email = enviar_lembrete_pedido_pendente(
+                pedido, resultado_link["url"], url_for("ver_pedido", token=pedido["token"], _external=True)
+            )
+            marcar_email_lembrete_enviado(pedido["token"], erro=resultado_email.get("erro"))
+
+
+def _iniciar_scheduler_lembretes() -> None:
+    scheduler = BackgroundScheduler(timezone="UTC")
+    scheduler.add_job(_enviar_lembretes_pedidos_pendentes, "interval", minutes=10, id="lembretes_pedidos_pendentes")
+    scheduler.start()
+
+
+# So liga em producao de verdade (ENABLE_SCHEDULER=true no servidor) --
+# nunca em teste/dev, senao sobe uma thread de fundo rodando de
+# verdade a cada import do modulo (ver config.py).
+if ENABLE_SCHEDULER:
+    _iniciar_scheduler_lembretes()
 
 
 if __name__ == "__main__":

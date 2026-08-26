@@ -83,3 +83,26 @@ def test_link_pagamento_envia_com_payload_correto(monkeypatch):
     assert "ABC123" in corpo["subject"]
     assert "https://checkout.infinitepay.io/abc" in corpo["htmlContent"]
     assert "https://site/pedido/token" in corpo["htmlContent"]
+
+
+def test_lembrete_sem_api_key_devolve_erro(monkeypatch):
+    monkeypatch.setattr(email, "BREVO_API_KEY", "")
+    resultado = email.enviar_lembrete_pedido_pendente(
+        _pedido_exemplo(), "https://checkout.infinitepay.io/novo", "https://site/pedido/token"
+    )
+    assert "erro" in resultado
+
+
+def test_lembrete_envia_com_payload_correto(monkeypatch):
+    monkeypatch.setattr(email, "BREVO_API_KEY", "segredo")
+    resposta_mock = Mock()
+    resposta_mock.raise_for_status = Mock()
+    with patch("services.email.requests.post", return_value=resposta_mock) as post_mock:
+        resultado = email.enviar_lembrete_pedido_pendente(
+            _pedido_exemplo(), "https://checkout.infinitepay.io/novo", "https://site/pedido/token"
+        )
+
+    assert resultado == {"ok": True}
+    corpo = post_mock.call_args.kwargs["json"]
+    assert "ainda não foi pago" in corpo["subject"]
+    assert "https://checkout.infinitepay.io/novo" in corpo["htmlContent"]

@@ -95,6 +95,17 @@ EMAIL_REMETENTE_NOME = os.environ.get("EMAIL_REMETENTE_NOME", "Nove de Julho")
 ADMIN_USER = os.environ.get("ADMIN_USER", "")
 ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "")
 
+# Lembrete automatico pra pedido criado (pendente) que nao foi pago
+# depois de um tempo -- job agendado com APScheduler (ver app.py).
+# Desligado por padrao -- so liga em producao, setando
+# ENABLE_SCHEDULER=true no servidor. NUNCA ligar em teste/dev: senao
+# sobe uma thread de fundo rodando de verdade, mandando e-mail de
+# verdade sem querer.
+ENABLE_SCHEDULER = os.environ.get("ENABLE_SCHEDULER", "").lower() in ("1", "true", "yes")
+
+# Quanto tempo esperar (pedido "pendente" sem pagar) antes do lembrete.
+LEMBRETE_MINUTOS = int(os.environ.get("LEMBRETE_MINUTOS", "30"))
+
 GA4_MEASUREMENT_ID = os.environ.get("GA4_MEASUREMENT_ID", "G-RXVM530CM6")
 META_PIXEL_ID = os.environ.get("META_PIXEL_ID", "28592446083693889")
 

@@ -28,7 +28,7 @@ import os
 import secrets
 import sqlite3
 from contextlib import contextmanager
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 DB_PATH = os.environ.get(
@@ -72,6 +72,8 @@ _COLUNAS_ADICIONAIS: list[tuple[str, str]] = [
     ("endereco_destinatario_documento", "TEXT"),
     ("email_pedido_criado_enviado", "INTEGER NOT NULL DEFAULT 0"),
     ("email_pedido_criado_erro", "TEXT"),
+    ("email_lembrete_enviado", "INTEGER NOT NULL DEFAULT 0"),
+    ("email_lembrete_erro", "TEXT"),
 ]
 
 
@@ -192,6 +194,29 @@ def listar_pedidos(*, status: str | None = None, limite: int = 200) -> list[dict
     return pedidos
 
 
+def listar_pedidos_pendentes_para_lembrete(minutos: int) -> list[dict]:
+    """Pedidos "pendente" ha´ pelo menos `minutos`, que ainda nao
+    receberam o lembrete de pagamento -- usado pelo job agendado em
+    app.py (ver services/email.py:enviar_lembrete_pedido_pendente)."""
+    inicializar_db()
+    limite = (datetime.now(timezone.utc) - timedelta(minutes=minutos)).isoformat()
+    with _conexao() as conexao:
+        linhas = conexao.execute(
+            """
+            SELECT * FROM pedidos
+            WHERE status = 'pendente' AND email_lembrete_enviado = 0 AND criado_em <= ?
+            ORDER BY criado_em ASC
+            """,
+            (limite,),
+        ).fetchall()
+    pedidos = []
+    for linha in linhas:
+        pedido = dict(linha)
+        pedido["itens"] = json.loads(pedido["itens"])
+        pedidos.append(pedido)
+    return pedidos
+
+
 def obter_pedido(token: str) -> dict | None:
     inicializar_db()
     with _conexao() as conexao:
@@ -243,6 +268,18 @@ def marcar_email_pedido_criado_enviado(token: str, *, erro: str | None) -> dict 
     with _conexao() as conexao:
         conexao.execute(
             "UPDATE pedidos SET email_pedido_criado_enviado = 1, email_pedido_criado_erro = ? WHERE token = ?",
+            (erro, token),
+        )
+    return obter_pedido(token)
+
+
+def marcar_email_lembrete_enviado(token: str, *, erro: str | None) -> dict | None:
+    """E-mail de lembrete pra pedido pendente ha´ muito tempo sem pagar
+    (ver listar_pedidos_pendentes_para_lembrete acima) -- garante que
+    o job agendado so manda esse lembrete uma vez por pedido."""
+    with _conexao() as conexao:
+        conexao.execute(
+            "UPDATE pedidos SET email_lembrete_enviado = 1, email_lembrete_erro = ? WHERE token = ?",
             (erro, token),
         )
     return obter_pedido(token)

@@ -108,3 +108,28 @@ def enviar_link_pagamento(pedido: dict, url_pagamento: str, url_acompanhamento: 
         assunto=f"Finalize seu pagamento — Pedido #{pedido['codigo']}",
         corpo_html=_corpo_html_link_pagamento(pedido, url_pagamento, url_acompanhamento),
     )
+
+
+def _corpo_html_lembrete(pedido: dict, url_pagamento: str, url_acompanhamento: str) -> str:
+    return (
+        f"<p>Olá, {pedido.get('cliente_nome', '')}! Notamos que seu pedido ainda não foi pago.</p>"
+        f"<p><strong>Pedido #{pedido['codigo']}</strong></p>"
+        f"<ul>{_itens_html(pedido)}</ul>"
+        f"<p><strong>Total: {_preco(pedido['total'])}</strong></p>"
+        f'<p><a href="{url_pagamento}">👉 Clique aqui pra pagar (Pix ou cartão)</a></p>'
+        f"<p>Alguma dúvida ou dificuldade pra pagar? É só chamar no WhatsApp que a gente ajuda.</p>"
+        f"<p>Acompanhe seu pedido por aqui:<br>"
+        f'<a href="{url_acompanhamento}">{url_acompanhamento}</a></p>'
+    )
+
+
+def enviar_lembrete_pedido_pendente(pedido: dict, url_pagamento: str, url_acompanhamento: str) -> dict:
+    """Disparado pelo job agendado (ver app.py) quando um pedido fica
+    pendente por tempo demais sem pagar -- manda um novo link (o
+    original pode ter expirado). Devolve {"ok": True} ou {"erro": "..."}."""
+    return _enviar(
+        email_cliente=pedido.get("cliente_email", ""),
+        nome_cliente=pedido.get("cliente_nome", ""),
+        assunto=f"Seu pedido ainda não foi pago — Pedido #{pedido['codigo']}",
+        corpo_html=_corpo_html_lembrete(pedido, url_pagamento, url_acompanhamento),
+    )
