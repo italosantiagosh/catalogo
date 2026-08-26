@@ -26,11 +26,16 @@
     .vazio { padding: 24px; text-align: center; color: #5b6b82; }
     .cliente-email { color: #5b6b82; font-size: 0.78rem; }
     .tiny-erro { color: #7a2118; }
+    #btn-ativar-notificacoes { padding: 10px 16px; border: none; border-radius: 8px; background: #14335c; color: #fff; font-weight: 700; font-size: 0.85rem; cursor: pointer; margin-bottom: 12px; }
+    #btn-ativar-notificacoes:disabled { opacity: 0.6; cursor: default; }
   </style>
 </head>
 <body>
   <h1>Pedidos ({{ pedidos | length }})</h1>
   <p><a href="{{ url_for('admin_avaliacoes') }}">Ver avaliações →</a></p>
+  {% if vapid_chave_publica %}
+    <button type="button" id="btn-ativar-notificacoes">🔔 Ativar notificações de venda</button>
+  {% endif %}
   <div class="filtros">
     <a href="{{ url_for('admin_pedidos') }}" class="{{ 'ativo' if not status_filtro else '' }}">Todos</a>
     <a href="{{ url_for('admin_pedidos', status='pendente') }}" class="{{ 'ativo' if status_filtro == 'pendente' else '' }}">Pendentes</a>
@@ -101,6 +106,11 @@
     </div>
   {% else %}
     <p class="vazio">Nenhum pedido ainda.</p>
+  {% endif %}
+
+  {% if vapid_chave_publica %}
+    <script>window.VAPID_CHAVE_PUBLICA = {{ vapid_chave_publica | tojson }};</script>
+    <script src="{{ url_for('static', filename='js/push.js') }}"></script>
   {% endif %}
 </body>
 </html>

@@ -92,6 +92,17 @@ EMAIL_REMETENTE_NOME = os.environ.get("EMAIL_REMETENTE_NOME", "Nove de Julho")
 # ja´ e´ o e-mail que voce ja monitora hoje.
 EMAIL_NOTIFICACAO_VENDA = os.environ.get("EMAIL_NOTIFICACAO_VENDA", "9djulho@gmail.com")
 
+# Notificacao push no navegador (ver services/push.py) -- par de chaves
+# VAPID gerado uma unica vez (identifica o servidor pros servicos de
+# push do navegador, tipo Google/Mozilla). Credencial de verdade --
+# NUNCA gravar o valor aqui, so variavel de ambiente no servidor. Sem
+# essas duas configuradas, a notificacao push fica desligada (mesmo
+# padrao de BREVO_API_KEY ausente) -- so o e-mail de venda continua
+# funcionando normalmente.
+VAPID_PRIVATE_KEY_PEM = os.environ.get("VAPID_PRIVATE_KEY_PEM", "")
+VAPID_PUBLIC_KEY_PEM = os.environ.get("VAPID_PUBLIC_KEY_PEM", "")
+VAPID_SUBSCRIBER_EMAIL = os.environ.get("VAPID_SUBSCRIBER_EMAIL", "9djulho@gmail.com")
+
 # Painel interno de pedidos (/admin/pedidos, ver app.py) -- autenticacao
 # HTTP Basic simples (um usuario so, sem sessao/cookie). As duas
 # credenciais SAO segredo -- NUNCA gravar aqui, so variavel de

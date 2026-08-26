@@ -100,6 +100,12 @@ from services.avaliacoes import (
     listar_avaliacoes_aprovadas,
     media_e_total_aprovadas,
 )
+from services.push import (
+    enviar_notificacao as enviar_notificacao_push,
+    obter_application_server_key,
+    remover_subscription as remover_push_subscription,
+    salvar_subscription as salvar_push_subscription,
+)
 from services.email import (
     enviar_confirmacao_pedido,
     enviar_lembrete_pedido_pendente,
@@ -1230,12 +1236,21 @@ def webhook_infinitepay():
         )
         marcar_email_enviado(token, erro=resultado_email.get("erro"))
 
-        # aviso interno pra loja (ver services/email.py) -- reaproveita
-        # o mesmo gate acima (so roda na primeira confirmacao) em vez
-        # de criar uma coluna nova so pra isso. Nunca derruba o webhook.
+        # avisos internos pra loja (e-mail + push, ver services/email.py
+        # e services/push.py) -- reaproveita o mesmo gate acima (so
+        # roda na primeira confirmacao) em vez de criar coluna nova so
+        # pra isso. Nenhum dos dois pode derrubar o webhook.
         try:
             enviar_notificacao_venda(
                 pedido_pago, url_for("admin_pedido_detalhe", token=token, _external=True)
+            )
+        except Exception:
+            pass
+        try:
+            enviar_notificacao_push(
+                titulo="🎉 Nova venda!",
+                corpo=f"Pedido #{pedido_pago['codigo']} -- {_formatar_preco(pedido_pago['total'])}",
+                url=url_for("admin_pedido_detalhe", token=token, _external=True),
             )
         except Exception:
             pass
@@ -1283,7 +1298,12 @@ def admin_pedidos():
         )
     status_filtro = request.args.get("status") or None
     pedidos = listar_pedidos(status=status_filtro)
-    return render_template("admin_pedidos.html", pedidos=pedidos, status_filtro=status_filtro)
+    return render_template(
+        "admin_pedidos.html",
+        pedidos=pedidos,
+        status_filtro=status_filtro,
+        vapid_chave_publica=obter_application_server_key(),
+    )
 
 
 @app.route("/admin/pedidos/<token>", methods=["GET"])
@@ -1592,6 +1612,48 @@ def admin_avaliacao_recusar(id_: int):
         )
     atualizar_status_avaliacao(id_, "recusada")
     return redirect(url_for("admin_avaliacoes"))
+
+
+@app.route("/sw.js", methods=["GET"])
+def service_worker():
+    """Service worker so pra notificacao push (ver static/js/push.js e
+    services/push.py) -- servido na raiz (nao em /static/) de proposito,
+    pro escopo dele cobrir o site inteiro, nao so /static/."""
+    return send_file(Path(app.root_path) / "static" / "sw.js", mimetype="application/javascript")
+
+
+@app.route("/admin/push/inscrever", methods=["POST"])
+def admin_push_inscrever():
+    """Recebe a subscription do navegador (PushManager.subscribe(), ver
+    static/js/push.js) depois que o admin ativa notificacoes -- guarda
+    pra usar em services.push.enviar_notificacao quando uma venda for
+    confirmada (ver webhook_infinitepay)."""
+    if not _autenticacao_admin_valida(request.authorization):
+        return Response(
+            "Autenticação necessária.", 401, {"WWW-Authenticate": 'Basic realm="Painel de pedidos"'}
+        )
+    dados = request.get_json(silent=True) or {}
+    endpoint = str(dados.get("endpoint", "")).strip()
+    chaves = dados.get("keys") or {}
+    p256dh = str(chaves.get("p256dh", "")).strip()
+    auth = str(chaves.get("auth", "")).strip()
+    if not endpoint or not p256dh or not auth:
+        return jsonify(erro="Inscrição inválida."), 400
+    salvar_push_subscription(endpoint=endpoint, p256dh=p256dh, auth=auth)
+    return jsonify(ok=True)
+
+
+@app.route("/admin/push/desinscrever", methods=["POST"])
+def admin_push_desinscrever():
+    if not _autenticacao_admin_valida(request.authorization):
+        return Response(
+            "Autenticação necessária.", 401, {"WWW-Authenticate": 'Basic realm="Painel de pedidos"'}
+        )
+    dados = request.get_json(silent=True) or {}
+    endpoint = str(dados.get("endpoint", "")).strip()
+    if endpoint:
+        remover_push_subscription(endpoint)
+    return jsonify(ok=True)
 
 
 @app.route("/api/personalizada/preview", methods=["POST"])
