@@ -84,7 +84,7 @@ BREVO_API_KEY = os.environ.get("BREVO_API_KEY", "")
 
 # Remetente dos e-mails -- nao e´ segredo (aparece publico em todo
 # e-mail enviado), pode ficar no codigo como padrao.
-EMAIL_REMETENTE = os.environ.get("EMAIL_REMETENTE", "9djulho@gmail.com")
+EMAIL_REMETENTE = os.environ.get("EMAIL_REMETENTE", "pedidos@lojanovedejulho.com.br")
 EMAIL_REMETENTE_NOME = os.environ.get("EMAIL_REMETENTE_NOME", "Nove de Julho")
 
 # Painel interno de pedidos (/admin/pedidos, ver app.py) -- autenticacao
