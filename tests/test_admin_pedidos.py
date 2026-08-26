@@ -204,6 +204,43 @@ def test_alterar_status_para_enviado_salva_e_envia_transportadora(client, monkey
     assert pedido["transportadora"] == "Correios"
 
 
+def test_alterar_status_para_faturado_salva_link_da_nota_fiscal(client, monkeypatch):
+    _preparar_admin(monkeypatch)
+    with patch("app.criar_link_pagamento", return_value={"url": "https://checkout.infinitepay.io/abc"}):
+        criado = client.post("/api/pedido/criar", json=_corpo_valido()).get_json()
+
+    resposta = client.post(
+        f"/admin/pedidos/{criado['token']}/status",
+        data={"status": "faturado", "link_nota_fiscal": "https://tiny.exemplo/nf/123.pdf"},
+        auth=("admin", "segredo123"),
+    )
+    assert resposta.status_code == 302
+
+    pedido = pedidos.obter_pedido(criado["token"])
+    assert pedido["status"] == "faturado"
+    assert pedido["link_nota_fiscal"] == "https://tiny.exemplo/nf/123.pdf"
+
+    detalhe = client.get(f"/admin/pedidos/{criado['token']}", auth=("admin", "segredo123")).get_data(as_text=True)
+    assert "https://tiny.exemplo/nf/123.pdf" in detalhe
+
+    pagina_cliente = client.get(f"/pedido/{criado['token']}").get_data(as_text=True)
+    assert "https://tiny.exemplo/nf/123.pdf" in pagina_cliente
+    assert "Baixar nota fiscal" in pagina_cliente
+
+
+def test_alterar_status_para_faturado_sem_link_nao_mostra_botao_de_nota(client, monkeypatch):
+    _preparar_admin(monkeypatch)
+    with patch("app.criar_link_pagamento", return_value={"url": "https://checkout.infinitepay.io/abc"}):
+        criado = client.post("/api/pedido/criar", json=_corpo_valido()).get_json()
+
+    client.post(
+        f"/admin/pedidos/{criado['token']}/status", data={"status": "faturado"}, auth=("admin", "segredo123")
+    )
+
+    pagina_cliente = client.get(f"/pedido/{criado['token']}").get_data(as_text=True)
+    assert "Baixar nota fiscal" not in pagina_cliente
+
+
 def test_reenviar_tiny_manualmente(client, monkeypatch):
     _preparar_admin(monkeypatch)
     with patch("app.criar_link_pagamento", return_value={"url": "https://checkout.infinitepay.io/abc"}):

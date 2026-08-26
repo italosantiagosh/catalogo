@@ -67,6 +67,10 @@
       {% if pedido.transportadora %}<p>Transportadora: {{ pedido.transportadora }}</p>{% endif %}
       <p>{{ pedido.codigo_rastreio }}{% if pedido.link_rastreio %} — <a href="{{ pedido.link_rastreio }}" target="_blank" rel="noopener">link</a>{% endif %}</p>
     {% endif %}
+    {% if pedido.link_nota_fiscal %}
+      <h2>Nota fiscal</h2>
+      <p><a href="{{ pedido.link_nota_fiscal }}" target="_blank" rel="noopener">Ver link salvo</a></p>
+    {% endif %}
     <h2>Itens (produção)</h2>
     <ul>
       {% for item in pedido.itens %}
@@ -134,6 +138,11 @@
         <input type="text" name="link_rastreio" id="link_rastreio" value="{{ pedido.link_rastreio or '' }}">
       </div>
 
+      <div class="campos-rastreio" id="campos-faturado">
+        <label for="link_nota_fiscal">Link da nota fiscal (opcional)</label>
+        <input type="text" name="link_nota_fiscal" id="link_nota_fiscal" value="{{ pedido.link_nota_fiscal or '' }}" placeholder="Link do PDF da NF-e na Tiny">
+      </div>
+
       <button type="submit">Salvar</button>
     </form>
   </div>
@@ -148,8 +157,10 @@
   <script>
     const selectStatus = document.getElementById('status');
     const camposRastreio = document.getElementById('campos-rastreio');
+    const camposFaturado = document.getElementById('campos-faturado');
     function atualizarCamposRastreio() {
       camposRastreio.classList.toggle('ativo', selectStatus.value === 'enviado');
+      camposFaturado.classList.toggle('ativo', selectStatus.value === 'faturado');
     }
     selectStatus.addEventListener('change', atualizarCamposRastreio);
     atualizarCamposRastreio();

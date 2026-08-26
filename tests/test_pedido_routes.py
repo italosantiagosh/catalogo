@@ -447,6 +447,70 @@ def test_webhook_falha_no_email_nao_impede_confirmacao_do_pagamento(client):
     assert pedido["email_erro"] == "falha no envio"
 
 
+def test_timeline_pedido_pendente_so_criado_e_pendente_marcados(client):
+    with patch("app.criar_link_pagamento", return_value={"url": "https://checkout.infinitepay.io/abc"}):
+        criado = client.post("/api/pedido/criar", json=_corpo_valido()).get_json()
+
+    from app import _timeline_do_pedido
+
+    pedido = pedidos.obter_pedido(criado["token"])
+    timeline = _timeline_do_pedido(pedido)
+    assert [etapa["chave"] for etapa in timeline] == [
+        "criado", "pendente", "pago", "faturado", "enviado", "entregue",
+    ]
+    assert [etapa["concluido"] for etapa in timeline] == [True, True, False, False, False, False]
+    assert [etapa["atual"] for etapa in timeline] == [False, True, False, False, False, False]
+
+
+def test_timeline_pedido_pago_avanca_dois_pontos(client):
+    with patch("app.criar_link_pagamento", return_value={"url": "https://checkout.infinitepay.io/abc"}):
+        criado = client.post("/api/pedido/criar", json=_corpo_valido()).get_json()
+    client.post(
+        "/webhook/infinitepay",
+        json={"order_nsu": criado["token"], "paid_amount": 6000, "capture_method": "pix"},
+    )
+
+    from app import _timeline_do_pedido
+
+    pedido = pedidos.obter_pedido(criado["token"])
+    timeline = _timeline_do_pedido(pedido)
+    assert [etapa["concluido"] for etapa in timeline] == [True, True, True, False, False, False]
+    assert [etapa["atual"] for etapa in timeline] == [False, False, True, False, False, False]
+
+
+def test_timeline_pedido_cancelado_e_none(client):
+    with patch("app.criar_link_pagamento", return_value={"url": "https://checkout.infinitepay.io/abc"}):
+        criado = client.post("/api/pedido/criar", json=_corpo_valido()).get_json()
+    pedidos.cancelar_pedido(criado["token"])
+
+    from app import _timeline_do_pedido
+
+    pedido = pedidos.obter_pedido(criado["token"])
+    assert _timeline_do_pedido(pedido) is None
+
+    pagina = client.get(f"/pedido/{criado['token']}").get_data(as_text=True)
+    assert "pedido-timeline" not in pagina
+
+
+def test_pagina_de_pedido_mostra_timeline_com_pontos_preenchidos(client):
+    with patch("app.criar_link_pagamento", return_value={"url": "https://checkout.infinitepay.io/abc"}):
+        criado = client.post("/api/pedido/criar", json=_corpo_valido()).get_json()
+    client.post(
+        "/webhook/infinitepay",
+        json={"order_nsu": criado["token"], "paid_amount": 6000, "capture_method": "pix"},
+    )
+
+    corpo = client.get(f"/pedido/{criado['token']}").get_data(as_text=True)
+    assert "Pedido criado" in corpo
+    assert "Aguardando pagamento" in corpo
+    assert "Pagamento confirmado" in corpo
+    assert "Pedido faturado" in corpo
+    assert "Pedido enviado" in corpo
+    assert "Pedido entregue" in corpo
+    assert corpo.count("pedido-timeline-etapa concluida") == 3
+    assert 'pedido-timeline-etapa concluida atual' in corpo
+
+
 def test_webhook_e_idempotente_nao_reprocessa(client):
     with patch("app.criar_link_pagamento", return_value={"url": "https://checkout.infinitepay.io/abc"}):
         criado = client.post("/api/pedido/criar", json=_corpo_valido()).get_json()

@@ -101,6 +101,12 @@ _COLUNAS_ADICIONAIS: list[tuple[str, str]] = [
     ("endereco_destinatario_bairro", "TEXT"),
     ("endereco_destinatario_cidade", "TEXT"),
     ("endereco_destinatario_uf", "TEXT"),
+    # Link pro PDF da nota fiscal (emitida na Tiny, colado a mao pelo
+    # admin ao marcar "faturado" -- ainda nao ha sincronizacao
+    # automatica de NF-e com a Tiny, ver app.py:admin_pedido_status).
+    # Opcional -- so mostra o botao "Baixar nota fiscal" na timeline
+    # do pedido (templates/pedido.html) quando preenchido.
+    ("link_nota_fiscal", "TEXT"),
 ]
 
 # Fluxo de status depois de "pago" -- alteravel manualmente pelo painel
@@ -407,13 +413,13 @@ def atualizar_status(
     codigo_rastreio: str | None = None,
     link_rastreio: str | None = None,
     transportadora: str | None = None,
+    link_nota_fiscal: str | None = None,
 ) -> dict | None:
     """Avanca o status manualmente (painel admin) ou automaticamente
     (futuro webhook da Tiny) -- as duas origens devem usar essa mesma
     funcao, nunca duplicar a logica. `codigo_rastreio`/`link_rastreio`/
-    `transportadora` so fazem sentido pra novo_status="enviado" (ver
-    app.py, que dispara o e-mail de "pedido enviado" so quando
-    codigo_rastreio/link_rastreio vierem preenchidos)."""
+    `transportadora` so fazem sentido pra novo_status="enviado";
+    `link_nota_fiscal` so pra novo_status="faturado" (ver app.py)."""
     if novo_status not in STATUS_VALIDOS:
         return None
     pedido = obter_pedido(token)
@@ -427,10 +433,11 @@ def atualizar_status(
                 f"""
                 UPDATE pedidos SET status = ?, {coluna_data} = ?,
                     codigo_rastreio = COALESCE(?, codigo_rastreio), link_rastreio = COALESCE(?, link_rastreio),
-                    transportadora = COALESCE(?, transportadora)
+                    transportadora = COALESCE(?, transportadora),
+                    link_nota_fiscal = COALESCE(?, link_nota_fiscal)
                 WHERE token = ?
                 """,
-                (novo_status, agora, codigo_rastreio, link_rastreio, transportadora, token),
+                (novo_status, agora, codigo_rastreio, link_rastreio, transportadora, link_nota_fiscal, token),
             )
         else:
             conexao.execute("UPDATE pedidos SET status = ? WHERE token = ?", (novo_status, token))

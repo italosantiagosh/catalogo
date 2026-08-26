@@ -1279,6 +1279,36 @@ def webhook_infinitepay():
     return jsonify(ok=True), 200
 
 
+_PEDIDO_TIMELINE_ETAPAS = (
+    ("criado", "Pedido criado"),
+    ("pendente", "Aguardando pagamento"),
+    ("pago", "Pagamento confirmado"),
+    ("faturado", "Pedido faturado"),
+    ("enviado", "Pedido enviado"),
+    ("entregue", "Pedido entregue"),
+)
+
+# Posicao de cada status real do banco na timeline acima -- "criado" nao
+# e´ um status de verdade (todo pedido ja´ nasce alem dele, so existe
+# pra dar o primeiro ponto sempre preenchido), por isso comeca em 1 pra
+# status_valido == "pendente".
+_TIMELINE_INDICE_POR_STATUS = {chave: i for i, (chave, _) in enumerate(_PEDIDO_TIMELINE_ETAPAS)}
+
+
+def _timeline_do_pedido(pedido: dict) -> list[dict] | None:
+    """Timeline visual de progresso (ver templates/pedido.html) -- nao
+    faz sentido pra pedido cancelado (isso e´ uma saida do fluxo normal,
+    nao uma etapa "concluida"), entao devolve None nesse caso e a
+    pagina so mostra a mensagem de cancelado."""
+    if pedido["status"] == "cancelado":
+        return None
+    indice_atual = _TIMELINE_INDICE_POR_STATUS.get(pedido["status"], 0)
+    return [
+        {"chave": chave, "rotulo": rotulo, "concluido": i <= indice_atual, "atual": i == indice_atual}
+        for i, (chave, rotulo) in enumerate(_PEDIDO_TIMELINE_ETAPAS)
+    ]
+
+
 @app.route("/pedido/<token>", methods=["GET"])
 def ver_pedido(token: str):
     pedido = obter_pedido(token)
@@ -1293,7 +1323,11 @@ def ver_pedido(token: str):
     mostrar_obrigado = request.args.get("obrigado") == "1" and pedido["status"] == "pago"
     oportunidades_upsell = _oportunidades_upsell_do_pedido(pedido) if mostrar_obrigado else []
     return render_template(
-        "pedido.html", pedido=pedido, mostrar_obrigado=mostrar_obrigado, oportunidades_upsell=oportunidades_upsell
+        "pedido.html",
+        pedido=pedido,
+        mostrar_obrigado=mostrar_obrigado,
+        oportunidades_upsell=oportunidades_upsell,
+        timeline=_timeline_do_pedido(pedido),
     )
 
 
@@ -1389,6 +1423,7 @@ def admin_pedido_status(token: str):
     codigo_rastreio = str(request.form.get("codigo_rastreio", "")).strip() or None
     link_rastreio = str(request.form.get("link_rastreio", "")).strip() or None
     transportadora = str(request.form.get("transportadora", "")).strip() or None
+    link_nota_fiscal = str(request.form.get("link_nota_fiscal", "")).strip() or None
 
     pedido_atualizado = atualizar_status(
         token,
@@ -1396,6 +1431,7 @@ def admin_pedido_status(token: str):
         codigo_rastreio=codigo_rastreio,
         link_rastreio=link_rastreio,
         transportadora=transportadora,
+        link_nota_fiscal=link_nota_fiscal,
     )
     if pedido_atualizado is None:
         abort(400, description="Status inválido.")

@@ -2431,6 +2431,85 @@ input[type="file"] {
   color: #a13a2a;
 }
 
+.pedido-timeline {
+  list-style: none;
+  margin: 0 0 22px;
+  padding: 0;
+}
+
+.pedido-timeline-etapa {
+  position: relative;
+  padding: 0 0 24px 30px;
+  font-size: 0.88rem;
+  color: var(--muted);
+}
+
+.pedido-timeline-etapa:last-child {
+  padding-bottom: 0;
+}
+
+.pedido-timeline-ponto {
+  position: absolute;
+  left: 0;
+  top: 2px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--border);
+  box-sizing: border-box;
+}
+
+.pedido-timeline-etapa::after {
+  content: '';
+  position: absolute;
+  left: 6px;
+  top: 16px;
+  bottom: 0;
+  width: 2px;
+  background: var(--border);
+}
+
+.pedido-timeline-etapa:last-child::after {
+  display: none;
+}
+
+.pedido-timeline-etapa.concluida {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.pedido-timeline-etapa.concluida .pedido-timeline-ponto {
+  background: var(--accent);
+}
+
+.pedido-timeline-etapa.concluida::after {
+  background: var(--accent);
+}
+
+.pedido-timeline-etapa.atual .pedido-timeline-ponto {
+  box-shadow: 0 0 0 4px var(--gold-soft);
+}
+
+.pedido-timeline-agora {
+  display: inline-block;
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: var(--gold-texto-claro);
+  background: var(--gold-soft);
+  border-radius: 999px;
+  padding: 1px 8px;
+  margin-left: 4px;
+  vertical-align: middle;
+}
+
+.pedido-timeline-nf {
+  display: inline-block;
+  margin-top: 6px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--accent);
+}
+
 .pedido-obrigado {
   margin: 0 0 20px;
   padding: 20px;

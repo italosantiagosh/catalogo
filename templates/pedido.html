@@ -5,6 +5,22 @@
 {% block conteudo %}
   <h1>Pedido #{{ pedido.codigo }}</h1>
 
+  {% if timeline %}
+    <ol class="pedido-timeline">
+      {% for etapa in timeline %}
+        <li class="pedido-timeline-etapa{{ ' concluida' if etapa.concluido else '' }}{{ ' atual' if etapa.atual else '' }}">
+          <span class="pedido-timeline-ponto"></span>
+          <span class="pedido-timeline-rotulo">
+            {{ etapa.rotulo }}{% if etapa.atual %} <span class="pedido-timeline-agora">agora</span>{% endif %}
+          </span>
+          {% if etapa.chave == 'faturado' and etapa.concluido and pedido.link_nota_fiscal %}
+            <a class="pedido-timeline-nf" href="{{ pedido.link_nota_fiscal }}" target="_blank" rel="noopener">📄 Baixar nota fiscal</a>
+          {% endif %}
+        </li>
+      {% endfor %}
+    </ol>
+  {% endif %}
+
   {% if pedido.status == 'pendente' %}
     <p class="pedido-status pedido-status-pendente">⏳ Aguardando confirmação do pagamento</p>
     <button type="button" class="botao-pagar" id="btn-novo-link" data-token="{{ pedido.token }}">
