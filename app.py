@@ -85,6 +85,13 @@ from services.catalogo import (
 )
 from services.paginas_institucionais import PAGINAS_ATENDIMENTO
 from services.catalogo_pdf import gerar_pdf_catalogo
+from services.avaliacoes import (
+    atualizar_status as atualizar_status_avaliacao,
+    criar_avaliacao,
+    listar_avaliacoes,
+    listar_avaliacoes_aprovadas,
+    media_e_total_aprovadas,
+)
 from services.email import (
     enviar_confirmacao_pedido,
     enviar_lembrete_pedido_pendente,
@@ -274,6 +281,24 @@ app.jinja_env.filters["preco"] = _formatar_preco
 def _extensao_valida(nome_arquivo: str) -> bool:
     nome_lower = nome_arquivo.lower()
     return any(nome_lower.endswith(ext) for ext in IMAGE_EXTENSIONS)
+
+
+# Tamanho maximo (lado maior) da foto de avaliacao guardada -- fotos de
+# celular costumam vir com varios MB, e essa foto e´ salva como data URI
+# direto na coluna `foto` da tabela avaliacoes (mesmo SQLite de
+# services/pedidos.py, sem disco separado pra arquivo). Reduzir aqui
+# evita o banco inchar; qualidade JPEG 78 mantem a foto reconhecivel
+# sem pesar.
+_AVALIACAO_FOTO_LADO_MAXIMO = 1000
+
+
+def _foto_avaliacao_para_data_uri(arquivo: FileStorage) -> str:
+    imagem = Image.open(arquivo.stream)
+    imagem = imagem.convert("RGB")
+    imagem.thumbnail((_AVALIACAO_FOTO_LADO_MAXIMO, _AVALIACAO_FOTO_LADO_MAXIMO))
+    buffer = io.BytesIO()
+    imagem.save(buffer, format="JPEG", quality=78)
+    return "data:image/jpeg;base64," + base64.b64encode(buffer.getvalue()).decode("ascii")
 
 
 def _resolver_spec_id(formato: str, cor: str | None) -> str | None:
@@ -719,6 +744,9 @@ def produto(produto_id: str):
         if p["categoria"] == produto["categoria"] and p["id"] != produto_id
     ][:6]
 
+    avaliacoes_aprovadas = listar_avaliacoes_aprovadas(produto_id)
+    media_avaliacoes, total_avaliacoes = media_e_total_aprovadas(produto_id)
+
     dados_produto = {
         "@context": "https://schema.org",
         "@type": "Product",
@@ -736,6 +764,23 @@ def produto(produto_id: str):
             "availability": "https://schema.org/InStock",
         },
     }
+    # AggregateRating/Review so entram com dado REAL (avaliacao aprovada
+    # no painel admin, nunca fabricado) -- ver services/avaliacoes.py.
+    if total_avaliacoes > 0:
+        dados_produto["aggregateRating"] = {
+            "@type": "AggregateRating",
+            "ratingValue": media_avaliacoes,
+            "reviewCount": total_avaliacoes,
+        }
+        dados_produto["review"] = [
+            {
+                "@type": "Review",
+                "author": {"@type": "Person", "name": avaliacao["nome_cliente"]},
+                "reviewRating": {"@type": "Rating", "ratingValue": avaliacao["nota"], "bestRating": 5},
+                **({"reviewBody": avaliacao["texto"]} if avaliacao["texto"] else {}),
+            }
+            for avaliacao in avaliacoes_aprovadas
+        ]
     dados_breadcrumb = _dados_breadcrumb(
         [
             ("Catálogo", url_for("index", _external=True)),
@@ -754,6 +799,9 @@ def produto(produto_id: str):
         descricoes_formato=DESCRICOES_FORMATO,
         dados_produto=dados_produto,
         dados_breadcrumb=dados_breadcrumb,
+        avaliacoes=avaliacoes_aprovadas,
+        media_avaliacoes=media_avaliacoes,
+        total_avaliacoes=total_avaliacoes,
     )
 
 
@@ -1372,6 +1420,88 @@ def download(token: str):
     )
     resposta.headers["Cache-Control"] = "no-store"
     return resposta
+
+
+@app.route("/api/avaliacoes", methods=["POST"])
+def api_avaliacoes_criar():
+    """Envio de avaliacao pelo cliente direto na pagina de produto (ver
+    templates/produto.html + static/js/avaliacoes.js) -- nasce
+    "pendente", so aparece pro publico depois de aprovada no painel
+    admin (ver services/avaliacoes.py e /admin/avaliacoes abaixo)."""
+    produto_id = str(request.form.get("produto_id", "")).strip()
+    if buscar_produto(produto_id) is None:
+        return jsonify(erro="Produto não encontrado."), 404
+
+    nome_cliente = str(request.form.get("nome_cliente", "")).strip()
+    if not nome_cliente:
+        return jsonify(erro="Informe seu nome."), 400
+
+    try:
+        nota = int(request.form.get("nota", ""))
+    except (TypeError, ValueError):
+        return jsonify(erro="Escolha uma nota de 1 a 5."), 400
+    if nota < 1 or nota > 5:
+        return jsonify(erro="Escolha uma nota de 1 a 5."), 400
+
+    formato = str(request.form.get("formato", "")).strip()
+    if formato not in ("medalha", "entremeio", "chaveiro"):
+        formato = ""
+
+    texto = str(request.form.get("texto", "")).strip()[:1000]
+
+    arquivo = request.files.get("foto")
+    if not arquivo or not arquivo.filename:
+        return jsonify(erro="Envie uma foto do produto que você recebeu."), 400
+    if not _extensao_valida(arquivo.filename):
+        return jsonify(erro="Formato de imagem inválido. Aceitos: " + ", ".join(IMAGE_EXTENSIONS)), 400
+    try:
+        foto_data_uri = _foto_avaliacao_para_data_uri(arquivo)
+    except Exception:
+        return jsonify(erro="Não foi possível processar a foto enviada."), 400
+
+    criar_avaliacao(
+        produto_id=produto_id,
+        formato=formato,
+        nome_cliente=nome_cliente[:120],
+        nota=nota,
+        texto=texto,
+        foto=foto_data_uri,
+    )
+    return jsonify(ok=True)
+
+
+@app.route("/admin/avaliacoes", methods=["GET"])
+def admin_avaliacoes():
+    """Fila de moderacao -- toda avaliacao enviada pelo site nasce
+    pendente, so aparece pro publico depois de passar por aqui (ver
+    services/avaliacoes.py)."""
+    if not _autenticacao_admin_valida(request.authorization):
+        return Response(
+            "Autenticação necessária.", 401, {"WWW-Authenticate": 'Basic realm="Painel de avaliações"'}
+        )
+    status_filtro = request.args.get("status") or None
+    avaliacoes = listar_avaliacoes(status=status_filtro)
+    return render_template("admin_avaliacoes.html", avaliacoes=avaliacoes, status_filtro=status_filtro)
+
+
+@app.route("/admin/avaliacoes/<int:id_>/aprovar", methods=["POST"])
+def admin_avaliacao_aprovar(id_: int):
+    if not _autenticacao_admin_valida(request.authorization):
+        return Response(
+            "Autenticação necessária.", 401, {"WWW-Authenticate": 'Basic realm="Painel de avaliações"'}
+        )
+    atualizar_status_avaliacao(id_, "aprovada")
+    return redirect(url_for("admin_avaliacoes"))
+
+
+@app.route("/admin/avaliacoes/<int:id_>/recusar", methods=["POST"])
+def admin_avaliacao_recusar(id_: int):
+    if not _autenticacao_admin_valida(request.authorization):
+        return Response(
+            "Autenticação necessária.", 401, {"WWW-Authenticate": 'Basic realm="Painel de avaliações"'}
+        )
+    atualizar_status_avaliacao(id_, "recusada")
+    return redirect(url_for("admin_avaliacoes"))
 
 
 @app.route("/api/personalizada/preview", methods=["POST"])

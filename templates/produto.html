@@ -156,6 +156,69 @@
     </section>
   {% endif %}
 
+  <section class="avaliacoes-produto" id="avaliacoes">
+    <h3>Avaliações de {{ produto.nome }}</h3>
+    {% if total_avaliacoes > 0 %}
+      <p class="avaliacoes-resumo">
+        <span class="avaliacoes-estrelas">{{ "★" * (media_avaliacoes | round(0, "floor") | int) }}{{ "☆" * (5 - (media_avaliacoes | round(0, "floor") | int)) }}</span>
+        <strong>{{ media_avaliacoes }}</strong> de 5 — {{ total_avaliacoes }} avaliaç{{ "ão" if total_avaliacoes == 1 else "ões" }}
+      </p>
+    {% endif %}
+
+    {% if avaliacoes %}
+      <div class="avaliacoes-lista">
+        {% for avaliacao in avaliacoes %}
+          <div class="avaliacao-card">
+            {% if avaliacao.foto %}<img src="{{ avaliacao.foto }}" alt="Foto enviada por {{ avaliacao.nome_cliente }}" loading="lazy">{% endif %}
+            <div class="avaliacao-corpo">
+              <span class="avaliacao-estrelas">{{ "★" * avaliacao.nota }}{{ "☆" * (5 - avaliacao.nota) }}</span>
+              <strong class="avaliacao-nome">{{ avaliacao.nome_cliente }}</strong>
+              {% if avaliacao.formato %}<span class="avaliacao-formato">comprou: {{ avaliacao.formato | capitalize }}</span>{% endif %}
+              {% if avaliacao.texto %}<p>{{ avaliacao.texto }}</p>{% endif %}
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <p class="avaliacoes-vazio">Seja a primeira pessoa a avaliar {{ produto.nome }}!</p>
+    {% endif %}
+
+    <button type="button" class="botao-secundario" id="btn-abrir-avaliacao">Avaliar esse produto</button>
+
+    <form id="form-avaliacao" class="form-avaliacao" hidden>
+      <input type="hidden" name="produto_id" value="{{ produto.id }}">
+      <label for="aval-nome">Seu nome</label>
+      <input type="text" id="aval-nome" name="nome_cliente" required maxlength="120">
+
+      <label>Formato que você comprou</label>
+      <div class="aval-formatos">
+        <label><input type="radio" name="formato" value="medalha" checked> Medalha</label>
+        <label><input type="radio" name="formato" value="entremeio"> Entremeio</label>
+        <label><input type="radio" name="formato" value="chaveiro"> Chaveiro</label>
+      </div>
+
+      <label>Sua nota</label>
+      <div class="aval-estrelas-input" id="aval-estrelas">
+        <button type="button" data-nota="1" aria-label="1 estrela">★</button>
+        <button type="button" data-nota="2" aria-label="2 estrelas">★</button>
+        <button type="button" data-nota="3" aria-label="3 estrelas">★</button>
+        <button type="button" data-nota="4" aria-label="4 estrelas">★</button>
+        <button type="button" data-nota="5" aria-label="5 estrelas">★</button>
+      </div>
+      <input type="hidden" name="nota" id="aval-nota" value="">
+
+      <label for="aval-foto">Foto do produto que você recebeu</label>
+      <input type="file" id="aval-foto" name="foto" accept="image/*" required>
+
+      <label for="aval-texto">Conte como foi (opcional)</label>
+      <textarea id="aval-texto" name="texto" maxlength="1000" rows="3"></textarea>
+
+      <div id="aval-erro" class="erro" hidden></div>
+      <button type="submit" class="botao-carrinho" id="btn-enviar-avaliacao">Enviar avaliação</button>
+    </form>
+    <p id="aval-sucesso" class="aval-sucesso" hidden>Obrigado! Sua avaliação foi enviada e vai aparecer aqui assim que for aprovada.</p>
+  </section>
+
   <section class="prova-social">
     <h3>Quem já comprou, recomenda ✨</h3>
     <p>Mensagens reais de clientes e um pouco do que postamos no Instagram. Isso ajuda você a comprar com mais segurança.</p>
@@ -181,4 +244,5 @@
     window.PRECO_VAREJO_CHAVEIRO = {{ preco_varejo_chaveiro | tojson }};
   </script>
   <script src="{{ url_for('static', filename='js/produto.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/avaliacoes.js') }}"></script>
 {% endblock %}

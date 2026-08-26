@@ -30,6 +30,7 @@
 </head>
 <body>
   <h1>Pedidos ({{ pedidos | length }})</h1>
+  <p><a href="{{ url_for('admin_avaliacoes') }}">Ver avaliações →</a></p>
   <div class="filtros">
     <a href="{{ url_for('admin_pedidos') }}" class="{{ 'ativo' if not status_filtro else '' }}">Todos</a>
     <a href="{{ url_for('admin_pedidos', status='pendente') }}" class="{{ 'ativo' if status_filtro == 'pendente' else '' }}">Pendentes</a>

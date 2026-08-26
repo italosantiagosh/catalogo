@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Avaliações — Painel — Nove de Julho</title>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #f5f7fa; color: #142238; margin: 0; padding: 24px; }
+    h1 { font-size: 1.3rem; margin: 0 0 16px; }
+    .filtros { margin: 0 0 16px; }
+    .filtros a { margin-right: 16px; text-decoration: none; color: #14335c; font-weight: 600; font-size: 0.9rem; }
+    .filtros a.ativo { text-decoration: underline; }
+    .vazio { padding: 24px; text-align: center; color: #5b6b82; }
+    .cartoes { display: flex; flex-direction: column; gap: 14px; }
+    .cartao { background: #fff; border-radius: 12px; padding: 16px; display: flex; gap: 14px; }
+    .cartao img { width: 96px; height: 96px; object-fit: cover; border-radius: 10px; flex-shrink: 0; }
+    .cartao-corpo { flex: 1; min-width: 0; }
+    .cartao-topo { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+    .cartao-nome { font-weight: 700; }
+    .cartao-nota { color: #b8923d; font-weight: 700; }
+    .cartao-produto { font-size: 0.82rem; color: #5b6b82; margin: 2px 0 8px; }
+    .cartao-texto { font-size: 0.88rem; margin: 0 0 10px; }
+    .status { display: inline-block; padding: 3px 10px; border-radius: 999px; font-size: 0.75rem; font-weight: 700; margin-bottom: 8px; }
+    .status-pendente { background: #f4ecd8; color: #7a5c1f; }
+    .status-aprovada { background: #e3f6ea; color: #1e7a43; }
+    .status-recusada { background: #fbe3e0; color: #a13a2a; }
+    .acoes form { display: inline; }
+    .acoes button { margin-right: 8px; padding: 8px 14px; border: none; border-radius: 8px; font-weight: 700; cursor: pointer; font-size: 0.82rem; }
+    .btn-aprovar { background: #1e7a43; color: #fff; }
+    .btn-recusar { background: #a13a2a; color: #fff; }
+  </style>
+</head>
+<body>
+  <h1>Avaliações ({{ avaliacoes | length }})</h1>
+  <p><a href="{{ url_for('admin_pedidos') }}">← Pedidos</a></p>
+  <div class="filtros">
+    <a href="{{ url_for('admin_avaliacoes') }}" class="{{ 'ativo' if not status_filtro else '' }}">Todas</a>
+    <a href="{{ url_for('admin_avaliacoes', status='pendente') }}" class="{{ 'ativo' if status_filtro == 'pendente' else '' }}">Pendentes</a>
+    <a href="{{ url_for('admin_avaliacoes', status='aprovada') }}" class="{{ 'ativo' if status_filtro == 'aprovada' else '' }}">Aprovadas</a>
+    <a href="{{ url_for('admin_avaliacoes', status='recusada') }}" class="{{ 'ativo' if status_filtro == 'recusada' else '' }}">Recusadas</a>
+  </div>
+
+  {% if avaliacoes %}
+    <div class="cartoes">
+      {% for avaliacao in avaliacoes %}
+        <div class="cartao">
+          {% if avaliacao.foto %}<img src="{{ avaliacao.foto }}" alt="">{% endif %}
+          <div class="cartao-corpo">
+            <span class="status status-{{ avaliacao.status }}">{{ avaliacao.status }}</span>
+            <div class="cartao-topo">
+              <span class="cartao-nome">{{ avaliacao.nome_cliente }}</span>
+              <span class="cartao-nota">{{ "★" * avaliacao.nota }}{{ "☆" * (5 - avaliacao.nota) }}</span>
+            </div>
+            <p class="cartao-produto">
+              Produto: {{ avaliacao.produto_id }}{% if avaliacao.formato %} — {{ avaliacao.formato }}{% endif %}
+              — {{ avaliacao.criado_em[:16] }}
+            </p>
+            {% if avaliacao.texto %}<p class="cartao-texto">{{ avaliacao.texto }}</p>{% endif %}
+            {% if avaliacao.status == 'pendente' %}
+              <div class="acoes">
+                <form method="post" action="{{ url_for('admin_avaliacao_aprovar', id_=avaliacao.id) }}">
+                  <button type="submit" class="btn-aprovar">Aprovar</button>
+                </form>
+                <form method="post" action="{{ url_for('admin_avaliacao_recusar', id_=avaliacao.id) }}">
+                  <button type="submit" class="btn-recusar">Recusar</button>
+                </form>
+              </div>
+            {% endif %}
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <p class="vazio">Nenhuma avaliação por aqui.</p>
+  {% endif %}
+</body>
+</html>
