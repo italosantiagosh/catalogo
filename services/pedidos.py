@@ -167,7 +167,14 @@ def criar_pedido(
     frete_preco: float,
     cliente: dict,
     endereco: dict,
+    status_inicial: str = "pendente",
 ) -> dict:
+    """`status_inicial="whatsapp"` e´ usado pelo lead criado ao clicar
+    "Finalizar pelo WhatsApp" (ver app.py:api_pedido_criar_whatsapp) --
+    sem link de pagamento, so pra aparecer no painel admin ate´ alguem
+    preencher os dados na mao se a venda realmente fechar (ver
+    confirmar_venda_manual abaixo). cliente/endereco podem vir vazios
+    nesse caso (todas as colunas correspondentes sao nullable)."""
     inicializar_db()
     token = secrets.token_urlsafe(24)
     codigo = _gerar_codigo()
@@ -186,11 +193,12 @@ def criar_pedido(
                 endereco_destinatario_complemento, endereco_destinatario_bairro, endereco_destinatario_cidade,
                 endereco_destinatario_uf,
                 criado_em
-            ) VALUES (?, ?, 'pendente', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
             (
                 token,
                 codigo,
+                status_inicial,
                 json.dumps(itens),
                 subtotal,
                 frete_descricao,
@@ -406,6 +414,55 @@ def marcar_pago(
     return obter_pedido(token)
 
 
+def confirmar_venda_manual(
+    token: str,
+    *,
+    cliente: dict,
+    endereco: dict,
+    frete_descricao: str,
+    frete_preco: float,
+    forma_pagamento: str,
+    valor_pago: float,
+) -> dict | None:
+    """Promove um lead "whatsapp" (ver criar_pedido) pra "pago" depois do
+    admin preencher os dados na mao, quando a pessoa realmente fechou o
+    pedido combinado pelo WhatsApp (ver app.py:admin_pedido_confirmar_venda).
+    So funciona nesse status -- nao reprocessa um pedido ja confirmado
+    nem mexe num pedido de outro fluxo (evita sobrescrever cliente/
+    endereco de um pedido pago normalmente pelo site)."""
+    pedido = obter_pedido(token)
+    if pedido is None or pedido["status"] != "whatsapp":
+        return pedido
+    total = round(pedido["subtotal"] + frete_preco, 2)
+    agora = datetime.now(timezone.utc).isoformat()
+    with _conexao() as conexao:
+        conexao.execute(
+            """
+            UPDATE pedidos SET
+                status = 'pago', pago_em = ?,
+                cliente_nome = ?, cliente_tipo_pessoa = ?, cliente_documento = ?,
+                cliente_telefone = ?, cliente_email = ?,
+                endereco_cep = ?, endereco_logradouro = ?, endereco_numero = ?, endereco_complemento = ?,
+                endereco_bairro = ?, endereco_cidade = ?, endereco_uf = ?,
+                frete_descricao = ?, frete_preco = ?, total = ?,
+                forma_pagamento = ?, valor_pago = ?
+            WHERE token = ?
+            """,
+            (
+                agora,
+                cliente.get("nome", ""), cliente.get("tipo_pessoa", ""), cliente.get("documento", ""),
+                cliente.get("telefone", ""), cliente.get("email", ""),
+                endereco.get("cep", ""), endereco.get("logradouro", ""), endereco.get("numero", ""),
+                endereco.get("complemento", ""), endereco.get("bairro", ""), endereco.get("cidade", ""),
+                endereco.get("uf", ""),
+                frete_descricao, frete_preco, total,
+                forma_pagamento, valor_pago,
+                token,
+            ),
+        )
+    return obter_pedido(token)
+
+
 def atualizar_status(
     token: str,
     novo_status: str,
@@ -490,12 +547,14 @@ def marcar_email_lembrete_enviado(token: str, *, erro: str | None) -> dict | Non
 
 def cancelar_pedido(token: str) -> dict | None:
     """Cancela um pedido ainda "pendente" (abandonado apos o lembrete --
-    ver listar_pedidos_pendentes_para_cancelar e app.py). Idempotente:
-    se o pedido ja nao estiver mais "pendente" (por exemplo, o cliente
+    ver listar_pedidos_pendentes_para_cancelar e app.py) ou descarta um
+    lead "whatsapp" que o admin decidiu que nao fechou (ver
+    app.py:admin_pedido_descartar_whatsapp). Idempotente: se o pedido ja
+    nao estiver mais num desses dois status (por exemplo, o cliente
     pagou entre o job rodar e o cancelamento ser processado), nao faz
     nada e devolve o pedido como esta´."""
     pedido = obter_pedido(token)
-    if pedido is None or pedido["status"] != "pendente":
+    if pedido is None or pedido["status"] not in ("pendente", "whatsapp"):
         return pedido
     agora = datetime.now(timezone.utc).isoformat()
     with _conexao() as conexao:

@@ -11,10 +11,12 @@
   const inputFoto = document.getElementById('aval-foto');
   const nomeArquivoDiv = document.getElementById('aval-nome-arquivo');
 
-  btnAbrir.addEventListener('click', () => {
-    form.hidden = false;
-    btnAbrir.hidden = true;
-  });
+  if (btnAbrir) {
+    btnAbrir.addEventListener('click', () => {
+      form.hidden = false;
+      btnAbrir.hidden = true;
+    });
+  }
 
   if (inputFoto && nomeArquivoDiv) {
     inputFoto.addEventListener('change', () => {

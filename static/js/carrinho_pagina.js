@@ -76,7 +76,7 @@
         if (item.tipo === 'personalizada') {
           const notaFoto = item.semImagem
             ? 'Foto: ainda não enviada -- enviar nesta conversa'
-            : `Foto: ${item.avisoReenvio || 'reenviar esta medalha nesta conversa (o link do WhatsApp não anexa imagem)'}`;
+            : 'Foto: já anexada ao pedido, disponível no painel';
           return `${numero}. Personalizada\n${detalhe}\nQuantidade: ${item.quantidade}\n${notaFoto}`;
         }
         return `${numero}. ${item.produtoNome}\nModelo: ${item.modeloId}\n${detalhe}\nQuantidade: ${item.quantidade}`;
@@ -104,9 +104,9 @@
     return ['CEP informado (frete ainda não calculado):', cepDigitado, ''];
   }
 
-  function montarCorpoPedido(itens, calculo) {
+  function montarCorpoPedido(itens, calculo, codigo) {
     return [
-      `PEDIDO #${obterOuCriarPedidoId()}`,
+      `PEDIDO #${codigo || obterOuCriarPedidoId()}`,
       '',
       'PEDIDO DE MEDALHAS',
       '',
@@ -124,9 +124,17 @@
     ].join('\n');
   }
 
-  function abrirWhatsApp(mensagem) {
+  function abrirWhatsApp(mensagem, janelaExistente) {
     const url = `https://wa.me/${window.WHATSAPP_NUMBER}?text=${encodeURIComponent(mensagem)}`;
-    window.open(url, '_blank');
+    // se ja tem uma aba aberta (ver btnWhatsappFinalizar -- aberta em
+    // branco ANTES do "await" pra nao ser bloqueada como pop-up pelo
+    // Safari/iOS, que so permite window.open sincrono dentro do gesto
+    // de clique), so navega ela em vez de abrir uma nova.
+    if (janelaExistente) {
+      janelaExistente.location.href = url;
+    } else {
+      window.open(url, '_blank');
+    }
   }
 
   function mostrarToast(texto) {
@@ -150,7 +158,7 @@
     if (item.tipo === 'personalizada') {
       avisoFoto = item.semImagem
         ? '<p class="item-aviso-foto">📷 Foto pendente -- enviar pelo WhatsApp</p>'
-        : `<p class="item-aviso-foto">📲 ${item.avisoReenvio || 'Reenviar esta foto pelo WhatsApp ao finalizar'}</p>`;
+        : '<p class="item-aviso-foto">✅ Foto salva junto com o pedido</p>';
     }
     linha.innerHTML = `
       <img src="${item.imagem}" alt="${item.produtoNome}">
@@ -696,7 +704,7 @@
   }
 
   if (btnWhatsappFinalizar) {
-    btnWhatsappFinalizar.addEventListener('click', () => {
+    btnWhatsappFinalizar.addEventListener('click', async () => {
       if (!ultimoCalculo) return;
       if (!ultimoCalculo.atinge_minimo) {
         const faltamParaMinimo = ultimoCalculo.pedido_minimo_reais - ultimoCalculo.subtotal_total;
@@ -707,12 +715,40 @@
         if (avisoMinimoEl) avisoMinimoEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
         return;
       }
+
+      // registra o pedido no painel admin (status "whatsapp") antes de
+      // abrir a conversa, pra quem vende poder acompanhar e preencher os
+      // dados na mao se a venda fechar (ver conversa) -- best-effort: se
+      // essa chamada falhar, abre o WhatsApp do mesmo jeito com o codigo
+      // local, a conversao nunca fica bloqueada por isso.
+      //
+      // A aba e´ aberta em branco AGORA (ainda sincrono dentro do gesto
+      // de clique) e so navegada pra URL certa depois do fetch abaixo --
+      // Safari/iOS bloqueia window.open() chamado depois de um "await".
+      const janela = window.open('', '_blank');
+      let codigoPedido = null;
+      try {
+        const resposta = await fetch('/api/pedido/criar-whatsapp', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            itens: ultimosItens,
+            frete: freteEscolhido || {},
+            cep_informado: freteCepInput ? freteCepInput.value.trim() : '',
+          }),
+        });
+        const dados = await resposta.json();
+        if (resposta.ok && dados.codigo) codigoPedido = dados.codigo;
+      } catch (e) {
+        // segue sem o registro no painel -- abrir o WhatsApp e´ o que importa
+      }
+
       const mensagem =
         'Olá! Gostaria de fazer este pedido:\n\n' +
-        montarCorpoPedido(ultimosItens, ultimoCalculo) +
+        montarCorpoPedido(ultimosItens, ultimoCalculo, codigoPedido) +
         '\n\nGostaria de finalizar este pedido.';
       rastrearConversao(ultimoCalculo.subtotal_total);
-      abrirWhatsApp(mensagem);
+      abrirWhatsApp(mensagem, janela);
     });
   }
 

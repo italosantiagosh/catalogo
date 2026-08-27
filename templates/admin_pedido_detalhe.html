@@ -37,50 +37,120 @@
   <h1>Pedido #{{ pedido.codigo }}</h1>
   <span class="status status-{{ pedido.status }}">{{ pedido.status }}</span>
 
+  {% if pedido.status == 'whatsapp' %}
+    <div class="bloco">
+      <h2>Lead do WhatsApp</h2>
+      <p>Esse pedido foi montado no carrinho e a pessoa escolheu "Combinar pelo WhatsApp" — ainda
+      não é uma venda confirmada. Se ela fechar o pedido na conversa, preencha os dados reais
+      abaixo e confirme. Se não fechar, descarte.</p>
+      {% if pedido.frete_descricao %}<p><strong>Frete/CEP informado na simulação:</strong> {{ pedido.frete_descricao }}</p>{% endif %}
+    </div>
+  {% endif %}
+
   <div class="bloco">
-    <h2>Cliente</h2>
-    <p>{{ pedido.cliente_nome }} — {{ pedido.cliente_email }}</p>
-    <p>{{ pedido.cliente_telefone }}</p>
-    <h2>Endereço de entrega</h2>
-    {% if pedido.endereco_destinatario_nome %}
-      <p>Destinatário: {{ pedido.endereco_destinatario_nome }}{% if pedido.endereco_destinatario_documento %} ({{ pedido.endereco_destinatario_documento }}){% endif %}</p>
-    {% endif %}
-    {% if pedido.endereco_destinatario_logradouro %}
-      <p>
-        {{ pedido.endereco_destinatario_logradouro }}, {{ pedido.endereco_destinatario_numero }}
-        {%- if pedido.endereco_destinatario_complemento %} — {{ pedido.endereco_destinatario_complemento }}{% endif %}<br>
-        {{ pedido.endereco_destinatario_bairro }} — {{ pedido.endereco_destinatario_cidade }}/{{ pedido.endereco_destinatario_uf }}<br>
-        CEP {{ pedido.endereco_destinatario_cep }}
-      </p>
-    {% else %}
-      <p>
-        {{ pedido.endereco_logradouro }}, {{ pedido.endereco_numero }}
-        {%- if pedido.endereco_complemento %} — {{ pedido.endereco_complemento }}{% endif %}<br>
-        {{ pedido.endereco_bairro }} — {{ pedido.endereco_cidade }}/{{ pedido.endereco_uf }}<br>
-        CEP {{ pedido.endereco_cep }}
-      </p>
-    {% endif %}
-    <h2>Total</h2>
-    <p>{{ pedido.total | preco }}</p>
-    {% if pedido.codigo_rastreio %}
-      <h2>Rastreio atual</h2>
-      {% if pedido.transportadora %}<p>Transportadora: {{ pedido.transportadora }}</p>{% endif %}
-      <p>{{ pedido.codigo_rastreio }}{% if pedido.link_rastreio %} — <a href="{{ pedido.link_rastreio }}" target="_blank" rel="noopener">link</a>{% endif %}</p>
-    {% endif %}
-    {% if pedido.link_nota_fiscal %}
-      <h2>Nota fiscal</h2>
-      <p><a href="{{ pedido.link_nota_fiscal }}" target="_blank" rel="noopener">Ver link salvo</a></p>
-    {% endif %}
     <h2>Itens (produção)</h2>
     <ul>
       {% for item in pedido.itens %}
-        <li>{{ item.produtoNome }} — {{ item.modeloNome }} — {{ item.detalhe }} — {{ item.quantidade }}x</li>
+        <li>
+          {{ item.produtoNome }} — {{ item.modeloNome }} — {{ item.detalhe }} — {{ item.quantidade }}x
+          {% if item.imagemRecorte %}
+            <br><a href="{{ item.imagemRecorte }}" download="recorte-{{ loop.index }}.png">⬇ Baixar imagem 1:1</a>
+          {% endif %}
+        </li>
       {% endfor %}
     </ul>
     <a class="voltar" href="{{ url_for('admin_pedido_csv', token=pedido.token) }}">⬇ Baixar CSV pra produção</a>
   </div>
 
-  {% if pedido.status != 'pendente' and pedido.status != 'cancelado' %}
+  {% if pedido.status != 'whatsapp' %}
+    <div class="bloco">
+      <h2>Cliente</h2>
+      <p>{{ pedido.cliente_nome }} — {{ pedido.cliente_email }}</p>
+      <p>{{ pedido.cliente_telefone }}</p>
+      <h2>Endereço de entrega</h2>
+      {% if pedido.endereco_destinatario_nome %}
+        <p>Destinatário: {{ pedido.endereco_destinatario_nome }}{% if pedido.endereco_destinatario_documento %} ({{ pedido.endereco_destinatario_documento }}){% endif %}</p>
+      {% endif %}
+      {% if pedido.endereco_destinatario_logradouro %}
+        <p>
+          {{ pedido.endereco_destinatario_logradouro }}, {{ pedido.endereco_destinatario_numero }}
+          {%- if pedido.endereco_destinatario_complemento %} — {{ pedido.endereco_destinatario_complemento }}{% endif %}<br>
+          {{ pedido.endereco_destinatario_bairro }} — {{ pedido.endereco_destinatario_cidade }}/{{ pedido.endereco_destinatario_uf }}<br>
+          CEP {{ pedido.endereco_destinatario_cep }}
+        </p>
+      {% else %}
+        <p>
+          {{ pedido.endereco_logradouro }}, {{ pedido.endereco_numero }}
+          {%- if pedido.endereco_complemento %} — {{ pedido.endereco_complemento }}{% endif %}<br>
+          {{ pedido.endereco_bairro }} — {{ pedido.endereco_cidade }}/{{ pedido.endereco_uf }}<br>
+          CEP {{ pedido.endereco_cep }}
+        </p>
+      {% endif %}
+      <h2>Total</h2>
+      <p>{{ pedido.total | preco }}</p>
+      {% if pedido.codigo_rastreio %}
+        <h2>Rastreio atual</h2>
+        {% if pedido.transportadora %}<p>Transportadora: {{ pedido.transportadora }}</p>{% endif %}
+        <p>{{ pedido.codigo_rastreio }}{% if pedido.link_rastreio %} — <a href="{{ pedido.link_rastreio }}" target="_blank" rel="noopener">link</a>{% endif %}</p>
+      {% endif %}
+      {% if pedido.link_nota_fiscal %}
+        <h2>Nota fiscal</h2>
+        <p><a href="{{ pedido.link_nota_fiscal }}" target="_blank" rel="noopener">Ver link salvo</a></p>
+      {% endif %}
+    </div>
+  {% endif %}
+
+  {% if pedido.status == 'whatsapp' %}
+    <div class="bloco">
+      <h2>Confirmar venda</h2>
+      <form method="post" action="{{ url_for('admin_pedido_confirmar_venda', token=pedido.token) }}">
+        <label for="cliente_nome">Nome completo / Razão social</label>
+        <input type="text" name="cliente_nome" id="cliente_nome" required>
+
+        <label for="cliente_documento">CPF/CNPJ</label>
+        <input type="text" name="cliente_documento" id="cliente_documento">
+
+        <label for="cliente_telefone">Telefone/WhatsApp</label>
+        <input type="text" name="cliente_telefone" id="cliente_telefone">
+
+        <label for="cliente_email">E-mail (opcional)</label>
+        <input type="text" name="cliente_email" id="cliente_email">
+
+        <label for="endereco_cep">CEP</label>
+        <input type="text" name="endereco_cep" id="endereco_cep">
+        <label for="endereco_logradouro">Endereço (rua/avenida)</label>
+        <input type="text" name="endereco_logradouro" id="endereco_logradouro">
+        <label for="endereco_numero">Número</label>
+        <input type="text" name="endereco_numero" id="endereco_numero">
+        <label for="endereco_complemento">Complemento</label>
+        <input type="text" name="endereco_complemento" id="endereco_complemento">
+        <label for="endereco_bairro">Bairro</label>
+        <input type="text" name="endereco_bairro" id="endereco_bairro">
+        <label for="endereco_cidade">Cidade</label>
+        <input type="text" name="endereco_cidade" id="endereco_cidade">
+        <label for="endereco_uf">UF</label>
+        <input type="text" name="endereco_uf" id="endereco_uf" maxlength="2">
+
+        <label for="frete_descricao">Frete combinado</label>
+        <input type="text" name="frete_descricao" id="frete_descricao" placeholder="Ex: Correios PAC — R$ 15,00">
+        <label for="frete_preco">Valor do frete (R$)</label>
+        <input type="text" name="frete_preco" id="frete_preco" value="0,00">
+
+        <label for="forma_pagamento">Forma de pagamento combinada</label>
+        <input type="text" name="forma_pagamento" id="forma_pagamento" placeholder="Ex: Pix, Dinheiro, Cartão">
+        <label for="valor_pago">Valor recebido (R$)</label>
+        <input type="text" name="valor_pago" id="valor_pago" value="{{ pedido.subtotal | preco | replace('R$ ', '') }}">
+
+        <button type="submit">✅ Confirmar venda</button>
+      </form>
+      <form method="post" action="{{ url_for('admin_pedido_descartar_whatsapp', token=pedido.token) }}"
+            onsubmit="return confirm('Descartar esse lead? Ele não aparece mais como pendente.');">
+        <button type="submit" style="background:#a13a2a;">✕ Descartar (não fechou)</button>
+      </form>
+    </div>
+  {% endif %}
+
+  {% if pedido.status != 'pendente' and pedido.status != 'cancelado' and pedido.status != 'whatsapp' %}
     <div class="bloco">
       <h2>Integrações</h2>
 
@@ -118,52 +188,54 @@
     </div>
   {% endif %}
 
-  <div class="bloco">
-    <h2>Alterar status</h2>
-    <form method="post" action="{{ url_for('admin_pedido_status', token=pedido.token) }}" id="form-status">
-      <label for="status">Novo status</label>
-      <select name="status" id="status">
-        <option value="pago" {{ "selected" if pedido.status == "pago" }}>Pago</option>
-        <option value="faturado" {{ "selected" if pedido.status == "faturado" }}>Faturado (nota fiscal emitida)</option>
-        <option value="enviado" {{ "selected" if pedido.status == "enviado" }}>Enviado</option>
-        <option value="entregue" {{ "selected" if pedido.status == "entregue" }}>Entregue</option>
-      </select>
+  {% if pedido.status != 'whatsapp' %}
+    <div class="bloco">
+      <h2>Alterar status</h2>
+      <form method="post" action="{{ url_for('admin_pedido_status', token=pedido.token) }}" id="form-status">
+        <label for="status">Novo status</label>
+        <select name="status" id="status">
+          <option value="pago" {{ "selected" if pedido.status == "pago" }}>Pago</option>
+          <option value="faturado" {{ "selected" if pedido.status == "faturado" }}>Faturado (nota fiscal emitida)</option>
+          <option value="enviado" {{ "selected" if pedido.status == "enviado" }}>Enviado</option>
+          <option value="entregue" {{ "selected" if pedido.status == "entregue" }}>Entregue</option>
+        </select>
 
-      <div class="campos-rastreio" id="campos-rastreio">
-        <label for="transportadora">Transportadora</label>
-        <input type="text" name="transportadora" id="transportadora" value="{{ pedido.transportadora or '' }}">
-        <label for="codigo_rastreio">Código de rastreio</label>
-        <input type="text" name="codigo_rastreio" id="codigo_rastreio" value="{{ pedido.codigo_rastreio or '' }}">
-        <label for="link_rastreio">Link de rastreio (opcional)</label>
-        <input type="text" name="link_rastreio" id="link_rastreio" value="{{ pedido.link_rastreio or '' }}">
-      </div>
+        <div class="campos-rastreio" id="campos-rastreio">
+          <label for="transportadora">Transportadora</label>
+          <input type="text" name="transportadora" id="transportadora" value="{{ pedido.transportadora or '' }}">
+          <label for="codigo_rastreio">Código de rastreio</label>
+          <input type="text" name="codigo_rastreio" id="codigo_rastreio" value="{{ pedido.codigo_rastreio or '' }}">
+          <label for="link_rastreio">Link de rastreio (opcional)</label>
+          <input type="text" name="link_rastreio" id="link_rastreio" value="{{ pedido.link_rastreio or '' }}">
+        </div>
 
-      <div class="campos-rastreio" id="campos-faturado">
-        <label for="link_nota_fiscal">Link da nota fiscal (opcional)</label>
-        <input type="text" name="link_nota_fiscal" id="link_nota_fiscal" value="{{ pedido.link_nota_fiscal or '' }}" placeholder="Link do PDF da NF-e na Tiny">
-      </div>
+        <div class="campos-rastreio" id="campos-faturado">
+          <label for="link_nota_fiscal">Link da nota fiscal (opcional)</label>
+          <input type="text" name="link_nota_fiscal" id="link_nota_fiscal" value="{{ pedido.link_nota_fiscal or '' }}" placeholder="Link do PDF da NF-e na Tiny">
+        </div>
 
-      <button type="submit">Salvar</button>
-    </form>
-  </div>
+        <button type="submit">Salvar</button>
+      </form>
+    </div>
 
-  <p class="aviso-tiny">
-    Selecionar "Enviado" pela primeira vez dispara o e-mail de pedido enviado pro cliente, com o
-    código/link preenchidos aqui. Quando a integração com a Tiny estiver completa, ela vai poder
-    fazer essa mesma atualização sozinha (mesmo mecanismo por trás) -- esse formulário continua
-    funcionando do mesmo jeito pra correção manual.
-  </p>
+    <p class="aviso-tiny">
+      Selecionar "Enviado" pela primeira vez dispara o e-mail de pedido enviado pro cliente, com o
+      código/link preenchidos aqui. Quando a integração com a Tiny estiver completa, ela vai poder
+      fazer essa mesma atualização sozinha (mesmo mecanismo por trás) -- esse formulário continua
+      funcionando do mesmo jeito pra correção manual.
+    </p>
 
-  <script>
-    const selectStatus = document.getElementById('status');
-    const camposRastreio = document.getElementById('campos-rastreio');
-    const camposFaturado = document.getElementById('campos-faturado');
-    function atualizarCamposRastreio() {
-      camposRastreio.classList.toggle('ativo', selectStatus.value === 'enviado');
-      camposFaturado.classList.toggle('ativo', selectStatus.value === 'faturado');
-    }
-    selectStatus.addEventListener('change', atualizarCamposRastreio);
-    atualizarCamposRastreio();
-  </script>
+    <script>
+      const selectStatus = document.getElementById('status');
+      const camposRastreio = document.getElementById('campos-rastreio');
+      const camposFaturado = document.getElementById('campos-faturado');
+      function atualizarCamposRastreio() {
+        camposRastreio.classList.toggle('ativo', selectStatus.value === 'enviado');
+        camposFaturado.classList.toggle('ativo', selectStatus.value === 'faturado');
+      }
+      selectStatus.addEventListener('change', atualizarCamposRastreio);
+      atualizarCamposRastreio();
+    </script>
+  {% endif %}
 </body>
 </html>

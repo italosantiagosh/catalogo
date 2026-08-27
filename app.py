@@ -121,6 +121,7 @@ from services.infinitepay import criar_link_pagamento
 from services.pedidos import (
     atualizar_status,
     cancelar_pedido,
+    confirmar_venda_manual,
     criar_pedido,
     listar_pedidos,
     listar_pedidos_pagos_para_avaliacao,
@@ -831,6 +832,19 @@ def produto(produto_id: str):
     )
 
 
+@app.route("/avaliar/<produto_id>", methods=["GET"])
+def avaliar_produto(produto_id: str):
+    """Pagina isolada so com o formulario de avaliacao (ver conversa --
+    mandar o link da pagina de produto inteira pra base de clientes
+    antiga faz a maioria desistir antes de chegar na secao de avaliar).
+    Mesmo formulario/JS do produto.html (static/js/avaliacoes.js), so
+    que ja aberto e sem o resto da pagina em volta."""
+    produto = buscar_produto(produto_id)
+    if produto is None:
+        abort(404)
+    return render_template("avaliar.html", produto=produto)
+
+
 @app.route("/carrinho", methods=["GET"])
 def carrinho():
     return render_template("carrinho.html")
@@ -945,6 +959,12 @@ def _itens_com_descricao_do_corpo(dados: dict) -> list[dict]:
                 # personalizada, ver static/js/personalizada.js), cortar
                 # no meio corrompe a imagem inteira.
                 "imagem": str(item.get("imagem", "")),
+                # Recorte quadrado 1:1 (sem a moldura da medalha por cima),
+                # so existe pra item personalizado com foto -- e´ o que a
+                # producao precisa baixar, nao a previa com moldura. Guardado
+                # aqui pra nunca mais depender do cliente reenviar a foto
+                # pelo WhatsApp (ver conversa).
+                "imagemRecorte": str(item.get("imagemRecorte", "") or ""),
             }
         )
     return itens_validos
@@ -1118,6 +1138,51 @@ def api_pedido_criar():
     return jsonify(url=resultado["url"], token=pedido["token"], codigo=pedido["codigo"])
 
 
+@app.route("/api/pedido/criar-whatsapp", methods=["POST"])
+def api_pedido_criar_whatsapp():
+    """Lead criado ao clicar "Finalizar pelo WhatsApp" no carrinho (ver
+    static/js/carrinho_pagina.js) -- sem link de pagamento e sem exigir
+    cliente/endereco (o WhatsApp nunca coletou isso). Só entra no painel
+    admin com status "whatsapp" pra quem vende acompanhar e preencher
+    os dados na mao se a pessoa realmente fechar o pedido na conversa
+    (ver confirmar_venda_manual / admin_pedido_confirmar_venda)."""
+    dados = request.get_json(silent=True) or {}
+    itens_validos = _itens_com_descricao_do_corpo(dados)
+    if not itens_validos:
+        return jsonify(erro="Carrinho vazio."), 400
+
+    calculo = calcular_carrinho(itens_validos)
+    if not calculo["atinge_minimo"]:
+        return jsonify(erro="Pedido abaixo do mínimo de produtos."), 400
+    for item_validado, item_calculado in zip(itens_validos, calculo["itens"]):
+        item_validado["valor_unitario"] = item_calculado["preco_unitario"]
+
+    frete = dados.get("frete") or {}
+    try:
+        frete_preco = float(frete.get("preco"))
+    except (TypeError, ValueError):
+        frete_preco = 0.0
+    frete_descricao = str(frete.get("texto", "")).strip()
+    # Frete nao simulado (comum em quem fecha direto pelo WhatsApp) --
+    # se ja tiver digitado o CEP no calculo, guarda mesmo assim, pra
+    # quem for atender ja ter o dado (mesmo criterio do texto da
+    # mensagem, ver montarLinhasFrete em carrinho_pagina.js).
+    cep_informado = str(dados.get("cep_informado", "")).strip()
+    if not frete_descricao and cep_informado:
+        frete_descricao = f"CEP informado (frete não calculado): {cep_informado}"
+
+    pedido = criar_pedido(
+        itens=itens_validos,
+        subtotal=calculo["subtotal_total"],
+        frete_descricao=frete_descricao,
+        frete_preco=frete_preco,
+        cliente={},
+        endereco={},
+        status_inicial="whatsapp",
+    )
+    return jsonify(ok=True, codigo=pedido["codigo"], token=pedido["token"])
+
+
 def _itens_pagamento_de_pedido(pedido: dict) -> list[dict]:
     """Reconstroi a lista de itens no formato que a InfinitePay espera a
     partir de um pedido ja persistido (ver services.pedidos) -- usado
@@ -1232,7 +1297,16 @@ def webhook_infinitepay():
         valor_pago=valor_pago_centavos / 100,
         transaction_nsu=str(dados.get("transaction_nsu", "")),
     )
+    _pos_pagamento_confirmado(pedido_pago, token)
 
+    return jsonify(ok=True), 200
+
+
+def _pos_pagamento_confirmado(pedido_pago: dict | None, token: str) -> None:
+    """Integracoes disparadas na PRIMEIRA confirmacao de pagamento de um
+    pedido -- usado tanto pelo webhook automatico da InfinitePay quanto
+    pela confirmacao manual de venda combinada no WhatsApp (ver
+    admin_pedido_confirmar_venda), pra nunca duplicar essa logica."""
     # sincroniza com a Tiny so na primeira confirmacao -- webhook
     # repetido (comum em integracoes de pagamento) nao reenvia o
     # mesmo pedido pra la de novo. Falha na Tiny nao derruba a
@@ -1241,7 +1315,7 @@ def webhook_infinitepay():
     if pedido_pago and not pedido_pago["tiny_sincronizado"]:
         try:
             resultado_tiny = criar_pedido_tiny(pedido_pago)
-        except Exception as exc:  # ver comentario acima -- Tiny nunca derruba o webhook
+        except Exception as exc:  # ver comentario acima -- Tiny nunca derruba a confirmacao
             resultado_tiny = {"erro": f"Erro inesperado ao sincronizar: {exc}"}
         marcar_tiny_sincronizado(
             token,
@@ -1260,7 +1334,7 @@ def webhook_infinitepay():
         # avisos internos pra loja (e-mail + push, ver services/email.py
         # e services/push.py) -- reaproveita o mesmo gate acima (so
         # roda na primeira confirmacao) em vez de criar coluna nova so
-        # pra isso. Nenhum dos dois pode derrubar o webhook.
+        # pra isso. Nenhum dos dois pode derrubar o fluxo.
         try:
             enviar_notificacao_venda(
                 pedido_pago, url_for("admin_pedido_detalhe", token=token, _external=True)
@@ -1275,8 +1349,6 @@ def webhook_infinitepay():
             )
         except Exception:
             pass
-
-    return jsonify(ok=True), 200
 
 
 _PEDIDO_TIMELINE_ETAPAS = (
@@ -1446,6 +1518,84 @@ def admin_pedido_status(token: str):
         )
 
     return redirect(url_for("admin_pedido_detalhe", token=token))
+
+
+@app.route("/admin/pedidos/<token>/confirmar-venda", methods=["POST"])
+def admin_pedido_confirmar_venda(token: str):
+    """Promove um lead "whatsapp" (ver api_pedido_criar_whatsapp) pra
+    "pago" quando a pessoa realmente fechou o pedido combinado na
+    conversa -- os dados de cliente/endereco/frete/pagamento sao
+    preenchidos na mao aqui (o WhatsApp nunca coletou isso). A partir
+    daqui o pedido segue o mesmo fluxo de um pago pelo site (Tiny,
+    timeline, e-mails -- ver _pos_pagamento_confirmado)."""
+    if not _autenticacao_admin_valida(request.authorization):
+        return Response(
+            "Autenticação necessária.", 401, {"WWW-Authenticate": 'Basic realm="Painel de pedidos"'}
+        )
+    pedido = obter_pedido(token)
+    if pedido is None:
+        abort(404)
+
+    cliente = {
+        "nome": str(request.form.get("cliente_nome", "")).strip(),
+        "tipo_pessoa": str(request.form.get("cliente_tipo_pessoa", "fisica")).strip(),
+        "documento": str(request.form.get("cliente_documento", "")).strip(),
+        "telefone": str(request.form.get("cliente_telefone", "")).strip(),
+        "email": str(request.form.get("cliente_email", "")).strip(),
+    }
+    endereco = {
+        "cep": str(request.form.get("endereco_cep", "")).strip(),
+        "logradouro": str(request.form.get("endereco_logradouro", "")).strip(),
+        "numero": str(request.form.get("endereco_numero", "")).strip(),
+        "complemento": str(request.form.get("endereco_complemento", "")).strip(),
+        "bairro": str(request.form.get("endereco_bairro", "")).strip(),
+        "cidade": str(request.form.get("endereco_cidade", "")).strip(),
+        "uf": str(request.form.get("endereco_uf", "")).strip(),
+    }
+    if not cliente["nome"]:
+        abort(400, description="Informe ao menos o nome do cliente.")
+
+    try:
+        frete_preco = float(request.form.get("frete_preco", "0").replace(",", "."))
+    except ValueError:
+        frete_preco = 0.0
+    frete_descricao = str(request.form.get("frete_descricao", "")).strip()
+    forma_pagamento = str(request.form.get("forma_pagamento", "")).strip()
+    try:
+        valor_pago = float(request.form.get("valor_pago", "0").replace(",", "."))
+    except ValueError:
+        valor_pago = round(pedido["subtotal"] + frete_preco, 2)
+
+    pedido_pago = confirmar_venda_manual(
+        token,
+        cliente=cliente,
+        endereco=endereco,
+        frete_descricao=frete_descricao,
+        frete_preco=frete_preco,
+        forma_pagamento=forma_pagamento,
+        valor_pago=valor_pago,
+    )
+    if pedido_pago is None or pedido_pago["status"] != "pago":
+        abort(400, description="Esse pedido não é mais um lead do WhatsApp aguardando confirmação.")
+
+    _pos_pagamento_confirmado(pedido_pago, token)
+
+    return redirect(url_for("admin_pedido_detalhe", token=token))
+
+
+@app.route("/admin/pedidos/<token>/descartar-whatsapp", methods=["POST"])
+def admin_pedido_descartar_whatsapp(token: str):
+    """Descarta um lead "whatsapp" que nao fechou -- reaproveita
+    cancelar_pedido (mesma funcao usada no auto-cancelamento de pedido
+    pendente abandonado, ver services/pedidos.py)."""
+    if not _autenticacao_admin_valida(request.authorization):
+        return Response(
+            "Autenticação necessária.", 401, {"WWW-Authenticate": 'Basic realm="Painel de pedidos"'}
+        )
+    if obter_pedido(token) is None:
+        abort(404)
+    cancelar_pedido(token)
+    return redirect(url_for("admin_pedidos"))
 
 
 @app.route("/admin/pedidos/<token>/reenviar-tiny", methods=["POST"])
@@ -1749,6 +1899,7 @@ def api_personalizada_preview():
     )
     return jsonify(
         preview=_preview_data_uri(resultado),
+        crop=_preview_data_uri(recorte),
         url_preview=f"/download/{token_preview}",
         url_crop=f"/download/{token_crop}",
     )

@@ -2,6 +2,10 @@ services:
   - type: web
     name: catalogo-medalhas
     runtime: python
-    plan: free
+    plan: starter
     buildCommand: pip install -r requirements.txt
     startCommand: gunicorn app:app --timeout 90 --workers 1
+    disk:
+      name: catalogo-dados
+      mountPath: /var/data
+      sizeGB: 1

@@ -22,6 +22,7 @@
     .status-enviado { background: #e6e0fc; color: #4a2e9c; }
     .status-entregue { background: #d9f2e3; color: #14602f; }
     .status-cancelado { background: #fbe3e0; color: #a13a2a; }
+    .status-whatsapp { background: #dcf4e3; color: #1c7d3f; }
     a.ver, a.editar { color: #14335c; font-weight: 600; text-decoration: none; margin-right: 10px; }
     .vazio { padding: 24px; text-align: center; color: #5b6b82; }
     .cliente-email { color: #5b6b82; font-size: 0.78rem; }
@@ -38,6 +39,7 @@
   {% endif %}
   <div class="filtros">
     <a href="{{ url_for('admin_pedidos') }}" class="{{ 'ativo' if not status_filtro else '' }}">Todos</a>
+    <a href="{{ url_for('admin_pedidos', status='whatsapp') }}" class="{{ 'ativo' if status_filtro == 'whatsapp' else '' }}">💬 WhatsApp</a>
     <a href="{{ url_for('admin_pedidos', status='pendente') }}" class="{{ 'ativo' if status_filtro == 'pendente' else '' }}">Pendentes</a>
     <a href="{{ url_for('admin_pedidos', status='pago') }}" class="{{ 'ativo' if status_filtro == 'pago' else '' }}">Pagos</a>
     <a href="{{ url_for('admin_pedidos', status='faturado') }}" class="{{ 'ativo' if status_filtro == 'faturado' else '' }}">Faturados</a>

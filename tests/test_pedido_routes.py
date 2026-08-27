@@ -61,6 +61,35 @@ def test_item_medalha_guarda_tamanho_na_descricao_e_detalhe(client):
     assert item["imagem"] == "/static/img/produtos/sao-jose-1.jpg"
 
 
+def test_item_personalizada_guarda_imagem_de_recorte_1x1(client, monkeypatch):
+    """O recorte 1:1 (sem a moldura) precisa sobreviver no pedido pra
+    a producao baixar no painel, sem depender do cliente reenviar a
+    foto pelo WhatsApp (ver conversa)."""
+    _preparar_admin_env(monkeypatch)
+    corpo = _corpo_valido(itens=[{
+        "chave_preco": "16mm", "quantidade": 10, "produtoNome": "Personalizada",
+        "formato": "medalha", "tamanho": "16mm",
+        "imagem": "data:image/png;base64,AAAA", "imagemRecorte": "data:image/png;base64,BBBB",
+    }])
+    with patch("app.criar_link_pagamento", return_value={"url": "https://checkout.infinitepay.io/abc"}):
+        criado = client.post("/api/pedido/criar", json=corpo).get_json()
+
+    pedido = pedidos.obter_pedido(criado["token"])
+    item = pedido["itens"][0]
+    assert item["imagemRecorte"] == "data:image/png;base64,BBBB"
+
+    detalhe = client.get(f"/admin/pedidos/{criado['token']}", auth=("admin", "segredo123")).get_data(as_text=True)
+    assert "data:image/png;base64,BBBB" in detalhe
+    assert "Baixar imagem 1:1" in detalhe
+
+
+def _preparar_admin_env(monkeypatch):
+    import app as app_module
+
+    monkeypatch.setattr(app_module, "ADMIN_USER", "admin")
+    monkeypatch.setattr(app_module, "ADMIN_PASSWORD", "segredo123")
+
+
 def test_item_entremeio_guarda_cor_na_descricao_e_detalhe(client):
     corpo = _corpo_valido(itens=[{
         "chave_preco": "entremeio", "quantidade": 10, "produtoNome": "São José", "modeloNome": "Modelo 1",
@@ -270,6 +299,32 @@ def test_criar_pedido_sem_cliente_400(client):
 
 def test_criar_pedido_sem_endereco_400(client):
     resposta = client.post("/api/pedido/criar", json=_corpo_valido(endereco={"cep": "59000000"}))
+    assert resposta.status_code == 400
+
+
+def test_criar_pedido_whatsapp_entra_como_lead_sem_link_de_pagamento(client):
+    """Ver conversa: pedido fechado pelo WhatsApp deve aparecer no painel
+    admin (status "whatsapp"), sem exigir cliente/endereco (o WhatsApp
+    nunca coletou isso) e sem gerar link de pagamento nenhum."""
+    resposta = client.post("/api/pedido/criar-whatsapp", json={
+        "itens": [{"chave_preco": "16mm", "quantidade": 10, "produtoNome": "São José", "modeloNome": "Modelo 1"}],
+        "frete": {},
+        "cep_informado": "59000-000",
+    })
+    assert resposta.status_code == 200
+    dados = resposta.get_json()
+    assert len(dados["codigo"]) == 6
+
+    pedidos_whatsapp = pedidos.listar_pedidos(status="whatsapp")
+    assert len(pedidos_whatsapp) == 1
+    pedido = pedidos_whatsapp[0]
+    assert pedido["codigo"] == dados["codigo"]
+    assert pedido["cliente_nome"] == ""
+    assert "59000-000" in pedido["frete_descricao"]
+
+
+def test_criar_pedido_whatsapp_carrinho_vazio_400(client):
+    resposta = client.post("/api/pedido/criar-whatsapp", json={"itens": []})
     assert resposta.status_code == 400
 
 

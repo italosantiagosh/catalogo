@@ -77,6 +77,23 @@ def test_envio_produto_inexistente_404(client):
     assert resposta.status_code == 404
 
 
+def test_pagina_avaliar_produto_mostra_formulario_aberto(client):
+    """Link direto pra mandar pra base de clientes antiga (ver conversa)
+    -- so o formulario, ja aberto, sem o resto do site em volta."""
+    produto_id = _produto_id_real()
+    resposta = client.get(f"/avaliar/{produto_id}")
+    assert resposta.status_code == 200
+    corpo = resposta.get_data(as_text=True)
+    assert f'value="{produto_id}"' in corpo
+    assert 'id="form-avaliacao"' in corpo
+    assert "hidden" not in corpo.split('id="form-avaliacao"')[1].split(">")[0]
+
+
+def test_pagina_avaliar_produto_inexistente_404(client):
+    resposta = client.get("/avaliar/nao-existe")
+    assert resposta.status_code == 404
+
+
 def test_envio_sem_nome_retorna_erro(client):
     dados = _corpo_avaliacao(nome_cliente="")
     arquivo, nome = _foto_teste()

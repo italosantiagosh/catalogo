@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Avalie {{ produto.nome }} — Nove de Julho</title>
+  <link rel="icon" href="{{ url_for('static', filename='img/favicon.ico') }}" sizes="any">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;1,9..144,500&family=Public+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <style>
+    body { background: var(--bg); }
+    .avaliar-pagina { max-width: 480px; margin: 0 auto; padding: 28px 18px 60px; }
+    .avaliar-cabecalho { text-align: center; margin-bottom: 20px; }
+    .avaliar-cabecalho img.marca-logo { width: 34px; height: 40px; margin-bottom: 10px; }
+    .avaliar-cabecalho h1 { font-size: 1.15rem; margin: 4px 0 2px; }
+    .avaliar-cabecalho p { color: var(--muted); font-size: 0.88rem; margin: 0; }
+    .avaliar-produto { display: flex; align-items: center; gap: 12px; background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 12px 14px; margin-bottom: 20px; }
+    .avaliar-produto img { width: 56px; height: 56px; object-fit: cover; border-radius: 8px; }
+    .avaliar-produto strong { display: block; font-size: 0.95rem; }
+    .avaliar-caixa { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 16px; }
+    .avaliar-caixa .form-avaliacao { margin-top: 0; padding-top: 0; border-top: none; }
+    .avaliar-sucesso { text-align: center; padding: 20px 0; }
+  </style>
+</head>
+<body>
+  <div class="avaliar-pagina">
+    <div class="avaliar-cabecalho">
+      <img class="marca-logo" src="{{ url_for('static', filename='img/logo-icone.png') }}" alt="">
+      <h1>Como foi sua experiência?</h1>
+      <p>Sua avaliação ajuda outras pessoas a escolherem com confiança.</p>
+    </div>
+
+    <div class="avaliar-produto">
+      <img src="{{ url_for('static', filename=produto.modelos[0].imagem) }}" alt="">
+      <strong>{{ produto.nome }}</strong>
+    </div>
+
+    <div class="avaliar-caixa">
+      <form id="form-avaliacao" class="form-avaliacao">
+        <input type="hidden" name="produto_id" value="{{ produto.id }}">
+        <label for="aval-nome">Seu nome</label>
+        <input type="text" id="aval-nome" name="nome_cliente" required maxlength="120">
+
+        <label>Formato que você comprou</label>
+        <div class="aval-formatos">
+          <label><input type="radio" name="formato" value="medalha" checked> Medalha</label>
+          <label><input type="radio" name="formato" value="entremeio"> Entremeio</label>
+          <label><input type="radio" name="formato" value="chaveiro"> Chaveiro</label>
+        </div>
+
+        <label>Sua nota</label>
+        <div class="aval-estrelas-input" id="aval-estrelas">
+          <button type="button" data-nota="1" aria-label="1 estrela">★</button>
+          <button type="button" data-nota="2" aria-label="2 estrelas">★</button>
+          <button type="button" data-nota="3" aria-label="3 estrelas">★</button>
+          <button type="button" data-nota="4" aria-label="4 estrelas">★</button>
+          <button type="button" data-nota="5" aria-label="5 estrelas">★</button>
+        </div>
+        <input type="hidden" name="nota" id="aval-nota" value="">
+
+        <label class="dropzone" for="aval-foto">
+          <span class="icone">📷</span>
+          <span class="principal">Toque para adicionar uma foto</span>
+          <span class="secundario">Opcional — JPG, PNG, WEBP ou HEIC</span>
+        </label>
+        <input type="file" id="aval-foto" name="foto" accept="image/*">
+        <div id="aval-nome-arquivo"></div>
+
+        <label for="aval-texto">Conte como foi (opcional)</label>
+        <textarea id="aval-texto" name="texto" maxlength="1000" rows="3"></textarea>
+
+        <div id="aval-erro" class="erro" hidden></div>
+        <button type="submit" class="botao-carrinho" id="btn-enviar-avaliacao">Enviar avaliação</button>
+      </form>
+      <div class="avaliar-sucesso" id="aval-sucesso" hidden>
+        <p>Obrigado! Sua avaliação foi enviada e vai aparecer no site assim que for aprovada. 🙏</p>
+      </div>
+    </div>
+  </div>
+
+  <script src="{{ url_for('static', filename='js/avaliacoes.js') }}"></script>
+</body>
+</html>

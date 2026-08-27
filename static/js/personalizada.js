@@ -307,6 +307,7 @@
       boxAnterior = box;
       ultimoResultado = {
         previewSrc: dados.preview,
+        cropSrc: dados.crop,
         urlPreview: dados.url_preview,
         urlCrop: dados.url_crop,
         formato: formatoAtual(),
@@ -348,16 +349,9 @@
     linkBaixarRecorte.href = ultimoResultado.urlCrop;
     quantidadeInput.value = qtdFormInput.value;
 
-    if (ultimoResultado.ajustado) {
-      avisoReenvio.innerHTML =
-        '⚠️ Você ajustou a posição/zoom do recorte -- pra manter exatamente essa simulação, ' +
-        '<strong>reenvie pelo WhatsApp o arquivo "Baixar recorte (1:1)"</strong> baixado aqui, ' +
-        'e não a foto original (ela geraria um recorte diferente, o automático).';
-    } else {
-      avisoReenvio.innerHTML =
-        '📲 Esta é só uma simulação. Depois de finalizar pelo WhatsApp, você vai precisar ' +
-        '<strong>reenviar a foto</strong> diretamente na conversa — o link do WhatsApp não anexa imagens automaticamente.';
-    }
+    avisoReenvio.innerHTML =
+      '✅ Sua foto no recorte exato desta simulação já fica salva junto com o pedido — ' +
+      'não precisa reenviar nada pelo WhatsApp.';
   }
 
   function ajustarQuantidade(delta) {
@@ -385,15 +379,13 @@
       produtoNome: 'Personalizada',
       modeloNome: null,
       imagem: r.previewSrc,
+      imagemRecorte: r.cropSrc,
       formato: r.formato,
       chave_preco: r.chavePreco,
       tamanho: r.tamanho,
       cor: r.cor,
       quantidade,
       semImagem: false,
-      avisoReenvio: r.ajustado
-        ? 'Reenviar o arquivo "recorte (1:1)" baixado (não a foto original)'
-        : 'Reenviar esta foto pelo WhatsApp ao finalizar',
     });
     rastrearEventoGA4('add_custom_to_cart', { formato: r.formato, quantity: quantidade, com_foto: true });
 

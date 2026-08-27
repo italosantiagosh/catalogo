@@ -241,6 +241,95 @@ def test_alterar_status_para_faturado_sem_link_nao_mostra_botao_de_nota(client, 
     assert "Baixar nota fiscal" not in pagina_cliente
 
 
+def _criar_lead_whatsapp(client, **overrides):
+    corpo = {
+        "itens": [{"chave_preco": "16mm", "quantidade": 10, "produtoNome": "São José", "modeloNome": "Modelo 1"}],
+        "frete": {},
+    }
+    corpo.update(overrides)
+    return client.post("/api/pedido/criar-whatsapp", json=corpo).get_json()
+
+
+def test_painel_lista_leads_do_whatsapp_separados(client, monkeypatch):
+    _preparar_admin(monkeypatch)
+    lead = _criar_lead_whatsapp(client)
+
+    resposta = client.get("/admin/pedidos?status=whatsapp", auth=("admin", "segredo123"))
+    corpo = resposta.get_data(as_text=True)
+    assert lead["codigo"] in corpo
+
+    detalhe = client.get(f"/admin/pedidos/{lead['token']}", auth=("admin", "segredo123")).get_data(as_text=True)
+    assert "Confirmar venda" in detalhe
+    assert "Alterar status" not in detalhe
+
+
+def test_confirmar_venda_manual_promove_lead_pra_pago(client, monkeypatch):
+    """Ver conversa: admin preenche os dados na mao quando a venda
+    combinada no WhatsApp realmente fecha -- a partir dai o pedido
+    segue o fluxo normal (Tiny, e-mail, timeline)."""
+    _preparar_admin(monkeypatch)
+    lead = _criar_lead_whatsapp(client)
+
+    with patch("app.criar_pedido_tiny", return_value={"ok": True, "numero": 55, "id": 1}) as mock_tiny, \
+         patch("app.enviar_confirmacao_pedido", return_value={"ok": True}), \
+         patch("app.enviar_notificacao_venda", return_value={"ok": True}), \
+         patch("app.enviar_notificacao_push", return_value={"ok": True}):
+        resposta = client.post(
+            f"/admin/pedidos/{lead['token']}/confirmar-venda",
+            data={
+                "cliente_nome": "Maria Teste", "cliente_documento": "12345678900",
+                "cliente_telefone": "84999999999", "cliente_email": "maria@example.com",
+                "endereco_cep": "59000000", "endereco_logradouro": "Rua Teste", "endereco_numero": "100",
+                "endereco_bairro": "Centro", "endereco_cidade": "Natal", "endereco_uf": "RN",
+                "frete_descricao": "Combinado no WhatsApp", "frete_preco": "15,00",
+                "forma_pagamento": "Pix", "valor_pago": "65,00",
+            },
+            auth=("admin", "segredo123"),
+        )
+    assert resposta.status_code == 302
+    assert mock_tiny.call_count == 1
+
+    pedido = pedidos.obter_pedido(lead["token"])
+    assert pedido["status"] == "pago"
+    assert pedido["cliente_nome"] == "Maria Teste"
+    assert pedido["endereco_cidade"] == "Natal"
+    assert pedido["frete_preco"] == 15.0
+    assert pedido["forma_pagamento"] == "Pix"
+    assert pedido["valor_pago"] == 65.0
+    assert pedido["tiny_sincronizado"] == 1
+
+
+def test_confirmar_venda_sem_nome_400(client, monkeypatch):
+    _preparar_admin(monkeypatch)
+    lead = _criar_lead_whatsapp(client)
+    resposta = client.post(
+        f"/admin/pedidos/{lead['token']}/confirmar-venda", data={}, auth=("admin", "segredo123")
+    )
+    assert resposta.status_code == 400
+
+
+def test_confirmar_venda_exige_autenticacao(client, monkeypatch):
+    _preparar_admin(monkeypatch)
+    lead = _criar_lead_whatsapp(client)
+    resposta = client.post(
+        f"/admin/pedidos/{lead['token']}/confirmar-venda", data={"cliente_nome": "Maria"}
+    )
+    assert resposta.status_code == 401
+
+
+def test_descartar_lead_whatsapp_vira_cancelado(client, monkeypatch):
+    _preparar_admin(monkeypatch)
+    lead = _criar_lead_whatsapp(client)
+
+    resposta = client.post(
+        f"/admin/pedidos/{lead['token']}/descartar-whatsapp", auth=("admin", "segredo123")
+    )
+    assert resposta.status_code == 302
+
+    pedido = pedidos.obter_pedido(lead["token"])
+    assert pedido["status"] == "cancelado"
+
+
 def test_reenviar_tiny_manualmente(client, monkeypatch):
     _preparar_admin(monkeypatch)
     with patch("app.criar_link_pagamento", return_value={"url": "https://checkout.infinitepay.io/abc"}):
