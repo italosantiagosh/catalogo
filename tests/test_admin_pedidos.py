@@ -299,6 +299,62 @@ def test_confirmar_venda_manual_promove_lead_pra_pago(client, monkeypatch):
     assert pedido["tiny_sincronizado"] == 1
 
 
+def test_confirmar_venda_com_destinatario_diferente(client, monkeypatch):
+    """Ver conversa: as vezes quem recebe e´ uma livraria, endereco
+    diferente de quem fechou a compra."""
+    _preparar_admin(monkeypatch)
+    lead = _criar_lead_whatsapp(client)
+
+    with patch("app.criar_pedido_tiny", return_value={"ok": True, "numero": 55, "id": 1}), \
+         patch("app.enviar_confirmacao_pedido", return_value={"ok": True}), \
+         patch("app.enviar_notificacao_venda", return_value={"ok": True}), \
+         patch("app.enviar_notificacao_push", return_value={"ok": True}):
+        resposta = client.post(
+            f"/admin/pedidos/{lead['token']}/confirmar-venda",
+            data={
+                "cliente_nome": "Paróquia São José", "cliente_documento": "12345678000199",
+                "endereco_cep": "59000000", "endereco_logradouro": "Rua Teste", "endereco_numero": "100",
+                "endereco_bairro": "Centro", "endereco_cidade": "Natal", "endereco_uf": "RN",
+                "destinatario_nome": "Livraria Shalom", "destinatario_documento": "98765432000188",
+                "destinatario_cep": "59100000", "destinatario_logradouro": "Av. Livraria",
+                "destinatario_numero": "500", "destinatario_bairro": "Centro",
+                "destinatario_cidade": "Natal", "destinatario_uf": "RN",
+                "frete_descricao": "Combinado no WhatsApp", "frete_preco": "15,00",
+                "forma_pagamento": "Pix", "valor_pago": "65,00",
+            },
+            auth=("admin", "segredo123"),
+        )
+    assert resposta.status_code == 302
+
+    pedido = pedidos.obter_pedido(lead["token"])
+    assert pedido["endereco_destinatario_nome"] == "Livraria Shalom"
+    assert pedido["endereco_destinatario_logradouro"] == "Av. Livraria"
+    assert pedido["endereco_destinatario_cidade"] == "Natal"
+    # endereco principal (quem fechou a compra) continua guardado, sem sobrescrever
+    assert pedido["endereco_logradouro"] == "Rua Teste"
+
+
+def test_admin_tiny_buscar_contato_exige_autenticacao(client, monkeypatch):
+    _preparar_admin(monkeypatch)
+    resposta = client.get("/admin/tiny/buscar-contato?q=livraria")
+    assert resposta.status_code == 401
+
+
+def test_admin_tiny_buscar_contato_devolve_lista(client, monkeypatch):
+    _preparar_admin(monkeypatch)
+    with patch("app.buscar_contatos_tiny", return_value={"ok": True, "contatos": [{"nome": "Livraria Shalom"}]}):
+        resposta = client.get("/admin/tiny/buscar-contato?q=shalom", auth=("admin", "segredo123"))
+    assert resposta.status_code == 200
+    assert resposta.get_json()["contatos"][0]["nome"] == "Livraria Shalom"
+
+
+def test_admin_tiny_buscar_contato_erro_devolve_502(client, monkeypatch):
+    _preparar_admin(monkeypatch)
+    with patch("app.buscar_contatos_tiny", return_value={"erro": "Tiny fora do ar"}):
+        resposta = client.get("/admin/tiny/buscar-contato?q=shalom", auth=("admin", "segredo123"))
+    assert resposta.status_code == 502
+
+
 def test_confirmar_venda_sem_nome_400(client, monkeypatch):
     _preparar_admin(monkeypatch)
     lead = _criar_lead_whatsapp(client)

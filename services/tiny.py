@@ -20,7 +20,11 @@ NAO confirmado ainda:
   - o bloco `endereco_entrega` (nome dos campos), usado quando o
     cliente pede entrega num endereco diferente do proprio (ver
     criar_pedido_tiny) -- ainda sem pedido de teste real com isso
-    preenchido.
+    preenchido;
+  - `buscar_contatos_tiny` (contatos.pesquisa.php, usado no painel pra
+    puxar endereco de contato ja salvo -- ver app.py:admin_tiny_buscar_contato)
+    -- nomes de campo seguindo so a documentacao publica, sem busca
+    real feita ainda.
 Se a Tiny rejeitar algum desses valores, ainda assim preferimos deixar
 o pedido salvo no site (ver chamada em app.py) a travar o webhook por
 causa disso.
@@ -35,6 +39,9 @@ import requests
 from config import TINY_API_TOKEN
 
 API_URL = "https://api.tiny.com.br/api2/pedido.incluir.php"
+BUSCA_CONTATOS_URL = "https://api.tiny.com.br/api2/contatos.pesquisa.php"
+
+_TIPO_PESSOA_TINY_PARA_SITE = {"F": "fisica", "J": "juridica"}
 
 _TIPO_PESSOA = {"fisica": "F", "juridica": "J"}
 
@@ -194,3 +201,76 @@ def criar_pedido_tiny(pedido: dict) -> dict:
         return {"erro": "; ".join(m for m in mensagens if m) or "erro desconhecido"}
 
     return {"ok": True, "numero": primeiro_registro.get("numero"), "id": primeiro_registro.get("id")}
+
+
+def buscar_contatos_tiny(termo: str) -> dict:
+    """Busca contatos ja cadastrados na Tiny por nome/razao social/CPF-
+    CNPJ (ver app.py:admin_tiny_buscar_contato) -- usado no painel pra
+    aproveitar o endereco de uma livraria que ja fecha pedido com
+    regularidade, sem redigitar tudo na mao toda vez (ver conversa).
+
+    NAO CONFIRMADO ainda com busca real (mesmo aviso do topo do
+    arquivo sobre o ambiente de desenvolvimento nao alcancar
+    tiny.com.br direto) -- nomes de campo seguindo a documentacao
+    publica da API 2.0 (contatos.pesquisa.php). Se a Tiny devolver algo
+    fora desse formato, cai no `except`/campos vazios abaixo em vez de
+    quebrar a busca.
+
+    Devolve {"ok": True, "contatos": [...]} (lista pode vir vazia) ou
+    {"erro": "..."}."""
+    if not TINY_API_TOKEN:
+        return {"erro": "Sincronização com a Tiny não configurada (falta TINY_API_TOKEN)."}
+    termo = termo.strip()
+    if not termo:
+        return {"ok": True, "contatos": []}
+
+    try:
+        resposta = requests.get(
+            BUSCA_CONTATOS_URL,
+            params={"token": TINY_API_TOKEN, "formato": "json", "pesquisa": termo},
+            timeout=15,
+        )
+        resposta.raise_for_status()
+        dados = resposta.json()
+    except requests.RequestException as exc:
+        return {"erro": f"Não foi possível buscar na Tiny agora ({exc})."}
+    except ValueError:
+        return {"erro": "Resposta inválida da Tiny."}
+
+    retorno = dados.get("retorno", {})
+    if retorno.get("status") != "OK":
+        # Tiny devolve status "Erro" tambem pra "nenhum contato encontrado"
+        # (nao e´ so falha de verdade) -- trata como lista vazia em vez
+        # de mostrar erro pro operador numa busca que so nao achou nada.
+        erros = retorno.get("erros") or []
+        mensagens = " ".join(str(e.get("erro", "")) for e in erros).lower()
+        if "nenhum registro" in mensagens or not erros:
+            return {"ok": True, "contatos": []}
+        mensagens_lista = [e.get("erro", "") for e in erros]
+        return {"erro": "; ".join(m for m in mensagens_lista if m) or "erro desconhecido"}
+
+    contatos_brutos = retorno.get("contatos") or []
+    if not isinstance(contatos_brutos, list):
+        contatos_brutos = [contatos_brutos]
+    contatos = []
+    for item in contatos_brutos:
+        contato = item.get("contato") if isinstance(item, dict) else None
+        if not isinstance(contato, dict):
+            continue
+        contatos.append(
+            {
+                "nome": contato.get("nome", ""),
+                "tipo_pessoa": _TIPO_PESSOA_TINY_PARA_SITE.get(contato.get("tipo_pessoa"), "fisica"),
+                "documento": contato.get("cpf_cnpj", ""),
+                "telefone": contato.get("fone", ""),
+                "email": contato.get("email", ""),
+                "cep": contato.get("cep", ""),
+                "logradouro": contato.get("endereco", ""),
+                "numero": contato.get("numero", ""),
+                "complemento": contato.get("complemento", ""),
+                "bairro": contato.get("bairro", ""),
+                "cidade": contato.get("cidade", ""),
+                "uf": contato.get("uf", ""),
+            }
+        )
+    return {"ok": True, "contatos": contatos}

@@ -34,6 +34,18 @@
     .integracao-texto { font-size: 0.85rem; }
     .integracao-erro { color: #a13a2a; font-size: 0.78rem; margin-top: 2px; }
     .integracao button { margin-top: 0; padding: 8px 14px; font-size: 0.82rem; background: #5b6b82; flex-shrink: 0; }
+    .busca-tiny-wrap { position: relative; display: flex; gap: 6px; align-items: flex-end; }
+    .busca-tiny-wrap > div { flex: 1; }
+    .busca-tiny-wrap button { margin-top: 0; padding: 9px 12px; font-size: 0.8rem; background: #5b6b82; white-space: nowrap; }
+    .busca-tiny-resultados { position: absolute; z-index: 10; left: 0; right: 0; top: 100%; margin-top: 4px; background: #fff; border: 1px solid #dde3ec; border-radius: 8px; box-shadow: 0 10px 24px -12px rgba(20,51,92,0.35); max-height: 220px; overflow-y: auto; }
+    .busca-tiny-resultados button { display: block; width: 100%; text-align: left; margin: 0; padding: 8px 10px; background: #fff; color: #142238; border-radius: 0; border-bottom: 1px solid #eef1f5; font-weight: 400; font-size: 0.82rem; }
+    .busca-tiny-resultados button:hover { background: #f5f7fa; }
+    .busca-tiny-vazio { padding: 8px 10px; font-size: 0.8rem; color: #5b6b82; }
+    .campo-destinatario { display: none; }
+    .campo-destinatario.ativo { display: block; }
+    .checkbox-linha { display: flex; align-items: center; gap: 8px; margin: 16px 0 4px; }
+    .checkbox-linha input { width: auto; }
+    .checkbox-linha label { margin: 0; }
   </style>
 </head>
 <body>
@@ -122,7 +134,16 @@
   {% if pedido.status == 'whatsapp' %}
     <div class="bloco">
       <h2>Confirmar venda</h2>
-      <form method="post" action="{{ url_for('admin_pedido_confirmar_venda', token=pedido.token) }}">
+      <form method="post" action="{{ url_for('admin_pedido_confirmar_venda', token=pedido.token) }}" id="form-confirmar-venda">
+        <label for="busca-tiny-cliente">Buscar contato salvo na Tiny (opcional)</label>
+        <div class="busca-tiny-wrap">
+          <div>
+            <input type="text" id="busca-tiny-cliente" placeholder="Nome, razão social ou CPF/CNPJ" autocomplete="off">
+            <div class="busca-tiny-resultados" id="busca-tiny-cliente-resultados" hidden></div>
+          </div>
+          <button type="button" id="btn-busca-tiny-cliente">🔍 Buscar</button>
+        </div>
+
         <label for="cliente_nome">Nome completo / Razão social</label>
         <input type="text" name="cliente_nome" id="cliente_nome" required>
 
@@ -136,7 +157,7 @@
         <input type="text" name="cliente_email" id="cliente_email">
 
         <label for="endereco_cep">CEP</label>
-        <input type="text" name="endereco_cep" id="endereco_cep">
+        <input type="text" name="endereco_cep" id="endereco_cep" inputmode="numeric" placeholder="00000-000">
         <label for="endereco_logradouro">Endereço (rua/avenida)</label>
         <input type="text" name="endereco_logradouro" id="endereco_logradouro">
         <label for="endereco_numero">Número</label>
@@ -150,17 +171,53 @@
         <label for="endereco_uf">UF</label>
         <input type="text" name="endereco_uf" id="endereco_uf" maxlength="2">
 
+        <div class="checkbox-linha">
+          <input type="checkbox" id="chk-destinatario">
+          <label for="chk-destinatario">Entregar em endereço diferente (ex: livraria)</label>
+        </div>
+
+        <div class="campo-destinatario" id="bloco-destinatario">
+          <label for="busca-tiny-destinatario">Buscar contato salvo na Tiny (opcional)</label>
+          <div class="busca-tiny-wrap">
+            <div>
+              <input type="text" id="busca-tiny-destinatario" placeholder="Nome da livraria/paróquia ou CNPJ" autocomplete="off">
+              <div class="busca-tiny-resultados" id="busca-tiny-destinatario-resultados" hidden></div>
+            </div>
+            <button type="button" id="btn-busca-tiny-destinatario">🔍 Buscar</button>
+          </div>
+
+          <label for="destinatario_nome">Nome de quem recebe</label>
+          <input type="text" name="destinatario_nome" id="destinatario_nome">
+          <label for="destinatario_documento">CPF/CNPJ</label>
+          <input type="text" name="destinatario_documento" id="destinatario_documento">
+          <label for="destinatario_cep">CEP de entrega</label>
+          <input type="text" name="destinatario_cep" id="destinatario_cep" inputmode="numeric" placeholder="00000-000">
+          <label for="destinatario_logradouro">Endereço (rua/avenida)</label>
+          <input type="text" name="destinatario_logradouro" id="destinatario_logradouro">
+          <label for="destinatario_numero">Número</label>
+          <input type="text" name="destinatario_numero" id="destinatario_numero">
+          <label for="destinatario_complemento">Complemento</label>
+          <input type="text" name="destinatario_complemento" id="destinatario_complemento">
+          <label for="destinatario_bairro">Bairro</label>
+          <input type="text" name="destinatario_bairro" id="destinatario_bairro">
+          <label for="destinatario_cidade">Cidade</label>
+          <input type="text" name="destinatario_cidade" id="destinatario_cidade">
+          <label for="destinatario_uf">UF</label>
+          <input type="text" name="destinatario_uf" id="destinatario_uf" maxlength="2">
+          <input type="hidden" name="destinatario_tipo_pessoa" id="destinatario_tipo_pessoa" value="fisica">
+        </div>
+
         <label for="frete_descricao">Frete combinado</label>
         <input type="text" name="frete_descricao" id="frete_descricao" placeholder="Ex: Correios PAC — R$ 15,00">
         <label for="frete_preco">Valor do frete (R$)</label>
-        <input type="text" name="frete_preco" id="frete_preco" value="0,00">
+        <input type="text" name="frete_preco" id="frete_preco" inputmode="numeric" value="0,00">
         <label for="frete_prazo_dias">Prazo do frete (dias úteis, opcional)</label>
         <input type="text" name="frete_prazo_dias" id="frete_prazo_dias" placeholder="Ex: 7">
 
         <label for="forma_pagamento">Forma de pagamento combinada</label>
         <input type="text" name="forma_pagamento" id="forma_pagamento" placeholder="Ex: Pix, Dinheiro, Cartão">
         <label for="valor_pago">Valor recebido (R$)</label>
-        <input type="text" name="valor_pago" id="valor_pago" value="{{ pedido.subtotal | preco | replace('R$ ', '') }}">
+        <input type="text" name="valor_pago" id="valor_pago" inputmode="numeric" value="{{ pedido.subtotal | preco | replace('R$ ', '') }}">
 
         <button type="submit">✅ Confirmar venda</button>
       </form>
@@ -169,6 +226,156 @@
         <button type="submit" style="background:#a13a2a;">✕ Descartar (não fechou)</button>
       </form>
     </div>
+
+    <script>
+      // ---- entrega em endereco diferente (ex: livraria) ----
+      const chkDestinatario = document.getElementById('chk-destinatario');
+      const blocoDestinatario = document.getElementById('bloco-destinatario');
+      chkDestinatario.addEventListener('change', () => {
+        blocoDestinatario.classList.toggle('ativo', chkDestinatario.checked);
+      });
+
+      // ---- autopreenchimento de endereco pelo CEP (ViaCEP) ----
+      function mascararCep(valor) {
+        const digitos = valor.replace(/\D/g, '').slice(0, 8);
+        return digitos.length > 5 ? `${digitos.slice(0, 5)}-${digitos.slice(5)}` : digitos;
+      }
+
+      function ligarAutopreenchimentoCep(inputCep, campos) {
+        inputCep.addEventListener('input', () => {
+          inputCep.value = mascararCep(inputCep.value);
+          const digitos = inputCep.value.replace(/\D/g, '');
+          if (digitos.length !== 8) return;
+          fetch(`https://viacep.com.br/ws/${digitos}/json/`)
+            .then((resposta) => resposta.json())
+            .then((dados) => {
+              if (dados.erro) return;
+              if (campos.logradouro) campos.logradouro.value = dados.logradouro || campos.logradouro.value;
+              if (campos.bairro) campos.bairro.value = dados.bairro || campos.bairro.value;
+              if (campos.cidade) campos.cidade.value = dados.localidade || campos.cidade.value;
+              if (campos.uf) campos.uf.value = dados.uf || campos.uf.value;
+            })
+            .catch(() => {});
+        });
+      }
+
+      ligarAutopreenchimentoCep(document.getElementById('endereco_cep'), {
+        logradouro: document.getElementById('endereco_logradouro'),
+        bairro: document.getElementById('endereco_bairro'),
+        cidade: document.getElementById('endereco_cidade'),
+        uf: document.getElementById('endereco_uf'),
+      });
+      ligarAutopreenchimentoCep(document.getElementById('destinatario_cep'), {
+        logradouro: document.getElementById('destinatario_logradouro'),
+        bairro: document.getElementById('destinatario_bairro'),
+        cidade: document.getElementById('destinatario_cidade'),
+        uf: document.getElementById('destinatario_uf'),
+      });
+
+      // ---- mascara de moeda (R$ 0,00 conforme digita) ----
+      function ligarMascaraMoeda(input) {
+        input.addEventListener('input', () => {
+          const digitos = input.value.replace(/\D/g, '') || '0';
+          const centavos = parseInt(digitos, 10);
+          input.value = (centavos / 100).toFixed(2).replace('.', ',');
+        });
+      }
+      ligarMascaraMoeda(document.getElementById('frete_preco'));
+      ligarMascaraMoeda(document.getElementById('valor_pago'));
+
+      // ---- buscar contato salvo na Tiny (endereco de livraria etc.) ----
+      function ligarBuscaTiny(inputBusca, resultadosEl, botao, campos) {
+        function preencher(contato) {
+          campos.nome.value = contato.nome || '';
+          if (campos.documento) campos.documento.value = contato.documento || '';
+          if (campos.telefone) campos.telefone.value = contato.telefone || '';
+          if (campos.email) campos.email.value = contato.email || '';
+          if (campos.tipoPessoa) campos.tipoPessoa.value = contato.tipo_pessoa || 'fisica';
+          campos.cep.value = mascararCep(contato.cep || '');
+          campos.logradouro.value = contato.logradouro || '';
+          campos.numero.value = contato.numero || '';
+          campos.complemento.value = contato.complemento || '';
+          campos.bairro.value = contato.bairro || '';
+          campos.cidade.value = contato.cidade || '';
+          campos.uf.value = contato.uf || '';
+          resultadosEl.hidden = true;
+        }
+
+        function buscar() {
+          const termo = inputBusca.value.trim();
+          if (!termo) return;
+          resultadosEl.innerHTML = '<p class="busca-tiny-vazio">Buscando...</p>';
+          resultadosEl.hidden = false;
+          fetch(`/admin/tiny/buscar-contato?q=${encodeURIComponent(termo)}`)
+            .then((resposta) => resposta.json())
+            .then((dados) => {
+              if (dados.erro) {
+                resultadosEl.innerHTML = `<p class="busca-tiny-vazio">⚠️ ${dados.erro}</p>`;
+                return;
+              }
+              if (!dados.contatos || dados.contatos.length === 0) {
+                resultadosEl.innerHTML = '<p class="busca-tiny-vazio">Nenhum contato encontrado na Tiny.</p>';
+                return;
+              }
+              resultadosEl.innerHTML = '';
+              dados.contatos.forEach((contato) => {
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.textContent = `${contato.nome}${contato.cidade ? ' — ' + contato.cidade + '/' + contato.uf : ''}`;
+                btn.addEventListener('click', () => preencher(contato));
+                resultadosEl.appendChild(btn);
+              });
+            })
+            .catch(() => {
+              resultadosEl.innerHTML = '<p class="busca-tiny-vazio">⚠️ Não foi possível buscar agora.</p>';
+            });
+        }
+
+        botao.addEventListener('click', buscar);
+        inputBusca.addEventListener('keydown', (evento) => {
+          if (evento.key === 'Enter') {
+            evento.preventDefault();
+            buscar();
+          }
+        });
+      }
+
+      ligarBuscaTiny(
+        document.getElementById('busca-tiny-cliente'),
+        document.getElementById('busca-tiny-cliente-resultados'),
+        document.getElementById('btn-busca-tiny-cliente'),
+        {
+          nome: document.getElementById('cliente_nome'),
+          documento: document.getElementById('cliente_documento'),
+          telefone: document.getElementById('cliente_telefone'),
+          email: document.getElementById('cliente_email'),
+          cep: document.getElementById('endereco_cep'),
+          logradouro: document.getElementById('endereco_logradouro'),
+          numero: document.getElementById('endereco_numero'),
+          complemento: document.getElementById('endereco_complemento'),
+          bairro: document.getElementById('endereco_bairro'),
+          cidade: document.getElementById('endereco_cidade'),
+          uf: document.getElementById('endereco_uf'),
+        }
+      );
+      ligarBuscaTiny(
+        document.getElementById('busca-tiny-destinatario'),
+        document.getElementById('busca-tiny-destinatario-resultados'),
+        document.getElementById('btn-busca-tiny-destinatario'),
+        {
+          nome: document.getElementById('destinatario_nome'),
+          documento: document.getElementById('destinatario_documento'),
+          tipoPessoa: document.getElementById('destinatario_tipo_pessoa'),
+          cep: document.getElementById('destinatario_cep'),
+          logradouro: document.getElementById('destinatario_logradouro'),
+          numero: document.getElementById('destinatario_numero'),
+          complemento: document.getElementById('destinatario_complemento'),
+          bairro: document.getElementById('destinatario_bairro'),
+          cidade: document.getElementById('destinatario_cidade'),
+          uf: document.getElementById('destinatario_uf'),
+        }
+      );
+    </script>
   {% endif %}
 
   {% if pedido.status != 'pendente' and pedido.status != 'cancelado' and pedido.status != 'whatsapp' %}

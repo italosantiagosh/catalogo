@@ -232,3 +232,78 @@ def test_erro_de_rede(monkeypatch):
     with patch("services.tiny.requests.post", side_effect=requests.RequestException("timeout")):
         resultado = tiny.criar_pedido_tiny(_pedido_exemplo())
     assert "erro" in resultado
+
+
+def test_buscar_contatos_sem_token_devolve_erro(monkeypatch):
+    monkeypatch.setattr(tiny, "TINY_API_TOKEN", "")
+    resultado = tiny.buscar_contatos_tiny("livraria")
+    assert "erro" in resultado
+
+
+def test_buscar_contatos_termo_vazio_devolve_lista_vazia(monkeypatch):
+    monkeypatch.setattr(tiny, "TINY_API_TOKEN", "segredo123")
+    resultado = tiny.buscar_contatos_tiny("   ")
+    assert resultado == {"ok": True, "contatos": []}
+
+
+def test_buscar_contatos_monta_lista_a_partir_da_resposta(monkeypatch):
+    monkeypatch.setattr(tiny, "TINY_API_TOKEN", "segredo123")
+    resposta = Mock()
+    resposta.raise_for_status = Mock()
+    resposta.json.return_value = {
+        "retorno": {
+            "status_processamento": 3,
+            "status": "OK",
+            "contatos": [
+                {
+                    "contato": {
+                        "nome": "Livraria Shalom Natal",
+                        "tipo_pessoa": "J",
+                        "cpf_cnpj": "12345678000199",
+                        "fone": "8433334444",
+                        "email": "contato@livraria.com",
+                        "cep": "59000000",
+                        "endereco": "Av. Principal",
+                        "numero": "500",
+                        "complemento": "Loja 2",
+                        "bairro": "Centro",
+                        "cidade": "Natal",
+                        "uf": "RN",
+                    }
+                }
+            ],
+        }
+    }
+    with patch("services.tiny.requests.get", return_value=resposta) as get_mock:
+        resultado = tiny.buscar_contatos_tiny("livraria shalom")
+
+    assert get_mock.call_args.kwargs["params"]["pesquisa"] == "livraria shalom"
+    assert resultado["ok"] is True
+    assert len(resultado["contatos"]) == 1
+    contato = resultado["contatos"][0]
+    assert contato["nome"] == "Livraria Shalom Natal"
+    assert contato["tipo_pessoa"] == "juridica"
+    assert contato["documento"] == "12345678000199"
+    assert contato["logradouro"] == "Av. Principal"
+    assert contato["cidade"] == "Natal"
+
+
+def test_buscar_contatos_nenhum_encontrado_devolve_lista_vazia(monkeypatch):
+    monkeypatch.setattr(tiny, "TINY_API_TOKEN", "segredo123")
+    resposta = Mock()
+    resposta.raise_for_status = Mock()
+    resposta.json.return_value = {
+        "retorno": {"status_processamento": 3, "status": "Erro", "codigo_erro": 20, "erros": [{"erro": "Nenhum registro encontrado"}]}
+    }
+    with patch("services.tiny.requests.get", return_value=resposta):
+        resultado = tiny.buscar_contatos_tiny("ninguem")
+    assert resultado == {"ok": True, "contatos": []}
+
+
+def test_buscar_contatos_erro_de_rede(monkeypatch):
+    import requests
+
+    monkeypatch.setattr(tiny, "TINY_API_TOKEN", "segredo123")
+    with patch("services.tiny.requests.get", side_effect=requests.RequestException("timeout")):
+        resultado = tiny.buscar_contatos_tiny("livraria")
+    assert "erro" in resultado

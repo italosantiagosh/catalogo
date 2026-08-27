@@ -143,7 +143,7 @@ from services.pedidos import (
     previsoes_do_pedido,
 )
 from services.pix import gerar_copia_cola, gerar_qr_data_uri
-from services.tiny import criar_pedido_tiny
+from services.tiny import buscar_contatos_tiny, criar_pedido_tiny
 from services.gerador.compositor import auto_cover_box, compose_medal, crop_to_box, load_rgba
 from services.gerador.config import IMAGE_EXTENSIONS, MEDAL_SPECS
 from services.pricing import CHAVES_PRECO, calcular_carrinho, preco_varejo
@@ -1562,6 +1562,24 @@ def admin_pedido_status(token: str):
     return redirect(url_for("admin_pedido_detalhe", token=token))
 
 
+@app.route("/admin/tiny/buscar-contato", methods=["GET"])
+def admin_tiny_buscar_contato():
+    """Busca contatos ja cadastrados na Tiny (ver
+    services/tiny.py:buscar_contatos_tiny) -- usado no formulario de
+    "Confirmar venda" pra puxar o endereco de uma livraria que ja
+    fecha pedido com regularidade, em vez de redigitar tudo na mao
+    (ver conversa)."""
+    if not _autenticacao_admin_valida(request.authorization):
+        return Response(
+            "Autenticação necessária.", 401, {"WWW-Authenticate": 'Basic realm="Painel de pedidos"'}
+        )
+    termo = str(request.args.get("q", ""))
+    resultado = buscar_contatos_tiny(termo)
+    if "erro" in resultado:
+        return jsonify(erro=resultado["erro"]), 502
+    return jsonify(contatos=resultado["contatos"])
+
+
 @app.route("/admin/pedidos/<token>/confirmar-venda", methods=["POST"])
 def admin_pedido_confirmar_venda(token: str):
     """Promove um lead "whatsapp" (ver api_pedido_criar_whatsapp) pra
@@ -1597,6 +1615,27 @@ def admin_pedido_confirmar_venda(token: str):
     if not cliente["nome"]:
         abort(400, description="Informe ao menos o nome do cliente.")
 
+    # Entrega em endereco diferente (ex: livraria que recebe por conta
+    # de outra pessoa/paroquia, ver conversa) -- so monta o bloco
+    # quando o admin realmente marcou/preencheu, senao a entrega usa o
+    # endereco do cliente acima mesmo (mesmo criterio do checkout do
+    # site, ver _endereco_valido).
+    destinatario_nome = str(request.form.get("destinatario_nome", "")).strip()
+    destinatario = None
+    if destinatario_nome:
+        destinatario = {
+            "nome": destinatario_nome,
+            "tipo_pessoa": str(request.form.get("destinatario_tipo_pessoa", "fisica")).strip(),
+            "documento": str(request.form.get("destinatario_documento", "")).strip(),
+            "cep": str(request.form.get("destinatario_cep", "")).strip(),
+            "logradouro": str(request.form.get("destinatario_logradouro", "")).strip(),
+            "numero": str(request.form.get("destinatario_numero", "")).strip(),
+            "complemento": str(request.form.get("destinatario_complemento", "")).strip(),
+            "bairro": str(request.form.get("destinatario_bairro", "")).strip(),
+            "cidade": str(request.form.get("destinatario_cidade", "")).strip(),
+            "uf": str(request.form.get("destinatario_uf", "")).strip(),
+        }
+
     try:
         frete_preco = float(request.form.get("frete_preco", "0").replace(",", "."))
     except ValueError:
@@ -1621,6 +1660,7 @@ def admin_pedido_confirmar_venda(token: str):
         frete_prazo_dias=frete_prazo_dias,
         forma_pagamento=forma_pagamento,
         valor_pago=valor_pago,
+        destinatario=destinatario,
     )
     if pedido_pago is None or pedido_pago["status"] != "pago":
         abort(400, description="Esse pedido não é mais um lead do WhatsApp aguardando confirmação.")

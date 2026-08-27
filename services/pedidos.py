@@ -440,16 +440,23 @@ def confirmar_venda_manual(
     forma_pagamento: str,
     valor_pago: float,
     frete_prazo_dias: int | None = None,
+    destinatario: dict | None = None,
 ) -> dict | None:
     """Promove um lead "whatsapp" (ver criar_pedido) pra "pago" depois do
     admin preencher os dados na mao, quando a pessoa realmente fechou o
     pedido combinado pelo WhatsApp (ver app.py:admin_pedido_confirmar_venda).
     So funciona nesse status -- nao reprocessa um pedido ja confirmado
     nem mexe num pedido de outro fluxo (evita sobrescrever cliente/
-    endereco de um pedido pago normalmente pelo site)."""
+    endereco de um pedido pago normalmente pelo site). `destinatario`
+    e´ o endereco de ENTREGA quando diferente do cliente que fechou a
+    compra (ex: livraria que recebe por conta de outra pessoa, ver
+    conversa) -- mesmas colunas endereco_destinatario_* usadas no
+    checkout do site (ver criar_pedido/_endereco_valido em app.py), so
+    que aqui vem em branco quando None (nenhum destinatario informado)."""
     pedido = obter_pedido(token)
     if pedido is None or pedido["status"] != "whatsapp":
         return pedido
+    destinatario = destinatario or {}
     total = round(pedido["subtotal"] + frete_preco, 2)
     agora = datetime.now(timezone.utc).isoformat()
     with _conexao() as conexao:
@@ -461,6 +468,12 @@ def confirmar_venda_manual(
                 cliente_telefone = ?, cliente_email = ?,
                 endereco_cep = ?, endereco_logradouro = ?, endereco_numero = ?, endereco_complemento = ?,
                 endereco_bairro = ?, endereco_cidade = ?, endereco_uf = ?,
+                endereco_destinatario_nome = ?, endereco_destinatario_tipo_pessoa = ?,
+                endereco_destinatario_documento = ?,
+                endereco_destinatario_cep = ?, endereco_destinatario_logradouro = ?,
+                endereco_destinatario_numero = ?, endereco_destinatario_complemento = ?,
+                endereco_destinatario_bairro = ?, endereco_destinatario_cidade = ?,
+                endereco_destinatario_uf = ?,
                 frete_descricao = ?, frete_preco = ?, frete_prazo_dias = ?, total = ?,
                 forma_pagamento = ?, valor_pago = ?
             WHERE token = ?
@@ -472,6 +485,12 @@ def confirmar_venda_manual(
                 endereco.get("cep", ""), endereco.get("logradouro", ""), endereco.get("numero", ""),
                 endereco.get("complemento", ""), endereco.get("bairro", ""), endereco.get("cidade", ""),
                 endereco.get("uf", ""),
+                destinatario.get("nome", ""), destinatario.get("tipo_pessoa", ""),
+                destinatario.get("documento", ""),
+                destinatario.get("cep", ""), destinatario.get("logradouro", ""),
+                destinatario.get("numero", ""), destinatario.get("complemento", ""),
+                destinatario.get("bairro", ""), destinatario.get("cidade", ""),
+                destinatario.get("uf", ""),
                 frete_descricao, frete_preco, frete_prazo_dias, total,
                 forma_pagamento, valor_pago,
                 token,
