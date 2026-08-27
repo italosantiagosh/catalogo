@@ -1617,14 +1617,14 @@ def api_avaliacoes_criar():
     texto = str(request.form.get("texto", "")).strip()[:1000]
 
     arquivo = request.files.get("foto")
-    if not arquivo or not arquivo.filename:
-        return jsonify(erro="Envie uma foto do produto que você recebeu."), 400
-    if not _extensao_valida(arquivo.filename):
-        return jsonify(erro="Formato de imagem inválido. Aceitos: " + ", ".join(IMAGE_EXTENSIONS)), 400
-    try:
-        foto_data_uri = _foto_avaliacao_para_data_uri(arquivo)
-    except Exception:
-        return jsonify(erro="Não foi possível processar a foto enviada."), 400
+    foto_data_uri = ""
+    if arquivo and arquivo.filename:
+        if not _extensao_valida(arquivo.filename):
+            return jsonify(erro="Formato de imagem inválido. Aceitos: " + ", ".join(IMAGE_EXTENSIONS)), 400
+        try:
+            foto_data_uri = _foto_avaliacao_para_data_uri(arquivo)
+        except Exception:
+            return jsonify(erro="Não foi possível processar a foto enviada."), 400
 
     criar_avaliacao(
         produto_id=produto_id,

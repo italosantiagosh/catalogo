@@ -49,10 +49,25 @@ def _corpo_avaliacao(**overrides):
     return base
 
 
-def test_envio_sem_foto_retorna_erro(client):
+def test_envio_sem_foto_e_aceito(client):
+    """Foto e´ opcional -- avaliacao sem foto tambem entra na fila de
+    moderacao normalmente (ver conversa: exigir foto tava barrando
+    quem so queria deixar um comentario rapido)."""
     resposta = client.post("/api/avaliacoes", data=_corpo_avaliacao())
+    assert resposta.status_code == 200
+
+    pendentes = avaliacoes.listar_avaliacoes(status="pendente")
+    assert len(pendentes) == 1
+    assert pendentes[0]["foto"] == ""
+
+
+def test_envio_com_foto_invalida_retorna_erro(client):
+    resposta = client.post(
+        "/api/avaliacoes",
+        data={**_corpo_avaliacao(), "foto": (io.BytesIO(b"nao e uma imagem"), "arquivo.txt")},
+        content_type="multipart/form-data",
+    )
     assert resposta.status_code == 400
-    assert "foto" in resposta.get_json()["erro"].lower()
 
 
 def test_envio_produto_inexistente_404(client):

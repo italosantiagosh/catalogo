@@ -8,11 +8,19 @@
   const erroEl = document.getElementById('aval-erro');
   const sucessoEl = document.getElementById('aval-sucesso');
   const btnEnviar = document.getElementById('btn-enviar-avaliacao');
+  const inputFoto = document.getElementById('aval-foto');
+  const nomeArquivoDiv = document.getElementById('aval-nome-arquivo');
 
   btnAbrir.addEventListener('click', () => {
     form.hidden = false;
     btnAbrir.hidden = true;
   });
+
+  if (inputFoto && nomeArquivoDiv) {
+    inputFoto.addEventListener('change', () => {
+      nomeArquivoDiv.textContent = inputFoto.files.length > 0 ? inputFoto.files[0].name : '';
+    });
+  }
 
   estrelasWrap.querySelectorAll('button').forEach((botao) => {
     botao.addEventListener('click', () => {

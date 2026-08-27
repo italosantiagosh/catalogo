@@ -207,8 +207,13 @@
       </div>
       <input type="hidden" name="nota" id="aval-nota" value="">
 
-      <label for="aval-foto">Foto do produto que você recebeu</label>
-      <input type="file" id="aval-foto" name="foto" accept="image/*" required>
+      <label class="dropzone" for="aval-foto">
+        <span class="icone">📷</span>
+        <span class="principal">Toque para adicionar uma foto</span>
+        <span class="secundario">Opcional — JPG, PNG, WEBP ou HEIC</span>
+      </label>
+      <input type="file" id="aval-foto" name="foto" accept="image/*">
+      <div id="aval-nome-arquivo"></div>
 
       <label for="aval-texto">Conte como foi (opcional)</label>
       <textarea id="aval-texto" name="texto" maxlength="1000" rows="3"></textarea>
