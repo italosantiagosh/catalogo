@@ -40,13 +40,16 @@ def test_admin_analytics_mostra_numeros(client, monkeypatch):
          patch("app.analytics.usuarios_ativos_agora", return_value=3), \
          patch("app.analytics.resumo_ultimos_dias", side_effect=lambda dias: {"visitas": 100 * dias, "pessoas": 50, "visualizacoes": 300}), \
          patch("app.analytics.paginas_mais_vistas", return_value=[{"pagina": "/produto/sao-jose", "visualizacoes": 42}]), \
-         patch("app.analytics.contagem_evento", return_value=7):
+         patch("app.analytics.contagem_evento", return_value=7), \
+         patch("app.analytics.contagem_evento_tempo_real", return_value=2):
         resposta = client.get("/admin/analytics", auth=("admin", "segredo123"))
     corpo = resposta.get_data(as_text=True)
     assert resposta.status_code == 200
     assert ">3<" in corpo
     assert "/produto/sao-jose" in corpo
     assert ">42<" in corpo
+    assert ">2<" in corpo
+    assert "últimos 30 min" in corpo
 
 
 def test_analytics_service_sem_config_devolve_none():
@@ -64,6 +67,7 @@ def test_analytics_service_sem_config_devolve_none():
         assert analytics.resumo_ultimos_dias(7) is None
         assert analytics.paginas_mais_vistas(7) is None
         assert analytics.contagem_evento("calculate_shipping", 7) is None
+        assert analytics.contagem_evento_tempo_real("calculate_shipping") is None
     finally:
         analytics.GA4_SERVICE_ACCOUNT_JSON = modulo_original_json
         analytics.GA4_PROPERTY_ID = modulo_original_property

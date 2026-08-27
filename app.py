@@ -1980,6 +1980,7 @@ def admin_analytics():
         paginas_7d=analytics.paginas_mais_vistas(7, limite=10),
         fretes_simulados_7d=analytics.contagem_evento("calculate_shipping", 7),
         fretes_simulados_30d=analytics.contagem_evento("calculate_shipping", 30),
+        fretes_simulados_agora=analytics.contagem_evento_tempo_real("calculate_shipping"),
     )
 
 

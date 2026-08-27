@@ -50,7 +50,16 @@
         <div class="numero">{{ fretes_simulados_7d if fretes_simulados_7d is not none else "—" }}</div>
         <div class="rotulo">Simulações de frete (7 dias)</div>
       </div>
+      <div class="cartao ao-vivo">
+        <div class="numero">{{ fretes_simulados_agora if fretes_simulados_agora is not none else "—" }}</div>
+        <div class="rotulo">🟢 Simulações de frete (últimos 30 min)</div>
+      </div>
     </div>
+    <p style="font-size:0.78rem;color:#5b6b82;margin:-10px 0 20px;">
+      Os cartões 🟢 usam o relatório em tempo real do GA4 (reflete na hora). Os demais números
+      (7 e 30 dias) usam o relatório padrão, que pode levar minutos a horas pra processar um
+      evento novo -- não é bug se um teste que você acabou de fazer não aparecer ali de imediato.
+    </p>
 
     <div class="bloco">
       <h2>Últimos 30 dias</h2>

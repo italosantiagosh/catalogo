@@ -159,3 +159,36 @@ def contagem_evento(nome_evento: str, dias: int) -> int | None:
     if not resposta.rows:
         return 0
     return int(resposta.rows[0].metric_values[0].value)
+
+
+def contagem_evento_tempo_real(nome_evento: str) -> int | None:
+    """Quantas vezes um evento disparou nos ULTIMOS ~30 MINUTOS (relatorio
+    em tempo real do GA4, mesma fonte de usuarios_ativos_agora) -- ver
+    conversa: o relatorio padrao usado em contagem_evento demora um
+    tempo (minutos a horas) pra processar, entao um teste feito agora
+    mesmo nao aparece la na hora. Esse aqui serve pra validar um teste
+    na hora, sem esperar."""
+    cliente = _client()
+    if cliente is None:
+        return None
+    from google.analytics.data_v1beta.types import Dimension, Filter, FilterExpression, Metric, RunRealtimeReportRequest
+
+    try:
+        resposta = cliente.run_realtime_report(
+            RunRealtimeReportRequest(
+                property=f"properties/{GA4_PROPERTY_ID}",
+                dimensions=[Dimension(name="eventName")],
+                metrics=[Metric(name="eventCount")],
+                dimension_filter=FilterExpression(
+                    filter=Filter(
+                        field_name="eventName",
+                        string_filter=Filter.StringFilter(value=nome_evento),
+                    )
+                ),
+            )
+        )
+    except Exception:
+        return None
+    if not resposta.rows:
+        return 0
+    return int(resposta.rows[0].metric_values[0].value)
