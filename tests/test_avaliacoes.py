@@ -94,6 +94,17 @@ def test_pagina_avaliar_produto_inexistente_404(client):
     assert resposta.status_code == 404
 
 
+def test_pagina_avaliar_geral_mostra_busca_sem_produto_fixo(client):
+    """Link unico geral (ver conversa) -- sem produto na URL, mostra o
+    campo de busca e o formulario comeca escondido ate escolher."""
+    resposta = client.get("/avaliar")
+    assert resposta.status_code == 200
+    corpo = resposta.get_data(as_text=True)
+    assert 'id="avaliar-busca-produto"' in corpo
+    assert 'id="avaliar-caixa" hidden' in corpo
+    assert 'value=""' in corpo  # produto_id ainda vazio
+
+
 def test_envio_sem_nome_retorna_erro(client):
     dados = _corpo_avaliacao(nome_cliente="")
     arquivo, nome = _foto_teste()
@@ -142,6 +153,28 @@ def test_aprovar_avaliacao_aparece_na_pagina_do_produto(client, monkeypatch):
     assert "Maria Teste" in pagina
     assert "Chegou rápido e é linda!" in pagina
     assert "AggregateRating" in pagina
+
+
+def test_excluir_avaliacao_ja_aprovada_some_do_site(client, monkeypatch):
+    """Ver conversa: admin precisa poder excluir mesmo depois de
+    aprovada, nao so recusar antes de aprovar."""
+    _preparar_admin(monkeypatch)
+    produto_id = _produto_id_real()
+    dados = _corpo_avaliacao(produto_id=produto_id)
+    arquivo, nome = _foto_teste()
+    client.post("/api/avaliacoes", data={**dados, "foto": (arquivo, nome)})
+
+    avaliacao = avaliacoes.listar_avaliacoes()[0]
+    client.post(f"/admin/avaliacoes/{avaliacao['id']}/aprovar", auth=("admin", "segredo123"))
+    assert "Maria Teste" in client.get(f"/produto/{produto_id}").get_data(as_text=True)
+
+    painel_aprovada = client.get("/admin/avaliacoes", auth=("admin", "segredo123")).get_data(as_text=True)
+    assert "Excluir do site" in painel_aprovada
+
+    resposta = client.post(f"/admin/avaliacoes/{avaliacao['id']}/recusar", auth=("admin", "segredo123"))
+    assert resposta.status_code == 302
+    pagina = client.get(f"/produto/{produto_id}").get_data(as_text=True)
+    assert "Maria Teste" not in pagina
 
 
 def test_recusar_avaliacao_nao_aparece(client, monkeypatch):

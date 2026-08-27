@@ -83,6 +83,7 @@ from config import (
     VIDEO_APRESENTACAO_URL,
     WHATSAPP_NUMBER,
 )
+import services.analytics as analytics
 from services.catalogo import (
     buscar_produto,
     carregar_produtos,
@@ -115,6 +116,7 @@ from services.email import (
     enviar_pedido_avaliacao,
     enviar_pedido_cancelado,
     enviar_pedido_enviado,
+    enviar_pedido_excluido,
 )
 from services.frete import calcular_frete
 from services.infinitepay import criar_link_pagamento
@@ -123,6 +125,7 @@ from services.pedidos import (
     cancelar_pedido,
     confirmar_venda_manual,
     criar_pedido,
+    excluir_pedido,
     listar_pedidos,
     listar_pedidos_pagos_para_avaliacao,
     listar_pedidos_pagos_para_upsell,
@@ -137,6 +140,7 @@ from services.pedidos import (
     marcar_pago,
     marcar_tiny_sincronizado,
     obter_pedido,
+    previsoes_do_pedido,
 )
 from services.pix import gerar_copia_cola, gerar_qr_data_uri
 from services.tiny import criar_pedido_tiny
@@ -294,7 +298,20 @@ def _formatar_preco(valor: float) -> str:
     return f"R$ {valor:.2f}".replace(".", ",")
 
 
+def _formatar_data_br(valor) -> str:
+    if valor is None:
+        return ""
+    if isinstance(valor, str):
+        valor = datetime.fromisoformat(valor)
+    return valor.strftime("%d/%m/%Y")
+
+
 app.jinja_env.filters["preco"] = _formatar_preco
+app.jinja_env.filters["data_br"] = _formatar_data_br
+# Registrado como global (nao filtro) pra poder ser chamado direto nos
+# templates do painel admin com o pedido inteiro (ver
+# services.pedidos.previsoes_do_pedido).
+app.jinja_env.globals["previsoes_do_pedido"] = previsoes_do_pedido
 
 
 def _extensao_valida(nome_arquivo: str) -> bool:
@@ -832,13 +849,27 @@ def produto(produto_id: str):
     )
 
 
+@app.route("/avaliar", methods=["GET"])
+def avaliar_geral():
+    """Mesma pagina isolada de avaliar_produto abaixo, so que sem
+    produto pre-selecionado -- mostra um campo de busca (reaproveita
+    /api/busca, mesmo usado na home) e o formulario so aparece depois
+    de escolher o produto (ver static/js/avaliar_busca.js). Pensado pra
+    mandar um UNICO link pra toda a base de clientes antiga, sem
+    precisar de um link por produto (ver conversa)."""
+    return render_template("avaliar.html", produto=None)
+
+
 @app.route("/avaliar/<produto_id>", methods=["GET"])
 def avaliar_produto(produto_id: str):
     """Pagina isolada so com o formulario de avaliacao (ver conversa --
     mandar o link da pagina de produto inteira pra base de clientes
     antiga faz a maioria desistir antes de chegar na secao de avaliar).
     Mesmo formulario/JS do produto.html (static/js/avaliacoes.js), so
-    que ja aberto e sem o resto da pagina em volta."""
+    que ja aberto e sem o resto da pagina em volta. Usado pelo e-mail
+    automatico de avaliacao (ja sabe qual produto pedir, ver
+    _enviar_pedidos_para_avaliacao) -- pro link geral sem produto fixo,
+    ver avaliar_geral acima."""
     produto = buscar_produto(produto_id)
     if produto is None:
         abort(404)
@@ -1099,6 +1130,10 @@ def api_pedido_criar():
     frete_descricao = str(frete.get("texto", "")).strip()
     if not frete_descricao:
         return jsonify(erro="Escolha uma opção de frete."), 400
+    try:
+        frete_prazo_dias = int(frete.get("prazo_dias"))
+    except (TypeError, ValueError):
+        frete_prazo_dias = None
 
     cliente = _cliente_valido(dados)
     if cliente is None:
@@ -1119,6 +1154,7 @@ def api_pedido_criar():
         subtotal=calculo["subtotal_total"],
         frete_descricao=frete_descricao,
         frete_preco=frete_preco,
+        frete_prazo_dias=frete_prazo_dias,
         cliente=cliente,
         endereco=endereco,
     )
@@ -1162,6 +1198,10 @@ def api_pedido_criar_whatsapp():
         frete_preco = float(frete.get("preco"))
     except (TypeError, ValueError):
         frete_preco = 0.0
+    try:
+        frete_prazo_dias = int(frete.get("prazo_dias"))
+    except (TypeError, ValueError):
+        frete_prazo_dias = None
     frete_descricao = str(frete.get("texto", "")).strip()
     # Frete nao simulado (comum em quem fecha direto pelo WhatsApp) --
     # se ja tiver digitado o CEP no calculo, guarda mesmo assim, pra
@@ -1176,6 +1216,7 @@ def api_pedido_criar_whatsapp():
         subtotal=calculo["subtotal_total"],
         frete_descricao=frete_descricao,
         frete_preco=frete_preco,
+        frete_prazo_dias=frete_prazo_dias,
         cliente={},
         endereco={},
         status_inicial="whatsapp",
@@ -1369,10 +1410,10 @@ _TIMELINE_INDICE_POR_STATUS = {chave: i for i, (chave, _) in enumerate(_PEDIDO_T
 
 def _timeline_do_pedido(pedido: dict) -> list[dict] | None:
     """Timeline visual de progresso (ver templates/pedido.html) -- nao
-    faz sentido pra pedido cancelado (isso e´ uma saida do fluxo normal,
-    nao uma etapa "concluida"), entao devolve None nesse caso e a
-    pagina so mostra a mensagem de cancelado."""
-    if pedido["status"] == "cancelado":
+    faz sentido pra pedido cancelado/excluido/lead do whatsapp (essas
+    sao saidas do fluxo normal, nao uma etapa "concluida"), entao
+    devolve None nesses casos."""
+    if pedido["status"] in ("cancelado", "excluido", "whatsapp"):
         return None
     indice_atual = _TIMELINE_INDICE_POR_STATUS.get(pedido["status"], 0)
     return [
@@ -1400,6 +1441,7 @@ def ver_pedido(token: str):
         mostrar_obrigado=mostrar_obrigado,
         oportunidades_upsell=oportunidades_upsell,
         timeline=_timeline_do_pedido(pedido),
+        previsoes=previsoes_do_pedido(pedido),
     )
 
 
@@ -1565,6 +1607,10 @@ def admin_pedido_confirmar_venda(token: str):
         valor_pago = float(request.form.get("valor_pago", "0").replace(",", "."))
     except ValueError:
         valor_pago = round(pedido["subtotal"] + frete_preco, 2)
+    try:
+        frete_prazo_dias = int(request.form.get("frete_prazo_dias", ""))
+    except ValueError:
+        frete_prazo_dias = None
 
     pedido_pago = confirmar_venda_manual(
         token,
@@ -1572,6 +1618,7 @@ def admin_pedido_confirmar_venda(token: str):
         endereco=endereco,
         frete_descricao=frete_descricao,
         frete_preco=frete_preco,
+        frete_prazo_dias=frete_prazo_dias,
         forma_pagamento=forma_pagamento,
         valor_pago=valor_pago,
     )
@@ -1598,6 +1645,70 @@ def admin_pedido_descartar_whatsapp(token: str):
     return redirect(url_for("admin_pedidos"))
 
 
+@app.route("/admin/pedidos/<token>/excluir", methods=["POST"])
+def admin_pedido_excluir(token: str):
+    """Exclui um pedido do painel (ver conversa) -- motivo obrigatorio,
+    avisa o cliente por e-mail explicando (ver
+    services/email.py:enviar_pedido_excluido). NUNCA apaga a linha de
+    verdade (ver services.pedidos.excluir_pedido -- so marca status
+    "excluido", mantendo o historico)."""
+    if not _autenticacao_admin_valida(request.authorization):
+        return Response(
+            "Autenticação necessária.", 401, {"WWW-Authenticate": 'Basic realm="Painel de pedidos"'}
+        )
+    pedido = obter_pedido(token)
+    if pedido is None:
+        abort(404)
+    motivo = str(request.form.get("motivo", "")).strip()
+    if not motivo:
+        abort(400, description="Informe o motivo da exclusão.")
+
+    pedido_excluido = excluir_pedido(token, motivo=motivo)
+    enviar_pedido_excluido(pedido_excluido, motivo, url_for("catalogo_completo", _external=True))
+
+    return redirect(url_for("admin_pedidos"))
+
+
+def _sincronizar_pedido_tiny(token: str) -> str | None:
+    """Sincroniza (ou tenta de novo) com a Tiny na mao -- usado pelo
+    botao individual (admin_pedido_reenviar_tiny) e pela acao em massa
+    (admin_pedidos_acao_em_massa), nunca duplicando essa logica.
+    Devolve None se deu certo, ou uma mensagem de erro pra reportar."""
+    pedido = obter_pedido(token)
+    if pedido is None:
+        return "Pedido não encontrado."
+    if pedido["status"] not in ("pago", "faturado", "enviado", "entregue"):
+        return "Só dá pra sincronizar com a Tiny um pedido já pago."
+    try:
+        resultado_tiny = criar_pedido_tiny(pedido)
+    except Exception as exc:  # nunca deixa o operador numa tela de erro generica
+        resultado_tiny = {"erro": f"Erro inesperado ao sincronizar: {exc}"}
+    marcar_tiny_sincronizado(
+        token, numero_pedido=resultado_tiny.get("numero"), erro=resultado_tiny.get("erro")
+    )
+    return resultado_tiny.get("erro")
+
+
+def _reenviar_email_confirmacao(token: str) -> str | None:
+    """Reenvia o e-mail de pagamento confirmado na mao -- usado pelo
+    botao individual (admin_pedido_reenviar_email) e pela acao em massa
+    (admin_pedidos_acao_em_massa). Devolve None se deu certo, ou uma
+    mensagem de erro pra reportar."""
+    pedido = obter_pedido(token)
+    if pedido is None:
+        return "Pedido não encontrado."
+    if pedido["status"] == "pendente":
+        return "Esse pedido ainda não foi pago."
+    try:
+        resultado_email = enviar_confirmacao_pedido(
+            pedido, url_for("ver_pedido", token=token, _external=True)
+        )
+    except Exception as exc:  # nunca deixa o operador numa tela de erro generica
+        resultado_email = {"erro": f"Erro inesperado ao enviar: {exc}"}
+    marcar_email_enviado(token, erro=resultado_email.get("erro"))
+    return resultado_email.get("erro")
+
+
 @app.route("/admin/pedidos/<token>/reenviar-tiny", methods=["POST"])
 def admin_pedido_reenviar_tiny(token: str):
     """Sincroniza (ou tenta de novo) com a Tiny na mao -- normalmente
@@ -1610,19 +1721,11 @@ def admin_pedido_reenviar_tiny(token: str):
         return Response(
             "Autenticação necessária.", 401, {"WWW-Authenticate": 'Basic realm="Painel de pedidos"'}
         )
-    pedido = obter_pedido(token)
-    if pedido is None:
+    if obter_pedido(token) is None:
         abort(404)
-    if pedido["status"] not in ("pago", "faturado", "enviado", "entregue"):
-        abort(400, description="Só dá pra sincronizar com a Tiny um pedido já pago.")
-
-    try:
-        resultado_tiny = criar_pedido_tiny(pedido)
-    except Exception as exc:  # nunca deixa o operador numa tela de erro generica
-        resultado_tiny = {"erro": f"Erro inesperado ao sincronizar: {exc}"}
-    marcar_tiny_sincronizado(
-        token, numero_pedido=resultado_tiny.get("numero"), erro=resultado_tiny.get("erro")
-    )
+    erro = _sincronizar_pedido_tiny(token)
+    if erro == "Só dá pra sincronizar com a Tiny um pedido já pago.":
+        abort(400, description=erro)
     return redirect(url_for("admin_pedido_detalhe", token=token))
 
 
@@ -1638,20 +1741,50 @@ def admin_pedido_reenviar_email(token: str):
         return Response(
             "Autenticação necessária.", 401, {"WWW-Authenticate": 'Basic realm="Painel de pedidos"'}
         )
-    pedido = obter_pedido(token)
-    if pedido is None:
+    if obter_pedido(token) is None:
         abort(404)
-    if pedido["status"] == "pendente":
-        abort(400, description="Esse pedido ainda não foi pago.")
-
-    try:
-        resultado_email = enviar_confirmacao_pedido(
-            pedido, url_for("ver_pedido", token=token, _external=True)
-        )
-    except Exception as exc:  # nunca deixa o operador numa tela de erro generica
-        resultado_email = {"erro": f"Erro inesperado ao enviar: {exc}"}
-    marcar_email_enviado(token, erro=resultado_email.get("erro"))
+    erro = _reenviar_email_confirmacao(token)
+    if erro == "Esse pedido ainda não foi pago.":
+        abort(400, description=erro)
     return redirect(url_for("admin_pedido_detalhe", token=token))
+
+
+@app.route("/admin/pedidos/acao-em-massa", methods=["POST"])
+def admin_pedidos_acao_em_massa():
+    """Aplica uma acao a varios pedidos selecionados de uma vez (ver
+    conversa) -- reaproveita as MESMAS funcoes dos botoes individuais
+    pra nunca duplicar logica. Sempre volta pro painel com a mesma
+    lista de status filtrada (?status=...), pra nao perder o contexto
+    de onde a selecao foi feita."""
+    if not _autenticacao_admin_valida(request.authorization):
+        return Response(
+            "Autenticação necessária.", 401, {"WWW-Authenticate": 'Basic realm="Painel de pedidos"'}
+        )
+    tokens = request.form.getlist("tokens")
+    acao = str(request.form.get("acao", "")).strip()
+    status_filtro = str(request.form.get("status_filtro", "")).strip() or None
+
+    if tokens and acao == "tiny":
+        for token in tokens:
+            _sincronizar_pedido_tiny(token)
+    elif tokens and acao == "email":
+        for token in tokens:
+            _reenviar_email_confirmacao(token)
+    elif tokens and acao == "status":
+        novo_status = str(request.form.get("novo_status", "")).strip()
+        for token in tokens:
+            atualizar_status(token, novo_status)
+    elif tokens and acao == "excluir":
+        motivo = str(request.form.get("motivo", "")).strip()
+        if motivo:
+            for token in tokens:
+                pedido_excluido = excluir_pedido(token, motivo=motivo)
+                if pedido_excluido:
+                    enviar_pedido_excluido(pedido_excluido, motivo, url_for("catalogo_completo", _external=True))
+
+    if status_filtro:
+        return redirect(url_for("admin_pedidos", status=status_filtro))
+    return redirect(url_for("admin_pedidos"))
 
 
 @app.route("/api/pix/gerar", methods=["POST"])
@@ -1785,6 +1918,29 @@ def api_avaliacoes_criar():
         foto=foto_data_uri,
     )
     return jsonify(ok=True)
+
+
+@app.route("/admin/analytics", methods=["GET"])
+def admin_analytics():
+    """Dashboard de leitura do GA4 dentro do painel (ver
+    services/analytics.py) -- visitas/pessoas/paginas mais vistas/
+    quantas simularam frete, sem precisar abrir o Google Analytics."""
+    if not _autenticacao_admin_valida(request.authorization):
+        return Response(
+            "Autenticação necessária.", 401, {"WWW-Authenticate": 'Basic realm="Painel de analytics"'}
+        )
+    if not analytics.configurado():
+        return render_template("admin_analytics.html", configurado=False)
+    return render_template(
+        "admin_analytics.html",
+        configurado=True,
+        ao_vivo=analytics.usuarios_ativos_agora(),
+        resumo_7d=analytics.resumo_ultimos_dias(7),
+        resumo_30d=analytics.resumo_ultimos_dias(30),
+        paginas_7d=analytics.paginas_mais_vistas(7, limite=10),
+        fretes_simulados_7d=analytics.contagem_evento("calculate_shipping", 7),
+        fretes_simulados_30d=analytics.contagem_evento("calculate_shipping", 30),
+    )
 
 
 @app.route("/admin/avaliacoes", methods=["GET"])

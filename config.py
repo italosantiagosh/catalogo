@@ -140,8 +140,28 @@ UPSELL_HORAS_APOS_PAGAMENTO = int(os.environ.get("UPSELL_HORAS_APOS_PAGAMENTO", 
 # app.py:_enviar_pedidos_para_avaliacao.
 AVALIACAO_DIAS_APOS_PAGAMENTO = int(os.environ.get("AVALIACAO_DIAS_APOS_PAGAMENTO", "30"))
 
+# Prazo de producao em DIAS UTEIS depois do pagamento confirmado, antes
+# do pedido ser enviado -- mesma promessa ja usada como texto fixo em
+# varias paginas ("prazo de ate 5 dias uteis antes do envio"). Usado
+# pra calcular a previsao de envio/entrega mostrada no painel admin e
+# na timeline do cliente (ver app.py:_previsoes_do_pedido).
+PRODUCAO_DIAS_UTEIS = int(os.environ.get("PRODUCAO_DIAS_UTEIS", "5"))
+
 GA4_MEASUREMENT_ID = os.environ.get("GA4_MEASUREMENT_ID", "G-RXVM530CM6")
 META_PIXEL_ID = os.environ.get("META_PIXEL_ID", "28592446083693889")
+
+# Dashboard de leitura no painel admin (ver services/analytics.py,
+# /admin/analytics) -- API DIFERENTE do GA4_MEASUREMENT_ID acima (aquele
+# so ENVIA eventos pro Google; esta le os numeros de volta). Precisa de
+# uma conta de servico do Google Cloud com acesso de Leitor na
+# propriedade GA4 (gerada em console.cloud.google.com, adicionada como
+# leitora em analytics.google.com -> Administrador -> Gerenciamento de
+# acesso). Credencial de verdade -- NUNCA gravar aqui, so variavel de
+# ambiente no servidor. GA4_SERVICE_ACCOUNT_JSON e´ o conteudo INTEIRO
+# do arquivo JSON baixado do Google Cloud (cole como veio, com quebras
+# de linha e tudo).
+GA4_SERVICE_ACCOUNT_JSON = os.environ.get("GA4_SERVICE_ACCOUNT_JSON", "")
+GA4_PROPERTY_ID = os.environ.get("GA4_PROPERTY_ID", "")
 
 # Codigo de verificacao de propriedade do Google Search Console (metodo
 # "tag HTML" -- cole so o valor do content="..." que o Search Console

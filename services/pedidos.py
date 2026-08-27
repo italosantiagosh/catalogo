@@ -31,6 +31,8 @@ from contextlib import contextmanager
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
+from config import PRODUCAO_DIAS_UTEIS
+
 DB_PATH = os.environ.get(
     "PEDIDOS_DB_PATH", str(Path(__file__).resolve().parent.parent / "data" / "pedidos.db")
 )
@@ -107,6 +109,18 @@ _COLUNAS_ADICIONAIS: list[tuple[str, str]] = [
     # Opcional -- so mostra o botao "Baixar nota fiscal" na timeline
     # do pedido (templates/pedido.html) quando preenchido.
     ("link_nota_fiscal", "TEXT"),
+    # Prazo (em dias uteis) da opcao de frete escolhida -- vem da
+    # cotacao real da Frenet/Melhor Envio (ver services/frete.py), usado
+    # pra calcular a previsao de envio/entrega (ver
+    # app.py:_previsoes_do_pedido). Nulo quando o pedido nunca teve
+    # frete calculado (ex: lead do WhatsApp sem simulacao).
+    ("frete_prazo_dias", "INTEGER"),
+    # Exclusao pelo painel admin (ver app.py:admin_pedido_excluir) --
+    # NUNCA apaga a linha de verdade (perderia o historico/numero pra
+    # sempre), so marca como excluido com o motivo, pra manter
+    # rastreabilidade e poder mandar o e-mail explicando pro cliente.
+    ("excluido_em", "TEXT"),
+    ("excluido_motivo", "TEXT"),
 ]
 
 # Fluxo de status depois de "pago" -- alteravel manualmente pelo painel
@@ -168,6 +182,7 @@ def criar_pedido(
     cliente: dict,
     endereco: dict,
     status_inicial: str = "pendente",
+    frete_prazo_dias: int | None = None,
 ) -> dict:
     """`status_inicial="whatsapp"` e´ usado pelo lead criado ao clicar
     "Finalizar pelo WhatsApp" (ver app.py:api_pedido_criar_whatsapp) --
@@ -184,7 +199,7 @@ def criar_pedido(
         conexao.execute(
             """
             INSERT INTO pedidos (
-                token, codigo, status, itens, subtotal, frete_descricao, frete_preco, total,
+                token, codigo, status, itens, subtotal, frete_descricao, frete_preco, frete_prazo_dias, total,
                 cliente_nome, cliente_tipo_pessoa, cliente_documento, cliente_telefone, cliente_email,
                 endereco_cep, endereco_logradouro, endereco_numero, endereco_complemento,
                 endereco_bairro, endereco_cidade, endereco_uf,
@@ -193,7 +208,7 @@ def criar_pedido(
                 endereco_destinatario_complemento, endereco_destinatario_bairro, endereco_destinatario_cidade,
                 endereco_destinatario_uf,
                 criado_em
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
             (
                 token,
@@ -203,6 +218,7 @@ def criar_pedido(
                 subtotal,
                 frete_descricao,
                 frete_preco,
+                frete_prazo_dias,
                 total,
                 cliente.get("nome", ""),
                 cliente.get("tipo_pessoa", ""),
@@ -423,6 +439,7 @@ def confirmar_venda_manual(
     frete_preco: float,
     forma_pagamento: str,
     valor_pago: float,
+    frete_prazo_dias: int | None = None,
 ) -> dict | None:
     """Promove um lead "whatsapp" (ver criar_pedido) pra "pago" depois do
     admin preencher os dados na mao, quando a pessoa realmente fechou o
@@ -444,7 +461,7 @@ def confirmar_venda_manual(
                 cliente_telefone = ?, cliente_email = ?,
                 endereco_cep = ?, endereco_logradouro = ?, endereco_numero = ?, endereco_complemento = ?,
                 endereco_bairro = ?, endereco_cidade = ?, endereco_uf = ?,
-                frete_descricao = ?, frete_preco = ?, total = ?,
+                frete_descricao = ?, frete_preco = ?, frete_prazo_dias = ?, total = ?,
                 forma_pagamento = ?, valor_pago = ?
             WHERE token = ?
             """,
@@ -455,7 +472,7 @@ def confirmar_venda_manual(
                 endereco.get("cep", ""), endereco.get("logradouro", ""), endereco.get("numero", ""),
                 endereco.get("complemento", ""), endereco.get("bairro", ""), endereco.get("cidade", ""),
                 endereco.get("uf", ""),
-                frete_descricao, frete_preco, total,
+                frete_descricao, frete_preco, frete_prazo_dias, total,
                 forma_pagamento, valor_pago,
                 token,
             ),
@@ -565,6 +582,26 @@ def cancelar_pedido(token: str) -> dict | None:
     return obter_pedido(token)
 
 
+def excluir_pedido(token: str, *, motivo: str) -> dict | None:
+    """Exclusao pelo painel admin (ver app.py:admin_pedido_excluir) --
+    de QUALQUER status, com motivo obrigatorio. NUNCA apaga a linha de
+    verdade (perderia numero/historico pra sempre e quebraria o link
+    de acompanhamento que o cliente pode ainda ter salvo) -- so marca
+    status="excluido" com o motivo, pra manter rastreabilidade e poder
+    mandar o e-mail explicando pro cliente (ver
+    services/email.py:enviar_pedido_excluido). Idempotente: excluir de
+    novo so atualiza o motivo."""
+    if obter_pedido(token) is None:
+        return None
+    agora = datetime.now(timezone.utc).isoformat()
+    with _conexao() as conexao:
+        conexao.execute(
+            "UPDATE pedidos SET status = 'excluido', excluido_em = ?, excluido_motivo = ? WHERE token = ?",
+            (agora, motivo, token),
+        )
+    return obter_pedido(token)
+
+
 def marcar_email_cancelado_enviado(token: str, *, erro: str | None) -> dict | None:
     """E-mail motivacional de recuperacao, disparado quando o pedido e´
     cancelado automaticamente (ver cancelar_pedido acima) -- garante
@@ -589,3 +626,41 @@ def marcar_tiny_sincronizado(token: str, *, numero_pedido: str | None, erro: str
             (numero_pedido, erro, token),
         )
     return obter_pedido(token)
+
+
+def somar_dias_uteis(data_inicio: datetime, dias: int) -> datetime:
+    """Soma `dias` dias UTEIS (pula sabado/domingo) a partir de
+    `data_inicio` -- usado pra calcular previsao de envio/entrega (ver
+    previsoes_do_pedido abaixo). Nao considera feriados (mesma
+    aproximacao ja usada na promessa de texto fixo "5 dias uteis" em
+    varias paginas -- calcular feriado municipal/estadual certo exigiria
+    uma base de dados de feriados que o site nao tem hoje)."""
+    data = data_inicio
+    restantes = dias
+    while restantes > 0:
+        data += timedelta(days=1)
+        if data.weekday() < 5:  # 0=segunda ... 4=sexta
+            restantes -= 1
+    return data
+
+
+def previsoes_do_pedido(pedido: dict) -> dict:
+    """Previsao de envio (pago_em + PRODUCAO_DIAS_UTEIS dias uteis) e de
+    entrega (previsao de envio + frete_prazo_dias dias uteis, quando
+    conhecido) -- mostrado no painel admin, na timeline do cliente
+    (app.py:ver_pedido) e no e-mail de confirmacao (services/email.py)
+    (ver conversa: "pago dia X, enviar ate dia X+5 dias uteis"). Uma vez
+    que o pedido realmente foi enviado/entregue, essas datas deixam de
+    fazer sentido como "previsao" (o evento real ja aconteceu -- quem
+    usa isso prefere enviado_em/entregue_em nesse caso)."""
+    resultado = {"previsao_envio": None, "previsao_entrega": None}
+    pago_em = pedido.get("pago_em")
+    if not pago_em:
+        return resultado
+    data_pago = datetime.fromisoformat(pago_em)
+    previsao_envio = somar_dias_uteis(data_pago, PRODUCAO_DIAS_UTEIS)
+    resultado["previsao_envio"] = previsao_envio
+    prazo_frete = pedido.get("frete_prazo_dias")
+    if prazo_frete:
+        resultado["previsao_entrega"] = somar_dias_uteis(previsao_envio, int(prazo_frete))
+    return resultado

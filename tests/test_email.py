@@ -85,6 +85,20 @@ def test_link_pagamento_envia_com_payload_correto(monkeypatch):
     assert "https://site/pedido/token" in corpo["htmlContent"]
 
 
+def test_link_de_acompanhamento_e_um_botao_nao_link_cru(monkeypatch):
+    """Ver conversa: link repetido como texto cru pesa mal em filtro de
+    spam e passa despercebido no celular -- vira um botao com fundo."""
+    monkeypatch.setattr(email, "BREVO_API_KEY", "segredo")
+    resposta_mock = Mock()
+    resposta_mock.raise_for_status = Mock()
+    with patch("services.email.requests.post", return_value=resposta_mock) as post_mock:
+        email.enviar_confirmacao_pedido(_pedido_exemplo(), "https://site/pedido/token")
+    corpo = post_mock.call_args.kwargs["json"]["htmlContent"]
+    assert "background-color:#14335c" in corpo
+    assert "Clique aqui e acompanhe" in corpo
+    assert corpo.count("https://site/pedido/token") == 1  # nao repete a URL como texto visivel
+
+
 def test_lembrete_sem_api_key_devolve_erro(monkeypatch):
     monkeypatch.setattr(email, "BREVO_API_KEY", "")
     resultado = email.enviar_lembrete_pedido_pendente(

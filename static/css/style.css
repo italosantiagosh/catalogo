@@ -2510,6 +2510,14 @@ input[type="file"] {
   color: var(--accent);
 }
 
+.pedido-timeline-previsao {
+  display: block;
+  margin-top: 2px;
+  font-size: 0.78rem;
+  font-weight: 400;
+  color: var(--muted);
+}
+
 .pedido-obrigado {
   margin: 0 0 20px;
   padding: 20px;

@@ -401,6 +401,7 @@
       });
       const dados = await resposta.json();
       renderizarFrete(dados);
+      if (!dados.erro) rastrearEventoGA4('calculate_shipping', {});
     } catch (e) {
       if (freteResultadoEl) freteResultadoEl.innerHTML = '<p class="frete-erro">Não foi possível calcular o frete agora.</p>';
     }
@@ -481,7 +482,7 @@
             ${rotulo}
           </div>
         `;
-        const escolha = { texto: `${opcao.transportadora} ${opcao.servico} — Grátis`, preco: 0 };
+        const escolha = { texto: `${opcao.transportadora} ${opcao.servico} — Grátis`, preco: 0, prazo_dias: opcao.prazo_dias || null };
         botao.addEventListener('click', () => selecionarOpcaoFrete(botao, escolha));
         freteResultadoEl.appendChild(botao);
         if (i === 0) selecionarOpcaoFrete(botao, escolha);
@@ -511,6 +512,7 @@
       const escolha = {
         texto: `${opcao.transportadora} ${opcao.servico} — ${formatarPreco(opcao.preco)}`,
         preco: opcao.preco,
+        prazo_dias: opcao.prazo_dias || null,
       };
       botao.addEventListener('click', () => selecionarOpcaoFrete(botao, escolha));
       freteResultadoEl.appendChild(botao);

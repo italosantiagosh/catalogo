@@ -66,6 +66,13 @@
                   <button type="submit" class="btn-recusar">Recusar</button>
                 </form>
               </div>
+            {% elif avaliacao.status == 'aprovada' %}
+              <div class="acoes">
+                <form method="post" action="{{ url_for('admin_avaliacao_recusar', id_=avaliacao.id) }}"
+                      onsubmit="return confirm('Excluir essa avaliação? Ela sai do site imediatamente.');">
+                  <button type="submit" class="btn-recusar">Excluir do site</button>
+                </form>
+              </div>
             {% endif %}
           </div>
         </div>

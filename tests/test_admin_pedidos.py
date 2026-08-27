@@ -330,6 +330,159 @@ def test_descartar_lead_whatsapp_vira_cancelado(client, monkeypatch):
     assert pedido["status"] == "cancelado"
 
 
+def test_excluir_pedido_exige_motivo(client, monkeypatch):
+    _preparar_admin(monkeypatch)
+    with patch("app.criar_link_pagamento", return_value={"url": "https://checkout.infinitepay.io/abc"}):
+        criado = client.post("/api/pedido/criar", json=_corpo_valido()).get_json()
+
+    resposta = client.post(
+        f"/admin/pedidos/{criado['token']}/excluir", data={}, auth=("admin", "segredo123")
+    )
+    assert resposta.status_code == 400
+    assert pedidos.obter_pedido(criado["token"])["status"] == "pendente"
+
+
+def test_excluir_pedido_marca_status_e_avisa_cliente_por_email(client, monkeypatch):
+    """Ver conversa: exclusao NUNCA apaga a linha de verdade -- so marca
+    status="excluido" com o motivo, e avisa o cliente por e-mail."""
+    _preparar_admin(monkeypatch)
+    with patch("app.criar_link_pagamento", return_value={"url": "https://checkout.infinitepay.io/abc"}):
+        criado = client.post("/api/pedido/criar", json=_corpo_valido()).get_json()
+
+    with patch("app.enviar_pedido_excluido", return_value={"ok": True}) as mock_email:
+        resposta = client.post(
+            f"/admin/pedidos/{criado['token']}/excluir",
+            data={"motivo": "Item fora de estoque"},
+            auth=("admin", "segredo123"),
+        )
+    assert resposta.status_code == 302
+    assert mock_email.call_count == 1
+    assert mock_email.call_args.args[1] == "Item fora de estoque"
+
+    pedido = pedidos.obter_pedido(criado["token"])
+    assert pedido["status"] == "excluido"
+    assert pedido["excluido_motivo"] == "Item fora de estoque"
+    assert pedido["excluido_em"] is not None
+
+    # a pagina de acompanhamento do cliente continua funcionando (nao
+    # foi apagado de verdade), mostrando o motivo
+    pagina = client.get(f"/pedido/{criado['token']}").get_data(as_text=True)
+    assert "Item fora de estoque" in pagina
+
+
+def test_excluir_pedido_exige_autenticacao(client, monkeypatch):
+    _preparar_admin(monkeypatch)
+    with patch("app.criar_link_pagamento", return_value={"url": "https://checkout.infinitepay.io/abc"}):
+        criado = client.post("/api/pedido/criar", json=_corpo_valido()).get_json()
+    resposta = client.post(f"/admin/pedidos/{criado['token']}/excluir", data={"motivo": "teste"})
+    assert resposta.status_code == 401
+
+
+def test_excluir_pedido_inexistente_404(client, monkeypatch):
+    _preparar_admin(monkeypatch)
+    resposta = client.post(
+        "/admin/pedidos/nao-existe/excluir", data={"motivo": "teste"}, auth=("admin", "segredo123")
+    )
+    assert resposta.status_code == 404
+
+
+def _pagar_pedido(client, token):
+    client.post(
+        "/webhook/infinitepay",
+        json={"order_nsu": token, "paid_amount": 6000, "capture_method": "pix"},
+    )
+
+
+def test_acao_em_massa_exige_autenticacao(client, monkeypatch):
+    _preparar_admin(monkeypatch)
+    resposta = client.post("/admin/pedidos/acao-em-massa", data={"tokens": ["x"], "acao": "tiny"})
+    assert resposta.status_code == 401
+
+
+def test_acao_em_massa_sincroniza_varios_com_tiny(client, monkeypatch):
+    _preparar_admin(monkeypatch)
+    with patch("app.criar_link_pagamento", return_value={"url": "https://checkout.infinitepay.io/abc"}), \
+         patch("app.criar_pedido_tiny", return_value={"erro": "não configurado"}), \
+         patch("app.enviar_confirmacao_pedido", return_value={"erro": "não configurado"}):
+        p1 = client.post("/api/pedido/criar", json=_corpo_valido()).get_json()
+        p2 = client.post("/api/pedido/criar", json=_corpo_valido()).get_json()
+        _pagar_pedido(client, p1["token"])
+        _pagar_pedido(client, p2["token"])
+
+    with patch("app.criar_pedido_tiny", return_value={"ok": True, "numero": 77, "id": 1}) as mock_tiny:
+        resposta = client.post(
+            "/admin/pedidos/acao-em-massa",
+            data={"tokens": [p1["token"], p2["token"]], "acao": "tiny"},
+            auth=("admin", "segredo123"),
+        )
+    assert resposta.status_code == 302
+    assert mock_tiny.call_count == 2
+    assert pedidos.obter_pedido(p1["token"])["tiny_numero_pedido"] == "77"
+    assert pedidos.obter_pedido(p2["token"])["tiny_numero_pedido"] == "77"
+
+
+def test_acao_em_massa_muda_status_de_varios(client, monkeypatch):
+    _preparar_admin(monkeypatch)
+    with patch("app.criar_link_pagamento", return_value={"url": "https://checkout.infinitepay.io/abc"}):
+        p1 = client.post("/api/pedido/criar", json=_corpo_valido()).get_json()
+        p2 = client.post("/api/pedido/criar", json=_corpo_valido()).get_json()
+        _pagar_pedido(client, p1["token"])
+        _pagar_pedido(client, p2["token"])
+
+    resposta = client.post(
+        "/admin/pedidos/acao-em-massa",
+        data={"tokens": [p1["token"], p2["token"]], "acao": "status", "novo_status": "faturado"},
+        auth=("admin", "segredo123"),
+    )
+    assert resposta.status_code == 302
+    assert pedidos.obter_pedido(p1["token"])["status"] == "faturado"
+    assert pedidos.obter_pedido(p2["token"])["status"] == "faturado"
+
+
+def test_acao_em_massa_excluir_exige_motivo(client, monkeypatch):
+    _preparar_admin(monkeypatch)
+    with patch("app.criar_link_pagamento", return_value={"url": "https://checkout.infinitepay.io/abc"}):
+        criado = client.post("/api/pedido/criar", json=_corpo_valido()).get_json()
+
+    client.post(
+        "/admin/pedidos/acao-em-massa",
+        data={"tokens": [criado["token"]], "acao": "excluir", "motivo": ""},
+        auth=("admin", "segredo123"),
+    )
+    assert pedidos.obter_pedido(criado["token"])["status"] == "pendente"
+
+
+def test_acao_em_massa_excluir_varios_avisa_cada_cliente(client, monkeypatch):
+    _preparar_admin(monkeypatch)
+    with patch("app.criar_link_pagamento", return_value={"url": "https://checkout.infinitepay.io/abc"}):
+        p1 = client.post("/api/pedido/criar", json=_corpo_valido()).get_json()
+        p2 = client.post("/api/pedido/criar", json=_corpo_valido()).get_json()
+
+    with patch("app.enviar_pedido_excluido", return_value={"ok": True}) as mock_email:
+        resposta = client.post(
+            "/admin/pedidos/acao-em-massa",
+            data={"tokens": [p1["token"], p2["token"]], "acao": "excluir", "motivo": "Estoque zerado"},
+            auth=("admin", "segredo123"),
+        )
+    assert resposta.status_code == 302
+    assert mock_email.call_count == 2
+    assert pedidos.obter_pedido(p1["token"])["status"] == "excluido"
+    assert pedidos.obter_pedido(p2["token"])["status"] == "excluido"
+
+
+def test_acao_em_massa_preserva_filtro_de_status_no_redirect(client, monkeypatch):
+    _preparar_admin(monkeypatch)
+    with patch("app.criar_link_pagamento", return_value={"url": "https://checkout.infinitepay.io/abc"}):
+        criado = client.post("/api/pedido/criar", json=_corpo_valido()).get_json()
+
+    resposta = client.post(
+        "/admin/pedidos/acao-em-massa",
+        data={"tokens": [criado["token"]], "acao": "tiny", "status_filtro": "pendente"},
+        auth=("admin", "segredo123"),
+    )
+    assert resposta.headers["Location"].endswith("status=pendente")
+
+
 def test_reenviar_tiny_manualmente(client, monkeypatch):
     _preparar_admin(monkeypatch)
     with patch("app.criar_link_pagamento", return_value={"url": "https://checkout.infinitepay.io/abc"}):

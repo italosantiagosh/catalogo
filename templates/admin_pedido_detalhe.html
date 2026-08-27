@@ -16,14 +16,18 @@
     .status-enviado { background: #e6e0fc; color: #4a2e9c; }
     .status-entregue { background: #d9f2e3; color: #14602f; }
     .status-cancelado { background: #fbe3e0; color: #a13a2a; }
+    .status-whatsapp { background: #dcf4e3; color: #1c7d3f; }
+    .status-excluido { background: #f0f0f0; color: #5b6b82; }
     .bloco { background: #fff; border-radius: 10px; padding: 16px; margin: 0 0 16px; }
     .bloco h2 { font-size: 0.95rem; margin: 0 0 8px; }
     .bloco p { font-size: 0.88rem; margin: 0 0 4px; }
+    .bloco-perigo { border: 1px solid #f3c9c0; }
     label { display: block; font-size: 0.78rem; font-weight: 600; color: #5b6b82; margin: 12px 0 4px; }
-    select, input[type="text"] { width: 100%; padding: 9px 10px; border: 1px solid #dde3ec; border-radius: 8px; font-size: 0.9rem; box-sizing: border-box; }
+    select, input[type="text"], textarea { width: 100%; padding: 9px 10px; border: 1px solid #dde3ec; border-radius: 8px; font-size: 0.9rem; box-sizing: border-box; font-family: inherit; }
     .campos-rastreio { display: none; }
     .campos-rastreio.ativo { display: block; }
     button { margin-top: 16px; padding: 12px 18px; border: none; border-radius: 10px; background: #14335c; color: #fff; font-weight: 700; cursor: pointer; }
+    .botao-perigo { background: #a13a2a; }
     .aviso-tiny { font-size: 0.78rem; color: #5b6b82; margin-top: 20px; }
     .integracao { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 1px solid #eef1f5; }
     .integracao:last-child { border-bottom: none; }
@@ -88,6 +92,21 @@
       {% endif %}
       <h2>Total</h2>
       <p>{{ pedido.total | preco }}</p>
+      {% set previsoes = previsoes_do_pedido(pedido) %}
+      {% if pedido.pago_em %}
+        <h2>Prazos</h2>
+        <p>Pago em: {{ pedido.pago_em | data_br }}</p>
+        {% if pedido.status in ('pago', 'faturado') and previsoes.previsao_envio %}
+          <p>Previsão de envio: <strong>{{ previsoes.previsao_envio | data_br }}</strong></p>
+        {% elif pedido.enviado_em %}
+          <p>Enviado em: {{ pedido.enviado_em | data_br }}</p>
+        {% endif %}
+        {% if pedido.status in ('pago', 'faturado', 'enviado') and previsoes.previsao_entrega %}
+          <p>Previsão de entrega: <strong>{{ previsoes.previsao_entrega | data_br }}</strong></p>
+        {% elif pedido.entregue_em %}
+          <p>Entregue em: {{ pedido.entregue_em | data_br }}</p>
+        {% endif %}
+      {% endif %}
       {% if pedido.codigo_rastreio %}
         <h2>Rastreio atual</h2>
         {% if pedido.transportadora %}<p>Transportadora: {{ pedido.transportadora }}</p>{% endif %}
@@ -135,6 +154,8 @@
         <input type="text" name="frete_descricao" id="frete_descricao" placeholder="Ex: Correios PAC — R$ 15,00">
         <label for="frete_preco">Valor do frete (R$)</label>
         <input type="text" name="frete_preco" id="frete_preco" value="0,00">
+        <label for="frete_prazo_dias">Prazo do frete (dias úteis, opcional)</label>
+        <input type="text" name="frete_prazo_dias" id="frete_prazo_dias" placeholder="Ex: 7">
 
         <label for="forma_pagamento">Forma de pagamento combinada</label>
         <input type="text" name="forma_pagamento" id="forma_pagamento" placeholder="Ex: Pix, Dinheiro, Cartão">
@@ -236,6 +257,26 @@
       selectStatus.addEventListener('change', atualizarCamposRastreio);
       atualizarCamposRastreio();
     </script>
+  {% endif %}
+
+  {% if pedido.status == 'excluido' %}
+    <div class="bloco">
+      <h2>Pedido excluído</h2>
+      <p>Excluído em {{ pedido.excluido_em | data_br }}.</p>
+      <p><strong>Motivo:</strong> {{ pedido.excluido_motivo }}</p>
+    </div>
+  {% else %}
+    <div class="bloco bloco-perigo">
+      <h2>Excluir pedido</h2>
+      <p>O cliente recebe um e-mail avisando com o motivo abaixo. O pedido não é apagado de
+      verdade -- fica marcado como excluído, mantendo o histórico.</p>
+      <form method="post" action="{{ url_for('admin_pedido_excluir', token=pedido.token) }}"
+            onsubmit="return confirm('Excluir esse pedido? O cliente recebe um e-mail avisando.');">
+        <label for="motivo">Motivo (o cliente vai ler isso)</label>
+        <textarea name="motivo" id="motivo" rows="3" required></textarea>
+        <button type="submit" class="botao-perigo">🗑️ Excluir pedido</button>
+      </form>
+    </div>
   {% endif %}
 </body>
 </html>

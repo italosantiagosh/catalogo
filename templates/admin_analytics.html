@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Analytics — Painel — Nove de Julho</title>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #f5f7fa; color: #142238; margin: 0; padding: 24px; max-width: 720px; }
+    a.voltar { color: #14335c; font-weight: 600; text-decoration: none; font-size: 0.88rem; }
+    h1 { font-size: 1.2rem; margin: 12px 0 16px; }
+    .cartoes { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin-bottom: 20px; }
+    .cartao { background: #fff; border-radius: 10px; padding: 14px 16px; }
+    .cartao .numero { font-size: 1.6rem; font-weight: 700; color: #14335c; }
+    .cartao .rotulo { font-size: 0.78rem; color: #5b6b82; margin-top: 2px; }
+    .cartao.ao-vivo .numero { color: #1e7a43; }
+    .bloco { background: #fff; border-radius: 10px; padding: 16px; margin: 0 0 16px; }
+    .bloco h2 { font-size: 0.95rem; margin: 0 0 10px; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { text-align: left; padding: 8px 6px; border-bottom: 1px solid #eef1f5; font-size: 0.85rem; }
+    .nao-configurado { background: #fff; border-radius: 10px; padding: 20px; font-size: 0.9rem; line-height: 1.6; }
+    .nao-configurado code { background: #f0f2f5; padding: 2px 6px; border-radius: 4px; }
+  </style>
+</head>
+<body>
+  <a class="voltar" href="{{ url_for('admin_pedidos') }}">← Pedidos</a>
+  <h1>Analytics</h1>
+
+  {% if not configurado %}
+    <div class="nao-configurado">
+      <p>Dashboard ainda não configurado.</p>
+      <p>Faltam as variáveis de ambiente <code>GA4_SERVICE_ACCOUNT_JSON</code> e
+      <code>GA4_PROPERTY_ID</code> no servidor.</p>
+    </div>
+  {% else %}
+    <div class="cartoes">
+      <div class="cartao ao-vivo">
+        <div class="numero">{{ ao_vivo if ao_vivo is not none else "—" }}</div>
+        <div class="rotulo">🟢 Pessoas no site agora</div>
+      </div>
+      <div class="cartao">
+        <div class="numero">{{ resumo_7d.visitas if resumo_7d else "—" }}</div>
+        <div class="rotulo">Visitas (7 dias)</div>
+      </div>
+      <div class="cartao">
+        <div class="numero">{{ resumo_7d.pessoas if resumo_7d else "—" }}</div>
+        <div class="rotulo">Pessoas (7 dias)</div>
+      </div>
+      <div class="cartao">
+        <div class="numero">{{ fretes_simulados_7d if fretes_simulados_7d is not none else "—" }}</div>
+        <div class="rotulo">Simulações de frete (7 dias)</div>
+      </div>
+    </div>
+
+    <div class="bloco">
+      <h2>Últimos 30 dias</h2>
+      <table>
+        <tr><td>Visitas</td><td>{{ resumo_30d.visitas if resumo_30d else "—" }}</td></tr>
+        <tr><td>Pessoas</td><td>{{ resumo_30d.pessoas if resumo_30d else "—" }}</td></tr>
+        <tr><td>Visualizações de página</td><td>{{ resumo_30d.visualizacoes if resumo_30d else "—" }}</td></tr>
+        <tr><td>Simulações de frete</td><td>{{ fretes_simulados_30d if fretes_simulados_30d is not none else "—" }}</td></tr>
+      </table>
+    </div>
+
+    <div class="bloco">
+      <h2>Páginas mais vistas (7 dias)</h2>
+      {% if paginas_7d %}
+        <table>
+          <thead><tr><th>Página</th><th>Visualizações</th></tr></thead>
+          <tbody>
+            {% for p in paginas_7d %}
+              <tr><td>{{ p.pagina }}</td><td>{{ p.visualizacoes }}</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        <p style="font-size:0.78rem;color:#5b6b82;margin-top:10px;">
+          Cada produto tem sua própria página (/produto/&lt;nome&gt;) -- aqui já mostra
+          quais santos/devoções foram mais vistos.
+        </p>
+      {% else %}
+        <p style="font-size:0.85rem;color:#5b6b82;">Sem dados ainda.</p>
+      {% endif %}
+    </div>
+  {% endif %}
+</body>
+</html>

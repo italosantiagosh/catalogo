@@ -566,6 +566,74 @@ def test_pagina_de_pedido_mostra_timeline_com_pontos_preenchidos(client):
     assert 'pedido-timeline-etapa concluida atual' in corpo
 
 
+def test_somar_dias_uteis_pula_fim_de_semana():
+    from datetime import datetime
+
+    from services.pedidos import somar_dias_uteis
+
+    # segunda-feira 04/11/2024 + 5 dias uteis -> pula o fim de semana,
+    # cai na segunda seguinte (11/11)
+    segunda = datetime(2024, 11, 4)
+    resultado = somar_dias_uteis(segunda, 5)
+    assert resultado.date().isoformat() == "2024-11-11"
+
+
+def test_previsoes_sem_pagamento_e_none(client):
+    with patch("app.criar_link_pagamento", return_value={"url": "https://checkout.infinitepay.io/abc"}):
+        criado = client.post("/api/pedido/criar", json=_corpo_valido()).get_json()
+
+    from services.pedidos import previsoes_do_pedido
+
+    pedido = pedidos.obter_pedido(criado["token"])
+    previsoes = previsoes_do_pedido(pedido)
+    assert previsoes["previsao_envio"] is None
+    assert previsoes["previsao_entrega"] is None
+
+
+def test_criar_pedido_guarda_prazo_do_frete(client):
+    corpo = _corpo_valido(frete={"texto": "Correios PAC — R$ 10,00", "preco": 10.0, "prazo_dias": 7})
+    with patch("app.criar_link_pagamento", return_value={"url": "https://checkout.infinitepay.io/abc"}):
+        criado = client.post("/api/pedido/criar", json=corpo).get_json()
+
+    pedido = pedidos.obter_pedido(criado["token"])
+    assert pedido["frete_prazo_dias"] == 7
+
+
+def test_pagina_de_pedido_mostra_previsao_de_envio_e_entrega(client):
+    corpo = _corpo_valido(frete={"texto": "Correios PAC — R$ 10,00", "preco": 10.0, "prazo_dias": 7})
+    with patch("app.criar_link_pagamento", return_value={"url": "https://checkout.infinitepay.io/abc"}):
+        criado = client.post("/api/pedido/criar", json=corpo).get_json()
+    client.post(
+        "/webhook/infinitepay",
+        json={"order_nsu": criado["token"], "paid_amount": 6000, "capture_method": "pix"},
+    )
+
+    corpo_html = client.get(f"/pedido/{criado['token']}").get_data(as_text=True)
+    assert "Previsão de envio" in corpo_html
+    assert "Previsão de entrega" in corpo_html
+
+
+def test_admin_detalhe_mostra_prazos(client, monkeypatch):
+    import app as app_module
+
+    monkeypatch.setattr(app_module, "ADMIN_USER", "admin")
+    monkeypatch.setattr(app_module, "ADMIN_PASSWORD", "segredo123")
+    corpo = _corpo_valido(frete={"texto": "Correios PAC — R$ 10,00", "preco": 10.0, "prazo_dias": 7})
+    with patch("app.criar_link_pagamento", return_value={"url": "https://checkout.infinitepay.io/abc"}):
+        criado = client.post("/api/pedido/criar", json=corpo).get_json()
+    client.post(
+        "/webhook/infinitepay",
+        json={"order_nsu": criado["token"], "paid_amount": 6000, "capture_method": "pix"},
+    )
+
+    detalhe = client.get(f"/admin/pedidos/{criado['token']}", auth=("admin", "segredo123")).get_data(as_text=True)
+    assert "Previsão de envio" in detalhe
+    assert "Previsão de entrega" in detalhe
+
+    lista = client.get("/admin/pedidos", auth=("admin", "segredo123")).get_data(as_text=True)
+    assert "Enviar até" in lista
+
+
 def test_webhook_e_idempotente_nao_reprocessa(client):
     with patch("app.criar_link_pagamento", return_value={"url": "https://checkout.infinitepay.io/abc"}):
         criado = client.post("/api/pedido/criar", json=_corpo_valido()).get_json()

@@ -16,6 +16,12 @@
           {% if etapa.chave == 'faturado' and etapa.concluido and pedido.link_nota_fiscal %}
             <a class="pedido-timeline-nf" href="{{ pedido.link_nota_fiscal }}" target="_blank" rel="noopener">📄 Baixar nota fiscal</a>
           {% endif %}
+          {% if etapa.chave == 'enviado' and not etapa.concluido and previsoes.previsao_envio %}
+            <span class="pedido-timeline-previsao">Previsão de envio: {{ previsoes.previsao_envio | data_br }}</span>
+          {% endif %}
+          {% if etapa.chave == 'entregue' and not etapa.concluido and previsoes.previsao_entrega %}
+            <span class="pedido-timeline-previsao">Previsão de entrega: {{ previsoes.previsao_entrega | data_br }}</span>
+          {% endif %}
         </li>
       {% endfor %}
     </ol>
@@ -75,6 +81,10 @@
     <p class="pedido-status pedido-status-entregue">🎉 Pedido entregue</p>
   {% elif pedido.status == 'cancelado' %}
     <p class="pedido-status pedido-status-cancelado">❌ Cancelado — pagamento não foi concluído a tempo</p>
+    <a href="{{ url_for('catalogo_completo') }}" class="botao-pagar">Ver catálogo e fazer um novo pedido</a>
+  {% elif pedido.status == 'excluido' %}
+    <p class="pedido-status pedido-status-cancelado">❌ Pedido cancelado</p>
+    {% if pedido.excluido_motivo %}<p class="pedido-linha">Motivo: {{ pedido.excluido_motivo }}</p>{% endif %}
     <a href="{{ url_for('catalogo_completo') }}" class="botao-pagar">Ver catálogo e fazer um novo pedido</a>
   {% endif %}
 

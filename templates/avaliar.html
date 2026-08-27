@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="robots" content="noindex, nofollow">
-  <title>Avalie {{ produto.nome }} — Nove de Julho</title>
+  <title>{{ "Avalie " ~ produto.nome if produto else "Avalie sua compra" }} — Nove de Julho</title>
   <link rel="icon" href="{{ url_for('static', filename='img/favicon.ico') }}" sizes="any">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -23,6 +23,9 @@
     .avaliar-caixa { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 16px; }
     .avaliar-caixa .form-avaliacao { margin-top: 0; padding-top: 0; border-top: none; }
     .avaliar-sucesso { text-align: center; padding: 20px 0; }
+    .avaliar-busca-wrap { position: relative; margin-bottom: 20px; }
+    .avaliar-produto-selecionado { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+    .avaliar-produto-trocar { flex-shrink: 0; font-size: 0.8rem; color: var(--accent); font-weight: 600; text-decoration: none; background: none; border: none; cursor: pointer; }
   </style>
 </head>
 <body>
@@ -33,14 +36,27 @@
       <p>Sua avaliação ajuda outras pessoas a escolherem com confiança.</p>
     </div>
 
-    <div class="avaliar-produto">
-      <img src="{{ url_for('static', filename=produto.modelos[0].imagem) }}" alt="">
-      <strong>{{ produto.nome }}</strong>
+    {% if not produto %}
+      <div class="avaliar-busca-wrap">
+        <label for="avaliar-busca-produto">Produto</label>
+        <input type="text" id="avaliar-busca-produto" placeholder="Digite o nome do santo/devoção que você comprou" autocomplete="off">
+        <div class="busca-resultados" id="avaliar-busca-resultados" hidden></div>
+      </div>
+    {% endif %}
+
+    <div class="avaliar-produto" id="avaliar-produto-card" {{ "hidden" if not produto }}>
+      <img id="avaliar-produto-imagem" src="{{ url_for('static', filename=produto.modelos[0].imagem) if produto else '' }}" alt="">
+      <div class="avaliar-produto-selecionado">
+        <strong id="avaliar-produto-nome">{{ produto.nome if produto else '' }}</strong>
+        {% if not produto %}
+          <button type="button" class="avaliar-produto-trocar" id="avaliar-produto-trocar">Trocar</button>
+        {% endif %}
+      </div>
     </div>
 
-    <div class="avaliar-caixa">
+    <div class="avaliar-caixa" id="avaliar-caixa" {{ "hidden" if not produto }}>
       <form id="form-avaliacao" class="form-avaliacao">
-        <input type="hidden" name="produto_id" value="{{ produto.id }}">
+        <input type="hidden" name="produto_id" id="aval-produto-id" value="{{ produto.id if produto else '' }}">
         <label for="aval-nome">Seu nome</label>
         <input type="text" id="aval-nome" name="nome_cliente" required maxlength="120">
 
@@ -81,6 +97,7 @@
     </div>
   </div>
 
+  <script src="{{ url_for('static', filename='js/avaliar_busca.js') }}"></script>
   <script src="{{ url_for('static', filename='js/avaliacoes.js') }}"></script>
 </body>
 </html>

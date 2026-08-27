@@ -23,17 +23,27 @@
     .status-entregue { background: #d9f2e3; color: #14602f; }
     .status-cancelado { background: #fbe3e0; color: #a13a2a; }
     .status-whatsapp { background: #dcf4e3; color: #1c7d3f; }
+    .status-excluido { background: #f0f0f0; color: #5b6b82; }
     a.ver, a.editar { color: #14335c; font-weight: 600; text-decoration: none; margin-right: 10px; }
     .vazio { padding: 24px; text-align: center; color: #5b6b82; }
     .cliente-email { color: #5b6b82; font-size: 0.78rem; }
     .tiny-erro { color: #7a2118; }
     #btn-ativar-notificacoes { padding: 10px 16px; border: none; border-radius: 8px; background: #14335c; color: #fff; font-weight: 700; font-size: 0.85rem; cursor: pointer; margin-bottom: 12px; }
     #btn-ativar-notificacoes:disabled { opacity: 0.6; cursor: default; }
+    .barra-massa { display: none; align-items: center; gap: 10px; flex-wrap: wrap; background: #14335c; color: #fff; border-radius: 10px; padding: 10px 14px; margin-bottom: 14px; font-size: 0.85rem; }
+    .barra-massa.ativa { display: flex; }
+    .barra-massa button, .barra-massa select, .barra-massa input[type="text"] { padding: 7px 12px; border: none; border-radius: 8px; font-size: 0.82rem; }
+    .barra-massa button { background: #fff; color: #14335c; font-weight: 700; cursor: pointer; }
+    .barra-massa button.perigo { background: #a13a2a; color: #fff; }
+    .barra-massa input[type="text"] { min-width: 180px; }
   </style>
 </head>
 <body>
   <h1>Pedidos ({{ pedidos | length }})</h1>
-  <p><a href="{{ url_for('admin_avaliacoes') }}">Ver avaliações →</a></p>
+  <p>
+    <a href="{{ url_for('admin_avaliacoes') }}">Ver avaliações →</a> ·
+    <a href="{{ url_for('admin_analytics') }}">Ver analytics →</a>
+  </p>
   {% if vapid_chave_publica %}
     <button type="button" id="btn-ativar-notificacoes">🔔 Ativar notificações de venda</button>
   {% endif %}
@@ -46,34 +56,65 @@
     <a href="{{ url_for('admin_pedidos', status='enviado') }}" class="{{ 'ativo' if status_filtro == 'enviado' else '' }}">Enviados</a>
     <a href="{{ url_for('admin_pedidos', status='entregue') }}" class="{{ 'ativo' if status_filtro == 'entregue' else '' }}">Entregues</a>
     <a href="{{ url_for('admin_pedidos', status='cancelado') }}" class="{{ 'ativo' if status_filtro == 'cancelado' else '' }}">Cancelados</a>
+    <a href="{{ url_for('admin_pedidos', status='excluido') }}" class="{{ 'ativo' if status_filtro == 'excluido' else '' }}">Excluídos</a>
   </div>
 
   {% if pedidos %}
-    <div class="tabela-wrap">
-      <table>
-        <thead>
-          <tr>
-            <th>Código</th>
-            <th>Status</th>
-            <th>Cliente</th>
-            <th>Total</th>
-            <th>Frete</th>
-            <th>Tiny</th>
-            <th>E-mail</th>
-            <th>Criado em</th>
-            <th></th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for pedido in pedidos %}
+    <form method="post" action="{{ url_for('admin_pedidos_acao_em_massa') }}" id="form-massa">
+      <input type="hidden" name="status_filtro" value="{{ status_filtro or '' }}">
+      <div class="barra-massa" id="barra-massa">
+        <span id="contagem-selecionados">0 selecionados</span>
+        <button type="submit" name="acao" value="tiny">Sincronizar com Tiny</button>
+        <button type="submit" name="acao" value="email">Reenviar e-mail</button>
+        <select name="novo_status">
+          <option value="pago">Pago</option>
+          <option value="faturado">Faturado</option>
+          <option value="enviado">Enviado</option>
+          <option value="entregue">Entregue</option>
+        </select>
+        <button type="submit" name="acao" value="status">Mudar status</button>
+        <input type="text" name="motivo" placeholder="Motivo da exclusão">
+        <button type="submit" name="acao" value="excluir" class="perigo"
+                onclick="return confirm('Excluir os pedidos selecionados? Cada cliente recebe um e-mail avisando.');">
+          🗑️ Excluir selecionados
+        </button>
+      </div>
+      <div class="tabela-wrap">
+        <table>
+          <thead>
             <tr>
-              <td>{{ pedido.codigo }}</td>
+              <th><input type="checkbox" id="marcar-todos"></th>
+              <th>Código</th>
+              <th>Status</th>
+              <th>Cliente</th>
+              <th>Total</th>
+              <th>Prazo</th>
+              <th>Frete</th>
+              <th>Tiny</th>
+              <th>E-mail</th>
+              <th>Criado em</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for pedido in pedidos %}
+              <tr>
+                <td><input type="checkbox" name="tokens" value="{{ pedido.token }}" class="check-pedido"></td>
+                <td>{{ pedido.codigo }}</td>
               <td><span class="status status-{{ pedido.status }}">{{ pedido.status }}</span></td>
               <td>
                 {{ pedido.cliente_nome }}<br>
                 <span class="cliente-email">{{ pedido.cliente_email }}</span>
               </td>
               <td>{{ pedido.total | preco }}</td>
+              <td>
+                {% if pedido.status in ('pago', 'faturado') %}
+                  {% set previsoes = previsoes_do_pedido(pedido) %}
+                  {% if previsoes.previsao_envio %}Enviar até {{ previsoes.previsao_envio | data_br }}{% else %}—{% endif %}
+                {% else %}
+                  —
+                {% endif %}
+              </td>
               <td>{{ pedido.frete_descricao or "—" }}</td>
               <td>
                 {% if not pedido.tiny_sincronizado %}
@@ -104,8 +145,9 @@
             </tr>
           {% endfor %}
         </tbody>
-      </table>
-    </div>
+        </table>
+      </div>
+    </form>
   {% else %}
     <p class="vazio">Nenhum pedido ainda.</p>
   {% endif %}
@@ -114,5 +156,35 @@
     <script>window.VAPID_CHAVE_PUBLICA = {{ vapid_chave_publica | tojson }};</script>
     <script src="{{ url_for('static', filename='js/push.js') }}"></script>
   {% endif %}
+
+  <script>
+    const marcarTodos = document.getElementById('marcar-todos');
+    const checksPedido = document.querySelectorAll('.check-pedido');
+    const barraMassa = document.getElementById('barra-massa');
+    const contagemEl = document.getElementById('contagem-selecionados');
+
+    function atualizarBarraMassa() {
+      const selecionados = document.querySelectorAll('.check-pedido:checked').length;
+      barraMassa.classList.toggle('ativa', selecionados > 0);
+      contagemEl.textContent = `${selecionados} selecionado${selecionados === 1 ? '' : 's'}`;
+    }
+
+    if (marcarTodos) {
+      marcarTodos.addEventListener('change', () => {
+        checksPedido.forEach((c) => { c.checked = marcarTodos.checked; });
+        atualizarBarraMassa();
+      });
+    }
+    checksPedido.forEach((c) => c.addEventListener('change', atualizarBarraMassa));
+
+    const formMassa = document.getElementById('form-massa');
+    if (formMassa) {
+      formMassa.addEventListener('submit', (evento) => {
+        if (document.querySelectorAll('.check-pedido:checked').length === 0) {
+          evento.preventDefault();
+        }
+      });
+    }
+  </script>
 </body>
 </html>

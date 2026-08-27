@@ -18,6 +18,7 @@ from __future__ import annotations
 import requests
 
 from config import BREVO_API_KEY, EMAIL_NOTIFICACAO_VENDA, EMAIL_REMETENTE, EMAIL_REMETENTE_NOME
+from services.pedidos import previsoes_do_pedido
 
 API_URL = "https://api.brevo.com/v3/smtp/email"
 
@@ -33,16 +34,45 @@ def _itens_html(pedido: dict) -> str:
     )
 
 
+# Botao com estilo inline (obrigatorio em e-mail -- clientes de e-mail
+# ignoram <style>/classe externa) -- um link cru repetido como texto
+# visivel (o que tinha antes) e´ um padrao que filtro de spam pontua mal,
+# alem de ficar dificil de notar no celular (ver conversa).
+def _botao(url: str, texto: str) -> str:
+    return (
+        f'<p style="margin:22px 0;">'
+        f'<a href="{url}" target="_blank" '
+        f'style="display:inline-block;padding:14px 28px;background-color:#14335c;color:#ffffff;'
+        f'text-decoration:none;border-radius:8px;font-weight:bold;font-size:15px;'
+        f'font-family:Arial,Helvetica,sans-serif;">{texto}</a>'
+        f"</p>"
+    )
+
+
 def _corpo_html_confirmacao(pedido: dict, url_pedido: str) -> str:
+    previsoes = previsoes_do_pedido(pedido)
+    previsao_html = ""
+    if previsoes["previsao_envio"]:
+        previsao_html = (
+            f"<p>🛠️ Seu pedido já está em produção -- previsão de envio até "
+            f"<strong>{previsoes['previsao_envio'].strftime('%d/%m/%Y')}</strong>"
+        )
+        if previsoes["previsao_entrega"]:
+            previsao_html += (
+                f", com entrega prevista para <strong>{previsoes['previsao_entrega'].strftime('%d/%m/%Y')}</strong>"
+            )
+        previsao_html += ".</p>"
+    else:
+        previsao_html = "<p>🛠️ Seu pedido já está em produção -- prazo de até <strong>5 dias úteis</strong> antes do envio.</p>"
     return (
         f"<p>Olá, {pedido.get('cliente_nome', '')}! Recebemos seu pagamento. 🎉</p>"
         f"<p><strong>Pedido #{pedido['codigo']}</strong></p>"
         f"<ul>{_itens_html(pedido)}</ul>"
         f"<p>Frete ({pedido.get('frete_descricao', '')}): {_preco(pedido.get('frete_preco', 0))}</p>"
         f"<p><strong>Total: {_preco(pedido['total'])}</strong></p>"
-        f"<p>🛠️ Seu pedido já está em produção -- prazo de até <strong>5 dias úteis</strong> antes do envio.</p>"
-        f"<p>Acompanhe seu pedido a qualquer momento por este link:<br>"
-        f'<a href="{url_pedido}">{url_pedido}</a></p>'
+        f"{previsao_html}"
+        f"<p>Acompanhe seu pedido a qualquer momento:</p>"
+        f"{_botao(url_pedido, '🔎 Clique aqui e acompanhe')}"
         f"<p>Qualquer dúvida, é só chamar no WhatsApp.</p>"
     )
 
@@ -54,10 +84,10 @@ def _corpo_html_link_pagamento(pedido: dict, url_pagamento: str, url_acompanhame
         f"<ul>{_itens_html(pedido)}</ul>"
         f"<p>Frete ({pedido.get('frete_descricao', '')}): {_preco(pedido.get('frete_preco', 0))}</p>"
         f"<p><strong>Total: {_preco(pedido['total'])}</strong></p>"
-        f'<p><a href="{url_pagamento}">👉 Clique aqui pra pagar (Pix ou cartão)</a></p>'
+        f"{_botao(url_pagamento, '💳 Pagar agora (Pix ou cartão)')}"
         f"<p>Se esse link não abrir mais (expirou), é só acompanhar seu pedido "
-        f"por aqui e gerar um novo:<br>"
-        f'<a href="{url_acompanhamento}">{url_acompanhamento}</a></p>'
+        f"por aqui e gerar um novo:</p>"
+        f"{_botao(url_acompanhamento, '🔎 Clique aqui e acompanhe')}"
         f"<p>Qualquer dúvida, é só chamar no WhatsApp.</p>"
     )
 
@@ -116,10 +146,10 @@ def _corpo_html_lembrete(pedido: dict, url_pagamento: str, url_acompanhamento: s
         f"<p><strong>Pedido #{pedido['codigo']}</strong></p>"
         f"<ul>{_itens_html(pedido)}</ul>"
         f"<p><strong>Total: {_preco(pedido['total'])}</strong></p>"
-        f'<p><a href="{url_pagamento}">👉 Clique aqui pra pagar (Pix ou cartão)</a></p>'
+        f"{_botao(url_pagamento, '💳 Pagar agora (Pix ou cartão)')}"
         f"<p>Alguma dúvida ou dificuldade pra pagar? É só chamar no WhatsApp que a gente ajuda.</p>"
-        f"<p>Acompanhe seu pedido por aqui:<br>"
-        f'<a href="{url_acompanhamento}">{url_acompanhamento}</a></p>'
+        f"<p>Acompanhe seu pedido por aqui:</p>"
+        f"{_botao(url_acompanhamento, '🔎 Clique aqui e acompanhe')}"
     )
 
 
@@ -151,8 +181,8 @@ def _corpo_html_pedido_enviado(
         f"<ul>{_itens_html(pedido)}</ul>"
         f"{transportadora_html}"
         f"{rastreio_html}"
-        f"<p>Acompanhe seu pedido a qualquer momento por aqui:<br>"
-        f'<a href="{url_acompanhamento}">{url_acompanhamento}</a></p>'
+        f"<p>Acompanhe seu pedido a qualquer momento:</p>"
+        f"{_botao(url_acompanhamento, '🔎 Clique aqui e acompanhe')}"
         f"<p>Qualquer dúvida, é só chamar no WhatsApp.</p>"
     )
 
@@ -180,7 +210,7 @@ def _corpo_html_pedido_cancelado(pedido: dict, url_catalogo: str) -> str:
         f"tempo e acabou sendo cancelado automaticamente.</p>"
         f"<p>Mas as medalhas continuam esperando por você -- e cada uma carrega uma história de fé "
         f"que vale a pena levar adiante. 🙏</p>"
-        f'<p><a href="{url_catalogo}">👉 Voltar ao catálogo e fazer um novo pedido</a></p>'
+        f"{_botao(url_catalogo, '👉 Voltar ao catálogo e fazer um novo pedido')}"
         f"<p>Se o pagamento deu algum problema ou você tiver qualquer dúvida, é só chamar no "
         f"WhatsApp -- a gente ajuda a resolver.</p>"
     )
@@ -199,7 +229,7 @@ def _corpo_html_oportunidade_upsell(pedido: dict, oportunidades: list[dict], url
         f"pedido #{pedido['codigo']}.</p>"
         f"<p>Separamos uma oportunidade pro seu próximo pedido:</p>"
         f"<ul>{linhas_oportunidade}</ul>"
-        f'<p><a href="{url_catalogo}">👉 Ver o catálogo completo</a></p>'
+        f"{_botao(url_catalogo, '👉 Ver o catálogo completo')}"
         f"<p>Qualquer dúvida, é só chamar no WhatsApp.</p>"
     )
 
@@ -229,7 +259,7 @@ def _corpo_html_pedido_avaliacao(pedido: dict, produto_nome: str, url_produto: s
         f"<p>Poderia contar pra gente como foi sua experiência com a <strong>{produto_nome}</strong>? "
         f"Leva menos de 1 minuto -- nome, uma nota de 1 a 5 estrelas, uma foto (se quiser) e um "
         f"comentário (opcional).</p>"
-        f'<p><a href="{url_produto}">👉 Avaliar {produto_nome}</a></p>'
+        f"{_botao(url_produto, f'👉 Avaliar {produto_nome}')}"
         f"<p>Sua avaliação ajuda outras pessoas a comprar com mais confiança. Muito obrigado!</p>"
     )
 
@@ -262,6 +292,31 @@ def enviar_pedido_cancelado(pedido: dict, url_catalogo: str) -> dict:
     )
 
 
+def _corpo_html_pedido_excluido(pedido: dict, motivo: str, url_catalogo: str) -> str:
+    return (
+        f"<p>Olá, {pedido.get('cliente_nome', '')}! Precisamos te avisar que seu pedido "
+        f"#{pedido['codigo']} foi cancelado pela nossa equipe.</p>"
+        f"<p><strong>Motivo:</strong> {motivo}</p>"
+        f"<p>Se você já tinha pago e ainda não recebeu o reembolso, ou tiver qualquer dúvida "
+        f"sobre isso, é só chamar no WhatsApp que a gente resolve.</p>"
+        f"{_botao(url_catalogo, '👉 Ver o catálogo e fazer um novo pedido')}"
+    )
+
+
+def enviar_pedido_excluido(pedido: dict, motivo: str, url_catalogo: str) -> dict:
+    """Disparado quando o admin exclui um pedido pelo painel (ver
+    app.py:admin_pedido_excluir) -- explica o motivo pro cliente, ja
+    que a exclusao e´ uma decisao manual (nao automatica como o
+    cancelamento por falta de pagamento, ver enviar_pedido_cancelado
+    acima). Devolve {"ok": True} ou {"erro": "..."}."""
+    return _enviar(
+        email_cliente=pedido.get("cliente_email", ""),
+        nome_cliente=pedido.get("cliente_nome", ""),
+        assunto=f"Seu pedido #{pedido['codigo']} foi cancelado",
+        corpo_html=_corpo_html_pedido_excluido(pedido, motivo, url_catalogo),
+    )
+
+
 def _corpo_html_notificacao_venda(pedido: dict, url_admin: str) -> str:
     return (
         f"<p>🎉 Nova venda confirmada!</p>"
@@ -269,7 +324,7 @@ def _corpo_html_notificacao_venda(pedido: dict, url_admin: str) -> str:
         f"({pedido.get('forma_pagamento', '')})</p>"
         f"<p>Cliente: {pedido.get('cliente_nome', '')} -- {pedido.get('cliente_telefone', '')}</p>"
         f"<ul>{_itens_html(pedido)}</ul>"
-        f'<p><a href="{url_admin}">👉 Ver pedido no painel</a></p>'
+        f"{_botao(url_admin, '👉 Ver pedido no painel')}"
     )
 
 
