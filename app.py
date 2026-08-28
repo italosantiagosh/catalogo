@@ -152,6 +152,12 @@ from services.pedidos import (
     previsoes_do_pedido,
     salvar_dados_boleto_inter,
 )
+from services.imagens_personalizadas import (
+    marcar_imagem_usada,
+    obter_imagem,
+    purgar_imagens_antigas,
+    salvar_imagem,
+)
 from services.inter import baixar_pdf, consultar_cobranca, emitir_boleto
 from services.pix import gerar_copia_cola, gerar_qr_data_uri
 from services.tiny import buscar_contatos_tiny, criar_pedido_tiny
@@ -485,10 +491,6 @@ def _ler_box(valores: dict) -> CropBox | None:
         )
     except (KeyError, ValueError, TypeError):
         return None
-
-
-def _preview_data_uri(imagem: Image.Image) -> str:
-    return "data:image/png;base64," + base64.b64encode(_imagem_para_bytes(imagem)).decode("ascii")
 
 
 def _crop_quadrada(caminho: Path, crop_box: CropBox | None) -> Image.Image:
@@ -1054,6 +1056,21 @@ def _detalhe_formato_do_item(item: dict) -> str:
     return f"{_FORMATO_LABEL['medalha']} · {_TAMANHO_LABEL.get(tamanho, tamanho)}"
 
 
+_PREFIXO_IMAGEM_PERSONALIZADA = "/imagem-personalizada/"
+
+
+def _marcar_imagem_personalizada_usada_se_aplicavel(valor: str) -> None:
+    """`imagem`/`imagemRecorte` guardam a URL duravel (ver
+    servir_imagem_personalizada) quando o item e´ uma personalizada com
+    foto -- marca como "usada" pra services.imagens_personalizadas nunca
+    apagar essa imagem na limpeza de simulacoes abandonadas (ver
+    purgar_imagens_antigas), mesmo que o pedido demore pra ser pago.
+    Nao faz nada pra item sem foto (valor vazio) ou carrinho antigo (data
+    URI, de antes dessa mudanca -- ver conversa)."""
+    if valor.startswith(_PREFIXO_IMAGEM_PERSONALIZADA):
+        marcar_imagem_usada(valor[len(_PREFIXO_IMAGEM_PERSONALIZADA):])
+
+
 def _itens_com_descricao_do_corpo(dados: dict) -> list[dict]:
     """Mesma validacao de _itens_validos_do_corpo, mas guarda tambem
     campos legiveis (nome do produto/modelo/variacao/imagem) pra exibir
@@ -1074,6 +1091,10 @@ def _itens_com_descricao_do_corpo(dados: dict) -> list[dict]:
         detalhe = _detalhe_formato_do_item(item)
         partes = [p for p in (produto_nome, modelo_nome, detalhe) if p]
         descricao = " — ".join(partes) or chave_preco
+        imagem = str(item.get("imagem", ""))
+        imagem_recorte = str(item.get("imagemRecorte", "") or "")
+        _marcar_imagem_personalizada_usada_se_aplicavel(imagem)
+        _marcar_imagem_personalizada_usada_se_aplicavel(imagem_recorte)
         itens_validos.append(
             {
                 "chave_preco": chave_preco,
@@ -1089,16 +1110,17 @@ def _itens_com_descricao_do_corpo(dados: dict) -> list[dict]:
                 # (services.tiny._codigo_estoque_tiny), que roda so depois
                 # do pagamento confirmado, bem depois da criacao do pedido.
                 "cor": str(item.get("cor", "")).strip(),
-                # imagem NUNCA truncada -- pode ser um data URI (medalha
-                # personalizada, ver static/js/personalizada.js), cortar
-                # no meio corrompe a imagem inteira.
-                "imagem": str(item.get("imagem", "")),
+                # imagem NUNCA truncada -- URL duravel pra medalha
+                # personalizada (ver services/imagens_personalizadas.py),
+                # ou ainda um data URI inteiro num carrinho antigo (de
+                # antes dessa mudanca) -- cortar no meio corrompe os dois.
+                "imagem": imagem,
                 # Recorte quadrado 1:1 (sem a moldura da medalha por cima),
                 # so existe pra item personalizado com foto -- e´ o que a
                 # producao precisa baixar, nao a previa com moldura. Guardado
                 # aqui pra nunca mais depender do cliente reenviar a foto
                 # pelo WhatsApp (ver conversa).
-                "imagemRecorte": str(item.get("imagemRecorte", "") or ""),
+                "imagemRecorte": imagem_recorte,
             }
         )
     return itens_validos
@@ -2263,6 +2285,26 @@ def download(token: str):
     return resposta
 
 
+@app.route("/imagem-personalizada/<token>")
+def servir_imagem_personalizada(token: str):
+    """Serve a previa/recorte de uma medalha personalizada guardados de
+    forma DURAVEL (ver services/imagens_personalizadas.py) -- diferente
+    de /download acima (uso unico, so serve pros botoes "baixar" da
+    propria pagina /personalizada), essa aqui e MULTI-leitura: o
+    carrinho (localStorage) guarda so essa URL, precisa continuar
+    funcionando toda vez que o item aparece na tela (carrinho, pagina do
+    pedido, painel admin), inclusive dias depois. Token e´ imprevisivel
+    (secrets.token_urlsafe), entao nao precisa de autenticacao -- mesmo
+    criterio ja usado no token de acompanhamento do pedido."""
+    entrada = obter_imagem(token)
+    if entrada is None:
+        abort(404)
+    dados, mimetype, _nome_arquivo = entrada
+    resposta = send_file(io.BytesIO(dados), mimetype=mimetype)
+    resposta.headers["Cache-Control"] = "public, max-age=31536000, immutable"
+    return resposta
+
+
 @app.route("/api/avaliacoes", methods=["POST"])
 @limiter.limit("5 per minute")
 def api_avaliacoes_criar():
@@ -2441,15 +2483,25 @@ def api_personalizada_preview():
             return jsonify(erro=f"Erro ao gerar a simulação: {exc}"), 400
 
     nome_base = _sem_extensao(arquivo.filename)
-    token_preview = _registrar_download(
-        _imagem_para_bytes(resultado), "image/png", f"{nome_base}_{spec_id}.png"
-    )
-    token_crop = _registrar_download(
-        _imagem_para_bytes(recorte), "image/png", f"{nome_base}_recorte.png"
-    )
+    imagem_bytes = _imagem_para_bytes(resultado)
+    recorte_bytes = _imagem_para_bytes(recorte)
+
+    token_preview = _registrar_download(imagem_bytes, "image/png", f"{nome_base}_{spec_id}.png")
+    token_crop = _registrar_download(recorte_bytes, "image/png", f"{nome_base}_recorte.png")
+
+    # Guardado tambem de forma DURAVEL (ver services/imagens_personalizadas.py)
+    # -- o que realmente vai pro item do carrinho/pedido, diferente do
+    # token acima (uso unico, expira em 15min, so serve pros botoes
+    # "baixar previa/recorte" desta propria pagina). Sem isso, o
+    # carrinho (localStorage) guardava o data URI inteiro de cada
+    # imagem -- estourava a cota do navegador ja na 3a medalha
+    # personalizada com foto (ver conversa, bug real).
+    chave_imagem = salvar_imagem(imagem_bytes, "image/png", f"{nome_base}_{spec_id}.png")
+    chave_recorte = salvar_imagem(recorte_bytes, "image/png", f"{nome_base}_recorte.png")
+
     return jsonify(
-        preview=_preview_data_uri(resultado),
-        crop=_preview_data_uri(recorte),
+        preview=url_for("servir_imagem_personalizada", token=chave_imagem),
+        crop=url_for("servir_imagem_personalizada", token=chave_recorte),
         url_preview=f"/download/{token_preview}",
         url_crop=f"/download/{token_crop}",
     )
@@ -2648,6 +2700,16 @@ def _verificar_boletos_inter_pendentes() -> None:
                 marcar_email_cancelado_enviado(pedido["token"], erro=resultado_email.get("erro"))
 
 
+def _limpar_imagens_personalizadas_antigas() -> None:
+    """Job agendado (ver _iniciar_scheduler_jobs abaixo) -- roda 1x por
+    dia, apaga simulacoes de medalha personalizada geradas (ver
+    api_personalizada_preview) mas nunca adicionadas a um pedido de
+    verdade, depois de 7 dias (ver
+    services/imagens_personalizadas.py:purgar_imagens_antigas). Evita o
+    banco crescer sem limite com foto de quem so testou a simulacao."""
+    purgar_imagens_antigas(dias=7)
+
+
 def _iniciar_scheduler_jobs() -> None:
     scheduler = BackgroundScheduler(timezone="UTC")
     scheduler.add_job(_enviar_lembretes_pedidos_pendentes, "interval", minutes=10, id="lembretes_pedidos_pendentes")
@@ -2655,6 +2717,9 @@ def _iniciar_scheduler_jobs() -> None:
     scheduler.add_job(_enviar_upsell_pedidos_pagos, "interval", minutes=10, id="upsell_pedidos_pagos")
     scheduler.add_job(_enviar_pedidos_para_avaliacao, "interval", minutes=10, id="pedidos_para_avaliacao")
     scheduler.add_job(_verificar_boletos_inter_pendentes, "interval", minutes=10, id="verificar_boletos_inter")
+    scheduler.add_job(
+        _limpar_imagens_personalizadas_antigas, "interval", hours=24, id="limpar_imagens_personalizadas"
+    )
     scheduler.start()
 
 
