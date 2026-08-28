@@ -146,6 +146,7 @@ from services.pedidos import (
     marcar_email_lembrete_enviado,
     marcar_email_pedido_criado_enviado,
     marcar_email_upsell_enviado,
+    marcar_notificacao_venda_enviada,
     marcar_pago,
     marcar_tiny_sincronizado,
     obter_pedido,
@@ -1102,6 +1103,11 @@ def _itens_com_descricao_do_corpo(dados: dict) -> list[dict]:
                 "descricao": descricao[:160],
                 "produtoNome": produto_nome,
                 "produtoId": str(item.get("produtoId", "")).strip(),
+                # Junto com produtoId, forma o codigo que a Tiny usa pra
+                # puxar NCM/categoria sozinha na nota fiscal (ver
+                # services/tiny.py:_codigo_estoque_tiny e
+                # scripts/gerar_planilha_tiny.py, mesmo esquema de SKU).
+                "modeloId": str(item.get("modeloId", "")).strip(),
                 "modeloNome": modelo_nome,
                 "detalhe": detalhe,
                 # so tem sentido pra formato="entremeio" -- prata e ouro
@@ -1421,6 +1427,13 @@ def api_pedido_criar_boleto():
         pix_copia_cola=pix.get("pixCopiaECola", ""),
     )
 
+    enviar_notificacao_push(
+        titulo="🎉 Boleto Emitido",
+        corpo=f"Pedido #{pedido['codigo']} -- {_formatar_preco(pedido['total'])}",
+        url=url_for("admin_pedido_detalhe", token=pedido["token"], _external=True),
+        icone=url_for("static", filename="img/boleto-icone.png"),
+    )
+
     resultado_email = enviar_boleto_gerado(
         pedido, url_for("ver_pedido", token=pedido["token"], _external=True)
     )
@@ -1482,6 +1495,14 @@ def api_pedido_criar_whatsapp():
         endereco={},
         status_inicial="whatsapp",
     )
+
+    enviar_notificacao_push(
+        titulo="🎉 Você tem um pedido via WhatsApp",
+        corpo=f"Pedido #{pedido['codigo']} -- {_formatar_preco(pedido['total'])}",
+        url=url_for("admin_pedido_detalhe", token=pedido["token"], _external=True),
+        icone=url_for("static", filename="img/icone-whatsapp.png"),
+    )
+
     return jsonify(ok=True, codigo=pedido["codigo"], token=pedido["token"])
 
 
@@ -1671,21 +1692,28 @@ def _pos_pagamento_confirmado(pedido_pago: dict | None, token: str) -> None:
         # avisos internos pra loja (e-mail + push, ver services/email.py
         # e services/push.py) -- reaproveita o mesmo gate acima (so
         # roda na primeira confirmacao) em vez de criar coluna nova so
-        # pra isso. Nenhum dos dois pode derrubar o fluxo.
+        # pra isso. Nenhum dos dois pode derrubar o fluxo -- mas
+        # diferente do push (que ja nunca levanta excecao, ver
+        # services/push.py), o e-mail tem o resultado GRAVADO no pedido
+        # (marcar_notificacao_venda_enviada) em vez de so um
+        # `except: pass` -- antes disso, se esse e-mail falhasse
+        # (ex: EMAIL_NOTIFICACAO_VENDA errado, Brevo bloqueando) nao
+        # havia nenhum jeito de saber nem de reenviar (ver conversa,
+        # caso real: venda confirmada sem nenhum aviso por e-mail).
         try:
-            enviar_notificacao_venda(
+            resultado_notificacao = enviar_notificacao_venda(
                 pedido_pago, url_for("admin_pedido_detalhe", token=token, _external=True)
             )
-        except Exception:
-            pass
-        try:
-            enviar_notificacao_push(
-                titulo="🎉 Nova venda!",
-                corpo=f"Pedido #{pedido_pago['codigo']} -- {_formatar_preco(pedido_pago['total'])}",
-                url=url_for("admin_pedido_detalhe", token=token, _external=True),
-            )
-        except Exception:
-            pass
+        except Exception as exc:
+            resultado_notificacao = {"erro": f"Erro inesperado ao notificar: {exc}"}
+        marcar_notificacao_venda_enviada(token, erro=resultado_notificacao.get("erro"))
+
+        enviar_notificacao_push(
+            titulo=f"🎉 Você vendeu {_formatar_preco(pedido_pago['total'])}",
+            corpo=f"Pedido #{pedido_pago['codigo']}",
+            url=url_for("admin_pedido_detalhe", token=token, _external=True),
+            icone=url_for("static", filename="img/venda-icone.png"),
+        )
 
 
 # Mesmo texto usado em static/js/carrinho_pagina.js (FRETE_RETIRADA_TEXTO)
@@ -2121,6 +2149,26 @@ def _reenviar_email_confirmacao(token: str) -> str | None:
     return resultado_email.get("erro")
 
 
+def _reenviar_notificacao_venda(token: str) -> str | None:
+    """Reenvia o AVISO INTERNO de venda (pro dono, ver
+    services/email.py:enviar_notificacao_venda) -- diferente de
+    _reenviar_email_confirmacao acima (esse e´ o e-mail pro CLIENTE).
+    Usado pelo botao individual (admin_pedido_reenviar_notificacao_venda)."""
+    pedido = obter_pedido(token)
+    if pedido is None:
+        return "Pedido não encontrado."
+    if pedido["status"] == "pendente":
+        return "Esse pedido ainda não foi pago."
+    try:
+        resultado_notificacao = enviar_notificacao_venda(
+            pedido, url_for("admin_pedido_detalhe", token=token, _external=True)
+        )
+    except Exception as exc:  # nunca deixa o operador numa tela de erro generica
+        resultado_notificacao = {"erro": f"Erro inesperado ao enviar: {exc}"}
+    marcar_notificacao_venda_enviada(token, erro=resultado_notificacao.get("erro"))
+    return resultado_notificacao.get("erro")
+
+
 @app.route("/admin/pedidos/<token>/reenviar-tiny", methods=["POST"])
 def admin_pedido_reenviar_tiny(token: str):
     """Sincroniza (ou tenta de novo) com a Tiny na mao -- normalmente
@@ -2156,6 +2204,25 @@ def admin_pedido_reenviar_email(token: str):
     if obter_pedido(token) is None:
         abort(404)
     erro = _reenviar_email_confirmacao(token)
+    if erro == "Esse pedido ainda não foi pago.":
+        abort(400, description=erro)
+    return redirect(url_for("admin_pedido_detalhe", token=token))
+
+
+@app.route("/admin/pedidos/<token>/reenviar-notificacao-venda", methods=["POST"])
+def admin_pedido_reenviar_notificacao_venda(token: str):
+    """Reenvia o AVISO INTERNO de venda (pro dono da loja) na mao --
+    ate essa notificacao ganhar rastreio (ver
+    services/pedidos.py:notificacao_venda_enviada/notificacao_venda_erro),
+    uma falha nela era invisivel: nenhum e-mail chegava e ninguem sabia
+    o motivo nem tinha como reenviar."""
+    if not _autenticacao_admin_valida(request.authorization):
+        return Response(
+            "Autenticação necessária.", 401, {"WWW-Authenticate": 'Basic realm="Painel de pedidos"'}
+        )
+    if obter_pedido(token) is None:
+        abort(404)
+    erro = _reenviar_notificacao_venda(token)
     if erro == "Esse pedido ainda não foi pago.":
         abort(400, description=erro)
     return redirect(url_for("admin_pedido_detalhe", token=token))

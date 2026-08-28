@@ -54,6 +54,19 @@ def test_criar_pedido_boleto_com_sucesso(client):
     assert pedido["inter_codigo_barras"] == "789"
 
 
+def test_criar_pedido_boleto_notifica_push_de_boleto_emitido(client):
+    with patch("app.emitir_boleto", return_value={"codigo_solicitacao": "abc-uuid"}), \
+         patch("app.consultar_cobranca", return_value={"boleto": {}, "pix": {}}), \
+         patch("app.enviar_boleto_gerado", return_value={"ok": True}), \
+         patch("app.enviar_notificacao_push") as push_mock:
+        resposta = client.post("/api/pedido/criar-boleto", json=_corpo_valido())
+    assert resposta.status_code == 200
+    push_mock.assert_called_once()
+    kwargs = push_mock.call_args.kwargs
+    assert kwargs["titulo"] == "🎉 Boleto Emitido"
+    assert "boleto-icone.png" in kwargs["icone"]
+
+
 def test_criar_pedido_boleto_carrinho_vazio_400(client):
     resposta = client.post("/api/pedido/criar-boleto", json=_corpo_valido(itens=[]))
     assert resposta.status_code == 400

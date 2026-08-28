@@ -450,6 +450,21 @@ def test_criar_pedido_whatsapp_carrinho_vazio_400(client):
     assert resposta.status_code == 400
 
 
+def test_criar_pedido_whatsapp_notifica_push_sem_falar_em_venda(client):
+    """Pedido via WhatsApp ainda nao e´ venda confirmada (so um lead) --
+    a notificacao avisa que o pedido foi EMITIDO, nao que foi vendido
+    (ver conversa)."""
+    with patch("app.enviar_notificacao_push") as push_mock:
+        client.post("/api/pedido/criar-whatsapp", json={
+            "itens": [{"chave_preco": "16mm", "quantidade": 10, "produtoNome": "São José", "modeloNome": "Modelo 1"}],
+            "frete": {},
+        })
+    push_mock.assert_called_once()
+    kwargs = push_mock.call_args.kwargs
+    assert kwargs["titulo"] == "🎉 Você tem um pedido via WhatsApp"
+    assert "icone-whatsapp.png" in kwargs["icone"]
+
+
 def test_criar_pedido_erro_da_infinitepay_502(client):
     with patch("app.criar_link_pagamento", return_value={"erro": "falhou"}):
         resposta = client.post("/api/pedido/criar", json=_corpo_valido())
@@ -622,6 +637,74 @@ def test_webhook_falha_no_email_nao_impede_confirmacao_do_pagamento(client):
     assert pedido["status"] == "pago"
     assert pedido["email_enviado"] == 1
     assert pedido["email_erro"] == "falha no envio"
+
+
+def test_webhook_confirmado_registra_falha_na_notificacao_de_venda(client):
+    """Ate isso ser corrigido (ver conversa: usuario recebeu push mas
+    nao e-mail, e nao havia como saber o motivo), uma falha aqui era
+    engolida em silencio -- agora fica gravada no pedido, igual ja
+    acontece com o e-mail de confirmacao pro cliente."""
+    with patch("app.criar_link_pagamento", return_value={"url": "https://checkout.infinitepay.io/abc"}):
+        criado = client.post("/api/pedido/criar", json=_corpo_valido()).get_json()
+
+    with patch("app.criar_pedido_tiny", return_value={"ok": True, "numero": 1}), \
+         patch("app.enviar_confirmacao_pedido", return_value={"ok": True}), \
+         patch("app.enviar_notificacao_venda", return_value={"erro": "EMAIL_NOTIFICACAO_VENDA inválido"}):
+        client.post(
+            "/webhook/infinitepay",
+            json={"order_nsu": criado["token"], "paid_amount": 6000, "capture_method": "pix"},
+        )
+
+    pedido = pedidos.obter_pedido(criado["token"])
+    assert pedido["status"] == "pago"
+    assert pedido["notificacao_venda_enviada"] == 1
+    assert pedido["notificacao_venda_erro"] == "EMAIL_NOTIFICACAO_VENDA inválido"
+
+
+def test_admin_reenvia_notificacao_de_venda(client, monkeypatch):
+    import app as app_module
+
+    monkeypatch.setattr(app_module, "ADMIN_USER", "admin")
+    monkeypatch.setattr(app_module, "ADMIN_PASSWORD", "segredo123")
+
+    with patch("app.criar_link_pagamento", return_value={"url": "https://checkout.infinitepay.io/abc"}):
+        criado = client.post("/api/pedido/criar", json=_corpo_valido()).get_json()
+    with patch("app.criar_pedido_tiny", return_value={"ok": True, "numero": 1}), \
+         patch("app.enviar_confirmacao_pedido", return_value={"ok": True}), \
+         patch("app.enviar_notificacao_venda", return_value={"erro": "falhou"}):
+        client.post(
+            "/webhook/infinitepay",
+            json={"order_nsu": criado["token"], "paid_amount": 6000, "capture_method": "pix"},
+        )
+
+    with patch("app.enviar_notificacao_venda", return_value={"ok": True}) as mock_reenvio:
+        resposta = client.post(
+            f"/admin/pedidos/{criado['token']}/reenviar-notificacao-venda", auth=("admin", "segredo123")
+        )
+    assert resposta.status_code in (302, 303)
+    mock_reenvio.assert_called_once()
+
+    pedido = pedidos.obter_pedido(criado["token"])
+    assert pedido["notificacao_venda_erro"] is None
+
+
+def test_webhook_confirma_pagamento_notifica_push_com_valor_e_icone_de_venda(client):
+    with patch("app.criar_link_pagamento", return_value={"url": "https://checkout.infinitepay.io/abc"}):
+        criado = client.post("/api/pedido/criar", json=_corpo_valido()).get_json()
+
+    with patch("app.enviar_notificacao_push") as push_mock:
+        client.post(
+            "/webhook/infinitepay",
+            json={"order_nsu": criado["token"], "paid_amount": 6000, "capture_method": "pix"},
+        )
+    push_mock.assert_called_once()
+    kwargs = push_mock.call_args.kwargs
+    assert kwargs["titulo"] == "🎉 Você vendeu R$ 60,00"
+    assert "venda-icone.png" in kwargs["icone"]
+    # nao especifica a forma de pagamento (pix/cartao/boleto) -- pedido
+    # explicito do usuario (ver conversa).
+    assert "pix" not in kwargs["titulo"].lower()
+    assert "cart" not in kwargs["titulo"].lower()
 
 
 def test_timeline_pedido_pendente_so_criado_e_pendente_marcados(client):

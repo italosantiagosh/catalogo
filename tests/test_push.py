@@ -115,6 +115,47 @@ def test_enviar_notificacao_manda_pra_todas_as_inscricoes(client, monkeypatch):
         assert chamada.kwargs["headers"]["content-encoding"] == "aes128gcm"
 
 
+def test_enviar_notificacao_inclui_icone_no_payload(client, monkeypatch):
+    """`icone` (ver services/push.py e static/sw.js) diferencia o icone
+    grande da notificacao por tipo de evento (venda/boleto/whatsapp, ver
+    app.py) -- confirma que o JSON criptografado carrega esse campo."""
+    priv_pem, pub_pem = _chaves_vapid_de_teste()
+    monkeypatch.setattr(push, "VAPID_PRIVATE_KEY_PEM", priv_pem)
+    monkeypatch.setattr(push, "VAPID_PUBLIC_KEY_PEM", pub_pem)
+    monkeypatch.setattr(push, "VAPID_SUBSCRIBER_EMAIL", "loja@example.com")
+
+    from cryptography.hazmat.primitives import serialization
+    from cryptography.hazmat.primitives.asymmetric import ec
+    import base64
+    import json as json_module
+
+    chave = ec.generate_private_key(ec.SECP256R1())
+    bruto = chave.public_key().public_bytes(
+        encoding=serialization.Encoding.X962, format=serialization.PublicFormat.UncompressedPoint
+    )
+    p256dh = base64.urlsafe_b64encode(bruto).decode().rstrip("=")
+    auth = base64.urlsafe_b64encode(b"0123456789abcdef").decode().rstrip("=")
+    push.salvar_subscription(endpoint="https://fcm.googleapis.com/fcm/send/1", p256dh=p256dh, auth=auth)
+
+    mensagens_capturadas = []
+    original_get = push.WebPush.get
+
+    def _get_espiao(self, *, message, subscription):
+        mensagens_capturadas.append(message)
+        return original_get(self, message=message, subscription=subscription)
+
+    with patch.object(push.WebPush, "get", _get_espiao), \
+         patch("services.push.requests.post", return_value=Mock(status_code=201)):
+        push.enviar_notificacao(
+            titulo="🎉 Boleto Emitido", corpo="Pedido #ABC", url="https://site/x",
+            icone="/static/img/boleto-icone.png",
+        )
+
+    assert len(mensagens_capturadas) == 1
+    dados = json_module.loads(mensagens_capturadas[0])
+    assert dados["icone"] == "/static/img/boleto-icone.png"
+
+
 def test_enviar_notificacao_remove_inscricao_expirada(client, monkeypatch):
     priv_pem, pub_pem = _chaves_vapid_de_teste()
     monkeypatch.setattr(push, "VAPID_PRIVATE_KEY_PEM", priv_pem)

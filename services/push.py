@@ -105,13 +105,19 @@ def obter_application_server_key() -> str:
     return _VapidHelper.get_application_server_key(chave_publica)
 
 
-def enviar_notificacao(*, titulo: str, corpo: str, url: str) -> None:
+def enviar_notificacao(*, titulo: str, corpo: str, url: str, icone: str | None = None) -> None:
     """Manda a notificacao push pra TODAS as inscricoes salvas (na
     pratica, 1 por dispositivo que o admin ativou) -- uma inscricao
     expirada/invalida (404/410 do servico de push) e´ removida
     silenciosamente; falha numa inscricao nao impede as outras. Nunca
     levanta excecao -- quem chama (webhook de pagamento) nao pode
-    quebrar por causa disso."""
+    quebrar por causa disso.
+
+    `icone` e´ um caminho relativo (ex: "/static/img/venda-icone.png")
+    -- usado pelo service worker (ver static/sw.js) pra diferenciar o
+    icone grande da notificacao por tipo de evento (venda confirmada,
+    boleto emitido, pedido via WhatsApp -- ver app.py). Cai no logo
+    padrao da loja quando None."""
     if not VAPID_PRIVATE_KEY_PEM or not VAPID_PUBLIC_KEY_PEM:
         return
     inscricoes = listar_subscriptions()
@@ -127,7 +133,9 @@ def enviar_notificacao(*, titulo: str, corpo: str, url: str) -> None:
     except Exception:
         return
 
-    payload = json.dumps({"titulo": titulo, "corpo": corpo, "url": url}, ensure_ascii=False)
+    payload = json.dumps(
+        {"titulo": titulo, "corpo": corpo, "url": url, "icone": icone}, ensure_ascii=False
+    )
     for inscricao in inscricoes:
         try:
             subscription = WebPushSubscription.model_validate(

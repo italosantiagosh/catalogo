@@ -69,19 +69,40 @@ def _cliente_para_tiny(pedido: dict) -> dict:
     }
 
 
-# O `codigo` mandado pra Tiny controla ESTOQUE (materia-prima comprada),
-# nao precisa (nem deve) ter um por santo -- o catalogo inteiro usa so
-# 4 chave_preco (12mm/16mm/entremeio/chaveiro, ver services/pricing.py),
-# entao cadastrando so esses produtos na Tiny o estoque ja fica agrupado
-# do jeito que a compra de material realmente acontece. Excecao:
-# entremeio prata e ouro velho sao materia-prima comprada SEPARADA (ver
-# conversa), entao viram 2 codigos diferentes aqui mesmo sem existir 2
-# chave_preco (chave_preco so afeta PRECO/desconto, que e igual pros
-# dois -- nao mexer nisso). O nome do santo continua so na `descricao`
-# de cada linha, nunca no `codigo` (ver _itens_com_descricao_do_corpo
-# em app.py, que ja monta essa descricao com produto+modelo+detalhe).
+# Codigo mandado pra Tiny -- ATE aqui era so agregado por materia-prima
+# (ex: "12mm", "entremeio_prata"), pensado pro estoque bater com a
+# compra de material, sem misturar santo/modelo. Trocado a pedido do
+# usuario (ver conversa) pro MESMO codigo por santo+modelo+variacao
+# cadastrado na Tiny via scripts/gerar_planilha_tiny.py (ex:
+# "MED-ANUNCIACAO-M1-16mm") -- assim a nota fiscal ja puxa NCM sozinha
+# do cadastro do produto, e o relatorio de vendas da Tiny separa por
+# Categoria (ver scripts/gerar_planilha_tiny.py: "Medalha 1 lado 16mm"
+# etc.). Efeito colateral aceito pelo usuario: o estoque na Tiny passa
+# a ser controlado por santo+modelo+tamanho, nao mais agregado por
+# materia-prima comprada.
+#
+# So funciona pra item com produtoId+modeloId (produto do catalogo, ver
+# static/js/produto.js) -- medalha PERSONALIZADA (foto do cliente, sem
+# produto/modelo do catalogo) nao tem cadastro correspondente na Tiny
+# ainda, entao continua usando o codigo agregado antigo nesse caso.
+_COR_SUFIXO_TINY = {"ouro_velho": "OU", "prata": "PR"}
+
+
 def _codigo_estoque_tiny(item: dict) -> str:
     chave_preco = item.get("chave_preco", "")
+    produto_id = str(item.get("produtoId") or "").strip()
+    modelo_id = str(item.get("modeloId") or "").strip()
+
+    if produto_id and modelo_id:
+        base = f"{produto_id.upper()}-M{modelo_id}"
+        if chave_preco in ("12mm", "16mm"):
+            return f"MED-{base}-{chave_preco}"
+        if chave_preco == "entremeio":
+            cor = str(item.get("cor", ""))
+            return f"ENT-{base}-{_COR_SUFIXO_TINY.get(cor, 'XX')}"
+        if chave_preco == "chaveiro":
+            return f"CHAV-{base}"
+
     if chave_preco == "entremeio" and item.get("cor"):
         return f"entremeio_{item['cor']}"
     return chave_preco

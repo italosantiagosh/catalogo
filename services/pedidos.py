@@ -145,6 +145,15 @@ _COLUNAS_ADICIONAIS: list[tuple[str, str]] = [
     ("inter_codigo_barras", "TEXT"),
     ("inter_pix_copia_cola", "TEXT"),
     ("inter_erro", "TEXT"),
+    # Aviso interno pra loja (e-mail pro dono, ver
+    # services/email.py:enviar_notificacao_venda) quando uma venda e´
+    # confirmada -- ate aqui essa falha era engolida em silencio (so um
+    # `except: pass` em app.py:_pos_pagamento_confirmado), entao se o
+    # e-mail nunca chegasse ninguem saberia o motivo nem teria como
+    # reenviar. Mesmo padrao de email_enviado/email_erro ja usado pro
+    # e-mail do CLIENTE.
+    ("notificacao_venda_enviada", "INTEGER NOT NULL DEFAULT 0"),
+    ("notificacao_venda_erro", "TEXT"),
 ]
 
 # Fluxo de status depois de "pago" -- alteravel manualmente pelo painel
@@ -632,6 +641,20 @@ def marcar_email_enviado(token: str, *, erro: str | None) -> dict | None:
     with _conexao() as conexao:
         conexao.execute(
             "UPDATE pedidos SET email_enviado = 1, email_erro = ? WHERE token = ?", (erro, token)
+        )
+    return obter_pedido(token)
+
+
+def marcar_notificacao_venda_enviada(token: str, *, erro: str | None) -> dict | None:
+    """Aviso interno pra loja (e-mail pro dono, ver
+    app.py:_pos_pagamento_confirmado) -- mesma logica do
+    marcar_email_enviado, mas pro e-mail de NOTIFICACAO (pro dono), nao
+    de confirmacao (pro cliente). Existe pra nunca mais engolir em
+    silencio uma falha nessa notificacao (ver conversa)."""
+    with _conexao() as conexao:
+        conexao.execute(
+            "UPDATE pedidos SET notificacao_venda_enviada = 1, notificacao_venda_erro = ? WHERE token = ?",
+            (erro, token),
         )
     return obter_pedido(token)
 

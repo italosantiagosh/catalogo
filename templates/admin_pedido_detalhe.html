@@ -437,6 +437,22 @@
           <button type="submit">Reenviar</button>
         </form>
       </div>
+
+      <div class="integracao">
+        <div class="integracao-texto">
+          <strong>Notificação interna de venda:</strong>
+          {% if not pedido.notificacao_venda_enviada %}
+            ainda não enviado
+          {% elif pedido.notificacao_venda_erro %}
+            <span class="integracao-erro">⚠️ {{ pedido.notificacao_venda_erro }}</span>
+          {% else %}
+            ✅ enviado
+          {% endif %}
+        </div>
+        <form method="post" action="{{ url_for('admin_pedido_reenviar_notificacao_venda', token=pedido.token) }}">
+          <button type="submit">Reenviar</button>
+        </form>
+      </div>
     </div>
   {% endif %}
 

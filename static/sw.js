@@ -14,7 +14,7 @@ self.addEventListener('push', (event) => {
   const titulo = dados.titulo || 'Nove de Julho';
   const opcoes = {
     body: dados.corpo || '',
-    icon: '/static/img/logo-icone.png',
+    icon: dados.icone || '/static/img/logo-icone.png',
     badge: '/static/img/logo-icone.png',
     data: { url: dados.url || '/' },
   };

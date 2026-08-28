@@ -80,26 +80,28 @@ def test_monta_payload_com_cliente_itens_e_numero_pedido_ecommerce(monkeypatch):
     assert "tx-abc" in pedido_json["obs"]
 
 
-def test_codigo_do_item_e_o_chave_preco_nao_o_santo(monkeypatch):
-    """Estoque na Tiny e´ por material (chave_preco), nao por santo --
-    o nome do santo so entra na descricao da linha."""
+def test_item_sem_produto_do_catalogo_usa_codigo_agregado(monkeypatch):
+    """Sem produtoId/modeloId (medalha personalizada com foto, sem
+    cadastro correspondente na Tiny ainda -- ver
+    services/tiny.py:_codigo_estoque_tiny), cai no codigo agregado por
+    material antigo."""
     monkeypatch.setattr(tiny, "TINY_API_TOKEN", "segredo123")
     with patch("services.tiny.requests.post", return_value=_resposta_ok()) as post_mock:
         tiny.criar_pedido_tiny(_pedido_exemplo(
-            itens=[{"chave_preco": "16mm", "quantidade": 10, "descricao": "São José — Modelo 1", "valor_unitario": 5.0}]
+            itens=[{"chave_preco": "16mm", "quantidade": 10, "descricao": "Personalizada", "valor_unitario": 5.0}]
         ))
     pedido_json = json.loads(post_mock.call_args.kwargs["data"]["pedido"])["pedido"]
     assert pedido_json["itens"][0]["item"]["codigo"] == "16mm"
 
 
-def test_entremeio_prata_e_ouro_velho_viram_codigos_diferentes(monkeypatch):
-    """Materia-prima comprada separada (ver conversa) -- mesmo chave_preco
-    ("entremeio"), mas codigo de estoque diferente na Tiny pra cor."""
+def test_item_sem_produto_do_catalogo_entremeio_prata_e_ouro_velho_viram_codigos_diferentes(monkeypatch):
+    """Mesmo fallback acima, mas confirma que a cor do entremeio ainda
+    diferencia o codigo mesmo sem produtoId/modeloId."""
     monkeypatch.setattr(tiny, "TINY_API_TOKEN", "segredo123")
     itens = [
-        {"chave_preco": "entremeio", "quantidade": 5, "descricao": "São José — Entremeio · Prata",
+        {"chave_preco": "entremeio", "quantidade": 5, "descricao": "Entremeio · Prata",
          "valor_unitario": 3.0, "cor": "prata"},
-        {"chave_preco": "entremeio", "quantidade": 7, "descricao": "Santa Rita — Entremeio · Ouro velho",
+        {"chave_preco": "entremeio", "quantidade": 7, "descricao": "Entremeio · Ouro velho",
          "valor_unitario": 3.0, "cor": "ouro_velho"},
     ]
     with patch("services.tiny.requests.post", return_value=_resposta_ok()) as post_mock:
@@ -107,6 +109,37 @@ def test_entremeio_prata_e_ouro_velho_viram_codigos_diferentes(monkeypatch):
     pedido_json = json.loads(post_mock.call_args.kwargs["data"]["pedido"])["pedido"]
     assert pedido_json["itens"][0]["item"]["codigo"] == "entremeio_prata"
     assert pedido_json["itens"][1]["item"]["codigo"] == "entremeio_ouro_velho"
+
+
+def test_item_do_catalogo_usa_codigo_por_santo_modelo_tamanho(monkeypatch):
+    """Com produtoId+modeloId (produto real do catalogo), o codigo bate
+    com o SKU cadastrado na Tiny via scripts/gerar_planilha_tiny.py --
+    trocado a pedido do usuario, pra nota fiscal puxar NCM sozinha e o
+    relatorio de vendas separar por Categoria (ver conversa)."""
+    monkeypatch.setattr(tiny, "TINY_API_TOKEN", "segredo123")
+    itens = [
+        {"chave_preco": "16mm", "quantidade": 10, "descricao": "Anunciação — Modelo 1", "valor_unitario": 5.0,
+         "produtoId": "anunciacao", "modeloId": "1"},
+    ]
+    with patch("services.tiny.requests.post", return_value=_resposta_ok()) as post_mock:
+        tiny.criar_pedido_tiny(_pedido_exemplo(itens=itens))
+    pedido_json = json.loads(post_mock.call_args.kwargs["data"]["pedido"])["pedido"]
+    assert pedido_json["itens"][0]["item"]["codigo"] == "MED-ANUNCIACAO-M1-16mm"
+
+
+def test_item_do_catalogo_entremeio_e_chaveiro_usam_codigo_por_santo_modelo(monkeypatch):
+    monkeypatch.setattr(tiny, "TINY_API_TOKEN", "segredo123")
+    itens = [
+        {"chave_preco": "entremeio", "quantidade": 5, "descricao": "Anunciação — Entremeio · Ouro velho",
+         "valor_unitario": 3.0, "cor": "ouro_velho", "produtoId": "anunciacao", "modeloId": "1"},
+        {"chave_preco": "chaveiro", "quantidade": 2, "descricao": "Anunciação — Chaveiro",
+         "valor_unitario": 8.0, "produtoId": "anunciacao", "modeloId": "1"},
+    ]
+    with patch("services.tiny.requests.post", return_value=_resposta_ok()) as post_mock:
+        tiny.criar_pedido_tiny(_pedido_exemplo(itens=itens))
+    pedido_json = json.loads(post_mock.call_args.kwargs["data"]["pedido"])["pedido"]
+    assert pedido_json["itens"][0]["item"]["codigo"] == "ENT-ANUNCIACAO-M1-OU"
+    assert pedido_json["itens"][1]["item"]["codigo"] == "CHAV-ANUNCIACAO-M1"
 
 
 def test_sem_endereco_de_entrega_diferente_nao_manda_bloco(monkeypatch):
