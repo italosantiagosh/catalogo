@@ -34,6 +34,28 @@ def test_sw_js_servido_na_raiz(client):
     assert "self.addEventListener('push'" in resposta.get_data(as_text=True)
 
 
+def test_admin_pedidos_referencia_manifest_com_icone(client, monkeypatch):
+    """iOS so mostra o icone de verdade na notificacao (em vez de um
+    circulo com a inicial do titulo da pagina, ver conversa -- caso
+    real reportado) quando existe um manifest.json com icones
+    cadastrados. Confirma que a pagina que registra a inscricao de push
+    (unica que carrega static/js/push.js) referencia o manifest."""
+    import app as app_module
+
+    monkeypatch.setattr(app_module, "ADMIN_USER", "admin")
+    monkeypatch.setattr(app_module, "ADMIN_PASSWORD", "segredo123")
+    corpo = client.get("/admin/pedidos", auth=("admin", "segredo123")).get_data(as_text=True)
+    assert 'rel="manifest"' in corpo
+    assert "manifest.json" in corpo
+
+    resposta_manifest = client.get("/static/manifest.json")
+    assert resposta_manifest.status_code == 200
+    dados = resposta_manifest.get_json()
+    assert dados["icons"]
+    for icone in dados["icons"]:
+        assert client.get(icone["src"]).status_code == 200
+
+
 def test_inscrever_exige_autenticacao(client):
     resposta = client.post("/admin/push/inscrever", json={"endpoint": "https://x", "keys": {"p256dh": "a", "auth": "b"}})
     assert resposta.status_code == 401
