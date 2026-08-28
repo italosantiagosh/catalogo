@@ -30,6 +30,18 @@ def test_resposta_tem_headers_de_seguranca(client):
     assert "Strict-Transport-Security" in resposta.headers
 
 
+def test_csp_permite_blob_em_img_src(client):
+    """static/js/personalizada.js carrega a foto enviada via
+    URL.createObjectURL(file) antes de desenhar no canvas do editor de
+    recorte -- sem 'blob:' no img-src, a simulação da medalha
+    personalizada trava logo no upload (já aconteceu de verdade, ver
+    conversa)."""
+    resposta = client.get("/personalizada")
+    csp = resposta.headers["Content-Security-Policy"]
+    diretiva_img = next(d for d in csp.split(";") if d.strip().startswith("img-src"))
+    assert "blob:" in diretiva_img
+
+
 def test_post_admin_de_outra_origem_e_bloqueado(client, monkeypatch):
     _preparar_admin(monkeypatch)
     pedido = pedidos.criar_pedido(

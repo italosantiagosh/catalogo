@@ -203,7 +203,11 @@ def _cabecalhos_seguranca(resposta: Response) -> Response:
         "script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://connect.facebook.net; "
         "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
         "font-src 'self' https://fonts.gstatic.com; "
-        "img-src 'self' data: https:; "
+        # blob: e´ obrigatorio -- static/js/personalizada.js carrega a
+        # foto que o cliente envia via URL.createObjectURL(file) antes
+        # de desenhar no canvas do editor de recorte; sem isso a
+        # simulacao trava logo no upload (ja aconteceu, ver conversa).
+        "img-src 'self' data: blob: https:; "
         "media-src 'self' https:; "
         "connect-src 'self' https://viacep.com.br https://www.google-analytics.com https://analytics.google.com "
         "https://www.facebook.com; "
