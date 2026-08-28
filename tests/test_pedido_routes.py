@@ -566,6 +566,24 @@ def test_pagina_de_pedido_mostra_timeline_com_pontos_preenchidos(client):
     assert 'pedido-timeline-etapa concluida atual' in corpo
 
 
+def test_timeline_pedido_retirada_no_local_troca_rotulos(client):
+    with patch("app.criar_link_pagamento", return_value={"url": "https://checkout.infinitepay.io/abc"}):
+        criado = client.post(
+            "/api/pedido/criar",
+            json=_corpo_valido(frete={"texto": "Retirada no local", "preco": 0}),
+        ).get_json()
+    client.post(
+        "/webhook/infinitepay",
+        json={"order_nsu": criado["token"], "paid_amount": 5000, "capture_method": "pix"},
+    )
+
+    corpo = client.get(f"/pedido/{criado['token']}").get_data(as_text=True)
+    assert "Pronto para retirada" in corpo
+    assert "Retirado" in corpo
+    assert "Pedido enviado" not in corpo
+    assert "Pedido entregue" not in corpo
+
+
 def test_somar_dias_uteis_pula_fim_de_semana():
     from datetime import datetime
 

@@ -1392,6 +1392,12 @@ def _pos_pagamento_confirmado(pedido_pago: dict | None, token: str) -> None:
             pass
 
 
+# Mesmo texto usado em static/js/carrinho_pagina.js (FRETE_RETIRADA_TEXTO)
+# pra montar o frete_descricao do pedido quando o cliente escolhe retirar
+# no local -- usado aqui pra trocar os rotulos da timeline ("enviado" nao
+# faz sentido pra quem vai retirar -- ver conversa).
+FRETE_RETIRADA_DESCRICAO = "Retirada no local"
+
 _PEDIDO_TIMELINE_ETAPAS = (
     ("criado", "Pedido criado"),
     ("pendente", "Aguardando pagamento"),
@@ -1401,10 +1407,20 @@ _PEDIDO_TIMELINE_ETAPAS = (
     ("entregue", "Pedido entregue"),
 )
 
+_PEDIDO_TIMELINE_ETAPAS_RETIRADA = (
+    ("criado", "Pedido criado"),
+    ("pendente", "Aguardando pagamento"),
+    ("pago", "Pagamento confirmado"),
+    ("faturado", "Pedido faturado"),
+    ("enviado", "Pronto para retirada"),
+    ("entregue", "Retirado"),
+)
+
 # Posicao de cada status real do banco na timeline acima -- "criado" nao
 # e´ um status de verdade (todo pedido ja´ nasce alem dele, so existe
 # pra dar o primeiro ponto sempre preenchido), por isso comeca em 1 pra
-# status_valido == "pendente".
+# status_valido == "pendente". As duas timelines tem as mesmas chaves na
+# mesma ordem, entao o indice serve pras duas.
 _TIMELINE_INDICE_POR_STATUS = {chave: i for i, (chave, _) in enumerate(_PEDIDO_TIMELINE_ETAPAS)}
 
 
@@ -1415,10 +1431,15 @@ def _timeline_do_pedido(pedido: dict) -> list[dict] | None:
     devolve None nesses casos."""
     if pedido["status"] in ("cancelado", "excluido", "whatsapp"):
         return None
+    etapas = (
+        _PEDIDO_TIMELINE_ETAPAS_RETIRADA
+        if pedido.get("frete_descricao") == FRETE_RETIRADA_DESCRICAO
+        else _PEDIDO_TIMELINE_ETAPAS
+    )
     indice_atual = _TIMELINE_INDICE_POR_STATUS.get(pedido["status"], 0)
     return [
         {"chave": chave, "rotulo": rotulo, "concluido": i <= indice_atual, "atual": i == indice_atual}
-        for i, (chave, rotulo) in enumerate(_PEDIDO_TIMELINE_ETAPAS)
+        for i, (chave, rotulo) in enumerate(etapas)
     ]
 
 

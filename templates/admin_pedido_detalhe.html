@@ -109,7 +109,11 @@
         <h2>Prazos</h2>
         <p>Pago em: {{ pedido.pago_em | data_br }}</p>
         {% if pedido.status in ('pago', 'faturado') and previsoes.previsao_envio %}
-          <p>Previsão de envio: <strong>{{ previsoes.previsao_envio | data_br }}</strong></p>
+          {% if pedido.frete_descricao == 'Retirada no local' %}
+            <p>Previsão pronto para retirada: <strong>{{ previsoes.previsao_envio | data_br }}</strong></p>
+          {% else %}
+            <p>Previsão de envio: <strong>{{ previsoes.previsao_envio | data_br }}</strong></p>
+          {% endif %}
         {% elif pedido.enviado_em %}
           <p>Enviado em: {{ pedido.enviado_em | data_br }}</p>
         {% endif %}

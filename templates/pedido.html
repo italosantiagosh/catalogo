@@ -17,7 +17,11 @@
             <a class="pedido-timeline-nf" href="{{ pedido.link_nota_fiscal }}" target="_blank" rel="noopener">📄 Baixar nota fiscal</a>
           {% endif %}
           {% if etapa.chave == 'enviado' and not etapa.concluido and previsoes.previsao_envio %}
-            <span class="pedido-timeline-previsao">Previsão de envio: {{ previsoes.previsao_envio | data_br }}</span>
+            {% if pedido.frete_descricao == 'Retirada no local' %}
+              <span class="pedido-timeline-previsao">Previsão pronto para retirada: {{ previsoes.previsao_envio | data_br }}</span>
+            {% else %}
+              <span class="pedido-timeline-previsao">Previsão de envio: {{ previsoes.previsao_envio | data_br }}</span>
+            {% endif %}
           {% endif %}
           {% if etapa.chave == 'entregue' and not etapa.concluido and previsoes.previsao_entrega %}
             <span class="pedido-timeline-previsao">Previsão de entrega: {{ previsoes.previsao_entrega | data_br }}</span>

@@ -53,6 +53,10 @@
   const COR_LABEL = { prata: 'Prata', ouro_velho: 'Ouro velho' };
   const FORMATO_LABEL = { medalha: 'Medalha', entremeio: 'Entremeio', chaveiro: 'Chaveiro' };
   const GRUPO_LABEL = { padrao: 'medalhas/entremeios', chaveiro: 'chaveiros' };
+  // mesmo texto usado em app.py (FRETE_RETIRADA_DESCRICAO) pra detectar
+  // esse tipo de frete e trocar os rotulos da timeline ("enviado" nao
+  // faz sentido pra quem vai retirar -- ver conversa).
+  const FRETE_RETIRADA_TEXTO = 'Retirada no local';
 
   let faixasAnteriores = {};
   let freteAnteriorAtingido = null;
@@ -446,12 +450,37 @@
     freteEscolhido = escolha;
   }
 
+  // opcao de retirada no local -- sempre por ultimo entre as opcoes de
+  // frete (ver conversa: "essa opção de retirada deve ser a última dos
+  // fretes"), reaproveitando o mesmo botao .frete-opcao e a mesma
+  // selecionarOpcaoFrete pra entrar no rodizio de selecao/deselecao.
+  // So aparece depois de calcular o frete pra um CEP (nao antes), porque
+  // ela e´ mais uma opcao dentro da lista, nao um atalho separado.
+  function adicionarOpcaoRetirada() {
+    if (!freteResultadoEl) return;
+    const botao = document.createElement('button');
+    botao.type = 'button';
+    botao.className = 'frete-opcao';
+    botao.setAttribute('aria-pressed', 'false');
+    botao.innerHTML = `
+      <div>
+        <div class="frete-opcao-nome">🏬 Retirar no local</div>
+        <div class="frete-opcao-prazo">Combina o horário depois que o pedido ficar pronto — Rua Furnas, 4835, Neópolis, Natal/RN</div>
+      </div>
+      <div class="frete-opcao-preco"><span class="frete-opcao-gratis">Grátis</span></div>
+    `;
+    const escolha = { texto: FRETE_RETIRADA_TEXTO, preco: 0, prazo_dias: null };
+    botao.addEventListener('click', () => selecionarOpcaoFrete(botao, escolha));
+    freteResultadoEl.appendChild(botao);
+  }
+
   function renderizarFrete(dados) {
     freteEscolhido = null;
     if (!freteResultadoEl) return;
 
     if (dados.erro) {
       freteResultadoEl.innerHTML = `<p class="frete-erro">${dados.erro}</p>`;
+      adicionarOpcaoRetirada();
       return;
     }
 
@@ -459,6 +488,7 @@
       if (!dados.opcoes || dados.opcoes.length === 0) {
         freteEscolhido = { texto: 'Grátis', preco: 0 };
         freteResultadoEl.innerHTML = `<p class="frete-gratis-aviso">🎉 ${dados.aviso}</p>`;
+        adicionarOpcaoRetirada();
         return;
       }
 
@@ -487,11 +517,13 @@
         freteResultadoEl.appendChild(botao);
         if (i === 0) selecionarOpcaoFrete(botao, escolha);
       });
+      adicionarOpcaoRetirada();
       return;
     }
 
     if (!dados.opcoes || dados.opcoes.length === 0) {
       freteResultadoEl.innerHTML = '<p class="frete-erro">Nenhuma opção de frete encontrada para esse CEP.</p>';
+      adicionarOpcaoRetirada();
       return;
     }
 
@@ -518,6 +550,7 @@
       freteResultadoEl.appendChild(botao);
       if (i === 0) selecionarOpcaoFrete(botao, escolha);
     });
+    adicionarOpcaoRetirada();
   }
 
   if (btnCalcularFrete) {
