@@ -61,6 +61,10 @@
         💳 Pix ou cartão no site
       </label>
       <label class="opcao-formato">
+        <input type="radio" name="forma-pagamento" id="forma-pagamento-boleto" value="boleto">
+        📄 Boleto bancário
+      </label>
+      <label class="opcao-formato">
         <input type="radio" name="forma-pagamento" id="forma-pagamento-whatsapp" value="whatsapp">
         💬 Combinar pelo WhatsApp
       </label>
@@ -201,6 +205,11 @@
       </div>
 
       <button type="button" id="btn-pagar-agora" class="botao-pagar">💳 Pagar agora (Pix ou cartão)</button>
+      <button type="button" id="btn-gerar-boleto" class="botao-pagar" hidden>📄 Gerar boleto</button>
+      <p class="pedido-aviso-transportadora" id="boleto-aviso-2dias" hidden>
+        ℹ️ O pagamento do boleto é confirmado em até 2 dias úteis após você pagar -- o prazo de produção
+        só começa depois dessa confirmação, não na hora em que você paga.
+      </p>
     </div>
 
     <div class="whatsapp-acoes" id="whatsapp-finalizar-wrap" hidden>

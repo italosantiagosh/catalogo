@@ -108,6 +108,41 @@ def _corpo_html_link_pagamento(pedido: dict, url_pagamento: str, url_acompanhame
     )
 
 
+def _corpo_html_boleto_gerado(pedido: dict, url_acompanhamento: str) -> str:
+    linha_html = (
+        f"<p>Linha digitável: <strong>{_esc(pedido.get('inter_linha_digitavel', ''))}</strong></p>"
+        if pedido.get("inter_linha_digitavel")
+        else ""
+    )
+    return (
+        f"<p>Olá, {_esc(pedido.get('cliente_nome', ''))}! Recebemos seu pedido -- seu boleto já está pronto.</p>"
+        f"<p><strong>Pedido #{pedido['codigo']}</strong></p>"
+        f"<ul>{_itens_html(pedido)}</ul>"
+        f"<p>Frete ({_esc(pedido.get('frete_descricao', ''))}): {_preco(pedido.get('frete_preco', 0))}</p>"
+        f"<p><strong>Total: {_preco(pedido['total'])}</strong></p>"
+        f"{linha_html}"
+        f"<p>Baixe o boleto (PDF) ou pague com o Pix embutido nele acompanhando seu pedido:</p>"
+        f"{_botao(url_acompanhamento, '🔎 Ver boleto e acompanhar pedido')}"
+        f'<p style="font-size:13px;color:#5b6b82;font-style:italic;">'
+        "ℹ️ O pagamento do boleto é confirmado em até 2 dias úteis após você pagar -- "
+        "o prazo de produção só começa depois dessa confirmação, não na hora em que você paga.</p>"
+        f"<p>Qualquer dúvida, é só chamar no WhatsApp.</p>"
+    )
+
+
+def enviar_boleto_gerado(pedido: dict, url_acompanhamento: str) -> dict:
+    """Disparado assim que o boleto e´ emitido na Inter (ver
+    app.py:api_pedido_criar_boleto) -- garante que o cliente tem como
+    achar a linha digitavel/PDF mesmo se fechar a aba antes de anotar.
+    Devolve {"ok": True} ou {"erro": "..."}."""
+    return _enviar(
+        email_cliente=pedido.get("cliente_email", ""),
+        nome_cliente=pedido.get("cliente_nome", ""),
+        assunto=f"Seu boleto está pronto — Pedido #{pedido['codigo']}",
+        corpo_html=_corpo_html_boleto_gerado(pedido, url_acompanhamento),
+    )
+
+
 def _enviar(*, email_cliente: str, nome_cliente: str, assunto: str, corpo_html: str) -> dict:
     if not BREVO_API_KEY:
         return {"erro": "Envio de e-mail não configurado (falta BREVO_API_KEY)."}

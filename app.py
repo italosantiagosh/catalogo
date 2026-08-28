@@ -113,6 +113,7 @@ from services.push import (
     salvar_subscription as salvar_push_subscription,
 )
 from services.email import (
+    enviar_boleto_gerado,
     enviar_confirmacao_pedido,
     enviar_lembrete_pedido_pendente,
     enviar_link_pagamento,
@@ -133,10 +134,12 @@ from services.pedidos import (
     criar_pedido,
     excluir_pedido,
     listar_pedidos,
+    listar_pedidos_boleto_pendentes,
     listar_pedidos_pagos_para_avaliacao,
     listar_pedidos_pagos_para_upsell,
     listar_pedidos_pendentes_para_cancelar,
     listar_pedidos_pendentes_para_lembrete,
+    marcar_boleto_erro,
     marcar_email_avaliacao_enviado,
     marcar_email_cancelado_enviado,
     marcar_email_enviado,
@@ -147,7 +150,9 @@ from services.pedidos import (
     marcar_tiny_sincronizado,
     obter_pedido,
     previsoes_do_pedido,
+    salvar_dados_boleto_inter,
 )
+from services.inter import baixar_pdf, consultar_cobranca, emitir_boleto
 from services.pix import gerar_copia_cola, gerar_qr_data_uri
 from services.tiny import buscar_contatos_tiny, criar_pedido_tiny
 from services.gerador.compositor import auto_cover_box, compose_medal, crop_to_box, load_rgba
@@ -1309,6 +1314,104 @@ def api_pedido_criar():
     return jsonify(url=resultado["url"], token=pedido["token"], codigo=pedido["codigo"])
 
 
+@app.route("/api/pedido/criar-boleto", methods=["POST"])
+@limiter.limit("10 per minute")
+def api_pedido_criar_boleto():
+    """Mesma validacao de api_pedido_criar (carrinho/frete/cliente/
+    endereco/documento), so que emite um boleto via Banco Inter (ver
+    services/inter.py) em vez de gerar link da InfinitePay. O pedido
+    fica "pendente" ate o job de polling confirmar o pagamento (ver
+    _verificar_boletos_inter_pendentes mais abaixo) -- pode levar ate 2
+    dias uteis, avisado pro cliente na propria pagina de
+    acompanhamento (ver templates/pedido.html)."""
+    dados = request.get_json(silent=True) or {}
+    itens_validos = _itens_com_descricao_do_corpo(dados)
+    if not itens_validos:
+        return jsonify(erro="Carrinho vazio."), 400
+
+    calculo = calcular_carrinho(itens_validos)
+    if not calculo["atinge_minimo"]:
+        return jsonify(erro="Pedido abaixo do mínimo de produtos."), 400
+
+    frete = dados.get("frete") or {}
+    try:
+        frete_preco = float(frete.get("preco"))
+    except (TypeError, ValueError):
+        return jsonify(erro="Escolha uma opção de frete."), 400
+    frete_descricao = str(frete.get("texto", "")).strip()
+    if not frete_descricao:
+        return jsonify(erro="Escolha uma opção de frete."), 400
+    try:
+        frete_prazo_dias = int(frete.get("prazo_dias"))
+    except (TypeError, ValueError):
+        frete_prazo_dias = None
+
+    cliente = _cliente_valido(dados)
+    if cliente is None:
+        return jsonify(erro="Preencha seus dados completos (nome, documento, telefone e e-mail)."), 400
+    rotulo_documento = "CNPJ" if cliente["tipo_pessoa"] == "juridica" else "CPF"
+    if not documento_valido(cliente["tipo_pessoa"], cliente["documento"]):
+        return jsonify(erro=f"{rotulo_documento} inválido. Confira o número digitado."), 400
+    endereco = _endereco_valido(dados)
+    if endereco is None:
+        return jsonify(erro="Preencha o endereço de entrega completo."), 400
+    if endereco.get("destinatario_documento") and not documento_valido(
+        endereco.get("destinatario_tipo_pessoa") or "fisica", endereco["destinatario_documento"]
+    ):
+        rotulo_dest = "CNPJ" if endereco.get("destinatario_tipo_pessoa") == "juridica" else "CPF"
+        return jsonify(erro=f"{rotulo_dest} de quem recebe é inválido. Confira o número digitado."), 400
+
+    if frete_descricao == FRETE_RETIRADA_DESCRICAO:
+        frete_preco = 0.0
+    else:
+        cep_frete = endereco.get("destinatario_cep") or endereco["cep"]
+        frete_minimo = _frete_preco_minimo_valido(
+            itens_validos, cep_frete, calculo["subtotal_total"], calculo["frete_gratis_atingido"]
+        )
+        if frete_minimo is not None and frete_preco < frete_minimo - 0.50:
+            return jsonify(erro="O frete mudou -- recalcule antes de pagar."), 400
+
+    for item_validado, item_calculado in zip(itens_validos, calculo["itens"]):
+        item_validado["valor_unitario"] = item_calculado["preco_unitario"]
+
+    pedido = criar_pedido(
+        itens=itens_validos,
+        subtotal=calculo["subtotal_total"],
+        frete_descricao=frete_descricao,
+        frete_preco=frete_preco,
+        frete_prazo_dias=frete_prazo_dias,
+        cliente=cliente,
+        endereco=endereco,
+    )
+
+    resultado = emitir_boleto(seu_numero=pedido["codigo"], valor=pedido["total"], cliente=cliente, endereco=endereco)
+    if "erro" in resultado:
+        return jsonify(erro=resultado["erro"]), 502
+
+    dados_cobranca = consultar_cobranca(resultado["codigo_solicitacao"])
+    boleto = dados_cobranca.get("boleto") or {}
+    pix = dados_cobranca.get("pix") or {}
+    pedido = salvar_dados_boleto_inter(
+        pedido["token"],
+        codigo_solicitacao=resultado["codigo_solicitacao"],
+        linha_digitavel=boleto.get("linhaDigitavel", ""),
+        codigo_barras=boleto.get("codigoBarras", ""),
+        pix_copia_cola=pix.get("pixCopiaECola", ""),
+    )
+
+    resultado_email = enviar_boleto_gerado(
+        pedido, url_for("ver_pedido", token=pedido["token"], _external=True)
+    )
+    marcar_email_pedido_criado_enviado(pedido["token"], erro=resultado_email.get("erro"))
+
+    return jsonify(
+        token=pedido["token"],
+        codigo=pedido["codigo"],
+        linha_digitavel=pedido["inter_linha_digitavel"],
+        pix_copia_cola=pedido["inter_pix_copia_cola"],
+    )
+
+
 @app.route("/api/pedido/criar-whatsapp", methods=["POST"])
 @limiter.limit("10 per minute")
 def api_pedido_criar_whatsapp():
@@ -1634,6 +1737,28 @@ def ver_pedido(token: str):
         oportunidades_upsell=oportunidades_upsell,
         timeline=_timeline_do_pedido(pedido),
         previsoes=previsoes_do_pedido(pedido),
+    )
+
+
+@app.route("/pedido/<token>/boleto.pdf", methods=["GET"])
+@limiter.limit("20 per minute")
+def ver_boleto_pdf(token: str):
+    """Baixa o PDF do boleto sob demanda (nunca guardado no banco, ver
+    services/pedidos.py) -- token da URL de acompanhamento ja´ funciona
+    como a mesma "senha" que da´ acesso ao resto do pedido, entao nao
+    precisa de autenticacao extra aqui."""
+    pedido = obter_pedido(token)
+    if pedido is None or not pedido.get("inter_codigo_solicitacao"):
+        abort(404)
+    resultado = baixar_pdf(pedido["inter_codigo_solicitacao"])
+    if "erro" in resultado:
+        abort(502)
+    pdf_bytes = base64.b64decode(resultado["pdf_base64"])
+    return send_file(
+        io.BytesIO(pdf_bytes),
+        mimetype="application/pdf",
+        as_attachment=False,
+        download_name=f"boleto-{pedido['codigo']}.pdf",
     )
 
 
@@ -2443,12 +2568,61 @@ def _cancelar_pedidos_abandonados() -> None:
             marcar_email_cancelado_enviado(pedido["token"], erro=resultado_email.get("erro"))
 
 
+# Situacoes de cobranca confirmadas no PDF da API do Inter ("Recuperar
+# cobranca") -- RECEBIDO/MARCADO_RECEBIDO contam como pago de verdade
+# (a segunda e´ quando o proprio banco/lojista marca manualmente, ex:
+# pagamento por outro meio); CANCELADO/EXPIRADO encerram sem pagar.
+# A_RECEBER/ATRASADO/EM_PROCESSAMENTO/FALHA_EMISSAO/PROTESTO ainda nao
+# tem desfecho -- so espera o proximo ciclo do job.
+_SITUACOES_INTER_PAGO = ("RECEBIDO", "MARCADO_RECEBIDO")
+_SITUACOES_INTER_ENCERRADO_SEM_PAGAR = ("CANCELADO", "EXPIRADO")
+
+
+def _verificar_boletos_inter_pendentes() -> None:
+    """Job agendado (ver _iniciar_scheduler_jobs abaixo) -- roda a cada
+    10min, consulta o status de cada boleto Inter ainda "pendente"
+    (polling, ver services/inter.py pro motivo de nao usar webhook) e
+    confirma o pagamento ou cancela o pedido de acordo com a situacao
+    real na Inter. Sem CANONICAL_DOMAIN configurado nao ha´ como montar
+    um link de verdade pros e-mails disparados daqui, entao so nao faz
+    nada nesse caso (mesmo criterio dos outros jobs)."""
+    if not CANONICAL_DOMAIN:
+        return
+    candidatos = listar_pedidos_boleto_pendentes()
+    if not candidatos:
+        return
+    with app.test_request_context(base_url=f"https://{CANONICAL_DOMAIN}"):
+        url_catalogo = url_for("catalogo_completo", _external=True)
+        for pedido in candidatos:
+            dados = consultar_cobranca(pedido["inter_codigo_solicitacao"])
+            if "erro" in dados:
+                marcar_boleto_erro(pedido["token"], dados["erro"])
+                continue
+
+            situacao = (dados.get("cobranca") or {}).get("situacao", "")
+            if situacao in _SITUACOES_INTER_PAGO:
+                valor_recebido = (dados.get("cobranca") or {}).get("valorTotalRecebido") or pedido["total"]
+                pedido_pago = marcar_pago(
+                    pedido["token"],
+                    forma_pagamento="boleto",
+                    parcelas=None,
+                    valor_pago=float(valor_recebido),
+                    transaction_nsu=pedido["inter_codigo_solicitacao"],
+                )
+                _pos_pagamento_confirmado(pedido_pago, pedido["token"])
+            elif situacao in _SITUACOES_INTER_ENCERRADO_SEM_PAGAR:
+                cancelar_pedido(pedido["token"])
+                resultado_email = enviar_pedido_cancelado(pedido, url_catalogo)
+                marcar_email_cancelado_enviado(pedido["token"], erro=resultado_email.get("erro"))
+
+
 def _iniciar_scheduler_jobs() -> None:
     scheduler = BackgroundScheduler(timezone="UTC")
     scheduler.add_job(_enviar_lembretes_pedidos_pendentes, "interval", minutes=10, id="lembretes_pedidos_pendentes")
     scheduler.add_job(_cancelar_pedidos_abandonados, "interval", minutes=10, id="cancelar_pedidos_abandonados")
     scheduler.add_job(_enviar_upsell_pedidos_pagos, "interval", minutes=10, id="upsell_pedidos_pagos")
     scheduler.add_job(_enviar_pedidos_para_avaliacao, "interval", minutes=10, id="pedidos_para_avaliacao")
+    scheduler.add_job(_verificar_boletos_inter_pendentes, "interval", minutes=10, id="verificar_boletos_inter")
     scheduler.start()
 
 

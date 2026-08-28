@@ -34,7 +34,31 @@
     </ol>
   {% endif %}
 
-  {% if pedido.status == 'pendente' %}
+  {% if pedido.status == 'pendente' and pedido.inter_codigo_solicitacao %}
+    <p class="pedido-status pedido-status-pendente">⏳ Aguardando pagamento do boleto</p>
+    {% if pedido.inter_linha_digitavel %}
+      <p class="pedido-linha">
+        Linha digitável: <strong id="boleto-linha-digitavel">{{ pedido.inter_linha_digitavel }}</strong>
+        <button type="button" class="botao-copiar" data-copiar="boleto-linha-digitavel">Copiar</button>
+      </p>
+    {% endif %}
+    <a class="botao-pagar" href="{{ url_for('ver_boleto_pdf', token=pedido.token) }}" target="_blank" rel="noopener">
+      📄 Baixar boleto (PDF)
+    </a>
+    {% if pedido.inter_pix_copia_cola %}
+      <p class="pedido-linha" style="margin-top:10px;">
+        Prefere Pix? O boleto já vem com um QR Code -- copie o código abaixo no seu banco:
+      </p>
+      <p class="pedido-linha">
+        <strong id="boleto-pix-copia-cola">{{ pedido.inter_pix_copia_cola }}</strong>
+        <button type="button" class="botao-copiar" data-copiar="boleto-pix-copia-cola">Copiar</button>
+      </p>
+    {% endif %}
+    <p class="pedido-aviso-transportadora">
+      ℹ️ O pagamento do boleto é confirmado em até 2 dias úteis após você pagar -- o prazo de produção
+      só começa depois dessa confirmação, não na hora em que você paga.
+    </p>
+  {% elif pedido.status == 'pendente' %}
     <p class="pedido-status pedido-status-pendente">⏳ Aguardando confirmação do pagamento</p>
     <button type="button" class="botao-pagar" id="btn-novo-link" data-token="{{ pedido.token }}">
       💳 Gerar novo link de pagamento
@@ -195,5 +219,22 @@
         }
       });
     }
+
+    document.querySelectorAll('.botao-copiar').forEach((botao) => {
+      botao.addEventListener('click', async () => {
+        const alvo = document.getElementById(botao.dataset.copiar);
+        if (!alvo) return;
+        try {
+          await navigator.clipboard.writeText(alvo.textContent.trim());
+          const textoOriginal = botao.textContent;
+          botao.textContent = 'Copiado!';
+          setTimeout(() => { botao.textContent = textoOriginal; }, 2000);
+        } catch (e) {
+          // silencioso -- clipboard pode estar bloqueado (ex: pagina
+          // nao esta em HTTPS); a pessoa sempre pode selecionar e
+          // copiar o texto na mao.
+        }
+      });
+    });
   </script>
 {% endblock %}

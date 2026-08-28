@@ -133,6 +133,18 @@ _COLUNAS_ADICIONAIS: list[tuple[str, str]] = [
     ("cliente_inscricao_estadual", "TEXT"),
     ("cliente_ie_isento", "INTEGER NOT NULL DEFAULT 0"),
     ("cliente_ie_nao_contribuinte", "INTEGER NOT NULL DEFAULT 0"),
+    # Boleto bancario via Banco Inter (ver services/inter.py e
+    # app.py:api_pedido_criar_boleto) -- so preenchido quando o
+    # pagamento escolhido foi boleto, em vez do link da InfinitePay.
+    # codigo_solicitacao e´ o identificador que a Inter devolve na
+    # emissao, usado tanto pra consultar o status (polling, ver
+    # app.py:_verificar_boletos_inter_pendentes) quanto pra baixar o
+    # PDF sob demanda (nunca guardamos o PDF em si, so o codigo).
+    ("inter_codigo_solicitacao", "TEXT"),
+    ("inter_linha_digitavel", "TEXT"),
+    ("inter_codigo_barras", "TEXT"),
+    ("inter_pix_copia_cola", "TEXT"),
+    ("inter_erro", "TEXT"),
 ]
 
 # Fluxo de status depois de "pago" -- alteravel manualmente pelo painel
@@ -288,7 +300,11 @@ def listar_pedidos(*, status: str | None = None, limite: int = 200) -> list[dict
 def listar_pedidos_pendentes_para_lembrete(minutos: int) -> list[dict]:
     """Pedidos "pendente" ha´ pelo menos `minutos`, que ainda nao
     receberam o lembrete de pagamento -- usado pelo job agendado em
-    app.py (ver services/email.py:enviar_lembrete_pedido_pendente)."""
+    app.py (ver services/email.py:enviar_lembrete_pedido_pendente).
+    Exclui pedido de boleto (inter_codigo_solicitacao preenchido): esse
+    fluxo tem vencimento medido em DIAS (ver services/inter.py), o
+    lembrete de "pague agora" de minutos so faz sentido pro link da
+    InfinitePay, que expira rapido."""
     inicializar_db()
     limite = (datetime.now(timezone.utc) - timedelta(minutes=minutos)).isoformat()
     with _conexao() as conexao:
@@ -296,6 +312,7 @@ def listar_pedidos_pendentes_para_lembrete(minutos: int) -> list[dict]:
             """
             SELECT * FROM pedidos
             WHERE status = 'pendente' AND email_lembrete_enviado = 0 AND criado_em <= ?
+                AND (inter_codigo_solicitacao IS NULL OR inter_codigo_solicitacao = '')
             ORDER BY criado_em ASC
             """,
             (limite,),
@@ -423,6 +440,57 @@ def obter_pedido(token: str) -> dict | None:
     pedido = dict(linha)
     pedido["itens"] = json.loads(pedido["itens"])
     return pedido
+
+
+def salvar_dados_boleto_inter(
+    token: str, *, codigo_solicitacao: str, linha_digitavel: str, codigo_barras: str, pix_copia_cola: str
+) -> dict | None:
+    """Grava os dados do boleto assim que emitido na Inter (ver
+    app.py:api_pedido_criar_boleto) -- codigo_solicitacao e´ o que o
+    job de polling usa depois pra consultar se foi pago (ver
+    services.inter.consultar_cobranca)."""
+    with _conexao() as conexao:
+        conexao.execute(
+            """
+            UPDATE pedidos SET
+                inter_codigo_solicitacao = ?, inter_linha_digitavel = ?,
+                inter_codigo_barras = ?, inter_pix_copia_cola = ?
+            WHERE token = ?
+            """,
+            (codigo_solicitacao, linha_digitavel, codigo_barras, pix_copia_cola, token),
+        )
+    return obter_pedido(token)
+
+
+def marcar_boleto_erro(token: str, erro: str) -> dict | None:
+    """Consulta de status do boleto falhou (rede fora, credencial
+    expirada etc, ver app.py:_verificar_boletos_inter_pendentes) --
+    so pra aparecer no painel admin, nao impede novas tentativas no
+    proximo ciclo do job."""
+    with _conexao() as conexao:
+        conexao.execute("UPDATE pedidos SET inter_erro = ? WHERE token = ?", (erro, token))
+    return obter_pedido(token)
+
+
+def listar_pedidos_boleto_pendentes() -> list[dict]:
+    """Pedidos "pendente" com boleto Inter emitido -- usado pelo job de
+    polling (ver app.py:_verificar_boletos_inter_pendentes) pra
+    consultar quais ja foram pagos."""
+    inicializar_db()
+    with _conexao() as conexao:
+        linhas = conexao.execute(
+            """
+            SELECT * FROM pedidos
+            WHERE status = 'pendente' AND inter_codigo_solicitacao IS NOT NULL AND inter_codigo_solicitacao != ''
+            ORDER BY criado_em ASC
+            """
+        ).fetchall()
+    pedidos = []
+    for linha in linhas:
+        pedido = dict(linha)
+        pedido["itens"] = json.loads(pedido["itens"])
+        pedidos.append(pedido)
+    return pedidos
 
 
 def marcar_pago(

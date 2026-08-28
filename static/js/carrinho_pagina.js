@@ -57,6 +57,8 @@
   const destinatarioCidadeInput = document.getElementById('destinatario-cidade');
   const destinatarioUfInput = document.getElementById('destinatario-uf');
   const btnPagarAgora = document.getElementById('btn-pagar-agora');
+  const btnGerarBoleto = document.getElementById('btn-gerar-boleto');
+  const boletoAviso2DiasEl = document.getElementById('boleto-aviso-2dias');
   if (!listaEl) return;
 
   const TAMANHO_LABEL = { '12mm': '1,2 cm', '16mm': '1,6 cm' };
@@ -738,9 +740,14 @@
   if (formaPagamentoRadios.length && cadastroClienteEl && whatsappFinalizarWrapEl) {
     formaPagamentoRadios.forEach((radio) => {
       radio.addEventListener('change', () => {
-        cadastroClienteEl.hidden = radio.value !== 'site';
+        // boleto usa o MESMO cadastro (nome/documento/endereco) que o
+        // pagamento direto no site -- so troca qual botao final aparece.
+        cadastroClienteEl.hidden = radio.value !== 'site' && radio.value !== 'boleto';
         whatsappFinalizarWrapEl.hidden = radio.value !== 'whatsapp';
-        if (radio.checked && radio.value === 'site') {
+        if (btnPagarAgora) btnPagarAgora.hidden = radio.value !== 'site';
+        if (btnGerarBoleto) btnGerarBoleto.hidden = radio.value !== 'boleto';
+        if (boletoAviso2DiasEl) boletoAviso2DiasEl.hidden = radio.value !== 'boleto';
+        if (radio.checked && (radio.value === 'site' || radio.value === 'boleto')) {
           cadastroClienteEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
       });
@@ -755,119 +762,130 @@
   if (destinatarioTipoPessoaFisica) destinatarioTipoPessoaFisica.addEventListener('change', atualizarLabelDocumentoDestinatario);
   if (destinatarioTipoPessoaJuridica) destinatarioTipoPessoaJuridica.addEventListener('change', atualizarLabelDocumentoDestinatario);
 
+  // valida tudo que os dois fluxos de pagamento no site (Pix/cartao via
+  // InfinitePay, boleto via Inter) precisam em comum -- devolve
+  // {cliente, endereco} ou null (ja mostrou o toast de erro certo).
+  function coletarClienteEEndereco() {
+    if (!ultimoCalculo) return null;
+
+    if (!ultimoCalculo.atinge_minimo) {
+      const faltamParaMinimo = ultimoCalculo.pedido_minimo_reais - ultimoCalculo.subtotal_total;
+      mostrarToast(
+        `⚠️ Faltam ${formatarPreco(faltamParaMinimo)} em produtos para o pedido mínimo de ` +
+        `${formatarPreco(ultimoCalculo.pedido_minimo_reais)} (o frete é à parte).`
+      );
+      if (avisoMinimoEl) avisoMinimoEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      return null;
+    }
+    if (!freteEscolhido) {
+      mostrarToast('⚠️ Calcule o frete e escolha uma opção antes de pagar.');
+      if (freteResultadoEl) freteResultadoEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      return null;
+    }
+
+    const clienteEhJuridica = tipoPessoaJuridica && tipoPessoaJuridica.checked;
+    const cliente = {
+      nome: (clienteNomeInput.value || '').trim(),
+      tipo_pessoa: clienteEhJuridica ? 'juridica' : 'fisica',
+      documento: (clienteDocumentoInput.value || '').trim(),
+      telefone: (clienteTelefoneInput.value || '').trim(),
+      email: (clienteEmailInput.value || '').trim(),
+    };
+    if (clienteEhJuridica) {
+      cliente.ie_isento = !!(clienteIeIsentoCheckbox && clienteIeIsentoCheckbox.checked);
+      cliente.ie_nao_contribuinte = !!(clienteIeNaoContribuinteCheckbox && clienteIeNaoContribuinteCheckbox.checked);
+      cliente.inscricao_estadual = cliente.ie_isento ? '' : (clienteIeInput ? clienteIeInput.value.trim() : '');
+    }
+    // com entrega-outra-pessoa marcado, o CEP do comprador vem do
+    // campo dedicado que abre dentro do cadastro (endereco-cep-proprio)
+    // -- nunca do CEP la em cima, que nesse caso serve so pra estimar
+    // frete antes de ter o CEP de entrega de verdade (ver conversa,
+    // esse era o motivo do erro "CEP diferente do CEP de entrega").
+    const usaEnderecoProprioDedicado = checkboxEntregaOutraPessoa && checkboxEntregaOutraPessoa.checked;
+    const cepProprioInput = usaEnderecoProprioDedicado ? enderecoCepProprioInput : freteCepInput;
+    const endereco = {
+      cep: (cepProprioInput && cepProprioInput.value || '').replace(/\D/g, ''),
+      logradouro: (enderecoLogradouroInput.value || '').trim(),
+      numero: (enderecoNumeroInput.value || '').trim(),
+      complemento: (enderecoComplementoInput.value || '').trim(),
+      bairro: (enderecoBairroInput.value || '').trim(),
+      cidade: (enderecoCidadeInput.value || '').trim(),
+      uf: (enderecoUfInput.value || '').trim(),
+    };
+
+    if (!cliente.nome || !cliente.documento || !cliente.telefone || !cliente.email) {
+      mostrarToast('⚠️ Preencha seus dados completos antes de pagar.');
+      return null;
+    }
+    if (erroClienteDocumentoEl) erroClienteDocumentoEl.hidden = true;
+    if (!documentoValido(cliente.tipo_pessoa, cliente.documento)) {
+      const rotulo = cliente.tipo_pessoa === 'juridica' ? 'CNPJ' : 'CPF';
+      mostrarToast(`⚠️ ${rotulo} inválido. Confira o número digitado.`);
+      if (erroClienteDocumentoEl) {
+        erroClienteDocumentoEl.textContent = `${rotulo} inválido.`;
+        erroClienteDocumentoEl.hidden = false;
+      }
+      clienteDocumentoInput.focus();
+      return null;
+    }
+    if (!endereco.cep || !endereco.logradouro || !endereco.numero || !endereco.bairro || !endereco.cidade || !endereco.uf) {
+      mostrarToast('⚠️ Preencha seu CEP e endereço completo antes de pagar.');
+      return null;
+    }
+
+    if (checkboxEntregaOutraPessoa && checkboxEntregaOutraPessoa.checked) {
+      endereco.destinatario_nome = (destinatarioNomeInput.value || '').trim();
+      endereco.destinatario_tipo_pessoa =
+        (destinatarioTipoPessoaJuridica && destinatarioTipoPessoaJuridica.checked) ? 'juridica' : 'fisica';
+      endereco.destinatario_documento = (destinatarioDocumentoInput.value || '').trim();
+      if (!endereco.destinatario_nome || !endereco.destinatario_documento) {
+        mostrarToast('⚠️ Preencha o nome e o documento de quem vai receber.');
+        return null;
+      }
+      if (erroDestinatarioDocumentoEl) erroDestinatarioDocumentoEl.hidden = true;
+      if (!documentoValido(endereco.destinatario_tipo_pessoa, endereco.destinatario_documento)) {
+        const rotuloDest = endereco.destinatario_tipo_pessoa === 'juridica' ? 'CNPJ' : 'CPF';
+        mostrarToast(`⚠️ ${rotuloDest} de quem recebe é inválido. Confira o número digitado.`);
+        if (erroDestinatarioDocumentoEl) {
+          erroDestinatarioDocumentoEl.textContent = `${rotuloDest} inválido.`;
+          erroDestinatarioDocumentoEl.hidden = false;
+        }
+        destinatarioDocumentoInput.focus();
+        return null;
+      }
+
+      // endereco de entrega diferente e´ opcional -- se nenhum campo
+      // foi preenchido, a entrega usa o endereco principal acima
+      // (mesmo destinatario, endereco igual). Se algum foi, todos
+      // (menos complemento) precisam vir, senao falta dado na etiqueta.
+      const enderecoDestCampos = {
+        destinatario_cep: (destinatarioCepInput.value || '').replace(/\D/g, ''),
+        destinatario_logradouro: (destinatarioLogradouroInput.value || '').trim(),
+        destinatario_numero: (destinatarioNumeroInput.value || '').trim(),
+        destinatario_bairro: (destinatarioBairroInput.value || '').trim(),
+        destinatario_cidade: (destinatarioCidadeInput.value || '').trim(),
+        destinatario_uf: (destinatarioUfInput.value || '').trim(),
+      };
+      const algumPreenchido = Object.values(enderecoDestCampos).some((v) => v);
+      const todosPreenchidos = Object.values(enderecoDestCampos).every((v) => v);
+      if (algumPreenchido && !todosPreenchidos) {
+        mostrarToast('⚠️ Preencha o endereço de entrega completo (ou deixe tudo em branco pra usar o endereço principal).');
+        return null;
+      }
+      if (todosPreenchidos) {
+        Object.assign(endereco, enderecoDestCampos);
+        endereco.destinatario_complemento = (destinatarioComplementoInput.value || '').trim();
+      }
+    }
+
+    return { cliente, endereco };
+  }
+
   if (btnPagarAgora) {
     btnPagarAgora.addEventListener('click', async () => {
-      if (!ultimoCalculo) return;
-
-      if (!ultimoCalculo.atinge_minimo) {
-        const faltamParaMinimo = ultimoCalculo.pedido_minimo_reais - ultimoCalculo.subtotal_total;
-        mostrarToast(
-          `⚠️ Faltam ${formatarPreco(faltamParaMinimo)} em produtos para o pedido mínimo de ` +
-          `${formatarPreco(ultimoCalculo.pedido_minimo_reais)} (o frete é à parte).`
-        );
-        if (avisoMinimoEl) avisoMinimoEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        return;
-      }
-      if (!freteEscolhido) {
-        mostrarToast('⚠️ Calcule o frete e escolha uma opção antes de pagar.');
-        if (freteResultadoEl) freteResultadoEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        return;
-      }
-
-      const clienteEhJuridica = tipoPessoaJuridica && tipoPessoaJuridica.checked;
-      const cliente = {
-        nome: (clienteNomeInput.value || '').trim(),
-        tipo_pessoa: clienteEhJuridica ? 'juridica' : 'fisica',
-        documento: (clienteDocumentoInput.value || '').trim(),
-        telefone: (clienteTelefoneInput.value || '').trim(),
-        email: (clienteEmailInput.value || '').trim(),
-      };
-      if (clienteEhJuridica) {
-        cliente.ie_isento = !!(clienteIeIsentoCheckbox && clienteIeIsentoCheckbox.checked);
-        cliente.ie_nao_contribuinte = !!(clienteIeNaoContribuinteCheckbox && clienteIeNaoContribuinteCheckbox.checked);
-        cliente.inscricao_estadual = cliente.ie_isento ? '' : (clienteIeInput ? clienteIeInput.value.trim() : '');
-      }
-      // com entrega-outra-pessoa marcado, o CEP do comprador vem do
-      // campo dedicado que abre dentro do cadastro (endereco-cep-proprio)
-      // -- nunca do CEP la em cima, que nesse caso serve so pra estimar
-      // frete antes de ter o CEP de entrega de verdade (ver conversa,
-      // esse era o motivo do erro "CEP diferente do CEP de entrega").
-      const usaEnderecoProprioDedicado = checkboxEntregaOutraPessoa && checkboxEntregaOutraPessoa.checked;
-      const cepProprioInput = usaEnderecoProprioDedicado ? enderecoCepProprioInput : freteCepInput;
-      const endereco = {
-        cep: (cepProprioInput && cepProprioInput.value || '').replace(/\D/g, ''),
-        logradouro: (enderecoLogradouroInput.value || '').trim(),
-        numero: (enderecoNumeroInput.value || '').trim(),
-        complemento: (enderecoComplementoInput.value || '').trim(),
-        bairro: (enderecoBairroInput.value || '').trim(),
-        cidade: (enderecoCidadeInput.value || '').trim(),
-        uf: (enderecoUfInput.value || '').trim(),
-      };
-
-      if (!cliente.nome || !cliente.documento || !cliente.telefone || !cliente.email) {
-        mostrarToast('⚠️ Preencha seus dados completos antes de pagar.');
-        return;
-      }
-      if (erroClienteDocumentoEl) erroClienteDocumentoEl.hidden = true;
-      if (!documentoValido(cliente.tipo_pessoa, cliente.documento)) {
-        const rotulo = cliente.tipo_pessoa === 'juridica' ? 'CNPJ' : 'CPF';
-        mostrarToast(`⚠️ ${rotulo} inválido. Confira o número digitado.`);
-        if (erroClienteDocumentoEl) {
-          erroClienteDocumentoEl.textContent = `${rotulo} inválido.`;
-          erroClienteDocumentoEl.hidden = false;
-        }
-        clienteDocumentoInput.focus();
-        return;
-      }
-      if (!endereco.cep || !endereco.logradouro || !endereco.numero || !endereco.bairro || !endereco.cidade || !endereco.uf) {
-        mostrarToast('⚠️ Preencha seu CEP e endereço completo antes de pagar.');
-        return;
-      }
-
-      if (checkboxEntregaOutraPessoa && checkboxEntregaOutraPessoa.checked) {
-        endereco.destinatario_nome = (destinatarioNomeInput.value || '').trim();
-        endereco.destinatario_tipo_pessoa =
-          (destinatarioTipoPessoaJuridica && destinatarioTipoPessoaJuridica.checked) ? 'juridica' : 'fisica';
-        endereco.destinatario_documento = (destinatarioDocumentoInput.value || '').trim();
-        if (!endereco.destinatario_nome || !endereco.destinatario_documento) {
-          mostrarToast('⚠️ Preencha o nome e o documento de quem vai receber.');
-          return;
-        }
-        if (erroDestinatarioDocumentoEl) erroDestinatarioDocumentoEl.hidden = true;
-        if (!documentoValido(endereco.destinatario_tipo_pessoa, endereco.destinatario_documento)) {
-          const rotuloDest = endereco.destinatario_tipo_pessoa === 'juridica' ? 'CNPJ' : 'CPF';
-          mostrarToast(`⚠️ ${rotuloDest} de quem recebe é inválido. Confira o número digitado.`);
-          if (erroDestinatarioDocumentoEl) {
-            erroDestinatarioDocumentoEl.textContent = `${rotuloDest} inválido.`;
-            erroDestinatarioDocumentoEl.hidden = false;
-          }
-          destinatarioDocumentoInput.focus();
-          return;
-        }
-
-        // endereco de entrega diferente e´ opcional -- se nenhum campo
-        // foi preenchido, a entrega usa o endereco principal acima
-        // (mesmo destinatario, endereco igual). Se algum foi, todos
-        // (menos complemento) precisam vir, senao falta dado na etiqueta.
-        const enderecoDestCampos = {
-          destinatario_cep: (destinatarioCepInput.value || '').replace(/\D/g, ''),
-          destinatario_logradouro: (destinatarioLogradouroInput.value || '').trim(),
-          destinatario_numero: (destinatarioNumeroInput.value || '').trim(),
-          destinatario_bairro: (destinatarioBairroInput.value || '').trim(),
-          destinatario_cidade: (destinatarioCidadeInput.value || '').trim(),
-          destinatario_uf: (destinatarioUfInput.value || '').trim(),
-        };
-        const algumPreenchido = Object.values(enderecoDestCampos).some((v) => v);
-        const todosPreenchidos = Object.values(enderecoDestCampos).every((v) => v);
-        if (algumPreenchido && !todosPreenchidos) {
-          mostrarToast('⚠️ Preencha o endereço de entrega completo (ou deixe tudo em branco pra usar o endereço principal).');
-          return;
-        }
-        if (todosPreenchidos) {
-          Object.assign(endereco, enderecoDestCampos);
-          endereco.destinatario_complemento = (destinatarioComplementoInput.value || '').trim();
-        }
-      }
+      const dadosColetados = coletarClienteEEndereco();
+      if (!dadosColetados) return;
+      const { cliente, endereco } = dadosColetados;
 
       btnPagarAgora.disabled = true;
       btnPagarAgora.textContent = 'Gerando pagamento...';
@@ -889,6 +907,36 @@
       } finally {
         btnPagarAgora.disabled = false;
         btnPagarAgora.textContent = '💳 Pagar agora (Pix ou cartão)';
+      }
+    });
+  }
+
+  if (btnGerarBoleto) {
+    btnGerarBoleto.addEventListener('click', async () => {
+      const dadosColetados = coletarClienteEEndereco();
+      if (!dadosColetados) return;
+      const { cliente, endereco } = dadosColetados;
+
+      btnGerarBoleto.disabled = true;
+      btnGerarBoleto.textContent = 'Gerando boleto...';
+      try {
+        const resposta = await fetch('/api/pedido/criar-boleto', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ itens: ultimosItens, frete: freteEscolhido, cliente, endereco }),
+        });
+        const dados = await resposta.json();
+        if (!resposta.ok || dados.erro) {
+          mostrarToast(`⚠️ ${dados.erro || 'Não foi possível gerar o boleto agora.'}`);
+          return;
+        }
+        rastrearEventoGA4('begin_checkout', { currency: 'BRL', value: ultimoCalculo.subtotal_total });
+        window.location.href = `/pedido/${dados.token}`;
+      } catch (e) {
+        mostrarToast('⚠️ Não foi possível gerar o boleto agora.');
+      } finally {
+        btnGerarBoleto.disabled = false;
+        btnGerarBoleto.textContent = '📄 Gerar boleto';
       }
     });
   }

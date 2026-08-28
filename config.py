@@ -67,6 +67,32 @@ INFINITEPAY_HANDLE = os.environ.get("INFINITEPAY_HANDLE", "novedejulho")
 # vazio ate ser necessario.
 INFINITEPAY_API_TOKEN = os.environ.get("INFINITEPAY_API_TOKEN", "")
 
+# Boleto bancario via API Cobranca (Boleto com Pix) do Banco Inter (ver
+# services/inter.py) -- opcao de pagamento alternativa ao Pix/cartao da
+# InfinitePay, confirmada em ate 2 dias uteis. TODAS as 4 credenciais
+# abaixo SAO segredo -- NUNCA gravar os valores aqui, so variavel de
+# ambiente no servidor. INTER_CLIENT_ID/INTER_CLIENT_SECRET vem da tela
+# de aplicacoes no Internet Banking PJ do Inter. INTER_CERTIFICADO_PEM/
+# INTER_CHAVE_PRIVADA_PEM sao o CONTEUDO INTEIRO dos arquivos .crt/.key
+# baixados na mesma tela (cole como veio, com "-----BEGIN...-----" e
+# quebras de linha e tudo) -- a API do Inter exige esse certificado em
+# TODA chamada (mTLS), nao so client_id/secret.
+INTER_CLIENT_ID = os.environ.get("INTER_CLIENT_ID", "")
+INTER_CLIENT_SECRET = os.environ.get("INTER_CLIENT_SECRET", "")
+INTER_CERTIFICADO_PEM = os.environ.get("INTER_CERTIFICADO_PEM", "")
+INTER_CHAVE_PRIVADA_PEM = os.environ.get("INTER_CHAVE_PRIVADA_PEM", "")
+
+# So preencher se a aplicacao no Inter tiver mais de uma conta corrente
+# vinculada (ver PDF da API -- header x-conta-corrente). Vazio funciona
+# pra a maioria dos casos (conta unica).
+INTER_CONTA_CORRENTE = os.environ.get("INTER_CONTA_CORRENTE", "")
+
+# "sandbox" (padrao, nao gera cobranca de verdade) ou "producao". NUNCA
+# muda sozinho pra "producao" -- so depois de confirmar que as
+# credenciais acima sao mesmo de producao (ver conversa: o usuario nao
+# tinha certeza de qual ambiente pegou as credenciais).
+INTER_AMBIENTE = os.environ.get("INTER_AMBIENTE", "sandbox")
+
 # Sincronizacao de pedidos pagos com a Tiny/Olist ERP (API v2, ver
 # services/tiny.py). Credencial de verdade -- NUNCA gravar o valor
 # aqui, so variavel de ambiente TINY_API_TOKEN no servidor. Sem ela, a
