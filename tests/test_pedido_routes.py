@@ -28,6 +28,47 @@ def _corpo_valido(**overrides):
     return base
 
 
+def test_criar_pedido_frete_manipulado_e_bloqueado(client):
+    corpo = _corpo_valido(frete={"texto": "Correios PAC — R$ 25,50", "preco": 0.01})
+    with patch("app.calcular_frete", return_value={
+        "frete_gratis": False,
+        "opcoes": [{"transportadora": "Correios", "servico": "PAC", "preco": 25.5, "prazo_dias": 6}],
+    }):
+        resposta = client.post("/api/pedido/criar", json=corpo)
+    assert resposta.status_code == 400
+    assert "frete" in resposta.get_json()["erro"].lower()
+
+
+def test_criar_pedido_frete_real_passa(client):
+    with patch("app.calcular_frete", return_value={
+        "frete_gratis": False,
+        "opcoes": [{"transportadora": "Correios", "servico": "PAC", "preco": 25.5, "prazo_dias": 6}],
+    }), patch("app.criar_link_pagamento", return_value={"url": "https://checkout.infinitepay.io/abc"}):
+        corpo = _corpo_valido(frete={"texto": "Correios PAC — R$ 25,50", "preco": 25.5})
+        resposta = client.post("/api/pedido/criar", json=corpo)
+    assert resposta.status_code == 200
+
+
+def test_criar_pedido_frete_indisponivel_nao_bloqueia_venda(client):
+    """Fail-open: se a cotacao de frete falhar (rede fora, token nao
+    configurado) na hora do checkout, o pedido segue confiando no
+    preco que o navegador mandou -- um problema temporario nunca deve
+    impedir uma venda de verdade (ver conversa)."""
+    with patch("app.calcular_frete", return_value={"frete_gratis": False, "opcoes": [], "erro": "fora do ar"}), \
+         patch("app.criar_link_pagamento", return_value={"url": "https://checkout.infinitepay.io/abc"}):
+        resposta = client.post("/api/pedido/criar", json=_corpo_valido())
+    assert resposta.status_code == 200
+
+
+def test_criar_pedido_retirada_ignora_preco_de_frete_mandado(client):
+    with patch("app.criar_link_pagamento", return_value={"url": "https://checkout.infinitepay.io/abc"}):
+        corpo = _corpo_valido(frete={"texto": "Retirada no local", "preco": 999.0})
+        criado = client.post("/api/pedido/criar", json=corpo).get_json()
+
+    pedido = pedidos.obter_pedido(criado["token"])
+    assert pedido["frete_preco"] == 0.0
+
+
 def test_criar_pedido_com_cpf_invalido_400(client):
     corpo = _corpo_valido(cliente={
         "nome": "Maria Teste", "tipo_pessoa": "fisica", "documento": "11111111111",

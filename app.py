@@ -51,6 +51,8 @@ from urllib.parse import urlsplit
 from xml.sax.saxutils import escape as escapar_xml
 
 from flask import Flask, Response, abort, jsonify, redirect, render_template, request, send_file, url_for
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
 from PIL import Image
 from pillow_heif import register_heif_opener
 from werkzeug.datastructures import FileStorage
@@ -155,6 +157,25 @@ from services.pricing import CHAVES_PRECO, calcular_carrinho, preco_varejo
 app = Flask(__name__)
 app.config["MAX_CONTENT_LENGTH"] = 60 * 1024 * 1024  # 60MB no total do upload
 
+# Limite de requisicoes por IP nos endpoints publicos que custam algo
+# de verdade (chamam API externa paga/com limite, mandam e-mail, geram
+# imagem) -- protege contra abuso/spam automatizado sem incomodar
+# gente de verdade usando o site normalmente (ver conversa "tornar o
+# site e apis seguros"). storage_uri="memory://" e´ seguro aqui porque
+# o gunicorn roda com 1 worker so (Procfile/render.yaml) -- se um dia
+# isso mudar pra mais workers, precisa trocar pra um storage
+# compartilhado (Redis) senao cada worker conta separado.
+limiter = Limiter(get_remote_address, app=app, storage_uri="memory://")
+
+
+@limiter.request_filter
+def _pular_rate_limit_em_teste() -> bool:
+    """Sem isso, os testes (que reusam o mesmo processo/limiter pra
+    centenas de chamadas nos mesmos endpoints) comecam a tomar 429 no
+    meio da suite -- TESTING=True so e´ ligado pelos fixtures de teste
+    (ver tests/*.py), nunca em producao."""
+    return app.testing
+
 # Atras do proxy do Render (TLS termina la, chega no gunicorn como HTTP
 # "puro") -- sem isso, request.scheme/url_for(_external=True) nao sabem
 # que a conexao original era https (afeta os links https:// mandados
@@ -179,11 +200,13 @@ def _cabecalhos_seguranca(resposta: Response) -> Response:
     resposta.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
     resposta.headers["Content-Security-Policy"] = (
         "default-src 'self'; "
-        "script-src 'self' 'unsafe-inline' https://www.googletagmanager.com; "
+        "script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://connect.facebook.net; "
         "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
         "font-src 'self' https://fonts.gstatic.com; "
         "img-src 'self' data: https:; "
-        "connect-src 'self' https://viacep.com.br https://www.google-analytics.com https://analytics.google.com; "
+        "media-src 'self' https:; "
+        "connect-src 'self' https://viacep.com.br https://www.google-analytics.com https://analytics.google.com "
+        "https://www.facebook.com; "
         "frame-ancestors 'none'; "
         "base-uri 'self'; "
         "form-action 'self'"
@@ -1174,6 +1197,7 @@ def api_calcular_carrinho():
 
 
 @app.route("/api/frete/calcular", methods=["POST"])
+@limiter.limit("20 per minute")
 def api_calcular_frete():
     dados = request.get_json(silent=True) or {}
     itens_validos = _itens_validos_do_corpo(dados)
@@ -1190,6 +1214,7 @@ def api_calcular_frete():
 
 
 @app.route("/api/pedido/criar", methods=["POST"])
+@limiter.limit("10 per minute")
 def api_pedido_criar():
     """Cria o pedido (persistido, ver services/pedidos.py) e gera o link
     de pagamento da InfinitePay -- caminho automatico do "Pagar agora"
@@ -1234,6 +1259,20 @@ def api_pedido_criar():
         rotulo_dest = "CNPJ" if endereco.get("destinatario_tipo_pessoa") == "juridica" else "CPF"
         return jsonify(erro=f"{rotulo_dest} de quem recebe é inválido. Confira o número digitado."), 400
 
+    if frete_descricao == FRETE_RETIRADA_DESCRICAO:
+        # retirada no local e´ sempre gratis -- nunca confia num valor
+        # diferente que o navegador tenha mandado (mesmo raciocinio da
+        # reconferencia abaixo, so que aqui o preco certo ja e´ sabido
+        # sem precisar consultar nenhuma transportadora).
+        frete_preco = 0.0
+    else:
+        cep_frete = endereco.get("destinatario_cep") or endereco["cep"]
+        frete_minimo = _frete_preco_minimo_valido(
+            itens_validos, cep_frete, calculo["subtotal_total"], calculo["frete_gratis_atingido"]
+        )
+        if frete_minimo is not None and frete_preco < frete_minimo - 0.50:
+            return jsonify(erro="O frete mudou -- recalcule antes de pagar."), 400
+
     # guarda o preco unitario junto de cada item persistido -- alem de
     # registro, e o que os dois pontos abaixo usam pra reconstruir o
     # pedido sem precisar recalcular tudo de novo (ver
@@ -1267,6 +1306,7 @@ def api_pedido_criar():
 
 
 @app.route("/api/pedido/criar-whatsapp", methods=["POST"])
+@limiter.limit("10 per minute")
 def api_pedido_criar_whatsapp():
     """Lead criado ao clicar "Finalizar pelo WhatsApp" no carrinho (ver
     static/js/carrinho_pagina.js) -- sem link de pagamento e sem exigir
@@ -1342,6 +1382,32 @@ def _itens_pagamento_de_pedido(pedido: dict) -> list[dict]:
     return itens_pagamento
 
 
+def _frete_preco_minimo_valido(itens: list[dict], cep: str, subtotal: float, frete_gratis_atingido: bool) -> float | None:
+    """Reconfere o preco de frete que o navegador mandou contra uma nova
+    cotacao real (Frenet/Melhor Envio) -- sem isso, um cliente podia
+    interceptar o POST e mandar qualquer frete_preco (ex: 0,01) pra
+    qualquer opcao, mesmo pesada/longe (ver conversa "tornar o site e
+    apis seguros"). Devolve o menor preco aceitavel (0.0 quando o
+    pedido ja atinge frete gratis) ou None quando nao da pra confirmar
+    (nenhuma cotacao respondeu, CEP invalido, etc.) -- nesse caso o
+    chamador NAO bloqueia o pedido (fail-open: um problema temporario
+    na Frenet/Melhor Envio nunca deve impedir uma venda de verdade, so
+    a manipulacao deliberada de preco e´ bloqueada)."""
+    try:
+        resultado = calcular_frete(itens, cep, subtotal, frete_gratis_atingido)
+    except Exception:
+        return None
+    if resultado.get("erro"):
+        return None
+    if resultado.get("frete_gratis"):
+        opcoes = resultado.get("opcoes") or []
+        return 0.0 if not opcoes else min(o["preco_final"] for o in opcoes)
+    opcoes = resultado.get("opcoes") or []
+    if not opcoes:
+        return None
+    return min(o["preco"] for o in opcoes)
+
+
 def _gerar_link_pagamento_para_pedido(pedido: dict, cliente: dict, endereco: dict) -> dict:
     return criar_link_pagamento(
         order_nsu=pedido["token"],
@@ -1385,6 +1451,7 @@ def _cliente_e_endereco_do_pedido(pedido: dict) -> tuple[dict, dict]:
 
 
 @app.route("/api/pedido/<token>/novo-link", methods=["POST"])
+@limiter.limit("10 per minute")
 def api_pedido_novo_link(token: str):
     """Gera um novo link de pagamento pro mesmo pedido -- pro caso do
     link original ter expirado (a InfinitePay nao documenta um prazo
@@ -1577,6 +1644,7 @@ def _autenticacao_admin_valida(auth) -> bool:
 
 
 @app.route("/admin/pedidos", methods=["GET"])
+@limiter.limit("30 per minute")
 def admin_pedidos():
     """Painel interno pra ver os pedidos sem precisar consultar o
     SQLite direto -- autenticacao HTTP Basic simples (ver
@@ -1949,6 +2017,7 @@ def admin_pedidos_acao_em_massa():
 
 
 @app.route("/api/pix/gerar", methods=["POST"])
+@limiter.limit("15 per minute")
 def api_pix_gerar():
     """Gera o Pix "copia e cola" + QR code com o valor do pedido ja
     preenchido (ver services/pix.py -- BR Code estatico com valor, sem
@@ -2034,6 +2103,7 @@ def download(token: str):
 
 
 @app.route("/api/avaliacoes", methods=["POST"])
+@limiter.limit("5 per minute")
 def api_avaliacoes_criar():
     """Envio de avaliacao pelo cliente direto na pagina de produto (ver
     templates/produto.html + static/js/avaliacoes.js) -- nasce
@@ -2182,6 +2252,7 @@ def admin_push_desinscrever():
 
 
 @app.route("/api/personalizada/preview", methods=["POST"])
+@limiter.limit("15 per minute")
 def api_personalizada_preview():
     """Uma imagem + recorte (opcional, ver editor de recorte em
     personalizada.js) + formato/cor -> previa da medalha (mostrada inline)

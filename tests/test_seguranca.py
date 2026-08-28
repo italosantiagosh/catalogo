@@ -90,6 +90,18 @@ def test_post_admin_sem_origin_nem_referer_ainda_funciona(client, monkeypatch):
     assert pedidos.obter_pedido(pedido["token"])["status"] == "faturado"
 
 
+def test_rate_limit_bloqueia_apos_muitas_chamadas(client, monkeypatch):
+    # desliga o filtro que pula rate limit durante os testes (ver
+    # app._pular_rate_limit_em_teste) so PRA ESSE teste, pra confirmar
+    # que o limite realmente existe e bloqueia -- os outros testes
+    # continuam sem rate limit (senao a suite toda tomaria 429).
+    monkeypatch.setattr(app, "testing", False)
+    corpo = {"itens": [{"chave_preco": "16mm", "quantidade": 1}], "cep": "59000000"}
+    respostas = [client.post("/api/frete/calcular", json=corpo) for _ in range(21)]
+    codigos = [r.status_code for r in respostas]
+    assert 429 in codigos
+
+
 def test_webhook_infinitepay_exige_chave_quando_configurada(client, monkeypatch):
     import app as app_module
 

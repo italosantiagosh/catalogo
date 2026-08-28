@@ -9,3 +9,4 @@ requests>=2.31
 qrcode>=7.4
 reportlab>=4.0
 google-analytics-data>=0.18
+Flask-Limiter>=3.5
