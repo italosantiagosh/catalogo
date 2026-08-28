@@ -135,12 +135,16 @@ def gerar_linhas(produtos: list[dict]) -> list[dict]:
             base_id = f"{produto_id.upper()}-M{modelo_id}"
             descricao_base = f"{nome_santo} — {modelo_nome}"
 
-            # Medalha (pai com variacao de tamanho)
+            # Medalha (pai com variacao de tamanho) -- a Tiny rejeita
+            # linha de produto pai (tipo V) sem Preco preenchido (visto
+            # na pratica: das 436 linhas que deram erro na importacao,
+            # TODAS eram linhas pai sem preco -- nenhuma variacao/filho
+            # deu erro). Repete o preco de entrada da propria familia.
             sku_pai_medalha = f"MED-{base_id}"
             linhas.append(_linha_base(
                 sku=sku_pai_medalha, descricao=f"Medalha {descricao_base}",
-                categoria="Medalhas", tipo="V", preco=None, peso_kg=0.0,
-                imagem=modelo.get("imagem"),
+                categoria="Medalhas", tipo="V", preco=PRECO_VAREJO_POR_CHAVE["12mm"],
+                peso_kg=0.0, imagem=modelo.get("imagem"),
             ))
             for tamanho in modelo["tamanhos"]:
                 chave = tamanho
@@ -158,8 +162,8 @@ def gerar_linhas(produtos: list[dict]) -> list[dict]:
             sku_pai_entremeio = f"ENT-{base_id}"
             linhas.append(_linha_base(
                 sku=sku_pai_entremeio, descricao=f"Entremeio {descricao_base}",
-                categoria="Entremeios", tipo="V", preco=None, peso_kg=0.0,
-                imagem=modelo.get("imagem_entremeio_prata"),
+                categoria="Entremeios", tipo="V", preco=PRECO_VAREJO_POR_CHAVE["entremeio"],
+                peso_kg=0.0, imagem=modelo.get("imagem_entremeio_prata"),
             ))
             for cor, campo_imagem in (
                 ("Ouro Velho", "imagem_entremeio_ouro_velho"),
