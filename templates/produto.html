@@ -1,6 +1,17 @@
 {% extends "base.html" %}
 
-{% block titulo %}{{ produto.nome }} — Catálogo de Atacado | Nove de Julho{% endblock %}
+{# O produto "espirito-santo" tem o mesmo nome da categoria "Espírito
+   Santo" -- sem essa excecao, os dois geravam o MESMO <title>
+   (achado de auditoria de SEO). So esse caso especifico colide hoje;
+   deixado como excecao pontual em vez de mudar o formato de todos os
+   135 produtos (isso deixaria varios titulos > 70 caracteres). #}
+{% block titulo %}
+  {%- if produto.id == 'espirito-santo' -%}
+    Medalha Espírito Santo — Catálogo de Atacado | Nove de Julho
+  {%- else -%}
+    {{ produto.nome }} — Catálogo de Atacado | Nove de Julho
+  {%- endif -%}
+{% endblock %}
 {% block meta_descricao %}Medalha, entremeio e chaveiro de {{ produto.nome }} a partir de {{ preco_varejo | preco }} -- desconto de atacado automático conforme a quantidade, sem cupom. Peça pelo catálogo Nove de Julho.{% endblock %}
 {% block og_imagem %}{{ dados_produto.image }}{% endblock %}
 
