@@ -26,6 +26,9 @@
   const clienteDocumentoInput = document.getElementById('cliente-documento');
   const clienteTelefoneInput = document.getElementById('cliente-telefone');
   const clienteEmailInput = document.getElementById('cliente-email');
+  const enderecoCepProprioWrap = document.getElementById('endereco-cep-proprio-wrap');
+  const enderecoCepProprioInput = document.getElementById('endereco-cep-proprio');
+  const btnBuscarCepProprio = document.getElementById('btn-buscar-cep-proprio');
   const enderecoLogradouroInput = document.getElementById('endereco-logradouro');
   const enderecoNumeroInput = document.getElementById('endereco-numero');
   const enderecoComplementoInput = document.getElementById('endereco-complemento');
@@ -40,6 +43,7 @@
   const labelDestinatarioDocumento = document.getElementById('label-destinatario-documento');
   const destinatarioDocumentoInput = document.getElementById('destinatario-documento');
   const destinatarioCepInput = document.getElementById('destinatario-cep');
+  const btnBuscarCepDestinatario = document.getElementById('btn-buscar-cep-destinatario');
   const destinatarioLogradouroInput = document.getElementById('destinatario-logradouro');
   const destinatarioNumeroInput = document.getElementById('destinatario-numero');
   const destinatarioComplementoInput = document.getElementById('destinatario-complemento');
@@ -365,13 +369,27 @@
     return digitos.length > 5 ? `${digitos.slice(0, 5)}-${digitos.slice(5)}` : digitos;
   }
 
+  // destrava os campos preenchidos por CEP (ver preencherEnderecoPorCep
+  // abaixo) -- chamado assim que o cliente comeca a mexer de novo no
+  // CEP, antes mesmo da busca terminar, pra nunca deixar campo travado
+  // com um endereco que nao bate mais com o CEP mostrado.
+  function destravarCamposEndereco(inputs) {
+    [inputs.logradouro, inputs.bairro, inputs.cidade, inputs.uf].forEach((campo) => {
+      if (campo) campo.readOnly = false;
+    });
+  }
+
   // preenche endereco/bairro/cidade/UF automaticamente a partir do CEP
-  // (ViaCEP -- servico publico gratuito, sem chave) assim que o cliente
-  // termina de digitar os 8 digitos. Falha silenciosamente (CEP nao
-  // encontrado, ou servico fora do ar) -- o cliente sempre pode
-  // preencher esses campos na mao, o autopreenchimento e so conveniencia.
-  // Recebe os inputs de destino (endereco principal ou destinatario,
-  // ver os dois listeners logo abaixo) pra reaproveitar a mesma logica.
+  // (ViaCEP -- servico publico gratuito, sem chave) e trava esses 4
+  // campos (readonly) pra nao dar pra digitar um endereco que nao bate
+  // com o CEP escolhido (ver conversa) -- numero/complemento continuam
+  // editaveis, o ViaCEP nunca devolve isso. Falha silenciosamente (CEP
+  // nao encontrado, ou servico fora do ar) e NAO trava nesse caso -- o
+  // cliente sempre pode preencher esses campos na mao quando o
+  // autopreenchimento nao funciona. Recebe os inputs de destino
+  // (endereco principal ou destinatario) pra reaproveitar a mesma
+  // logica nos tres lugares que usam CEP (frete-cep, endereco-cep-proprio,
+  // destinatario-cep).
   async function preencherEnderecoPorCep(cep, inputs) {
     try {
       const resposta = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
@@ -381,6 +399,9 @@
       if (inputs.bairro) inputs.bairro.value = dados.bairro || '';
       if (inputs.cidade) inputs.cidade.value = dados.localidade || '';
       if (inputs.uf) inputs.uf.value = dados.uf || '';
+      [inputs.logradouro, inputs.bairro, inputs.cidade, inputs.uf].forEach((campo) => {
+        if (campo && campo.value) campo.readOnly = true;
+      });
     } catch (e) {
       // silencioso -- ver comentario acima
     }
@@ -411,32 +432,72 @@
     }
   }
 
+  // mesmos 4 campos (endereco-logradouro/bairro/cidade/uf) sao
+  // preenchidos tanto pelo CEP la em cima ("Calcular frete", endereco =
+  // entrega quando NAO tem destinatario diferente) quanto pelo campo
+  // dedicado "Seu CEP" que aparece dentro do cadastro quando o
+  // checkbox de entrega-outra-pessoa e´ marcado (ver mais abaixo) --
+  // e´ sempre o MESMO endereco do comprador, so muda de onde vem o CEP.
+  const INPUTS_ENDERECO_PROPRIO = {
+    logradouro: enderecoLogradouroInput, bairro: enderecoBairroInput,
+    cidade: enderecoCidadeInput, uf: enderecoUfInput,
+  };
+  const INPUTS_ENDERECO_DESTINATARIO = {
+    logradouro: destinatarioLogradouroInput, bairro: destinatarioBairroInput,
+    cidade: destinatarioCidadeInput, uf: destinatarioUfInput,
+  };
+
   if (freteCepInput) {
     freteCepInput.addEventListener('input', () => {
       freteCepInput.value = mascararCep(freteCepInput.value);
+      // com entrega-outra-pessoa marcado, o endereco do comprador vem
+      // do campo dedicado (endereco-cep-proprio) -- esse CEP aqui em
+      // cima passa a servir so pra estimar o frete antes de saber quem
+      // recebe, nao mexe mais no endereco do comprador nesse caso (ver
+      // conversa: misturar os dois e´ o que causava o erro de "CEP do
+      // comprador diferente do CEP de entrega").
+      if (checkboxEntregaOutraPessoa && checkboxEntregaOutraPessoa.checked) return;
+      destravarCamposEndereco(INPUTS_ENDERECO_PROPRIO);
       const digitos = freteCepInput.value.replace(/\D/g, '');
-      if (digitos.length === 8) {
-        preencherEnderecoPorCep(digitos, {
-          logradouro: enderecoLogradouroInput, bairro: enderecoBairroInput,
-          cidade: enderecoCidadeInput, uf: enderecoUfInput,
-        });
-      }
+      if (digitos.length === 8) preencherEnderecoPorCep(digitos, INPUTS_ENDERECO_PROPRIO);
+    });
+  }
+
+  if (enderecoCepProprioInput) {
+    enderecoCepProprioInput.addEventListener('input', () => {
+      enderecoCepProprioInput.value = mascararCep(enderecoCepProprioInput.value);
+      destravarCamposEndereco(INPUTS_ENDERECO_PROPRIO);
+      const digitos = enderecoCepProprioInput.value.replace(/\D/g, '');
+      if (digitos.length === 8) preencherEnderecoPorCep(digitos, INPUTS_ENDERECO_PROPRIO);
+    });
+  }
+  if (btnBuscarCepProprio) {
+    btnBuscarCepProprio.addEventListener('click', () => {
+      const digitos = (enderecoCepProprioInput.value || '').replace(/\D/g, '');
+      if (digitos.length !== 8) { mostrarToast('⚠️ Digite um CEP válido.'); return; }
+      preencherEnderecoPorCep(digitos, INPUTS_ENDERECO_PROPRIO);
     });
   }
 
   if (destinatarioCepInput) {
     destinatarioCepInput.addEventListener('input', () => {
       destinatarioCepInput.value = mascararCep(destinatarioCepInput.value);
+      destravarCamposEndereco(INPUTS_ENDERECO_DESTINATARIO);
       const digitos = destinatarioCepInput.value.replace(/\D/g, '');
       if (digitos.length === 8) {
-        preencherEnderecoPorCep(digitos, {
-          logradouro: destinatarioLogradouroInput, bairro: destinatarioBairroInput,
-          cidade: destinatarioCidadeInput, uf: destinatarioUfInput,
-        });
+        preencherEnderecoPorCep(digitos, INPUTS_ENDERECO_DESTINATARIO);
         // entrega vai pra esse CEP, entao o frete precisa ser
         // recalculado com base nele, nao no CEP do endereco principal
         calcularFreteParaCep(digitos);
       }
+    });
+  }
+  if (btnBuscarCepDestinatario) {
+    btnBuscarCepDestinatario.addEventListener('click', () => {
+      const digitos = (destinatarioCepInput.value || '').replace(/\D/g, '');
+      if (digitos.length !== 8) { mostrarToast('⚠️ Digite um CEP válido.'); return; }
+      preencherEnderecoPorCep(digitos, INPUTS_ENDERECO_DESTINATARIO);
+      calcularFreteParaCep(digitos);
     });
   }
 
@@ -580,12 +641,28 @@
   if (checkboxEntregaOutraPessoa && camposDestinatarioEl) {
     checkboxEntregaOutraPessoa.addEventListener('change', () => {
       camposDestinatarioEl.hidden = !checkboxEntregaOutraPessoa.checked;
-      // desmarcou -- volta o frete a refletir o CEP do endereco
-      // principal (pode ter ficado calculado pro CEP de entrega
-      // enquanto a caixa estava marcada, ver destinatario-cep acima)
-      if (!checkboxEntregaOutraPessoa.checked) {
+      if (checkboxEntregaOutraPessoa.checked) {
+        // abre o campo dedicado de CEP do comprador (ver conversa: "ao
+        // apertar na opção de endereço de entrega diferente, abra um
+        // campo de CEP na parte de cima no endereço do comprador") --
+        // a partir daqui o endereco do comprador vem DESSE campo, nao
+        // mais do CEP la em cima (que passa a servir so pro frete
+        // estimado antes de saber quem recebe).
+        if (enderecoCepProprioWrap) enderecoCepProprioWrap.hidden = false;
+        if (enderecoCepProprioInput && !enderecoCepProprioInput.value) {
+          enderecoCepProprioInput.value = freteCepInput ? freteCepInput.value : '';
+        }
+      } else {
+        if (enderecoCepProprioWrap) enderecoCepProprioWrap.hidden = true;
+        // desmarcou -- volta o frete e o endereco do comprador a
+        // refletir o CEP la em cima (podem ter ficado calculados pro
+        // CEP de entrega/CEP proprio enquanto a caixa estava marcada)
         const cepPrincipal = (freteCepInput.value || '').replace(/\D/g, '');
-        if (cepPrincipal.length === 8) calcularFreteParaCep(cepPrincipal);
+        if (cepPrincipal.length === 8) {
+          calcularFreteParaCep(cepPrincipal);
+          destravarCamposEndereco(INPUTS_ENDERECO_PROPRIO);
+          preencherEnderecoPorCep(cepPrincipal, INPUTS_ENDERECO_PROPRIO);
+        }
       }
     });
   }
@@ -636,8 +713,15 @@
         telefone: (clienteTelefoneInput.value || '').trim(),
         email: (clienteEmailInput.value || '').trim(),
       };
+      // com entrega-outra-pessoa marcado, o CEP do comprador vem do
+      // campo dedicado que abre dentro do cadastro (endereco-cep-proprio)
+      // -- nunca do CEP la em cima, que nesse caso serve so pra estimar
+      // frete antes de ter o CEP de entrega de verdade (ver conversa,
+      // esse era o motivo do erro "CEP diferente do CEP de entrega").
+      const usaEnderecoProprioDedicado = checkboxEntregaOutraPessoa && checkboxEntregaOutraPessoa.checked;
+      const cepProprioInput = usaEnderecoProprioDedicado ? enderecoCepProprioInput : freteCepInput;
       const endereco = {
-        cep: (freteCepInput.value || '').replace(/\D/g, ''),
+        cep: (cepProprioInput && cepProprioInput.value || '').replace(/\D/g, ''),
         logradouro: (enderecoLogradouroInput.value || '').trim(),
         numero: (enderecoNumeroInput.value || '').trim(),
         complemento: (enderecoComplementoInput.value || '').trim(),
@@ -651,7 +735,7 @@
         return;
       }
       if (!endereco.cep || !endereco.logradouro || !endereco.numero || !endereco.bairro || !endereco.cidade || !endereco.uf) {
-        mostrarToast('⚠️ Preencha o endereço completo (e o CEP no calculador de frete) antes de pagar.');
+        mostrarToast('⚠️ Preencha seu CEP e endereço completo antes de pagar.');
         return;
       }
 

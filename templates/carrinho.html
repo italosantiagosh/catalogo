@@ -87,7 +87,15 @@
         <label for="cliente-email">E-mail</label>
         <input type="email" id="cliente-email" autocomplete="email">
 
-        <label for="endereco-logradouro">Endereço (rua/avenida) — preenchido pelo CEP calculado acima</label>
+        <div id="endereco-cep-proprio-wrap" hidden>
+          <label for="endereco-cep-proprio">Seu CEP</label>
+          <div class="frete-linha">
+            <input type="text" id="endereco-cep-proprio" inputmode="numeric" autocomplete="off" placeholder="00000-000" maxlength="9">
+            <button type="button" id="btn-buscar-cep-proprio">Buscar CEP</button>
+          </div>
+        </div>
+
+        <label for="endereco-logradouro">Endereço (rua/avenida) — preenchido pelo CEP</label>
         <input type="text" id="endereco-logradouro" autocomplete="address-line1">
 
         <div class="cadastro-linha-dupla">
@@ -140,7 +148,10 @@
         </p>
 
         <label for="destinatario-cep">CEP de entrega</label>
-        <input type="text" id="destinatario-cep" inputmode="numeric" autocomplete="off" placeholder="00000-000" maxlength="9">
+        <div class="frete-linha">
+          <input type="text" id="destinatario-cep" inputmode="numeric" autocomplete="off" placeholder="00000-000" maxlength="9">
+          <button type="button" id="btn-buscar-cep-destinatario">Buscar CEP</button>
+        </div>
 
         <label for="destinatario-logradouro">Endereço (rua/avenida)</label>
         <input type="text" id="destinatario-logradouro" autocomplete="off">

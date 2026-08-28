@@ -1221,7 +1221,8 @@ button.botao-carrinho:disabled {
   gap: 8px;
 }
 
-#frete-cep {
+#frete-cep,
+.frete-linha input[type="text"] {
   flex: 1;
   padding: 12px 14px;
   font-size: 0.95rem;
@@ -1231,7 +1232,13 @@ button.botao-carrinho:disabled {
   color: var(--ink);
 }
 
-#btn-calcular-frete {
+input[readonly] {
+  background: var(--bg);
+  color: var(--muted);
+}
+
+#btn-calcular-frete,
+.frete-linha button {
   padding: 12px 18px;
   border: none;
   border-radius: 10px;
@@ -1243,7 +1250,8 @@ button.botao-carrinho:disabled {
   white-space: nowrap;
 }
 
-#btn-calcular-frete:disabled {
+#btn-calcular-frete:disabled,
+.frete-linha button:disabled {
   background: var(--border);
   color: var(--muted);
   cursor: not-allowed;
