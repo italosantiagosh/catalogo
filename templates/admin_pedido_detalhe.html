@@ -440,6 +440,21 @@
     </div>
   {% endif %}
 
+  {% if pedido.status == 'pendente' %}
+    <div class="bloco">
+      <h2>Pagamento não confirmado automaticamente</h2>
+      <p>Esse pedido foi criado pelo site (Pix/cartão via InfinitePay ou boleto Inter) e ainda
+      não recebemos a confirmação automática de pagamento. Só use o botão abaixo se você já
+      conferiu no <strong>extrato/painel da InfinitePay</strong> (ou do Banco Inter, se for boleto)
+      que o pagamento realmente caiu — essa ação não faz nenhuma verificação, ela só força o
+      pedido pra "pago" e dispara as mesmas notificações/integrações de uma confirmação normal.</p>
+      <form method="post" action="{{ url_for('admin_pedido_marcar_pago', token=pedido.token) }}"
+            onsubmit="return confirm('Confirma que você já viu esse pagamento cair no extrato da InfinitePay/Banco Inter? Isso vai marcar o pedido como pago.');">
+        <button type="submit">✅ Confirmar pagamento manualmente</button>
+      </form>
+    </div>
+  {% endif %}
+
   {% if pedido.status != 'whatsapp' %}
     <div class="bloco">
       <h2>Alterar status</h2>

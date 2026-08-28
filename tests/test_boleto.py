@@ -185,6 +185,58 @@ def test_verificar_boletos_erro_de_consulta_marca_e_continua(client, monkeypatch
     assert pedido["inter_erro"] == "fora do ar"
 
 
+def test_admin_marcar_pago_confirma_pedido_pendente(client, monkeypatch):
+    """Escape hatch pro caso em que o webhook da InfinitePay nao chega
+    (ex: link gerado antes de WEBHOOK_INFINITEPAY_SECRET existir --
+    ver app._gerar_link_pagamento_para_pedido). O admin confirma na
+    mao depois de conferir o extrato, e isso dispara as MESMAS
+    notificacoes de uma confirmacao automatica (ver
+    app._pos_pagamento_confirmado)."""
+    _preparar_admin(monkeypatch)
+    with patch("app.criar_link_pagamento", return_value={"url": "https://checkout.infinitepay.io/abc"}):
+        criado = client.post("/api/pedido/criar", json=_corpo_valido()).get_json()
+
+    with patch("app.enviar_confirmacao_pedido", return_value={"ok": True}), \
+         patch("app.enviar_notificacao_venda", return_value={"ok": True}), \
+         patch("app.criar_pedido_tiny", return_value={"ok": True, "numero_pedido": "1"}), \
+         patch("app.enviar_notificacao_push", return_value=None) as push_mock:
+        resposta = client.post(
+            f"/admin/pedidos/{criado['token']}/marcar-pago", auth=("admin", "segredo123")
+        )
+    assert resposta.status_code in (302, 303)
+    push_mock.assert_called_once()
+
+    pedido = pedidos.obter_pedido(criado["token"])
+    assert pedido["status"] == "pago"
+    assert pedido["forma_pagamento"] == "manual"
+
+
+def test_admin_marcar_pago_exige_autenticacao(client, monkeypatch):
+    _preparar_admin(monkeypatch)
+    with patch("app.criar_link_pagamento", return_value={"url": "https://checkout.infinitepay.io/abc"}):
+        criado = client.post("/api/pedido/criar", json=_corpo_valido()).get_json()
+
+    resposta = client.post(f"/admin/pedidos/{criado['token']}/marcar-pago")
+    assert resposta.status_code == 401
+
+    pedido = pedidos.obter_pedido(criado["token"])
+    assert pedido["status"] == "pendente"
+
+
+def test_admin_marcar_pago_bloqueia_pedido_ja_pago(client, monkeypatch):
+    _preparar_admin(monkeypatch)
+    with patch("app.criar_link_pagamento", return_value={"url": "https://checkout.infinitepay.io/abc"}):
+        criado = client.post("/api/pedido/criar", json=_corpo_valido()).get_json()
+    pedidos.marcar_pago(
+        criado["token"], forma_pagamento="pix", parcelas=None, valor_pago=60.0, transaction_nsu="nsu-1"
+    )
+
+    resposta = client.post(
+        f"/admin/pedidos/{criado['token']}/marcar-pago", auth=("admin", "segredo123")
+    )
+    assert resposta.status_code == 400
+
+
 def test_boleto_pendente_nao_recebe_lembrete_de_link_expirado(client, monkeypatch):
     """Pedido de boleto tem vencimento medido em dias (ver
     services/inter.py), o lembrete de "seu link expirou" de minutos so

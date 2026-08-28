@@ -1880,6 +1880,38 @@ def admin_pedido_status(token: str):
     return redirect(url_for("admin_pedido_detalhe", token=token))
 
 
+@app.route("/admin/pedidos/<token>/marcar-pago", methods=["POST"])
+def admin_pedido_marcar_pago(token: str):
+    """Confirma manualmente um pedido "pendente" criado pelo site (Pix/
+    cartão via InfinitePay) -- pensado como escape hatch quando o
+    webhook falha por qualquer motivo e o pagamento fica preso sem
+    confirmar aqui, mesmo tendo sido aprovado de verdade (confira
+    sempre no extrato/painel da InfinitePay antes de usar isso, não há
+    nenhuma verificação além da senha do admin). Caso real que já
+    aconteceu: um link de pagamento gerado ANTES de
+    WEBHOOK_INFINITEPAY_SECRET ser configurado guarda a URL de
+    callback antiga (sem a chave) -- essa chamada nunca mais vai bater
+    com a chave exigida agora, então o webhook original nunca confirma
+    esse pedido específico."""
+    if not _autenticacao_admin_valida(request.authorization):
+        return Response(
+            "Autenticação necessária.", 401, {"WWW-Authenticate": 'Basic realm="Painel de pedidos"'}
+        )
+    pedido = obter_pedido(token)
+    if pedido is None or pedido["status"] != "pendente":
+        abort(400, description="Só é possível confirmar manualmente um pedido pendente.")
+
+    pedido_pago = marcar_pago(
+        token,
+        forma_pagamento="manual",
+        parcelas=None,
+        valor_pago=pedido["total"],
+        transaction_nsu="confirmado-manualmente",
+    )
+    _pos_pagamento_confirmado(pedido_pago, token)
+    return redirect(url_for("admin_pedido_detalhe", token=token))
+
+
 @app.route("/admin/tiny/buscar-contato", methods=["GET"])
 def admin_tiny_buscar_contato():
     """Busca contatos ja cadastrados na Tiny (ver
