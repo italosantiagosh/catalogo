@@ -121,6 +121,7 @@ from services.email import (
     enviar_pedido_enviado,
     enviar_pedido_excluido,
 )
+from services.documentos import documento_valido
 from services.frete import calcular_frete
 from services.infinitepay import criar_link_pagamento
 from services.pedidos import (
@@ -1080,12 +1081,25 @@ def _cliente_valido(dados: dict) -> dict | None:
     if not nome or not documento or not telefone or not email:
         return None
     tipo_pessoa = str(cliente.get("tipo_pessoa", "fisica"))
+    tipo_pessoa = tipo_pessoa if tipo_pessoa in ("fisica", "juridica") else "fisica"
+    # Inscricao Estadual so faz sentido pra pessoa juridica (ver
+    # static/js/carrinho_pagina.js) -- isento nunca guarda numero (os
+    # dois sao mutuamente exclusivos na UI, mas confere aqui tambem,
+    # nunca confiando so na validacao do navegador).
+    inscricao_estadual = str(cliente.get("inscricao_estadual", "")).strip() if tipo_pessoa == "juridica" else ""
+    ie_isento = bool(cliente.get("ie_isento")) if tipo_pessoa == "juridica" else False
+    ie_nao_contribuinte = bool(cliente.get("ie_nao_contribuinte")) if tipo_pessoa == "juridica" else False
+    if ie_isento:
+        inscricao_estadual = ""
     return {
         "nome": nome,
-        "tipo_pessoa": tipo_pessoa if tipo_pessoa in ("fisica", "juridica") else "fisica",
+        "tipo_pessoa": tipo_pessoa,
         "documento": documento,
         "telefone": telefone,
         "email": email,
+        "inscricao_estadual": inscricao_estadual,
+        "ie_isento": ie_isento,
+        "ie_nao_contribuinte": ie_nao_contribuinte,
     }
 
 
@@ -1208,9 +1222,17 @@ def api_pedido_criar():
     cliente = _cliente_valido(dados)
     if cliente is None:
         return jsonify(erro="Preencha seus dados completos (nome, documento, telefone e e-mail)."), 400
+    rotulo_documento = "CNPJ" if cliente["tipo_pessoa"] == "juridica" else "CPF"
+    if not documento_valido(cliente["tipo_pessoa"], cliente["documento"]):
+        return jsonify(erro=f"{rotulo_documento} inválido. Confira o número digitado."), 400
     endereco = _endereco_valido(dados)
     if endereco is None:
         return jsonify(erro="Preencha o endereço de entrega completo."), 400
+    if endereco.get("destinatario_documento") and not documento_valido(
+        endereco.get("destinatario_tipo_pessoa") or "fisica", endereco["destinatario_documento"]
+    ):
+        rotulo_dest = "CNPJ" if endereco.get("destinatario_tipo_pessoa") == "juridica" else "CPF"
+        return jsonify(erro=f"{rotulo_dest} de quem recebe é inválido. Confira o número digitado."), 400
 
     # guarda o preco unitario junto de cada item persistido -- alem de
     # registro, e o que os dois pontos abaixo usam pra reconstruir o

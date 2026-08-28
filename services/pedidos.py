@@ -121,6 +121,18 @@ _COLUNAS_ADICIONAIS: list[tuple[str, str]] = [
     # rastreabilidade e poder mandar o e-mail explicando pro cliente.
     ("excluido_em", "TEXT"),
     ("excluido_motivo", "TEXT"),
+    # Inscricao Estadual do cliente PJ (opcional -- so faz sentido pra
+    # tipo_pessoa="juridica", ver app.py:_cliente_valido e
+    # static/js/carrinho_pagina.js). Os tres campos sao mutuamente
+    # exclusivos na pratica (isento nunca guarda numero de IE) mas
+    # gravados separados porque "isento" e "nao contribuinte" sao
+    # categorias fiscais distintas pra nota fiscal (indicador de IE da
+    # NFe: 1=contribuinte com IE, 2=isento, 9=nao contribuinte -- uma
+    # entidade nao-contribuinte AINDA pode ter numero de IE, por isso
+    # nao da pra usar so um campo booleano -- ver conversa).
+    ("cliente_inscricao_estadual", "TEXT"),
+    ("cliente_ie_isento", "INTEGER NOT NULL DEFAULT 0"),
+    ("cliente_ie_nao_contribuinte", "INTEGER NOT NULL DEFAULT 0"),
 ]
 
 # Fluxo de status depois de "pago" -- alteravel manualmente pelo painel
@@ -201,6 +213,7 @@ def criar_pedido(
             INSERT INTO pedidos (
                 token, codigo, status, itens, subtotal, frete_descricao, frete_preco, frete_prazo_dias, total,
                 cliente_nome, cliente_tipo_pessoa, cliente_documento, cliente_telefone, cliente_email,
+                cliente_inscricao_estadual, cliente_ie_isento, cliente_ie_nao_contribuinte,
                 endereco_cep, endereco_logradouro, endereco_numero, endereco_complemento,
                 endereco_bairro, endereco_cidade, endereco_uf,
                 endereco_destinatario_nome, endereco_destinatario_tipo_pessoa, endereco_destinatario_documento,
@@ -208,7 +221,7 @@ def criar_pedido(
                 endereco_destinatario_complemento, endereco_destinatario_bairro, endereco_destinatario_cidade,
                 endereco_destinatario_uf,
                 criado_em
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
             (
                 token,
@@ -225,6 +238,9 @@ def criar_pedido(
                 cliente.get("documento", ""),
                 cliente.get("telefone", ""),
                 cliente.get("email", ""),
+                cliente.get("inscricao_estadual", ""),
+                int(bool(cliente.get("ie_isento"))),
+                int(bool(cliente.get("ie_nao_contribuinte"))),
                 endereco.get("cep", ""),
                 endereco.get("logradouro", ""),
                 endereco.get("numero", ""),
@@ -466,6 +482,7 @@ def confirmar_venda_manual(
                 status = 'pago', pago_em = ?,
                 cliente_nome = ?, cliente_tipo_pessoa = ?, cliente_documento = ?,
                 cliente_telefone = ?, cliente_email = ?,
+                cliente_inscricao_estadual = ?, cliente_ie_isento = ?, cliente_ie_nao_contribuinte = ?,
                 endereco_cep = ?, endereco_logradouro = ?, endereco_numero = ?, endereco_complemento = ?,
                 endereco_bairro = ?, endereco_cidade = ?, endereco_uf = ?,
                 endereco_destinatario_nome = ?, endereco_destinatario_tipo_pessoa = ?,
@@ -482,6 +499,8 @@ def confirmar_venda_manual(
                 agora,
                 cliente.get("nome", ""), cliente.get("tipo_pessoa", ""), cliente.get("documento", ""),
                 cliente.get("telefone", ""), cliente.get("email", ""),
+                cliente.get("inscricao_estadual", ""),
+                int(bool(cliente.get("ie_isento"))), int(bool(cliente.get("ie_nao_contribuinte"))),
                 endereco.get("cep", ""), endereco.get("logradouro", ""), endereco.get("numero", ""),
                 endereco.get("complemento", ""), endereco.get("bairro", ""), endereco.get("cidade", ""),
                 endereco.get("uf", ""),

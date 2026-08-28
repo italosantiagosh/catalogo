@@ -19,13 +19,94 @@ def _corpo_valido(**overrides):
     base = dict(
         itens=[{"chave_preco": "16mm", "quantidade": 10, "produtoNome": "São José", "modeloNome": "Modelo 1"}],
         frete={"texto": "Correios PAC — R$ 10,00", "preco": 10.0},
-        cliente={"nome": "Maria Teste", "tipo_pessoa": "fisica", "documento": "12345678900",
+        cliente={"nome": "Maria Teste", "tipo_pessoa": "fisica", "documento": "11144477735",
                  "telefone": "84999999999", "email": "maria@example.com"},
         endereco={"cep": "59000000", "logradouro": "Rua Teste", "numero": "100", "complemento": "",
                   "bairro": "Centro", "cidade": "Natal", "uf": "RN"},
     )
     base.update(overrides)
     return base
+
+
+def test_criar_pedido_com_cpf_invalido_400(client):
+    corpo = _corpo_valido(cliente={
+        "nome": "Maria Teste", "tipo_pessoa": "fisica", "documento": "11111111111",
+        "telefone": "84999999999", "email": "maria@example.com",
+    })
+    resposta = client.post("/api/pedido/criar", json=corpo)
+    assert resposta.status_code == 400
+    assert "CPF" in resposta.get_json()["erro"]
+
+
+def test_criar_pedido_com_cnpj_invalido_400(client):
+    corpo = _corpo_valido(cliente={
+        "nome": "Loja Teste", "tipo_pessoa": "juridica", "documento": "11222333000182",
+        "telefone": "84999999999", "email": "loja@example.com",
+    })
+    resposta = client.post("/api/pedido/criar", json=corpo)
+    assert resposta.status_code == 400
+    assert "CNPJ" in resposta.get_json()["erro"]
+
+
+def test_criar_pedido_com_cnpj_valido_e_ie_isento(client):
+    with patch("app.criar_link_pagamento", return_value={"url": "https://checkout.infinitepay.io/abc"}):
+        corpo = _corpo_valido(cliente={
+            "nome": "Loja Teste", "tipo_pessoa": "juridica", "documento": "11222333000181",
+            "telefone": "84999999999", "email": "loja@example.com",
+            "ie_isento": True, "inscricao_estadual": "123456",  # deve ser ignorado, isento nao guarda numero
+        })
+        criado = client.post("/api/pedido/criar", json=corpo).get_json()
+
+    pedido = pedidos.obter_pedido(criado["token"])
+    assert pedido["cliente_ie_isento"] == 1
+    assert pedido["cliente_inscricao_estadual"] == ""
+
+
+def test_criar_pedido_com_cnpj_valido_e_inscricao_estadual(client):
+    with patch("app.criar_link_pagamento", return_value={"url": "https://checkout.infinitepay.io/abc"}):
+        corpo = _corpo_valido(cliente={
+            "nome": "Loja Teste", "tipo_pessoa": "juridica", "documento": "11222333000181",
+            "telefone": "84999999999", "email": "loja@example.com",
+            "inscricao_estadual": "123.456.789", "ie_nao_contribuinte": True,
+        })
+        criado = client.post("/api/pedido/criar", json=corpo).get_json()
+
+    pedido = pedidos.obter_pedido(criado["token"])
+    assert pedido["cliente_inscricao_estadual"] == "123.456.789"
+    assert pedido["cliente_ie_isento"] == 0
+    assert pedido["cliente_ie_nao_contribuinte"] == 1
+
+
+def test_criar_pedido_com_destinatario_cpf_invalido_400(client):
+    corpo = _corpo_valido(endereco={
+        "cep": "59000000", "logradouro": "Rua Teste", "numero": "100", "complemento": "",
+        "bairro": "Centro", "cidade": "Natal", "uf": "RN",
+        "destinatario_nome": "Joao", "destinatario_tipo_pessoa": "fisica", "destinatario_documento": "11111111111",
+        "destinatario_cep": "59000000", "destinatario_logradouro": "Rua X", "destinatario_numero": "1",
+        "destinatario_bairro": "Centro", "destinatario_cidade": "Natal", "destinatario_uf": "RN",
+    })
+    resposta = client.post("/api/pedido/criar", json=corpo)
+    assert resposta.status_code == 400
+    assert "CPF" in resposta.get_json()["erro"]
+
+
+def test_admin_detalhe_mostra_documento_e_ie(client, monkeypatch):
+    import app as app_module
+
+    monkeypatch.setattr(app_module, "ADMIN_USER", "admin")
+    monkeypatch.setattr(app_module, "ADMIN_PASSWORD", "segredo123")
+    corpo = _corpo_valido(cliente={
+        "nome": "Loja Teste", "tipo_pessoa": "juridica", "documento": "11222333000181",
+        "telefone": "84999999999", "email": "loja@example.com",
+        "inscricao_estadual": "123456", "ie_nao_contribuinte": True,
+    })
+    with patch("app.criar_link_pagamento", return_value={"url": "https://checkout.infinitepay.io/abc"}):
+        criado = client.post("/api/pedido/criar", json=corpo).get_json()
+
+    detalhe = client.get(f"/admin/pedidos/{criado['token']}", auth=("admin", "segredo123")).get_data(as_text=True)
+    assert "CNPJ: 11222333000181" in detalhe
+    assert "IE: 123456" in detalhe
+    assert "não contribuinte de ICMS" in detalhe
 
 
 def test_criar_pedido_com_link_mockado(client):

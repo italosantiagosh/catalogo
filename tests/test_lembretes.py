@@ -20,7 +20,7 @@ def _corpo_valido(**overrides):
     base = dict(
         itens=[{"chave_preco": "16mm", "quantidade": 10, "produtoNome": "São José", "modeloNome": "Modelo 1"}],
         frete={"texto": "Correios PAC — R$ 10,00", "preco": 10.0},
-        cliente={"nome": "Maria Teste", "tipo_pessoa": "fisica", "documento": "12345678900",
+        cliente={"nome": "Maria Teste", "tipo_pessoa": "fisica", "documento": "11144477735",
                  "telefone": "84999999999", "email": "maria@example.com"},
         endereco={"cep": "59000000", "logradouro": "Rua Teste", "numero": "100", "complemento": "",
                   "bairro": "Centro", "cidade": "Natal", "uf": "RN"},

@@ -19,7 +19,7 @@ def _corpo_valido(**overrides):
     base = dict(
         itens=[{"chave_preco": "16mm", "quantidade": 10, "produtoNome": "São José", "modeloNome": "Modelo 1"}],
         frete={"texto": "Correios PAC — R$ 10,00", "preco": 10.0},
-        cliente={"nome": "Maria Teste", "tipo_pessoa": "fisica", "documento": "12345678900",
+        cliente={"nome": "Maria Teste", "tipo_pessoa": "fisica", "documento": "11144477735",
                  "telefone": "84999999999", "email": "maria@example.com"},
         endereco={"cep": "59000000", "logradouro": "Rua Teste", "numero": "100", "complemento": "",
                   "bairro": "Centro", "cidade": "Natal", "uf": "RN"},
@@ -277,7 +277,7 @@ def test_confirmar_venda_manual_promove_lead_pra_pago(client, monkeypatch):
         resposta = client.post(
             f"/admin/pedidos/{lead['token']}/confirmar-venda",
             data={
-                "cliente_nome": "Maria Teste", "cliente_documento": "12345678900",
+                "cliente_nome": "Maria Teste", "cliente_documento": "11144477735",
                 "cliente_telefone": "84999999999", "cliente_email": "maria@example.com",
                 "endereco_cep": "59000000", "endereco_logradouro": "Rua Teste", "endereco_numero": "100",
                 "endereco_bairro": "Centro", "endereco_cidade": "Natal", "endereco_uf": "RN",

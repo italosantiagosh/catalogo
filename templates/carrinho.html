@@ -80,6 +80,22 @@
 
         <label for="cliente-documento" id="label-cliente-documento">CPF</label>
         <input type="text" id="cliente-documento" inputmode="numeric" autocomplete="off">
+        <p class="campo-erro" id="erro-cliente-documento" hidden></p>
+
+        <div id="cliente-ie-wrap" hidden>
+          <label for="cliente-ie">Inscrição Estadual (opcional)</label>
+          <input type="text" id="cliente-ie" autocomplete="off">
+          <div class="cadastro-ie-opcoes">
+            <label class="cadastro-checkbox">
+              <input type="checkbox" id="cliente-ie-isento">
+              Isento de Inscrição Estadual
+            </label>
+            <label class="cadastro-checkbox">
+              <input type="checkbox" id="cliente-ie-nao-contribuinte">
+              Não contribuinte de ICMS
+            </label>
+          </div>
+        </div>
 
         <label for="cliente-telefone">Telefone/WhatsApp</label>
         <input type="text" id="cliente-telefone" inputmode="numeric" autocomplete="tel">
@@ -141,6 +157,7 @@
 
         <label for="destinatario-documento" id="label-destinatario-documento">CPF</label>
         <input type="text" id="destinatario-documento" inputmode="numeric" autocomplete="off">
+        <p class="campo-erro" id="erro-destinatario-documento" hidden></p>
 
         <p class="cadastro-instrucao-destinatario">
           Se a entrega for num endereço diferente do seu (ex: outra casa, outra cidade),

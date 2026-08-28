@@ -2048,6 +2048,22 @@ input[type="file"] {
   border-top: 1px dashed var(--border);
 }
 
+.campo-erro {
+  margin: -8px 0 0;
+  font-size: 0.78rem;
+  color: #a13a2a;
+}
+
+.cadastro-ie-opcoes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 20px;
+}
+
+.cadastro-ie-opcoes .cadastro-checkbox {
+  margin-top: 8px;
+}
+
 .cadastro-instrucao-destinatario {
   font-size: 0.8rem;
   color: var(--muted);

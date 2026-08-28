@@ -37,7 +37,7 @@ def test_post_admin_de_outra_origem_e_bloqueado(client, monkeypatch):
         subtotal=50.0,
         frete_descricao="Correios PAC",
         frete_preco=10.0,
-        cliente={"nome": "Maria", "tipo_pessoa": "fisica", "documento": "123", "telefone": "84999999999", "email": "m@example.com"},
+        cliente={"nome": "Maria", "tipo_pessoa": "fisica", "documento": "11144477735", "telefone": "84999999999", "email": "m@example.com"},
         endereco={"cep": "59000000", "logradouro": "Rua", "numero": "1", "complemento": "", "bairro": "Centro", "cidade": "Natal", "uf": "RN"},
     )
     resposta = client.post(
@@ -57,7 +57,7 @@ def test_post_admin_de_mesma_origem_funciona(client, monkeypatch):
         subtotal=50.0,
         frete_descricao="Correios PAC",
         frete_preco=10.0,
-        cliente={"nome": "Maria", "tipo_pessoa": "fisica", "documento": "123", "telefone": "84999999999", "email": "m@example.com"},
+        cliente={"nome": "Maria", "tipo_pessoa": "fisica", "documento": "11144477735", "telefone": "84999999999", "email": "m@example.com"},
         endereco={"cep": "59000000", "logradouro": "Rua", "numero": "1", "complemento": "", "bairro": "Centro", "cidade": "Natal", "uf": "RN"},
     )
     resposta = client.post(
@@ -80,7 +80,7 @@ def test_post_admin_sem_origin_nem_referer_ainda_funciona(client, monkeypatch):
         subtotal=50.0,
         frete_descricao="Correios PAC",
         frete_preco=10.0,
-        cliente={"nome": "Maria", "tipo_pessoa": "fisica", "documento": "123", "telefone": "84999999999", "email": "m@example.com"},
+        cliente={"nome": "Maria", "tipo_pessoa": "fisica", "documento": "11144477735", "telefone": "84999999999", "email": "m@example.com"},
         endereco={"cep": "59000000", "logradouro": "Rua", "numero": "1", "complemento": "", "bairro": "Centro", "cidade": "Natal", "uf": "RN"},
     )
     resposta = client.post(
@@ -100,7 +100,7 @@ def test_webhook_infinitepay_exige_chave_quando_configurada(client, monkeypatch)
             json={
                 "itens": [{"chave_preco": "16mm", "quantidade": 10, "produtoNome": "São José", "modeloNome": "Modelo 1"}],
                 "frete": {"texto": "Correios PAC", "preco": 10.0},
-                "cliente": {"nome": "Maria", "tipo_pessoa": "fisica", "documento": "123",
+                "cliente": {"nome": "Maria", "tipo_pessoa": "fisica", "documento": "11144477735",
                             "telefone": "84999999999", "email": "m@example.com"},
                 "endereco": {"cep": "59000000", "logradouro": "Rua", "numero": "1", "complemento": "",
                              "bairro": "Centro", "cidade": "Natal", "uf": "RN"},

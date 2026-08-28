@@ -24,6 +24,11 @@
   const labelClienteDocumento = document.getElementById('label-cliente-documento');
   const clienteNomeInput = document.getElementById('cliente-nome');
   const clienteDocumentoInput = document.getElementById('cliente-documento');
+  const erroClienteDocumentoEl = document.getElementById('erro-cliente-documento');
+  const clienteIeWrap = document.getElementById('cliente-ie-wrap');
+  const clienteIeInput = document.getElementById('cliente-ie');
+  const clienteIeIsentoCheckbox = document.getElementById('cliente-ie-isento');
+  const clienteIeNaoContribuinteCheckbox = document.getElementById('cliente-ie-nao-contribuinte');
   const clienteTelefoneInput = document.getElementById('cliente-telefone');
   const clienteEmailInput = document.getElementById('cliente-email');
   const enderecoCepProprioWrap = document.getElementById('endereco-cep-proprio-wrap');
@@ -42,6 +47,7 @@
   const destinatarioTipoPessoaJuridica = document.getElementById('destinatario-tipo-pessoa-juridica');
   const labelDestinatarioDocumento = document.getElementById('label-destinatario-documento');
   const destinatarioDocumentoInput = document.getElementById('destinatario-documento');
+  const erroDestinatarioDocumentoEl = document.getElementById('erro-destinatario-documento');
   const destinatarioCepInput = document.getElementById('destinatario-cep');
   const btnBuscarCepDestinatario = document.getElementById('btn-buscar-cep-destinatario');
   const destinatarioLogradouroInput = document.getElementById('destinatario-logradouro');
@@ -61,6 +67,47 @@
   // esse tipo de frete e trocar os rotulos da timeline ("enviado" nao
   // faz sentido pra quem vai retirar -- ver conversa).
   const FRETE_RETIRADA_TEXTO = 'Retirada no local';
+
+  // mesmo algoritmo (digito verificador modulo-11 da Receita Federal)
+  // que services/documentos.py -- valida SO o formato/digito, nao
+  // confirma que o CPF/CNPJ existe cadastrado de verdade (ver
+  // conversa "verificar CPF ou CNPJ...pra saber se e existente" --
+  // isso e´ sobre pegar erro de digitacao, uma consulta real exigiria
+  // API paga de terceiro). O servidor SEMPRE reconfere isso tambem
+  // (nunca confia so na validacao do navegador).
+  function cpfValido(cpf) {
+    const digitos = (cpf || '').replace(/\D/g, '');
+    if (digitos.length !== 11 || /^(\d)\1{10}$/.test(digitos)) return false;
+    for (const i of [9, 10]) {
+      let soma = 0;
+      for (let num = 0; num < i; num++) soma += parseInt(digitos[num], 10) * ((i + 1) - num);
+      const digito = ((soma * 10) % 11) % 10;
+      if (digito !== parseInt(digitos[i], 10)) return false;
+    }
+    return true;
+  }
+
+  function cnpjValido(cnpj) {
+    const digitos = (cnpj || '').replace(/\D/g, '');
+    if (digitos.length !== 14 || /^(\d)\1{13}$/.test(digitos)) return false;
+    const pesos1 = [5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2];
+    const pesos2 = [6, 5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2];
+    let soma1 = 0;
+    for (let i = 0; i < 12; i++) soma1 += parseInt(digitos[i], 10) * pesos1[i];
+    let d1 = 11 - (soma1 % 11);
+    d1 = d1 >= 10 ? 0 : d1;
+    if (d1 !== parseInt(digitos[12], 10)) return false;
+    let soma2 = 0;
+    for (let i = 0; i < 13; i++) soma2 += parseInt(digitos[i], 10) * pesos2[i];
+    let d2 = 11 - (soma2 % 11);
+    d2 = d2 >= 10 ? 0 : d2;
+    if (d2 !== parseInt(digitos[13], 10)) return false;
+    return true;
+  }
+
+  function documentoValido(tipoPessoa, documento) {
+    return tipoPessoa === 'juridica' ? cnpjValido(documento) : cpfValido(documento);
+  }
 
   let faixasAnteriores = {};
   let freteAnteriorAtingido = null;
@@ -632,11 +679,32 @@
   // ---- cadastro + pagamento automatico (InfinitePay) ----
 
   function atualizarLabelDocumento() {
-    if (!labelClienteDocumento) return;
-    labelClienteDocumento.textContent = (tipoPessoaJuridica && tipoPessoaJuridica.checked) ? 'CNPJ' : 'CPF';
+    const ehJuridica = tipoPessoaJuridica && tipoPessoaJuridica.checked;
+    if (labelClienteDocumento) labelClienteDocumento.textContent = ehJuridica ? 'CNPJ' : 'CPF';
+    // Inscricao Estadual so faz sentido pra pessoa juridica (ver
+    // conversa) -- some junto quando volta pra fisica, senao ficaria
+    // um campo de IE preenchido junto de um CPF.
+    if (clienteIeWrap) clienteIeWrap.hidden = !ehJuridica;
+    if (!ehJuridica && clienteIeInput) clienteIeInput.value = '';
+    if (!ehJuridica && clienteIeIsentoCheckbox) clienteIeIsentoCheckbox.checked = false;
+    if (!ehJuridica && clienteIeNaoContribuinteCheckbox) clienteIeNaoContribuinteCheckbox.checked = false;
+    if (erroClienteDocumentoEl) erroClienteDocumentoEl.hidden = true;
   }
   if (tipoPessoaFisica) tipoPessoaFisica.addEventListener('change', atualizarLabelDocumento);
   if (tipoPessoaJuridica) tipoPessoaJuridica.addEventListener('change', atualizarLabelDocumento);
+
+  // "Isento" e "informar o numero da IE" sao mutuamente exclusivos --
+  // marcar isento fecha/limpa o campo (ver conversa: "botão de marcar
+  // isento, vai fechar o campo de IE"). "Não contribuinte" e´
+  // independente: uma empresa pode ter IE e ainda assim ser
+  // classificada como não contribuinte de ICMS (ver
+  // services/pedidos.py -- os dois sao gravados separados).
+  if (clienteIeIsentoCheckbox && clienteIeInput) {
+    clienteIeIsentoCheckbox.addEventListener('change', () => {
+      clienteIeInput.disabled = clienteIeIsentoCheckbox.checked;
+      if (clienteIeIsentoCheckbox.checked) clienteIeInput.value = '';
+    });
+  }
 
   if (checkboxEntregaOutraPessoa && camposDestinatarioEl) {
     checkboxEntregaOutraPessoa.addEventListener('change', () => {
@@ -706,13 +774,19 @@
         return;
       }
 
+      const clienteEhJuridica = tipoPessoaJuridica && tipoPessoaJuridica.checked;
       const cliente = {
         nome: (clienteNomeInput.value || '').trim(),
-        tipo_pessoa: (tipoPessoaJuridica && tipoPessoaJuridica.checked) ? 'juridica' : 'fisica',
+        tipo_pessoa: clienteEhJuridica ? 'juridica' : 'fisica',
         documento: (clienteDocumentoInput.value || '').trim(),
         telefone: (clienteTelefoneInput.value || '').trim(),
         email: (clienteEmailInput.value || '').trim(),
       };
+      if (clienteEhJuridica) {
+        cliente.ie_isento = !!(clienteIeIsentoCheckbox && clienteIeIsentoCheckbox.checked);
+        cliente.ie_nao_contribuinte = !!(clienteIeNaoContribuinteCheckbox && clienteIeNaoContribuinteCheckbox.checked);
+        cliente.inscricao_estadual = cliente.ie_isento ? '' : (clienteIeInput ? clienteIeInput.value.trim() : '');
+      }
       // com entrega-outra-pessoa marcado, o CEP do comprador vem do
       // campo dedicado que abre dentro do cadastro (endereco-cep-proprio)
       // -- nunca do CEP la em cima, que nesse caso serve so pra estimar
@@ -734,6 +808,17 @@
         mostrarToast('⚠️ Preencha seus dados completos antes de pagar.');
         return;
       }
+      if (erroClienteDocumentoEl) erroClienteDocumentoEl.hidden = true;
+      if (!documentoValido(cliente.tipo_pessoa, cliente.documento)) {
+        const rotulo = cliente.tipo_pessoa === 'juridica' ? 'CNPJ' : 'CPF';
+        mostrarToast(`⚠️ ${rotulo} inválido. Confira o número digitado.`);
+        if (erroClienteDocumentoEl) {
+          erroClienteDocumentoEl.textContent = `${rotulo} inválido.`;
+          erroClienteDocumentoEl.hidden = false;
+        }
+        clienteDocumentoInput.focus();
+        return;
+      }
       if (!endereco.cep || !endereco.logradouro || !endereco.numero || !endereco.bairro || !endereco.cidade || !endereco.uf) {
         mostrarToast('⚠️ Preencha seu CEP e endereço completo antes de pagar.');
         return;
@@ -746,6 +831,17 @@
         endereco.destinatario_documento = (destinatarioDocumentoInput.value || '').trim();
         if (!endereco.destinatario_nome || !endereco.destinatario_documento) {
           mostrarToast('⚠️ Preencha o nome e o documento de quem vai receber.');
+          return;
+        }
+        if (erroDestinatarioDocumentoEl) erroDestinatarioDocumentoEl.hidden = true;
+        if (!documentoValido(endereco.destinatario_tipo_pessoa, endereco.destinatario_documento)) {
+          const rotuloDest = endereco.destinatario_tipo_pessoa === 'juridica' ? 'CNPJ' : 'CPF';
+          mostrarToast(`⚠️ ${rotuloDest} de quem recebe é inválido. Confira o número digitado.`);
+          if (erroDestinatarioDocumentoEl) {
+            erroDestinatarioDocumentoEl.textContent = `${rotuloDest} inválido.`;
+            erroDestinatarioDocumentoEl.hidden = false;
+          }
+          destinatarioDocumentoInput.focus();
           return;
         }
 
