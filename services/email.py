@@ -15,12 +15,22 @@ API da Brevo: https://developers.brevo.com/docs/send-a-transactional-email
 
 from __future__ import annotations
 
+import html
+
 import requests
 
 from config import BREVO_API_KEY, EMAIL_NOTIFICACAO_VENDA, EMAIL_REMETENTE, EMAIL_REMETENTE_NOME
 from services.pedidos import previsoes_do_pedido
 
 API_URL = "https://api.brevo.com/v3/smtp/email"
+
+# Todo campo que vem do que o cliente digitou no checkout (nome,
+# telefone, descricao/frete escolhidos) ou que o admin digita no painel
+# (motivo de exclusao, rastreio) passa por aqui antes de entrar num
+# f-string de HTML de e-mail -- sem isso, dava pra injetar HTML no
+# proprio e-mail de confirmacao do cliente OU no aviso interno de nova
+# venda que o dono le (ver conversa "tornar o site e apis seguros").
+_esc = html.escape
 
 
 def _preco(valor: float) -> str:
@@ -29,7 +39,7 @@ def _preco(valor: float) -> str:
 
 def _itens_html(pedido: dict) -> str:
     return "".join(
-        f"<li>{item.get('descricao') or item.get('chave_preco', '')} — {item['quantidade']}x</li>"
+        f"<li>{_esc(item.get('descricao') or item.get('chave_preco', ''))} — {item['quantidade']}x</li>"
         for item in pedido["itens"]
     )
 
@@ -71,10 +81,10 @@ def _corpo_html_confirmacao(pedido: dict, url_pedido: str) -> str:
     else:
         previsao_html = "<p>🛠️ Seu pedido já está em produção -- prazo de até <strong>5 dias úteis</strong> antes do envio.</p>"
     return (
-        f"<p>Olá, {pedido.get('cliente_nome', '')}! Recebemos seu pagamento. 🎉</p>"
+        f"<p>Olá, {_esc(pedido.get('cliente_nome', ''))}! Recebemos seu pagamento. 🎉</p>"
         f"<p><strong>Pedido #{pedido['codigo']}</strong></p>"
         f"<ul>{_itens_html(pedido)}</ul>"
-        f"<p>Frete ({pedido.get('frete_descricao', '')}): {_preco(pedido.get('frete_preco', 0))}</p>"
+        f"<p>Frete ({_esc(pedido.get('frete_descricao', ''))}): {_preco(pedido.get('frete_preco', 0))}</p>"
         f"<p><strong>Total: {_preco(pedido['total'])}</strong></p>"
         f"{previsao_html}"
         f"<p>Acompanhe seu pedido a qualquer momento:</p>"
@@ -85,10 +95,10 @@ def _corpo_html_confirmacao(pedido: dict, url_pedido: str) -> str:
 
 def _corpo_html_link_pagamento(pedido: dict, url_pagamento: str, url_acompanhamento: str) -> str:
     return (
-        f"<p>Olá, {pedido.get('cliente_nome', '')}! Recebemos seu pedido, falta só o pagamento pra confirmar.</p>"
+        f"<p>Olá, {_esc(pedido.get('cliente_nome', ''))}! Recebemos seu pedido, falta só o pagamento pra confirmar.</p>"
         f"<p><strong>Pedido #{pedido['codigo']}</strong></p>"
         f"<ul>{_itens_html(pedido)}</ul>"
-        f"<p>Frete ({pedido.get('frete_descricao', '')}): {_preco(pedido.get('frete_preco', 0))}</p>"
+        f"<p>Frete ({_esc(pedido.get('frete_descricao', ''))}): {_preco(pedido.get('frete_preco', 0))}</p>"
         f"<p><strong>Total: {_preco(pedido['total'])}</strong></p>"
         f"{_botao(url_pagamento, '💳 Pagar agora (Pix ou cartão)')}"
         f"<p>Se esse link não abrir mais (expirou), é só acompanhar seu pedido "
@@ -148,7 +158,7 @@ def enviar_link_pagamento(pedido: dict, url_pagamento: str, url_acompanhamento: 
 
 def _corpo_html_lembrete(pedido: dict, url_pagamento: str, url_acompanhamento: str) -> str:
     return (
-        f"<p>Olá, {pedido.get('cliente_nome', '')}! Notamos que seu pedido ainda não foi pago.</p>"
+        f"<p>Olá, {_esc(pedido.get('cliente_nome', ''))}! Notamos que seu pedido ainda não foi pago.</p>"
         f"<p><strong>Pedido #{pedido['codigo']}</strong></p>"
         f"<ul>{_itens_html(pedido)}</ul>"
         f"<p><strong>Total: {_preco(pedido['total'])}</strong></p>"
@@ -175,14 +185,14 @@ def _corpo_html_pedido_enviado(
     pedido: dict, codigo_rastreio: str, link_rastreio: str, url_acompanhamento: str, transportadora: str = ""
 ) -> str:
     rastreio_html = (
-        f'<p>Código de rastreio: <strong>{codigo_rastreio}</strong><br>'
-        f'<a href="{link_rastreio}">{link_rastreio}</a></p>'
+        f'<p>Código de rastreio: <strong>{_esc(codigo_rastreio)}</strong><br>'
+        f'<a href="{_esc(link_rastreio)}">{_esc(link_rastreio)}</a></p>'
         if link_rastreio
-        else f"<p>Código de rastreio: <strong>{codigo_rastreio}</strong></p>"
+        else f"<p>Código de rastreio: <strong>{_esc(codigo_rastreio)}</strong></p>"
     )
-    transportadora_html = f"<p>Transportadora: <strong>{transportadora}</strong></p>" if transportadora else ""
+    transportadora_html = f"<p>Transportadora: <strong>{_esc(transportadora)}</strong></p>" if transportadora else ""
     return (
-        f"<p>Olá, {pedido.get('cliente_nome', '')}! Seu pedido foi enviado. 📦</p>"
+        f"<p>Olá, {_esc(pedido.get('cliente_nome', ''))}! Seu pedido foi enviado. 📦</p>"
         f"<p><strong>Pedido #{pedido['codigo']}</strong></p>"
         f"<ul>{_itens_html(pedido)}</ul>"
         f"{transportadora_html}"
@@ -212,7 +222,7 @@ def enviar_pedido_enviado(
 
 def _corpo_html_pedido_cancelado(pedido: dict, url_catalogo: str) -> str:
     return (
-        f"<p>Olá, {pedido.get('cliente_nome', '')}! Seu pedido #{pedido['codigo']} não foi pago a "
+        f"<p>Olá, {_esc(pedido.get('cliente_nome', ''))}! Seu pedido #{pedido['codigo']} não foi pago a "
         f"tempo e acabou sendo cancelado automaticamente.</p>"
         f"<p>Mas as medalhas continuam esperando por você -- e cada uma carrega uma história de fé "
         f"que vale a pena levar adiante. 🙏</p>"
@@ -231,7 +241,7 @@ def _corpo_html_oportunidade_upsell(pedido: dict, oportunidades: list[dict], url
         for o in oportunidades
     )
     return (
-        f"<p>Olá, {pedido.get('cliente_nome', '')}! Esperamos que esteja aproveitando as peças do "
+        f"<p>Olá, {_esc(pedido.get('cliente_nome', ''))}! Esperamos que esteja aproveitando as peças do "
         f"pedido #{pedido['codigo']}.</p>"
         f"<p>Separamos uma oportunidade pro seu próximo pedido:</p>"
         f"<ul>{linhas_oportunidade}</ul>"
@@ -259,7 +269,7 @@ def enviar_oportunidade_upsell(pedido: dict, oportunidades: list[dict], url_cata
 
 def _corpo_html_pedido_avaliacao(pedido: dict, produto_nome: str, url_produto: str) -> str:
     return (
-        f"<p>Olá, {pedido.get('cliente_nome', '')}! Já faz um tempinho desde o seu pedido "
+        f"<p>Olá, {_esc(pedido.get('cliente_nome', ''))}! Já faz um tempinho desde o seu pedido "
         f"#{pedido['codigo']} -- esperamos que as peças estejam alegrando o dia a dia de quem "
         f"recebeu. 🙏</p>"
         f"<p>Poderia contar pra gente como foi sua experiência com a <strong>{produto_nome}</strong>? "
@@ -300,9 +310,9 @@ def enviar_pedido_cancelado(pedido: dict, url_catalogo: str) -> dict:
 
 def _corpo_html_pedido_excluido(pedido: dict, motivo: str, url_catalogo: str) -> str:
     return (
-        f"<p>Olá, {pedido.get('cliente_nome', '')}! Precisamos te avisar que seu pedido "
+        f"<p>Olá, {_esc(pedido.get('cliente_nome', ''))}! Precisamos te avisar que seu pedido "
         f"#{pedido['codigo']} foi cancelado pela nossa equipe.</p>"
-        f"<p><strong>Motivo:</strong> {motivo}</p>"
+        f"<p><strong>Motivo:</strong> {_esc(motivo)}</p>"
         f"<p>Se você já tinha pago e ainda não recebeu o reembolso, ou tiver qualquer dúvida "
         f"sobre isso, é só chamar no WhatsApp que a gente resolve.</p>"
         f"{_botao(url_catalogo, '👉 Ver o catálogo e fazer um novo pedido')}"
@@ -328,7 +338,7 @@ def _corpo_html_notificacao_venda(pedido: dict, url_admin: str) -> str:
         f"<p>🎉 Nova venda confirmada!</p>"
         f"<p><strong>Pedido #{pedido['codigo']}</strong> -- {_preco(pedido['total'])} "
         f"({pedido.get('forma_pagamento', '')})</p>"
-        f"<p>Cliente: {pedido.get('cliente_nome', '')} -- {pedido.get('cliente_telefone', '')}</p>"
+        f"<p>Cliente: {_esc(pedido.get('cliente_nome', ''))} -- {_esc(pedido.get('cliente_telefone', ''))}</p>"
         f"<ul>{_itens_html(pedido)}</ul>"
         f"{_botao(url_admin, '👉 Ver pedido no painel')}"
     )

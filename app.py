@@ -41,11 +41,13 @@ import base64
 import csv
 import hmac
 import io
+import os
 import secrets
 import tempfile
 import time
 from datetime import datetime, timezone
 from pathlib import Path
+from urllib.parse import urlsplit
 from xml.sax.saxutils import escape as escapar_xml
 
 from flask import Flask, Response, abort, jsonify, redirect, render_template, request, send_file, url_for
@@ -81,6 +83,7 @@ from config import (
     PROVA_SOCIAL,
     UPSELL_HORAS_APOS_PAGAMENTO,
     VIDEO_APRESENTACAO_URL,
+    WEBHOOK_INFINITEPAY_SECRET,
     WHATSAPP_NUMBER,
 )
 import services.analytics as analytics
@@ -151,6 +154,63 @@ from services.pricing import CHAVES_PRECO, calcular_carrinho, preco_varejo
 app = Flask(__name__)
 app.config["MAX_CONTENT_LENGTH"] = 60 * 1024 * 1024  # 60MB no total do upload
 
+# Atras do proxy do Render (TLS termina la, chega no gunicorn como HTTP
+# "puro") -- sem isso, request.scheme/url_for(_external=True) nao sabem
+# que a conexao original era https (afeta os links https:// mandados
+# por e-mail e pro checkout da InfinitePay).
+from werkzeug.middleware.proxy_fix import ProxyFix  # noqa: E402
+
+app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1)
+
+
+@app.after_request
+def _cabecalhos_seguranca(resposta: Response) -> Response:
+    """Headers de seguranca basicos (nenhum deles muda comportamento pra
+    quem usa o site normalmente) -- ver conversa "tornar o site e apis
+    seguros". CSP permite 'unsafe-inline' pra scripts/estilos porque o
+    site usa varios <script> inline (ex: window.WHATSAPP_NUMBER em
+    carrinho.html) -- nao e´ protecao completa contra XSS, mas fecha a
+    porta mais comum de abuso (carregar/mandar dado pra dominio externo
+    nao listado)."""
+    resposta.headers["X-Content-Type-Options"] = "nosniff"
+    resposta.headers["X-Frame-Options"] = "DENY"
+    resposta.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+    resposta.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
+    resposta.headers["Content-Security-Policy"] = (
+        "default-src 'self'; "
+        "script-src 'self' 'unsafe-inline' https://www.googletagmanager.com; "
+        "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
+        "font-src 'self' https://fonts.gstatic.com; "
+        "img-src 'self' data: https:; "
+        "connect-src 'self' https://viacep.com.br https://www.google-analytics.com https://analytics.google.com; "
+        "frame-ancestors 'none'; "
+        "base-uri 'self'; "
+        "form-action 'self'"
+    )
+    return resposta
+
+
+def _origem_admite_mesma_origem() -> bool:
+    """Confere Origin (ou Referer, quando o navegador nao manda Origin
+    em POST classico de formulario) contra o host da propria request --
+    usado nas rotas admin que MUDAM estado (ver decorator abaixo). O
+    painel usa HTTP Basic (sem cookie de sessao), mas o navegador
+    reenvia a credencial cacheada automaticamente em qualquer request
+    pro mesmo dominio -- inclusive uma vinda de um form em outro site
+    (CSRF classico). Sem sessao/cookie nao da pra usar token CSRF
+    tradicional, entao a defesa aqui e conferir que o pedido realmente
+    veio de uma pagina do proprio site."""
+    origem = request.headers.get("Origin") or request.headers.get("Referer")
+    if not origem:
+        # navegadores modernos sempre mandam Origin em POST -- sem
+        # nenhum dos dois headers, mais provavel ser script/ferramenta
+        # de linha de comando (curl, painel usado por script) do que
+        # navegador real; nao bloqueia esse caso pra nao quebrar
+        # integracoes/uso via API do proprio dono.
+        return True
+    host_pedido = urlsplit(origem).netloc
+    return host_pedido == request.host
+
 
 @app.route("/healthz", methods=["GET"])
 def healthz():
@@ -180,6 +240,16 @@ def _redirecionar_para_dominio_canonico():
         return None
     destino = f"https://{CANONICAL_DOMAIN}{request.full_path if request.query_string else request.path}"
     return redirect(destino, code=301)
+
+
+@app.before_request
+def _bloquear_post_admin_de_outra_origem():
+    """CSRF cross-origin em cima do painel admin (ver
+    _origem_admite_mesma_origem acima) -- so se aplica a POST em rotas
+    /admin/*, que sao sempre mudanca de estado nesse painel (nunca so
+    leitura)."""
+    if request.method == "POST" and request.path.startswith("/admin/") and not _origem_admite_mesma_origem():
+        abort(403)
 
 
 def _dados_organizacao() -> dict:
@@ -1258,7 +1328,10 @@ def _gerar_link_pagamento_para_pedido(pedido: dict, cliente: dict, endereco: dic
         # retorno apos o pagamento -- nunca usado sozinho pra provar que
         # o pedido foi pago de verdade, so o status no banco importa.
         redirect_url=url_for("ver_pedido", token=pedido["token"], obrigado="1", _external=True),
-        webhook_url=url_for("webhook_infinitepay", _external=True),
+        # ?chave=... exigida de volta em webhook_infinitepay (ver
+        # config.WEBHOOK_INFINITEPAY_SECRET) -- sem isso, qualquer POST
+        # com um order_nsu valido conseguia forjar "pagamento confirmado".
+        webhook_url=url_for("webhook_infinitepay", chave=WEBHOOK_INFINITEPAY_SECRET or None, _external=True),
         itens_pagamento=_itens_pagamento_de_pedido(pedido),
         cliente=cliente,
         endereco=endereco,
@@ -1316,6 +1389,11 @@ def webhook_infinitepay():
     (webhook repetido nao reprocessa, ver services.pedidos.marcar_pago),
     entao sempre responde 200 mesmo quando nao ha nada a fazer, pra
     InfinitePay nao ficar reenviando em loop."""
+    if WEBHOOK_INFINITEPAY_SECRET and not hmac.compare_digest(
+        request.args.get("chave", ""), WEBHOOK_INFINITEPAY_SECRET
+    ):
+        abort(404)
+
     dados = request.get_json(silent=True) or {}
     token = str(dados.get("order_nsu", ""))
     pedido = obter_pedido(token) if token else None
@@ -2285,4 +2363,9 @@ if ENABLE_SCHEDULER:
 
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=8000, debug=True)
+    # so pra dev local (producao usa gunicorn, ver Procfile/render.yaml
+    # -- esse bloco nunca roda la). debug=True por padrao pra manter o
+    # fluxo de dev de sempre, mas de olho: nunca rodar `python3 app.py`
+    # direto num ambiente exposto de verdade, o debugger do Werkzeug
+    # permite executar codigo arbitrario.
+    app.run(host="0.0.0.0", port=8000, debug=os.environ.get("FLASK_DEBUG", "1") != "0")

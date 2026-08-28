@@ -111,6 +111,20 @@ VAPID_SUBSCRIBER_EMAIL = os.environ.get("VAPID_SUBSCRIBER_EMAIL", "9djulho@gmail
 ADMIN_USER = os.environ.get("ADMIN_USER", "")
 ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "")
 
+# Segredo compartilhado do webhook de pagamento (ver app.py:webhook_infinitepay
+# e services/infinitepay.py:criar_link_pagamento) -- vai como query string
+# (?chave=...) na webhook_url que a gente manda pra InfinitePay na hora de
+# criar o link de pagamento, e o servidor exige o mesmo valor de volta em
+# toda chamada. Sem isso, qualquer um que descobrisse o token de um pedido
+# (aparece na URL de acompanhamento, /pedido/<token>) podia forjar uma
+# chamada de webhook e marcar o proprio pedido como pago sem ter pago de
+# verdade. NUNCA gravar o valor aqui -- variavel de ambiente
+# WEBHOOK_INFINITEPAY_SECRET no servidor (gere algo aleatorio longo, ex:
+# `python3 -c "import secrets; print(secrets.token_urlsafe(32))"`). Sem
+# configurar, o webhook continua aceitando qualquer chamada (comportamento
+# de antes) -- configure em producao assim que possivel.
+WEBHOOK_INFINITEPAY_SECRET = os.environ.get("WEBHOOK_INFINITEPAY_SECRET", "")
+
 # Lembrete automatico pra pedido criado (pendente) que nao foi pago
 # depois de um tempo -- job agendado com APScheduler (ver app.py).
 # Desligado por padrao -- so liga em producao, setando

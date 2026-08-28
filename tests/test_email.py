@@ -67,6 +67,20 @@ def test_com_previsao_de_entrega_mostra_aviso_de_transportadora(monkeypatch):
     assert "prazo de entrega é uma estimativa da transportadora" in corpo
 
 
+def test_nome_do_cliente_com_html_e_escapado(monkeypatch):
+    monkeypatch.setattr(email, "BREVO_API_KEY", "segredo")
+    resposta_mock = Mock()
+    resposta_mock.raise_for_status = Mock()
+    pedido = _pedido_exemplo(cliente_nome='<img src=x onerror=alert(1)>', frete_descricao='<script>x</script>')
+    with patch("services.email.requests.post", return_value=resposta_mock) as post_mock:
+        email.enviar_confirmacao_pedido(pedido, "https://site/pedido/token")
+
+    corpo = post_mock.call_args.kwargs["json"]["htmlContent"]
+    assert "<img src=x onerror" not in corpo
+    assert "<script>" not in corpo
+    assert "&lt;img" in corpo
+
+
 def test_erro_de_rede(monkeypatch):
     import requests
 
