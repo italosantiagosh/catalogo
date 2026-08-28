@@ -52,6 +52,21 @@ def test_envia_com_payload_correto(monkeypatch):
     assert post_mock.call_args.kwargs["headers"]["api-key"] == "segredo"
 
 
+def test_com_previsao_de_entrega_mostra_aviso_de_transportadora(monkeypatch):
+    from datetime import datetime, timezone
+
+    monkeypatch.setattr(email, "BREVO_API_KEY", "segredo")
+    resposta_mock = Mock()
+    resposta_mock.raise_for_status = Mock()
+    pedido = _pedido_exemplo(pago_em=datetime(2024, 11, 4, tzinfo=timezone.utc).isoformat(), frete_prazo_dias=7)
+    with patch("services.email.requests.post", return_value=resposta_mock) as post_mock:
+        email.enviar_confirmacao_pedido(pedido, "https://site/pedido/token")
+
+    corpo = post_mock.call_args.kwargs["json"]["htmlContent"]
+    assert "entrega prevista" in corpo
+    assert "prazo de entrega é uma estimativa da transportadora" in corpo
+
+
 def test_erro_de_rede(monkeypatch):
     import requests
 

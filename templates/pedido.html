@@ -25,6 +25,9 @@
           {% endif %}
           {% if etapa.chave == 'entregue' and not etapa.concluido and previsoes.previsao_entrega %}
             <span class="pedido-timeline-previsao">Previsão de entrega: {{ previsoes.previsao_entrega | data_br }}</span>
+            <span class="pedido-timeline-aviso-transportadora">
+              ℹ️ Prazo estimado pela transportadora — imprevistos dela fogem do nosso controle e podem mudar essa data.
+            </span>
           {% endif %}
         </li>
       {% endfor %}
@@ -71,7 +74,17 @@
   {% elif pedido.status == 'faturado' %}
     <p class="pedido-status pedido-status-faturado">🧾 Nota fiscal emitida</p>
   {% elif pedido.status == 'enviado' %}
-    <p class="pedido-status pedido-status-enviado">📦 Pedido enviado</p>
+    {% if pedido.frete_descricao == 'Retirada no local' %}
+      <p class="pedido-status pedido-status-enviado">🏬 Pronto para retirada</p>
+    {% else %}
+      <p class="pedido-status pedido-status-enviado">📦 Pedido enviado</p>
+      {% if previsoes.enviado_antecipado %}
+        <p class="pedido-envio-antecipado">
+          🎉 Boa notícia: seu pedido saiu antes do prazo que a gente tinha previsto!
+          {% if previsoes.previsao_entrega %}Com isso, a nova previsão de entrega é <strong>{{ previsoes.previsao_entrega | data_br }}</strong>.{% endif %}
+        </p>
+      {% endif %}
+    {% endif %}
     {% if pedido.transportadora %}
       <p class="pedido-linha">Transportadora: <strong>{{ pedido.transportadora }}</strong></p>
     {% endif %}
@@ -81,8 +94,18 @@
         {%- if pedido.link_rastreio %} — <a href="{{ pedido.link_rastreio }}" target="_blank" rel="noopener">rastrear</a>{% endif %}
       </p>
     {% endif %}
+    {% if pedido.frete_descricao != 'Retirada no local' %}
+      <p class="pedido-aviso-transportadora">
+        ℹ️ O prazo de entrega é uma estimativa da transportadora — imprevistos dela (trânsito, feriados, clima)
+        fogem do nosso controle e podem alterar essa data.
+      </p>
+    {% endif %}
   {% elif pedido.status == 'entregue' %}
-    <p class="pedido-status pedido-status-entregue">🎉 Pedido entregue</p>
+    {% if pedido.frete_descricao == 'Retirada no local' %}
+      <p class="pedido-status pedido-status-entregue">🎉 Pedido retirado</p>
+    {% else %}
+      <p class="pedido-status pedido-status-entregue">🎉 Pedido entregue</p>
+    {% endif %}
   {% elif pedido.status == 'cancelado' %}
     <p class="pedido-status pedido-status-cancelado">❌ Cancelado — pagamento não foi concluído a tempo</p>
     <a href="{{ url_for('catalogo_completo') }}" class="botao-pagar">Ver catálogo e fazer um novo pedido</a>

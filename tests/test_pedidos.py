@@ -243,3 +243,60 @@ def test_banco_antigo_ganha_as_colunas_novas_sem_quebrar(monkeypatch, tmp_path):
 
     atualizado = pedidos.marcar_tiny_sincronizado(pedido["token"], numero_pedido="42", erro=None)
     assert atualizado["tiny_numero_pedido"] == "42"
+
+
+def _marcar_pago_em(token: str, quando: datetime) -> None:
+    with pedidos._conexao() as conexao:
+        conexao.execute(
+            "UPDATE pedidos SET status = 'pago', pago_em = ? WHERE token = ?", (quando.isoformat(), token)
+        )
+
+
+def _marcar_enviado_em(token: str, quando: datetime) -> None:
+    with pedidos._conexao() as conexao:
+        conexao.execute(
+            "UPDATE pedidos SET status = 'enviado', enviado_em = ? WHERE token = ?", (quando.isoformat(), token)
+        )
+
+
+def test_previsoes_marca_enviado_antecipado_e_recalcula_entrega_pelo_envio_real(monkeypatch, tmp_path):
+    _reapontar_db(monkeypatch, tmp_path)
+    monkeypatch.setattr(pedidos, "PRODUCAO_DIAS_UTEIS", 5)
+    pedido = pedidos.criar_pedido(**_pedido_exemplo(frete_prazo_dias=7))
+    # segunda-feira 04/11/2024 -- previsao de envio (+5 dias uteis) cai em 11/11 (segunda)
+    pago_em = datetime(2024, 11, 4, tzinfo=timezone.utc)
+    _marcar_pago_em(pedido["token"], pago_em)
+    # mas o pedido saiu bem antes do prometido: quarta 06/11
+    enviado_em = datetime(2024, 11, 6, tzinfo=timezone.utc)
+    _marcar_enviado_em(pedido["token"], enviado_em)
+
+    previsoes = pedidos.previsoes_do_pedido(pedidos.obter_pedido(pedido["token"]))
+    assert previsoes["previsao_envio"].date().isoformat() == "2024-11-11"
+    assert previsoes["enviado_antecipado"] is True
+    # entrega recalculada a partir do envio REAL (06/11), nao da promessa original (11/11)
+    esperado = pedidos.somar_dias_uteis(enviado_em, 7)
+    assert previsoes["previsao_entrega"].date().isoformat() == esperado.date().isoformat()
+
+
+def test_previsoes_nao_marca_antecipado_quando_envio_nao_foi_adiantado(monkeypatch, tmp_path):
+    _reapontar_db(monkeypatch, tmp_path)
+    monkeypatch.setattr(pedidos, "PRODUCAO_DIAS_UTEIS", 5)
+    pedido = pedidos.criar_pedido(**_pedido_exemplo(frete_prazo_dias=7))
+    pago_em = datetime(2024, 11, 4, tzinfo=timezone.utc)
+    _marcar_pago_em(pedido["token"], pago_em)
+    # previsao de envio era 11/11 -- saiu depois, no dia 12/11
+    enviado_em = datetime(2024, 11, 12, tzinfo=timezone.utc)
+    _marcar_enviado_em(pedido["token"], enviado_em)
+
+    previsoes = pedidos.previsoes_do_pedido(pedidos.obter_pedido(pedido["token"]))
+    assert previsoes["enviado_antecipado"] is False
+
+
+def test_previsoes_sem_envio_ainda_nao_marca_antecipado(monkeypatch, tmp_path):
+    _reapontar_db(monkeypatch, tmp_path)
+    pedido = pedidos.criar_pedido(**_pedido_exemplo(frete_prazo_dias=7))
+    _marcar_pago_em(pedido["token"], datetime(2024, 11, 4, tzinfo=timezone.utc))
+
+    previsoes = pedidos.previsoes_do_pedido(pedidos.obter_pedido(pedido["token"]))
+    assert previsoes["enviado_antecipado"] is False
+    assert previsoes["previsao_entrega"] is not None

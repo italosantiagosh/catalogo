@@ -665,21 +665,38 @@ def somar_dias_uteis(data_inicio: datetime, dias: int) -> datetime:
 
 def previsoes_do_pedido(pedido: dict) -> dict:
     """Previsao de envio (pago_em + PRODUCAO_DIAS_UTEIS dias uteis) e de
-    entrega (previsao de envio + frete_prazo_dias dias uteis, quando
+    entrega (frete_prazo_dias dias uteis a partir do envio, quando
     conhecido) -- mostrado no painel admin, na timeline do cliente
     (app.py:ver_pedido) e no e-mail de confirmacao (services/email.py)
-    (ver conversa: "pago dia X, enviar ate dia X+5 dias uteis"). Uma vez
-    que o pedido realmente foi enviado/entregue, essas datas deixam de
-    fazer sentido como "previsao" (o evento real ja aconteceu -- quem
-    usa isso prefere enviado_em/entregue_em nesse caso)."""
-    resultado = {"previsao_envio": None, "previsao_entrega": None}
+    (ver conversa: "pago dia X, enviar ate dia X+5 dias uteis").
+
+    `previsao_envio` sempre reflete a promessa original (baseada em
+    pago_em), mesmo depois do pedido ja ter sido enviado de verdade --
+    e´ o que da´ base pra comparar com o envio real e descobrir se saiu
+    adiantado (ver enviado_antecipado abaixo).
+
+    Ja´ `previsao_entrega`, uma vez que o pedido tenha um enviado_em real
+    (admin marcou como "enviado"), passa a ser calculada a partir dessa
+    data de verdade em vez da promessa -- se o pedido saiu antes do
+    prazo, a entrega tende a chegar antes tambem (ver conversa: "alterar
+    o prazo de entrega... e colocar nova data"). `enviado_antecipado`
+    fica True quando isso aconteceu, pra` templates/pedido.html mostrar
+    uma mensagem alegre nesse caso."""
+    resultado = {"previsao_envio": None, "previsao_entrega": None, "enviado_antecipado": False}
     pago_em = pedido.get("pago_em")
     if not pago_em:
         return resultado
     data_pago = datetime.fromisoformat(pago_em)
     previsao_envio = somar_dias_uteis(data_pago, PRODUCAO_DIAS_UTEIS)
     resultado["previsao_envio"] = previsao_envio
+
     prazo_frete = pedido.get("frete_prazo_dias")
-    if prazo_frete:
+    enviado_em = pedido.get("enviado_em")
+    if enviado_em:
+        data_enviado = datetime.fromisoformat(enviado_em)
+        resultado["enviado_antecipado"] = data_enviado.date() < previsao_envio.date()
+        if prazo_frete:
+            resultado["previsao_entrega"] = somar_dias_uteis(data_enviado, int(prazo_frete))
+    elif prazo_frete:
         resultado["previsao_entrega"] = somar_dias_uteis(previsao_envio, int(prazo_frete))
     return resultado

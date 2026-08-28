@@ -43,6 +43,8 @@
     .busca-tiny-vazio { padding: 8px 10px; font-size: 0.8rem; color: #5b6b82; }
     .campo-destinatario { display: none; }
     .campo-destinatario.ativo { display: block; }
+    .badge-antecipado { font-size: 0.76rem; color: #1e7a43; font-weight: 600; }
+    .aviso-transportadora-admin { font-size: 0.76rem; color: #5b6b82; font-style: italic; }
     .checkbox-linha { display: flex; align-items: center; gap: 8px; margin: 16px 0 4px; }
     .checkbox-linha input { width: auto; }
     .checkbox-linha label { margin: 0; }
@@ -115,10 +117,13 @@
             <p>Previsão de envio: <strong>{{ previsoes.previsao_envio | data_br }}</strong></p>
           {% endif %}
         {% elif pedido.enviado_em %}
-          <p>Enviado em: {{ pedido.enviado_em | data_br }}</p>
+          <p>Enviado em: {{ pedido.enviado_em | data_br }}
+            {%- if previsoes.enviado_antecipado %} <span class="badge-antecipado">🎉 antes do prazo previsto</span>{% endif -%}
+          </p>
         {% endif %}
         {% if pedido.status in ('pago', 'faturado', 'enviado') and previsoes.previsao_entrega %}
           <p>Previsão de entrega: <strong>{{ previsoes.previsao_entrega | data_br }}</strong></p>
+          <p class="aviso-transportadora-admin">ℹ️ Prazo estimado pela transportadora — imprevistos dela fogem do nosso controle.</p>
         {% elif pedido.entregue_em %}
           <p>Entregue em: {{ pedido.entregue_em | data_br }}</p>
         {% endif %}

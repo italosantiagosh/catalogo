@@ -62,6 +62,12 @@ def _corpo_html_confirmacao(pedido: dict, url_pedido: str) -> str:
                 f", com entrega prevista para <strong>{previsoes['previsao_entrega'].strftime('%d/%m/%Y')}</strong>"
             )
         previsao_html += ".</p>"
+        if previsoes["previsao_entrega"]:
+            previsao_html += (
+                '<p style="font-size:13px;color:#5b6b82;font-style:italic;">'
+                "ℹ️ O prazo de entrega é uma estimativa da transportadora -- imprevistos dela fogem do "
+                "nosso controle e podem alterar essa data.</p>"
+            )
     else:
         previsao_html = "<p>🛠️ Seu pedido já está em produção -- prazo de até <strong>5 dias úteis</strong> antes do envio.</p>"
     return (

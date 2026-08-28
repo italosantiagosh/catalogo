@@ -652,6 +652,46 @@ def test_admin_detalhe_mostra_prazos(client, monkeypatch):
     assert "Enviar até" in lista
 
 
+def test_pagina_de_pedido_mostra_aviso_de_transportadora_e_envio_antecipado(client, monkeypatch):
+    import app as app_module
+
+    monkeypatch.setattr(app_module, "ADMIN_USER", "admin")
+    monkeypatch.setattr(app_module, "ADMIN_PASSWORD", "segredo123")
+    corpo = _corpo_valido(frete={"texto": "Correios PAC — R$ 10,00", "preco": 10.0, "prazo_dias": 7})
+    with patch("app.criar_link_pagamento", return_value={"url": "https://checkout.infinitepay.io/abc"}):
+        criado = client.post("/api/pedido/criar", json=corpo).get_json()
+    client.post(
+        "/webhook/infinitepay",
+        json={"order_nsu": criado["token"], "paid_amount": 6000, "capture_method": "pix"},
+    )
+    # marca como enviado logo em seguida (bem antes da previsao de +5 dias
+    # uteis de producao) -- deve contar como envio antecipado
+    client.post(f"/admin/pedidos/{criado['token']}/status", data={"status": "enviado"}, auth=("admin", "segredo123"))
+
+    corpo_html = client.get(f"/pedido/{criado['token']}").get_data(as_text=True)
+    assert "saiu antes do prazo" in corpo_html
+    assert "Prazo estimado pela transportadora" in corpo_html or "prazo de entrega é uma estimativa" in corpo_html
+
+
+def test_pagina_de_pedido_retirada_nao_mostra_aviso_de_transportadora(client, monkeypatch):
+    import app as app_module
+
+    monkeypatch.setattr(app_module, "ADMIN_USER", "admin")
+    monkeypatch.setattr(app_module, "ADMIN_PASSWORD", "segredo123")
+    corpo = _corpo_valido(frete={"texto": "Retirada no local", "preco": 0})
+    with patch("app.criar_link_pagamento", return_value={"url": "https://checkout.infinitepay.io/abc"}):
+        criado = client.post("/api/pedido/criar", json=corpo).get_json()
+    client.post(
+        "/webhook/infinitepay",
+        json={"order_nsu": criado["token"], "paid_amount": 5000, "capture_method": "pix"},
+    )
+    client.post(f"/admin/pedidos/{criado['token']}/status", data={"status": "enviado"}, auth=("admin", "segredo123"))
+
+    corpo_html = client.get(f"/pedido/{criado['token']}").get_data(as_text=True)
+    assert "prazo de entrega é uma estimativa" not in corpo_html
+    assert "🏬 Pronto para retirada" in corpo_html
+
+
 def test_webhook_e_idempotente_nao_reprocessa(client):
     with patch("app.criar_link_pagamento", return_value={"url": "https://checkout.infinitepay.io/abc"}):
         criado = client.post("/api/pedido/criar", json=_corpo_valido()).get_json()
