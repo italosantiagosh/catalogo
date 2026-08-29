@@ -1636,6 +1636,23 @@ def webhook_infinitepay():
     return jsonify(ok=True), 200
 
 
+@app.route("/webhook/tiny-captura/<tipo>", methods=["POST"])
+@limiter.limit("30 per minute")
+def webhook_tiny_captura(tipo: str):
+    """Endpoint TEMPORARIO -- so pra descobrir o formato real que a Tiny
+    manda nos webhooks configurados em "Integração com API do ERP >
+    notificações" (URLs de situação de pedido / nota fiscal / rastreio,
+    ver conversa). NAO processa nada ainda -- so registra o payload cru
+    no log (visivel no Render), pra depois construir o tratamento de
+    verdade (ex: marcar "faturado" sozinho quando a nota sair na Tiny)
+    com base no formato REAL, em vez de adivinhar sem documentação.
+    `tipo` so identifica qual URL disparou (situacao-pedido/
+    nota-fiscal/rastreio), nao precisa bater com nada especifico."""
+    corpo = request.get_data(as_text=True)
+    print(f"[TINY WEBHOOK CAPTURA] tipo={tipo} corpo={corpo}", flush=True)
+    return jsonify(ok=True), 200
+
+
 def _pos_pagamento_confirmado(pedido_pago: dict | None, token: str) -> None:
     """Integracoes disparadas na PRIMEIRA confirmacao de pagamento de um
     pedido -- usado tanto pelo webhook automatico da InfinitePay quanto
