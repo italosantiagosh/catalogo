@@ -255,6 +255,33 @@ def enviar_pedido_enviado(
     )
 
 
+def _corpo_html_nota_fiscal_disponivel(pedido: dict, url_acompanhamento: str) -> str:
+    return (
+        f"<p>Olá, {_esc(pedido.get('cliente_nome', ''))}! A nota fiscal do seu pedido já está "
+        f"disponível. 🧾</p>"
+        f"<p><strong>Pedido #{pedido['codigo']}</strong></p>"
+        f"{_botao(pedido.get('link_nota_fiscal', ''), '🧾 Baixar nota fiscal')}"
+        f"<p>Acompanhe seu pedido a qualquer momento:</p>"
+        f"{_botao(url_acompanhamento, '🔎 Clique aqui e acompanhe')}"
+        f"<p>Qualquer dúvida, é só chamar no WhatsApp.</p>"
+    )
+
+
+def enviar_nota_fiscal_disponivel(pedido: dict, url_acompanhamento: str) -> dict:
+    """Disparado quando o link da nota fiscal e´ preenchido pela primeira
+    vez (ver app.py:admin_pedido_status) -- hoje sempre manual (admin
+    cola o link), no futuro tambem podera´ vir sozinho do webhook da
+    Tiny quando a nota for autorizada (ver
+    app.py:webhook_tiny_captura, ainda descobrindo o formato real).
+    Devolve {"ok": True} ou {"erro": "..."}."""
+    return _enviar(
+        email_cliente=pedido.get("cliente_email", ""),
+        nome_cliente=pedido.get("cliente_nome", ""),
+        assunto=f"Nota fiscal disponível — Pedido #{pedido['codigo']}",
+        corpo_html=_corpo_html_nota_fiscal_disponivel(pedido, url_acompanhamento),
+    )
+
+
 def _corpo_html_pedido_cancelado(pedido: dict, url_catalogo: str) -> str:
     return (
         f"<p>Olá, {_esc(pedido.get('cliente_nome', ''))}! Seu pedido #{pedido['codigo']} não foi pago a "

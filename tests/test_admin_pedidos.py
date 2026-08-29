@@ -285,6 +285,55 @@ def test_alterar_status_para_faturado_salva_link_da_nota_fiscal(client, monkeypa
     assert "Baixar nota fiscal" in pagina_cliente
 
 
+def test_preencher_link_nota_fiscal_dispara_email_uma_vez(client, monkeypatch):
+    """Ver conversa: "se eu preencher o link com a nota, mande e-mail"."""
+    _preparar_admin(monkeypatch)
+    with patch("app.criar_link_pagamento", return_value={"url": "https://checkout.infinitepay.io/abc"}):
+        criado = client.post("/api/pedido/criar", json=_corpo_valido()).get_json()
+
+    with patch("app.enviar_nota_fiscal_disponivel", return_value={"ok": True}) as mock_email:
+        client.post(
+            f"/admin/pedidos/{criado['token']}/status",
+            data={"status": "faturado", "link_nota_fiscal": "https://tiny.exemplo/nf/123.pdf"},
+            auth=("admin", "segredo123"),
+        )
+    assert mock_email.call_count == 1
+
+    pedido = pedidos.obter_pedido(criado["token"])
+    assert pedido["email_nota_fiscal_enviado"] == 1
+
+    # corrigir o link depois (mesmo link ou outro) nao dispara de novo
+    with patch("app.enviar_nota_fiscal_disponivel") as mock_email2:
+        client.post(
+            f"/admin/pedidos/{criado['token']}/status",
+            data={"status": "faturado", "link_nota_fiscal": "https://tiny.exemplo/nf/123-corrigido.pdf"},
+            auth=("admin", "segredo123"),
+        )
+    mock_email2.assert_not_called()
+
+
+def test_admin_reenvia_email_nota_fiscal(client, monkeypatch):
+    _preparar_admin(monkeypatch)
+    with patch("app.criar_link_pagamento", return_value={"url": "https://checkout.infinitepay.io/abc"}):
+        criado = client.post("/api/pedido/criar", json=_corpo_valido()).get_json()
+    with patch("app.enviar_nota_fiscal_disponivel", return_value={"erro": "falhou"}):
+        client.post(
+            f"/admin/pedidos/{criado['token']}/status",
+            data={"status": "faturado", "link_nota_fiscal": "https://tiny.exemplo/nf/123.pdf"},
+            auth=("admin", "segredo123"),
+        )
+
+    with patch("app.enviar_nota_fiscal_disponivel", return_value={"ok": True}) as mock_reenvio:
+        resposta = client.post(
+            f"/admin/pedidos/{criado['token']}/reenviar-email-nota-fiscal", auth=("admin", "segredo123")
+        )
+    assert resposta.status_code in (302, 303)
+    mock_reenvio.assert_called_once()
+
+    pedido = pedidos.obter_pedido(criado["token"])
+    assert pedido["email_nota_fiscal_erro"] is None
+
+
 def test_alterar_status_para_faturado_sem_link_nao_mostra_botao_de_nota(client, monkeypatch):
     _preparar_admin(monkeypatch)
     with patch("app.criar_link_pagamento", return_value={"url": "https://checkout.infinitepay.io/abc"}):

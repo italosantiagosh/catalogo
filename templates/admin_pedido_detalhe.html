@@ -477,6 +477,24 @@
           </form>
         </div>
       {% endif %}
+
+      {% if pedido.link_nota_fiscal %}
+        <div class="integracao">
+          <div class="integracao-texto">
+            <strong>E-mail de nota fiscal:</strong>
+            {% if not pedido.email_nota_fiscal_enviado %}
+              ainda não enviado
+            {% elif pedido.email_nota_fiscal_erro %}
+              <span class="integracao-erro">⚠️ {{ pedido.email_nota_fiscal_erro }}</span>
+            {% else %}
+              ✅ enviado
+            {% endif %}
+          </div>
+          <form method="post" action="{{ url_for('admin_pedido_reenviar_email_nota_fiscal', token=pedido.token) }}">
+            <button type="submit">Reenviar</button>
+          </form>
+        </div>
+      {% endif %}
     </div>
   {% endif %}
 

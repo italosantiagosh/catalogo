@@ -53,12 +53,20 @@ _FORMA_PAGAMENTO = {"pix": "pix", "credit_card": "cartao_credito"}
 
 def _cliente_para_tiny(pedido: dict) -> dict:
     documento = pedido.get("cliente_documento", "")
+    telefone = pedido.get("cliente_telefone", "")
     return {
         "nome": pedido.get("cliente_nome", ""),
         "tipo_pessoa": _TIPO_PESSOA.get(pedido.get("cliente_tipo_pessoa"), "F"),
         "cpf_cnpj": documento,
         "cpfConsumidorFinal": documento,
-        "fone": pedido.get("cliente_telefone", ""),
+        # e-mail nunca era mandado (usuario reportou que o campo ficava
+        # vazio na Tiny, ver conversa) -- "fone" e´ CONFIRMADO (pedido de
+        # teste real), "celular" e "email" seguem o mesmo padrao de nome
+        # de campo em portugues ja usado no resto do bloco, mas AINDA
+        # NAO confirmados com pedido de teste real.
+        "fone": telefone,
+        "celular": telefone,
+        "email": pedido.get("cliente_email", ""),
         "endereco": pedido.get("endereco_logradouro", ""),
         "numero": pedido.get("endereco_numero", ""),
         "complemento": pedido.get("endereco_complemento", ""),
@@ -179,15 +187,22 @@ def criar_pedido_tiny(pedido: dict) -> dict:
     # separado no checkout (ver app.py:_endereco_valido). NAO
     # CONFIRMADO ainda com pedido de teste real (diferente de
     # forma_pagamento/frete_por_conta, ja confirmados -- ver topo do
-    # arquivo): nome exato dos campos de "endereco_entrega" seguindo o
-    # padrao ja usado em `_cliente_para_tiny`, mas precisa ser
-    # conferido no primeiro pedido de verdade com destinatario
-    # diferente. Se a Tiny rejeitar/ignorar, o pedido continua sendo
-    # criado sem endereco de entrega estruturado -- a observacao
-    # "Entregar aos cuidados de" acima ja cobre isso em texto livre.
+    # arquivo): nome_destinatario/endereco/numero/complemento/bairro/
+    # cep/cidade/uf ja CONFIRMADOS com pedido de teste real -- a Tiny
+    # mostrou o destinatario certinho na nota (ver conversa). "cpf_cnpj"
+    # foi adicionado depois, seguindo o mesmo padrao ja confirmado no
+    # bloco `cliente` (_cliente_para_tiny) -- AINDA NAO confirmado com
+    # pedido de teste real especificamente esse campo (antes disso o
+    # documento do destinatario so ia pro texto livre da observacao
+    # "Entregar aos cuidados de" acima, nunca campo estruturado -- por
+    # isso aparecia so nas observacoes/nota, nunca no campo de CPF
+    # proprio da Tiny, ver conversa). Sem telefone do destinatario aqui
+    # -- o checkout do site nunca coletou um telefone separado pra
+    # quem recebe, so pro cliente que fecha a compra.
     if pedido.get("endereco_destinatario_logradouro"):
         corpo_pedido["endereco_entrega"] = {
             "nome_destinatario": pedido.get("endereco_destinatario_nome", ""),
+            "cpf_cnpj": pedido.get("endereco_destinatario_documento", ""),
             "endereco": pedido.get("endereco_destinatario_logradouro", ""),
             "numero": pedido.get("endereco_destinatario_numero", ""),
             "complemento": pedido.get("endereco_destinatario_complemento", ""),

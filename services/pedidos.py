@@ -169,6 +169,11 @@ _COLUNAS_ADICIONAIS: list[tuple[str, str]] = [
     # reenviar -- ver conversa, caso real relatado pelo usuario).
     ("email_pedido_enviado_enviado", "INTEGER NOT NULL DEFAULT 0"),
     ("email_pedido_enviado_erro", "TEXT"),
+    # E-mail "Nota fiscal disponível" (ver
+    # app.py:admin_pedido_status -> services/email.py:enviar_nota_fiscal_disponivel)
+    # -- disparado na primeira vez que link_nota_fiscal e´ preenchido.
+    ("email_nota_fiscal_enviado", "INTEGER NOT NULL DEFAULT 0"),
+    ("email_nota_fiscal_erro", "TEXT"),
 ]
 
 # Fluxo de status depois de "pago" -- alteravel manualmente pelo painel
@@ -681,6 +686,18 @@ def marcar_email_pedido_enviado_enviado(token: str, *, erro: str | None) -> dict
     with _conexao() as conexao:
         conexao.execute(
             "UPDATE pedidos SET email_pedido_enviado_enviado = 1, email_pedido_enviado_erro = ? WHERE token = ?",
+            (erro, token),
+        )
+    return obter_pedido(token)
+
+
+def marcar_email_nota_fiscal_enviado(token: str, *, erro: str | None) -> dict | None:
+    """E-mail "Nota fiscal disponível" (ver app.py:admin_pedido_status) --
+    mesma logica de marcar_email_pedido_enviado_enviado, so que pra esse
+    e-mail especifico."""
+    with _conexao() as conexao:
+        conexao.execute(
+            "UPDATE pedidos SET email_nota_fiscal_enviado = 1, email_nota_fiscal_erro = ? WHERE token = ?",
             (erro, token),
         )
     return obter_pedido(token)

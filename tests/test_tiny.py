@@ -169,6 +169,42 @@ def test_endereco_de_entrega_diferente_monta_bloco_endereco_entrega(monkeypatch)
     assert pedido_json["endereco_entrega"]["cep"] == "59100000"
 
 
+def test_endereco_de_entrega_diferente_manda_cpf_cnpj_do_destinatario(monkeypatch):
+    """Ver conversa: usuario relatou que o CPF do destinatario so ia
+    pras observacoes/nota, nunca pro campo estruturado de CPF do
+    endereco de entrega na Tiny."""
+    monkeypatch.setattr(tiny, "TINY_API_TOKEN", "segredo123")
+    with patch("services.tiny.requests.post", return_value=_resposta_ok()) as post_mock:
+        tiny.criar_pedido_tiny(_pedido_exemplo(
+            endereco_destinatario_nome="Ana Coordenadora",
+            endereco_destinatario_documento="98765432100",
+            endereco_destinatario_cep="59100000",
+            endereco_destinatario_logradouro="Rua da Livraria",
+            endereco_destinatario_numero="200",
+            endereco_destinatario_complemento="Sala 2",
+            endereco_destinatario_bairro="Cidade Alta",
+            endereco_destinatario_cidade="Natal",
+            endereco_destinatario_uf="RN",
+        ))
+    pedido_json = json.loads(post_mock.call_args.kwargs["data"]["pedido"])["pedido"]
+    assert pedido_json["endereco_entrega"]["cpf_cnpj"] == "98765432100"
+
+
+def test_cliente_manda_email_e_celular_pra_tiny(monkeypatch):
+    """Ver conversa: usuario relatou que email e celular ficavam vazios
+    no cadastro do cliente na Tiny -- "fone" ja´ e´ confirmado, "celular"
+    e "email" replicam o mesmo telefone/e-mail do pedido."""
+    monkeypatch.setattr(tiny, "TINY_API_TOKEN", "segredo123")
+    with patch("services.tiny.requests.post", return_value=_resposta_ok()) as post_mock:
+        tiny.criar_pedido_tiny(_pedido_exemplo(
+            cliente_telefone="84999999999", cliente_email="maria@example.com"
+        ))
+    pedido_json = json.loads(post_mock.call_args.kwargs["data"]["pedido"])["pedido"]
+    assert pedido_json["cliente"]["fone"] == "84999999999"
+    assert pedido_json["cliente"]["celular"] == "84999999999"
+    assert pedido_json["cliente"]["email"] == "maria@example.com"
+
+
 def test_destinatario_diferente_entra_nas_observacoes(monkeypatch):
     monkeypatch.setattr(tiny, "TINY_API_TOKEN", "segredo123")
     with patch("services.tiny.requests.post", return_value=_resposta_ok()) as post_mock:

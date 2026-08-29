@@ -113,6 +113,7 @@ from services.email import (
     enviar_confirmacao_pedido,
     enviar_lembrete_pedido_pendente,
     enviar_link_pagamento,
+    enviar_nota_fiscal_disponivel,
     enviar_notificacao_venda,
     enviar_oportunidade_upsell,
     enviar_pedido_avaliacao,
@@ -141,6 +142,7 @@ from services.pedidos import (
     marcar_email_enviado,
     marcar_email_lembrete_enviado,
     marcar_email_pedido_criado_enviado,
+    marcar_email_nota_fiscal_enviado,
     marcar_email_pedido_enviado_enviado,
     marcar_email_upsell_enviado,
     marcar_notificacao_venda_enviada,
@@ -1920,6 +1922,12 @@ def admin_pedido_status(token: str):
     if novo_status == "enviado" and pedido_antes["status"] != "enviado":
         _reenviar_email_pedido_enviado(token)
 
+    # dispara so na PRIMEIRA vez que o link e´ preenchido (nao dispara
+    # de novo se o admin so corrigir o link depois, ver conversa: "se
+    # eu preencher o link com a nota, mande e-mail").
+    if link_nota_fiscal and not pedido_antes.get("link_nota_fiscal"):
+        _reenviar_email_nota_fiscal(token)
+
     return redirect(url_for("admin_pedido_detalhe", token=token))
 
 
@@ -2187,6 +2195,25 @@ def _reenviar_email_pedido_enviado(token: str) -> str | None:
     return resultado_email.get("erro")
 
 
+def _reenviar_email_nota_fiscal(token: str) -> str | None:
+    """Reenvia o e-mail "Nota fiscal disponível" na mao -- usado pelo
+    botao individual (admin_pedido_reenviar_email_nota_fiscal) e pelo
+    preenchimento do link (ver admin_pedido_status)."""
+    pedido = obter_pedido(token)
+    if pedido is None:
+        return "Pedido não encontrado."
+    if not pedido.get("link_nota_fiscal"):
+        return "Esse pedido ainda não tem link de nota fiscal preenchido."
+    try:
+        resultado_email = enviar_nota_fiscal_disponivel(
+            pedido, url_for("ver_pedido", token=token, _external=True)
+        )
+    except Exception as exc:  # nunca deixa o operador numa tela de erro generica
+        resultado_email = {"erro": f"Erro inesperado ao enviar: {exc}"}
+    marcar_email_nota_fiscal_enviado(token, erro=resultado_email.get("erro"))
+    return resultado_email.get("erro")
+
+
 @app.route("/admin/pedidos/<token>/reenviar-tiny", methods=["POST"])
 def admin_pedido_reenviar_tiny(token: str):
     """Sincroniza (ou tenta de novo) com a Tiny na mao -- normalmente
@@ -2260,6 +2287,21 @@ def admin_pedido_reenviar_email_enviado(token: str):
         abort(404)
     erro = _reenviar_email_pedido_enviado(token)
     if erro == "Esse pedido ainda não foi marcado como enviado.":
+        abort(400, description=erro)
+    return redirect(url_for("admin_pedido_detalhe", token=token))
+
+
+@app.route("/admin/pedidos/<token>/reenviar-email-nota-fiscal", methods=["POST"])
+def admin_pedido_reenviar_email_nota_fiscal(token: str):
+    """Reenvia o e-mail "Nota fiscal disponível" na mao."""
+    if not _autenticacao_admin_valida(request.authorization):
+        return Response(
+            "Autenticação necessária.", 401, {"WWW-Authenticate": 'Basic realm="Painel de pedidos"'}
+        )
+    if obter_pedido(token) is None:
+        abort(404)
+    erro = _reenviar_email_nota_fiscal(token)
+    if erro == "Esse pedido ainda não tem link de nota fiscal preenchido.":
         abort(400, description=erro)
     return redirect(url_for("admin_pedido_detalhe", token=token))
 
