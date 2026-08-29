@@ -92,6 +92,23 @@ def test_preview_personalizada_devolve_url_duravel_nao_data_uri(client):
     assert resposta_imagem.status_code == 200
     assert resposta_imagem.mimetype == "image/png"
 
+    # url_preview/url_crop (botoes "baixar previa/recorte" da propria
+    # pagina /personalizada) usam o MESMO token, so com ?baixar=1 --
+    # antes existia um mecanismo separado guardado em memoria do
+    # processo pra isso (ver conversa: contribuiu pro servico estourar
+    # o limite de memoria do Render), unificado num so.
+    assert dados["url_preview"] == dados["preview"] + "?baixar=1"
+    assert dados["url_crop"] == dados["crop"] + "?baixar=1"
+
+    resposta_download = client.get(dados["url_crop"])
+    assert resposta_download.status_code == 200
+    assert resposta_download.mimetype == "application/octet-stream"
+    assert "attachment" in resposta_download.headers["Content-Disposition"]
+
+    # multi-leitura: baixar de novo (ou o <img> renderizar de novo)
+    # continua funcionando, diferente do mecanismo antigo de uso unico.
+    assert client.get(dados["crop"]).status_code == 200
+
 
 def test_servir_imagem_personalizada_404_para_token_desconhecido(client):
     resposta = client.get("/imagem-personalizada/token-que-nao-existe")

@@ -28,11 +28,9 @@ composicao (compositor.py) e a geometria calibrada (config.py) nao
 foram alteradas.
 
 /personalizada usa o mesmo editor de recorte (canvas, arraste + zoom)
-e o mesmo esquema de downloads por token de uso unico (/download/<token>)
-do `mockup` -- ver _registrar_download abaixo. Por isso so funciona com
-1 worker do gunicorn (Procfile/render.yaml: --workers 1): os tokens
-ficam em memoria do processo, um download podia cair num worker
-diferente do que gerou a previa.
+do `mockup` -- previa/recorte gerados sao guardados de forma DURAVEL
+(SQLite, ver services/imagens_personalizadas.py e
+servir_imagem_personalizada abaixo), nunca em memoria do processo.
 """
 
 from __future__ import annotations
@@ -42,9 +40,7 @@ import csv
 import hmac
 import io
 import os
-import secrets
 import tempfile
-import time
 from datetime import datetime, timezone
 from pathlib import Path
 from urllib.parse import urlsplit
@@ -450,26 +446,6 @@ def _foto_avaliacao_para_data_uri(arquivo: FileStorage) -> str:
 def _resolver_spec_id(formato: str, cor: str | None) -> str | None:
     return FORMATO_PARA_SPEC.get((formato, cor))
 
-
-# Downloads (previa da medalha, recorte 1:1) ficam guardados aqui em
-# memoria por um token de uso unico, em vez de embutidos como data URI --
-# o Safari do iPhone tem suporte inconsistente pra "baixar" data URIs
-# grandes, so mostra a imagem em vez de salvar. Um link de verdade pro
-# navegador buscar (com Content-Disposition) funciona em qualquer
-# navegador -- mesmo esquema do repositorio `mockup` (ver docstring do
-# modulo sobre --workers 1).
-_DOWNLOAD_TTL_SEGUNDOS = 15 * 60
-_downloads: dict[str, tuple[bytes, str, str, float]] = {}
-
-
-def _registrar_download(dados: bytes, mimetype: str, nome_arquivo: str) -> str:
-    agora = time.time()
-    for token, (_, _, _, expira_em) in list(_downloads.items()):
-        if expira_em < agora:
-            _downloads.pop(token, None)
-    token = secrets.token_urlsafe(16)
-    _downloads[token] = (dados, mimetype, nome_arquivo, agora + _DOWNLOAD_TTL_SEGUNDOS)
-    return token
 
 
 def _imagem_para_bytes(imagem: Image.Image) -> bytes:
@@ -2331,44 +2307,37 @@ def personalizada():
     )
 
 
-@app.route("/download/<token>")
-def download(token: str):
-    """Serve um download registrado por _registrar_download -- uso unico
-    (removido assim que baixado) e expira em 15min se nunca for usado.
-    Sempre como application/octet-stream (mesmo pras imagens PNG): no
-    Safari do iOS, Content-Type image/* costuma so EXIBIR a imagem em vez
-    de salvar, ignorando Content-Disposition -- octet-stream forca "baixar"."""
-    entrada = _downloads.pop(token, None)
-    if entrada is None or entrada[3] < time.time():
-        abort(404, description="Link de download expirado ou já utilizado. Gere a imagem de novo.")
-    dados, _mimetype_original, nome_arquivo, _ = entrada
-    resposta = send_file(
-        io.BytesIO(dados),
-        mimetype="application/octet-stream",
-        as_attachment=True,
-        download_name=nome_arquivo,
-    )
-    resposta.headers["Cache-Control"] = "no-store"
-    return resposta
-
-
 @app.route("/imagem-personalizada/<token>")
 def servir_imagem_personalizada(token: str):
     """Serve a previa/recorte de uma medalha personalizada guardados de
-    forma DURAVEL (ver services/imagens_personalizadas.py) -- diferente
-    de /download acima (uso unico, so serve pros botoes "baixar" da
-    propria pagina /personalizada), essa aqui e MULTI-leitura: o
-    carrinho (localStorage) guarda so essa URL, precisa continuar
-    funcionando toda vez que o item aparece na tela (carrinho, pagina do
-    pedido, painel admin), inclusive dias depois. Token e´ imprevisivel
-    (secrets.token_urlsafe), entao nao precisa de autenticacao -- mesmo
-    criterio ja usado no token de acompanhamento do pedido."""
+    forma DURAVEL (ver services/imagens_personalizadas.py) -- o carrinho
+    (localStorage) guarda so essa URL, precisa continuar funcionando
+    toda vez que o item aparece na tela (carrinho, pagina do pedido,
+    painel admin, botoes "baixar" da propria pagina /personalizada),
+    inclusive dias depois. Token e´ imprevisivel (secrets.token_urlsafe),
+    entao nao precisa de autenticacao -- mesmo criterio ja usado no
+    token de acompanhamento do pedido.
+
+    Antes disso existia um SEGUNDO mecanismo (`/download/<token>`) so
+    pros botoes de download, guardado em memoria do processo (dict
+    global) -- unificado aqui pra parar de duplicar toda previa/recorte
+    gerado em RAM (ver conversa: contribuiu pro servico estourar o
+    limite de memoria do Render num pico de acessos). `?baixar=1` forca
+    o download (Content-Disposition + application/octet-stream, mesmo
+    criterio de antes -- Safari do iOS as vezes so EXIBE a imagem em vez
+    de salvar quando o Content-Type e´ image/*)."""
     entrada = obter_imagem(token)
     if entrada is None:
         abort(404)
-    dados, mimetype, _nome_arquivo = entrada
-    resposta = send_file(io.BytesIO(dados), mimetype=mimetype)
-    resposta.headers["Cache-Control"] = "public, max-age=31536000, immutable"
+    dados, mimetype, nome_arquivo = entrada
+    if request.args.get("baixar"):
+        resposta = send_file(
+            io.BytesIO(dados), mimetype="application/octet-stream",
+            as_attachment=True, download_name=nome_arquivo,
+        )
+    else:
+        resposta = send_file(io.BytesIO(dados), mimetype=mimetype)
+        resposta.headers["Cache-Control"] = "public, max-age=31536000, immutable"
     return resposta
 
 
@@ -2553,24 +2522,21 @@ def api_personalizada_preview():
     imagem_bytes = _imagem_para_bytes(resultado)
     recorte_bytes = _imagem_para_bytes(recorte)
 
-    token_preview = _registrar_download(imagem_bytes, "image/png", f"{nome_base}_{spec_id}.png")
-    token_crop = _registrar_download(recorte_bytes, "image/png", f"{nome_base}_recorte.png")
-
-    # Guardado tambem de forma DURAVEL (ver services/imagens_personalizadas.py)
-    # -- o que realmente vai pro item do carrinho/pedido, diferente do
-    # token acima (uso unico, expira em 15min, so serve pros botoes
-    # "baixar previa/recorte" desta propria pagina). Sem isso, o
-    # carrinho (localStorage) guardava o data URI inteiro de cada
-    # imagem -- estourava a cota do navegador ja na 3a medalha
-    # personalizada com foto (ver conversa, bug real).
+    # Guardado de forma DURAVEL (ver services/imagens_personalizadas.py,
+    # SQLite -- nao em memoria do processo) -- o que vai pro item do
+    # carrinho/pedido E pros botoes "baixar previa/recorte" desta
+    # pagina, um unico mecanismo pras duas coisas (antes disso existia
+    # um dict global em RAM so pro download, guardando previa+recorte
+    # de CADA simulacao gerada -- contribuiu pro servico estourar o
+    # limite de memoria do Render num pico de acessos, ver conversa).
     chave_imagem = salvar_imagem(imagem_bytes, "image/png", f"{nome_base}_{spec_id}.png")
     chave_recorte = salvar_imagem(recorte_bytes, "image/png", f"{nome_base}_recorte.png")
 
     return jsonify(
         preview=url_for("servir_imagem_personalizada", token=chave_imagem),
         crop=url_for("servir_imagem_personalizada", token=chave_recorte),
-        url_preview=f"/download/{token_preview}",
-        url_crop=f"/download/{token_crop}",
+        url_preview=url_for("servir_imagem_personalizada", token=chave_imagem, baixar=1),
+        url_crop=url_for("servir_imagem_personalizada", token=chave_recorte, baixar=1),
     )
 
 
