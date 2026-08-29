@@ -419,6 +419,19 @@ def test_criar_pedido_sem_cliente_400(client):
     assert resposta.status_code == 400
 
 
+def test_criar_pedido_telefone_invalido_400(client):
+    """Ver conversa: usuario relatou problema com telefone invalido no
+    site antigo -- servidor confere formato (DDD real + 9 obrigatorio
+    no celular), nunca confia so no navegador."""
+    corpo = _corpo_valido(cliente={
+        "nome": "Maria Teste", "tipo_pessoa": "fisica", "documento": "11144477735",
+        "telefone": "20999999999", "email": "maria@example.com",  # DDD 20 nunca existiu
+    })
+    resposta = client.post("/api/pedido/criar", json=corpo)
+    assert resposta.status_code == 400
+    assert "Telefone" in resposta.get_json()["erro"]
+
+
 def test_criar_pedido_sem_endereco_400(client):
     resposta = client.post("/api/pedido/criar", json=_corpo_valido(endereco={"cep": "59000000"}))
     assert resposta.status_code == 400

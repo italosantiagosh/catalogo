@@ -139,6 +139,17 @@ def test_detalhe_mostra_dados_do_pedido(client, monkeypatch):
     assert "Maria Teste" in resposta.get_data(as_text=True)
 
 
+def test_detalhe_telefone_e_link_clicavel_pro_whatsapp(client, monkeypatch):
+    """Ver conversa: usuario quer poder clicar no telefone do cliente
+    no painel pra abrir o WhatsApp direto, em vez de copiar o numero
+    na mao."""
+    _preparar_admin(monkeypatch)
+    with patch("app.criar_link_pagamento", return_value={"url": "https://checkout.infinitepay.io/abc"}):
+        criado = client.post("/api/pedido/criar", json=_corpo_valido()).get_json()
+    detalhe = client.get(f"/admin/pedidos/{criado['token']}", auth=("admin", "segredo123")).get_data(as_text=True)
+    assert 'href="https://wa.me/5584999999999"' in detalhe
+
+
 def test_alterar_status_para_faturado(client, monkeypatch):
     _preparar_admin(monkeypatch)
     with patch("app.criar_link_pagamento", return_value={"url": "https://checkout.infinitepay.io/abc"}):
@@ -180,6 +191,52 @@ def test_alterar_status_para_enviado_dispara_email_uma_vez(client, monkeypatch):
             auth=("admin", "segredo123"),
         )
     mock_email2.assert_not_called()
+
+
+def test_alterar_status_para_enviado_registra_falha_no_email(client, monkeypatch):
+    """Ate isso ser corrigido (ver conversa: usuario relatou que o
+    painel nao mostrava nada sobre o e-mail de "enviado"), uma falha
+    aqui era completamente invisivel -- sem try/except nem registro."""
+    _preparar_admin(monkeypatch)
+    with patch("app.criar_link_pagamento", return_value={"url": "https://checkout.infinitepay.io/abc"}):
+        criado = client.post("/api/pedido/criar", json=_corpo_valido()).get_json()
+
+    with patch("app.enviar_pedido_enviado", return_value={"erro": "falha no envio"}):
+        client.post(
+            f"/admin/pedidos/{criado['token']}/status",
+            data={"status": "enviado", "codigo_rastreio": "BR123456789BR"},
+            auth=("admin", "segredo123"),
+        )
+
+    pedido = pedidos.obter_pedido(criado["token"])
+    assert pedido["email_pedido_enviado_enviado"] == 1
+    assert pedido["email_pedido_enviado_erro"] == "falha no envio"
+
+    detalhe = client.get(f"/admin/pedidos/{criado['token']}", auth=("admin", "segredo123")).get_data(as_text=True)
+    assert "falha no envio" in detalhe
+    assert "E-mail de pedido enviado" in detalhe
+
+
+def test_admin_reenvia_email_pedido_enviado(client, monkeypatch):
+    _preparar_admin(monkeypatch)
+    with patch("app.criar_link_pagamento", return_value={"url": "https://checkout.infinitepay.io/abc"}):
+        criado = client.post("/api/pedido/criar", json=_corpo_valido()).get_json()
+    with patch("app.enviar_pedido_enviado", return_value={"erro": "falhou"}):
+        client.post(
+            f"/admin/pedidos/{criado['token']}/status",
+            data={"status": "enviado", "codigo_rastreio": "BR123456789BR"},
+            auth=("admin", "segredo123"),
+        )
+
+    with patch("app.enviar_pedido_enviado", return_value={"ok": True}) as mock_reenvio:
+        resposta = client.post(
+            f"/admin/pedidos/{criado['token']}/reenviar-email-enviado", auth=("admin", "segredo123")
+        )
+    assert resposta.status_code in (302, 303)
+    mock_reenvio.assert_called_once()
+
+    pedido = pedidos.obter_pedido(criado["token"])
+    assert pedido["email_pedido_enviado_erro"] is None
 
 
 def test_alterar_status_para_enviado_salva_e_envia_transportadora(client, monkeypatch):

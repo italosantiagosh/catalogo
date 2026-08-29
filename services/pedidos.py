@@ -162,6 +162,13 @@ _COLUNAS_ADICIONAIS: list[tuple[str, str]] = [
     # e-mail do CLIENTE.
     ("notificacao_venda_enviada", "INTEGER NOT NULL DEFAULT 0"),
     ("notificacao_venda_erro", "TEXT"),
+    # E-mail "Pedido enviado" (ver app.py:admin_pedido_status ->
+    # services/email.py:enviar_pedido_enviado) -- antes disso essa
+    # chamada nao tinha try/except NEM registro nenhum, entao uma falha
+    # ficava completamente invisivel (nem aparecia erro, nem tinha como
+    # reenviar -- ver conversa, caso real relatado pelo usuario).
+    ("email_pedido_enviado_enviado", "INTEGER NOT NULL DEFAULT 0"),
+    ("email_pedido_enviado_erro", "TEXT"),
 ]
 
 # Fluxo de status depois de "pago" -- alteravel manualmente pelo painel
@@ -662,6 +669,18 @@ def marcar_notificacao_venda_enviada(token: str, *, erro: str | None) -> dict | 
     with _conexao() as conexao:
         conexao.execute(
             "UPDATE pedidos SET notificacao_venda_enviada = 1, notificacao_venda_erro = ? WHERE token = ?",
+            (erro, token),
+        )
+    return obter_pedido(token)
+
+
+def marcar_email_pedido_enviado_enviado(token: str, *, erro: str | None) -> dict | None:
+    """E-mail "Pedido enviado" (ver app.py:admin_pedido_status), disparado
+    quando o admin muda o status pra "enviado" -- mesma logica de
+    marcar_email_enviado, so que pra esse e-mail especifico."""
+    with _conexao() as conexao:
+        conexao.execute(
+            "UPDATE pedidos SET email_pedido_enviado_enviado = 1, email_pedido_enviado_erro = ? WHERE token = ?",
             (erro, token),
         )
     return obter_pedido(token)

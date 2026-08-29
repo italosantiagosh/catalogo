@@ -84,7 +84,13 @@
     <div class="bloco">
       <h2>Cliente</h2>
       <p>{{ pedido.cliente_nome }} — {{ pedido.cliente_email }}</p>
-      <p>{{ pedido.cliente_telefone }}</p>
+      <p>
+        {% if pedido.cliente_telefone %}
+          <a href="https://wa.me/{{ pedido.cliente_telefone | whatsapp }}" target="_blank" rel="noopener">{{ pedido.cliente_telefone }} 💬</a>
+        {% else %}
+          {{ pedido.cliente_telefone }}
+        {% endif %}
+      </p>
       <p>
         {{ 'CNPJ' if pedido.cliente_tipo_pessoa == 'juridica' else 'CPF' }}: {{ pedido.cliente_documento }}
       </p>
@@ -453,6 +459,24 @@
           <button type="submit">Reenviar</button>
         </form>
       </div>
+
+      {% if pedido.status in ('enviado', 'entregue') %}
+        <div class="integracao">
+          <div class="integracao-texto">
+            <strong>E-mail de pedido enviado:</strong>
+            {% if not pedido.email_pedido_enviado_enviado %}
+              ainda não enviado
+            {% elif pedido.email_pedido_enviado_erro %}
+              <span class="integracao-erro">⚠️ {{ pedido.email_pedido_enviado_erro }}</span>
+            {% else %}
+              ✅ enviado
+            {% endif %}
+          </div>
+          <form method="post" action="{{ url_for('admin_pedido_reenviar_email_enviado', token=pedido.token) }}">
+            <button type="submit">Reenviar</button>
+          </form>
+        </div>
+      {% endif %}
     </div>
   {% endif %}
 

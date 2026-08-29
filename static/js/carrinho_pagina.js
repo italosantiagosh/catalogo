@@ -111,6 +111,30 @@
     return tipoPessoa === 'juridica' ? cnpjValido(documento) : cpfValido(documento);
   }
 
+  // DDDs realmente atribuidos pela Anatel -- mesma lista de
+  // services/documentos.py:telefone_valido (servidor sempre reconfere,
+  // nunca confia so nisso). So confere FORMATO (nao existencia real
+  // nem se tem WhatsApp -- ver conversa).
+  const DDDS_VALIDOS = new Set([
+    11, 12, 13, 14, 15, 16, 17, 18, 19,
+    21, 22, 24, 27, 28,
+    31, 32, 33, 34, 35, 37, 38,
+    41, 42, 43, 44, 45, 46, 47, 48, 49,
+    51, 53, 54, 55,
+    61, 62, 63, 64, 65, 66, 67, 68, 69,
+    71, 73, 74, 75, 77, 79,
+    81, 82, 83, 84, 85, 86, 87, 88, 89,
+    91, 92, 93, 94, 95, 96, 97, 98, 99,
+  ]);
+
+  function telefoneValido(telefone) {
+    const digitos = (telefone || '').replace(/\D/g, '');
+    if (digitos.length !== 10 && digitos.length !== 11) return false;
+    if (!DDDS_VALIDOS.has(parseInt(digitos.slice(0, 2), 10))) return false;
+    if (digitos.length === 11 && digitos[2] !== '9') return false;
+    return true;
+  }
+
   let faixasAnteriores = {};
   let freteAnteriorAtingido = null;
   let primeiraRenderizacao = true;
@@ -826,6 +850,11 @@
         erroClienteDocumentoEl.hidden = false;
       }
       clienteDocumentoInput.focus();
+      return null;
+    }
+    if (!telefoneValido(cliente.telefone)) {
+      mostrarToast('⚠️ Telefone inválido. Confira o DDD e o número digitado.');
+      clienteTelefoneInput.focus();
       return null;
     }
     if (!endereco.cep || !endereco.logradouro || !endereco.numero || !endereco.bairro || !endereco.cidade || !endereco.uf) {

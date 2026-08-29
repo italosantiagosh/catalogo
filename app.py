@@ -120,7 +120,7 @@ from services.email import (
     enviar_pedido_enviado,
     enviar_pedido_excluido,
 )
-from services.documentos import documento_valido
+from services.documentos import documento_valido, numero_whatsapp, telefone_valido
 from services.frete import calcular_frete
 from services.infinitepay import criar_link_pagamento
 from services.pedidos import (
@@ -141,6 +141,7 @@ from services.pedidos import (
     marcar_email_enviado,
     marcar_email_lembrete_enviado,
     marcar_email_pedido_criado_enviado,
+    marcar_email_pedido_enviado_enviado,
     marcar_email_upsell_enviado,
     marcar_notificacao_venda_enviada,
     marcar_pago,
@@ -414,6 +415,7 @@ def _formatar_data_br(valor) -> str:
 
 app.jinja_env.filters["preco"] = _formatar_preco
 app.jinja_env.filters["data_br"] = _formatar_data_br
+app.jinja_env.filters["whatsapp"] = numero_whatsapp
 # Registrado como global (nao filtro) pra poder ser chamado direto nos
 # templates do painel admin com o pedido inteiro (ver
 # services.pedidos.previsoes_do_pedido).
@@ -1263,6 +1265,8 @@ def api_pedido_criar():
     rotulo_documento = "CNPJ" if cliente["tipo_pessoa"] == "juridica" else "CPF"
     if not documento_valido(cliente["tipo_pessoa"], cliente["documento"]):
         return jsonify(erro=f"{rotulo_documento} inválido. Confira o número digitado."), 400
+    if not telefone_valido(cliente["telefone"]):
+        return jsonify(erro="Telefone inválido. Confira o DDD e o número digitado."), 400
     endereco = _endereco_valido(dados)
     if endereco is None:
         return jsonify(erro="Preencha o endereço de entrega completo."), 400
@@ -1356,6 +1360,8 @@ def api_pedido_criar_boleto():
     rotulo_documento = "CNPJ" if cliente["tipo_pessoa"] == "juridica" else "CPF"
     if not documento_valido(cliente["tipo_pessoa"], cliente["documento"]):
         return jsonify(erro=f"{rotulo_documento} inválido. Confira o número digitado."), 400
+    if not telefone_valido(cliente["telefone"]):
+        return jsonify(erro="Telefone inválido. Confira o DDD e o número digitado."), 400
     endereco = _endereco_valido(dados)
     if endereco is None:
         return jsonify(erro="Preencha o endereço de entrega completo."), 400
@@ -1912,13 +1918,7 @@ def admin_pedido_status(token: str):
         abort(400, description="Status inválido.")
 
     if novo_status == "enviado" and pedido_antes["status"] != "enviado":
-        enviar_pedido_enviado(
-            pedido_atualizado,
-            pedido_atualizado.get("codigo_rastreio") or "",
-            pedido_atualizado.get("link_rastreio") or "",
-            url_for("ver_pedido", token=token, _external=True),
-            pedido_atualizado.get("transportadora") or "",
-        )
+        _reenviar_email_pedido_enviado(token)
 
     return redirect(url_for("admin_pedido_detalhe", token=token))
 
@@ -2162,6 +2162,31 @@ def _reenviar_notificacao_venda(token: str) -> str | None:
     return resultado_notificacao.get("erro")
 
 
+def _reenviar_email_pedido_enviado(token: str) -> str | None:
+    """Reenvia o e-mail "Pedido enviado" na mao -- usado pelo botao
+    individual (admin_pedido_reenviar_email_pedido_enviado) e pela
+    transicao automatica pra status "enviado" (ver admin_pedido_status).
+    Antes disso essa chamada nao tinha try/except NEM registro, entao
+    uma falha ficava completamente invisivel (ver conversa)."""
+    pedido = obter_pedido(token)
+    if pedido is None:
+        return "Pedido não encontrado."
+    if pedido["status"] not in ("enviado", "entregue"):
+        return "Esse pedido ainda não foi marcado como enviado."
+    try:
+        resultado_email = enviar_pedido_enviado(
+            pedido,
+            pedido.get("codigo_rastreio") or "",
+            pedido.get("link_rastreio") or "",
+            url_for("ver_pedido", token=token, _external=True),
+            pedido.get("transportadora") or "",
+        )
+    except Exception as exc:  # nunca deixa o operador numa tela de erro generica
+        resultado_email = {"erro": f"Erro inesperado ao enviar: {exc}"}
+    marcar_email_pedido_enviado_enviado(token, erro=resultado_email.get("erro"))
+    return resultado_email.get("erro")
+
+
 @app.route("/admin/pedidos/<token>/reenviar-tiny", methods=["POST"])
 def admin_pedido_reenviar_tiny(token: str):
     """Sincroniza (ou tenta de novo) com a Tiny na mao -- normalmente
@@ -2217,6 +2242,24 @@ def admin_pedido_reenviar_notificacao_venda(token: str):
         abort(404)
     erro = _reenviar_notificacao_venda(token)
     if erro == "Esse pedido ainda não foi pago.":
+        abort(400, description=erro)
+    return redirect(url_for("admin_pedido_detalhe", token=token))
+
+
+@app.route("/admin/pedidos/<token>/reenviar-email-enviado", methods=["POST"])
+def admin_pedido_reenviar_email_enviado(token: str):
+    """Reenvia o e-mail "Pedido enviado" na mao -- mesmo motivo do botao
+    de notificação de venda acima: essa chamada nao tinha nenhum
+    rastreio antes (ver services/pedidos.py:email_pedido_enviado_enviado/
+    email_pedido_enviado_erro)."""
+    if not _autenticacao_admin_valida(request.authorization):
+        return Response(
+            "Autenticação necessária.", 401, {"WWW-Authenticate": 'Basic realm="Painel de pedidos"'}
+        )
+    if obter_pedido(token) is None:
+        abort(404)
+    erro = _reenviar_email_pedido_enviado(token)
+    if erro == "Esse pedido ainda não foi marcado como enviado.":
         abort(400, description=erro)
     return redirect(url_for("admin_pedido_detalhe", token=token))
 
