@@ -149,9 +149,15 @@ def _enviar(*, email_cliente: str, nome_cliente: str, assunto: str, corpo_html: 
     if not email_cliente:
         return {"erro": "Pedido sem e-mail do cliente."}
 
+    destinatario = {"email": email_cliente}
+    if nome_cliente:
+        # Brevo rejeita "name" vazio com 400 -- enviar_notificacao_venda
+        # (aviso interno pra loja, ver conversa) manda nome_cliente=""
+        # de proposito, entao so inclui a chave quando tiver valor.
+        destinatario["name"] = nome_cliente
     payload = {
         "sender": {"name": EMAIL_REMETENTE_NOME, "email": EMAIL_REMETENTE},
-        "to": [{"email": email_cliente, "name": nome_cliente}],
+        "to": [destinatario],
         "subject": assunto,
         "htmlContent": corpo_html,
     }

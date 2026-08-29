@@ -90,6 +90,22 @@ def test_erro_de_rede(monkeypatch):
     assert "erro" in resultado
 
 
+def test_notificacao_venda_nao_manda_name_vazio_pro_brevo(monkeypatch):
+    """Ver conversa: o Brevo devolvia 400 Bad Request pra esse e-mail
+    especifico -- causa era "name": "" no destinatario (aviso interno
+    pra loja nao tem nome de cliente pra usar, so o e-mail)."""
+    monkeypatch.setattr(email, "BREVO_API_KEY", "segredo")
+    monkeypatch.setattr(email, "EMAIL_NOTIFICACAO_VENDA", "loja@example.com")
+    resposta_mock = Mock()
+    resposta_mock.raise_for_status = Mock()
+    with patch("services.email.requests.post", return_value=resposta_mock) as post_mock:
+        resultado = email.enviar_notificacao_venda(_pedido_exemplo(), "https://site/admin/pedidos/token")
+
+    assert resultado == {"ok": True}
+    corpo = post_mock.call_args.kwargs["json"]
+    assert corpo["to"] == [{"email": "loja@example.com"}]
+
+
 def test_link_pagamento_sem_api_key_devolve_erro(monkeypatch):
     monkeypatch.setattr(email, "BREVO_API_KEY", "")
     resultado = email.enviar_link_pagamento(
