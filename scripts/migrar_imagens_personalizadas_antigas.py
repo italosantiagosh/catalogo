@@ -57,7 +57,14 @@ def _migrar_data_uri(valor: str, *, nome_arquivo: str) -> str | None:
 
 
 def main() -> None:
-    conexao = sqlite3.connect(pedidos.DB_PATH)
+    # timeout=30 + WAL -- roda com o site AO VIVO no ar (mesmo banco),
+    # sem isso da "database is locked" na primeira escrita concorrente
+    # com o processo do site (ver conversa, erro real visto no shell
+    # do Render). WAL fica gravado no proprio arquivo, entao ajuda os
+    # dois lados (script e app) a partir da primeira conexao que abrir
+    # com isso.
+    conexao = sqlite3.connect(pedidos.DB_PATH, timeout=30)
+    conexao.execute("PRAGMA journal_mode=WAL")
     conexao.row_factory = sqlite3.Row
     linhas = conexao.execute("SELECT token, codigo, itens FROM pedidos").fetchall()
 
@@ -85,13 +92,18 @@ def main() -> None:
                 imagens_migradas += 1
 
         if mudou:
+            # commita CADA pedido na hora (em vez de um commit gigante
+            # so no final) -- prende o lock de escrita por menos tempo
+            # de cada vez, e se o script for interrompido no meio o
+            # progresso ja feito nao se perde (idempotente, ver
+            # _migrar_data_uri -- rodar de novo so pega o que sobrou).
             conexao.execute(
                 "UPDATE pedidos SET itens = ? WHERE token = ?",
                 (json.dumps(itens, ensure_ascii=False), linha["token"]),
             )
+            conexao.commit()
             pedidos_alterados += 1
 
-    conexao.commit()
     conexao.close()
     print(
         f"{pedidos_alterados} pedido(s) migrado(s), {imagens_migradas} imagem(ns) "

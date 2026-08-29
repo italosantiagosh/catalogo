@@ -42,7 +42,11 @@ DB_PATH = os.environ.get(
 
 @contextmanager
 def _conexao():
-    conexao = sqlite3.connect(DB_PATH)
+    # timeout=30 + WAL -- ver mesmo comentario em services/pedidos.py
+    # (mesmo banco, mesmo risco de "database is locked" com escrita
+    # concorrente).
+    conexao = sqlite3.connect(DB_PATH, timeout=30)
+    conexao.execute("PRAGMA journal_mode=WAL")
     conexao.row_factory = sqlite3.Row
     try:
         yield conexao

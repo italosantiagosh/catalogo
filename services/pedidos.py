@@ -48,7 +48,15 @@ def _gerar_codigo() -> str:
 
 @contextmanager
 def _conexao():
-    conexao = sqlite3.connect(DB_PATH)
+    # timeout=30 + WAL: sem isso, qualquer escrita concorrente (job
+    # agendado, webhook, um script rodando por fora tipo
+    # scripts/migrar_*) podia derrubar com "database is locked" na
+    # hora, mesmo sendo uma escrita rapida -- visto na pratica rodando
+    # a migracao com o site no ar (ver conversa). WAL deixa leitura e
+    # escrita acontecerem ao mesmo tempo sem se bloquear; timeout faz
+    # esperar alguns segundos em vez de falhar na hora se colidir.
+    conexao = sqlite3.connect(DB_PATH, timeout=30)
+    conexao.execute("PRAGMA journal_mode=WAL")
     conexao.row_factory = sqlite3.Row
     try:
         yield conexao
