@@ -440,6 +440,40 @@ def test_confirmar_venda_com_destinatario_diferente(client, monkeypatch):
     assert pedido["endereco_logradouro"] == "Rua Teste"
 
 
+def test_confirmar_venda_com_telefone_do_destinatario_aparece_clicavel(client, monkeypatch):
+    """Ver conversa: telefone de quem recebe (opcional) tambem vira
+    link clicavel de WhatsApp no painel, igual o telefone do cliente."""
+    _preparar_admin(monkeypatch)
+    lead = _criar_lead_whatsapp(client)
+
+    with patch("app.criar_pedido_tiny", return_value={"ok": True, "numero": 55, "id": 1}), \
+         patch("app.enviar_confirmacao_pedido", return_value={"ok": True}), \
+         patch("app.enviar_notificacao_venda", return_value={"ok": True}), \
+         patch("app.enviar_notificacao_push", return_value={"ok": True}):
+        client.post(
+            f"/admin/pedidos/{lead['token']}/confirmar-venda",
+            data={
+                "cliente_nome": "Paróquia São José", "cliente_documento": "12345678000199",
+                "endereco_cep": "59000000", "endereco_logradouro": "Rua Teste", "endereco_numero": "100",
+                "endereco_bairro": "Centro", "endereco_cidade": "Natal", "endereco_uf": "RN",
+                "destinatario_nome": "Livraria Shalom", "destinatario_documento": "98765432000188",
+                "destinatario_telefone": "84988887777",
+                "destinatario_cep": "59100000", "destinatario_logradouro": "Av. Livraria",
+                "destinatario_numero": "500", "destinatario_bairro": "Centro",
+                "destinatario_cidade": "Natal", "destinatario_uf": "RN",
+                "frete_descricao": "Combinado no WhatsApp", "frete_preco": "15,00",
+                "forma_pagamento": "Pix", "valor_pago": "65,00",
+            },
+            auth=("admin", "segredo123"),
+        )
+
+    pedido = pedidos.obter_pedido(lead["token"])
+    assert pedido["endereco_destinatario_telefone"] == "84988887777"
+
+    pagina = client.get(f"/admin/pedidos/{lead['token']}", auth=("admin", "segredo123")).get_data(as_text=True)
+    assert "https://wa.me/5584988887777" in pagina
+
+
 def test_admin_tiny_buscar_contato_exige_autenticacao(client, monkeypatch):
     _preparar_admin(monkeypatch)
     resposta = client.get("/admin/tiny/buscar-contato?q=livraria")

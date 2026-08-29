@@ -48,6 +48,8 @@
   const labelDestinatarioDocumento = document.getElementById('label-destinatario-documento');
   const destinatarioDocumentoInput = document.getElementById('destinatario-documento');
   const erroDestinatarioDocumentoEl = document.getElementById('erro-destinatario-documento');
+  const destinatarioTelefoneInput = document.getElementById('destinatario-telefone');
+  const erroDestinatarioTelefoneEl = document.getElementById('erro-destinatario-telefone');
   const destinatarioCepInput = document.getElementById('destinatario-cep');
   const btnBuscarCepDestinatario = document.getElementById('btn-buscar-cep-destinatario');
   const destinatarioLogradouroInput = document.getElementById('destinatario-logradouro');
@@ -880,6 +882,20 @@
           erroDestinatarioDocumentoEl.hidden = false;
         }
         destinatarioDocumentoInput.focus();
+        return null;
+      }
+
+      // opcional -- so valida formato quando preenchido (ver
+      // app.py:_endereco_valido, mesma logica).
+      endereco.destinatario_telefone = (destinatarioTelefoneInput ? destinatarioTelefoneInput.value : '').trim();
+      if (erroDestinatarioTelefoneEl) erroDestinatarioTelefoneEl.hidden = true;
+      if (endereco.destinatario_telefone && !telefoneValido(endereco.destinatario_telefone)) {
+        mostrarToast('⚠️ Telefone de quem recebe é inválido. Confira o DDD e o número digitado.');
+        if (erroDestinatarioTelefoneEl) {
+          erroDestinatarioTelefoneEl.textContent = 'Telefone inválido.';
+          erroDestinatarioTelefoneEl.hidden = false;
+        }
+        destinatarioTelefoneInput.focus();
         return null;
       }
 

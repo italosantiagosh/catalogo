@@ -196,9 +196,11 @@ def criar_pedido_tiny(pedido: dict) -> dict:
     # documento do destinatario so ia pro texto livre da observacao
     # "Entregar aos cuidados de" acima, nunca campo estruturado -- por
     # isso aparecia so nas observacoes/nota, nunca no campo de CPF
-    # proprio da Tiny, ver conversa). Sem telefone do destinatario aqui
-    # -- o checkout do site nunca coletou um telefone separado pra
-    # quem recebe, so pro cliente que fecha a compra.
+    # proprio da Tiny, ver conversa). "fone" aqui e´ o telefone de quem
+    # RECEBE (destinatario), quando preenchido no checkout -- opcional,
+    # so pra transportadora/Tiny conseguirem contato se precisar (ver
+    # endereco_destinatario_telefone em services.pedidos). Tambem AINDA
+    # NAO confirmado com pedido de teste real, mesmo criterio acima.
     if pedido.get("endereco_destinatario_logradouro"):
         corpo_pedido["endereco_entrega"] = {
             "nome_destinatario": pedido.get("endereco_destinatario_nome", ""),
@@ -211,6 +213,8 @@ def criar_pedido_tiny(pedido: dict) -> dict:
             "cidade": pedido.get("endereco_destinatario_cidade", ""),
             "uf": pedido.get("endereco_destinatario_uf", ""),
         }
+        if pedido.get("endereco_destinatario_telefone"):
+            corpo_pedido["endereco_entrega"]["fone"] = pedido["endereco_destinatario_telefone"]
 
     try:
         resposta = requests.post(

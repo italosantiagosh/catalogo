@@ -108,7 +108,12 @@
       {% endif %}
       <h2>Endereço de entrega</h2>
       {% if pedido.endereco_destinatario_nome %}
-        <p>Destinatário: {{ pedido.endereco_destinatario_nome }}{% if pedido.endereco_destinatario_documento %} ({{ pedido.endereco_destinatario_documento }}){% endif %}</p>
+        <p>
+          Destinatário: {{ pedido.endereco_destinatario_nome }}{% if pedido.endereco_destinatario_documento %} ({{ pedido.endereco_destinatario_documento }}){% endif %}
+          {%- if pedido.endereco_destinatario_telefone %} —
+            <a href="https://wa.me/{{ pedido.endereco_destinatario_telefone | whatsapp }}" target="_blank" rel="noopener">{{ pedido.endereco_destinatario_telefone }} 💬</a>
+          {%- endif %}
+        </p>
       {% endif %}
       {% if pedido.endereco_destinatario_logradouro %}
         <p>
@@ -220,6 +225,8 @@
           <input type="text" name="destinatario_nome" id="destinatario_nome">
           <label for="destinatario_documento">CPF/CNPJ</label>
           <input type="text" name="destinatario_documento" id="destinatario_documento">
+          <label for="destinatario_telefone">Celular/telefone de quem recebe (opcional)</label>
+          <input type="text" name="destinatario_telefone" id="destinatario_telefone" placeholder="(00) 00000-0000">
           <label for="destinatario_cep">CEP de entrega</label>
           <input type="text" name="destinatario_cep" id="destinatario_cep" inputmode="numeric" placeholder="00000-000">
           <label for="destinatario_logradouro">Endereço (rua/avenida)</label>

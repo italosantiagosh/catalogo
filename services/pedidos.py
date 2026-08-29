@@ -111,6 +111,11 @@ _COLUNAS_ADICIONAIS: list[tuple[str, str]] = [
     ("endereco_destinatario_bairro", "TEXT"),
     ("endereco_destinatario_cidade", "TEXT"),
     ("endereco_destinatario_uf", "TEXT"),
+    # Telefone de quem recebe, quando diferente de quem fecha a compra
+    # (ver conversa) -- opcional, so pra transportadora/Tiny conseguirem
+    # contato se precisar. Formato conferido (telefone_valido) so quando
+    # preenchido, nunca obrigatorio.
+    ("endereco_destinatario_telefone", "TEXT"),
     # Link pro PDF da nota fiscal (emitida na Tiny, colado a mao pelo
     # admin ao marcar "faturado" -- ainda nao ha sincronizacao
     # automatica de NF-e com a Tiny, ver app.py:admin_pedido_status).
@@ -260,9 +265,9 @@ def criar_pedido(
                 endereco_destinatario_nome, endereco_destinatario_tipo_pessoa, endereco_destinatario_documento,
                 endereco_destinatario_cep, endereco_destinatario_logradouro, endereco_destinatario_numero,
                 endereco_destinatario_complemento, endereco_destinatario_bairro, endereco_destinatario_cidade,
-                endereco_destinatario_uf,
+                endereco_destinatario_uf, endereco_destinatario_telefone,
                 criado_em
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
             (
                 token,
@@ -299,6 +304,7 @@ def criar_pedido(
                 endereco.get("destinatario_bairro", ""),
                 endereco.get("destinatario_cidade", ""),
                 endereco.get("destinatario_uf", ""),
+                endereco.get("destinatario_telefone", ""),
                 agora,
             ),
         )
@@ -587,7 +593,7 @@ def confirmar_venda_manual(
                 endereco_destinatario_cep = ?, endereco_destinatario_logradouro = ?,
                 endereco_destinatario_numero = ?, endereco_destinatario_complemento = ?,
                 endereco_destinatario_bairro = ?, endereco_destinatario_cidade = ?,
-                endereco_destinatario_uf = ?,
+                endereco_destinatario_uf = ?, endereco_destinatario_telefone = ?,
                 frete_descricao = ?, frete_preco = ?, frete_prazo_dias = ?, total = ?,
                 forma_pagamento = ?, valor_pago = ?
             WHERE token = ?
@@ -606,7 +612,7 @@ def confirmar_venda_manual(
                 destinatario.get("cep", ""), destinatario.get("logradouro", ""),
                 destinatario.get("numero", ""), destinatario.get("complemento", ""),
                 destinatario.get("bairro", ""), destinatario.get("cidade", ""),
-                destinatario.get("uf", ""),
+                destinatario.get("uf", ""), destinatario.get("telefone", ""),
                 frete_descricao, frete_preco, frete_prazo_dias, total,
                 forma_pagamento, valor_pago,
                 token,

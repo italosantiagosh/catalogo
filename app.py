@@ -1179,6 +1179,14 @@ def _endereco_valido(dados: dict) -> dict | None:
         return None
     valores.update(valores_endereco_dest)
     valores["destinatario_complemento"] = str(endereco.get("destinatario_complemento", "")).strip()
+    # Telefone de quem recebe, quando diferente de quem fecha a compra
+    # (ver conversa) -- opcional mesmo com endereco de entrega diferente
+    # preenchido, so pra transportadora/Tiny conseguirem contato se
+    # precisar. So valida formato quando preenchido, nunca obrigatorio.
+    destinatario_telefone = str(endereco.get("destinatario_telefone", "")).strip()
+    if destinatario_telefone and not telefone_valido(destinatario_telefone):
+        return None
+    valores["destinatario_telefone"] = destinatario_telefone
     return valores
 
 
@@ -2035,6 +2043,7 @@ def admin_pedido_confirmar_venda(token: str):
             "bairro": str(request.form.get("destinatario_bairro", "")).strip(),
             "cidade": str(request.form.get("destinatario_cidade", "")).strip(),
             "uf": str(request.form.get("destinatario_uf", "")).strip(),
+            "telefone": str(request.form.get("destinatario_telefone", "")).strip(),
         }
 
     try:

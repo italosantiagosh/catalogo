@@ -397,6 +397,46 @@ def test_criar_pedido_endereco_de_entrega_incompleto_400(client):
     assert resposta.status_code == 400
 
 
+def test_criar_pedido_com_telefone_do_destinatario(client):
+    """Telefone de quem recebe (ver conversa) -- opcional, so pra
+    transportadora/Tiny conseguirem contato se precisar."""
+    corpo = _corpo_valido(endereco={
+        "cep": "59000000", "logradouro": "Rua Teste", "numero": "100", "complemento": "",
+        "bairro": "Centro", "cidade": "Natal", "uf": "RN",
+        "destinatario_nome": "Ana Coordenadora", "destinatario_tipo_pessoa": "fisica",
+        "destinatario_documento": "98765432100", "destinatario_telefone": "84988887777",
+    })
+    with patch("app.criar_link_pagamento", return_value={"url": "https://checkout.infinitepay.io/abc"}):
+        criado = client.post("/api/pedido/criar", json=corpo).get_json()
+    assert criado.get("token")
+    pedido = pedidos.obter_pedido(criado["token"])
+    assert pedido["endereco_destinatario_telefone"] == "84988887777"
+
+
+def test_criar_pedido_sem_telefone_do_destinatario_fica_vazio(client):
+    corpo = _corpo_valido(endereco={
+        "cep": "59000000", "logradouro": "Rua Teste", "numero": "100", "complemento": "",
+        "bairro": "Centro", "cidade": "Natal", "uf": "RN",
+        "destinatario_nome": "Ana Coordenadora", "destinatario_tipo_pessoa": "fisica",
+        "destinatario_documento": "98765432100",
+    })
+    with patch("app.criar_link_pagamento", return_value={"url": "https://checkout.infinitepay.io/abc"}):
+        criado = client.post("/api/pedido/criar", json=corpo).get_json()
+    pedido = pedidos.obter_pedido(criado["token"])
+    assert pedido["endereco_destinatario_telefone"] == ""
+
+
+def test_criar_pedido_telefone_do_destinatario_invalido_400(client):
+    corpo = _corpo_valido(endereco={
+        "cep": "59000000", "logradouro": "Rua Teste", "numero": "100", "complemento": "",
+        "bairro": "Centro", "cidade": "Natal", "uf": "RN",
+        "destinatario_nome": "Ana Coordenadora", "destinatario_tipo_pessoa": "fisica",
+        "destinatario_documento": "98765432100", "destinatario_telefone": "20999999999",  # DDD 20 nunca existiu
+    })
+    resposta = client.post("/api/pedido/criar", json=corpo)
+    assert resposta.status_code == 400
+
+
 def test_criar_pedido_carrinho_vazio_400(client):
     resposta = client.post("/api/pedido/criar", json=_corpo_valido(itens=[]))
     assert resposta.status_code == 400
