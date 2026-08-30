@@ -224,9 +224,27 @@ def _linhas_do_produto(produto: dict, formato: str) -> list[dict[str, object]]:
 
 
 def gerar(template_path: Path, saida_path: Path) -> int:
-    wb = _consertar_e_abrir(template_path)
-    ws = wb["Modelo"]
-    colunas = _mapa_de_colunas(ws)
+    # NAO reaproveita o workbook original pra montar a saida: a aba
+    # "Modelo" tem validacao de dropdown apontando pras abas auxiliares
+    # (HiddenTax etc.) -- so´ deletar essas abas (tentativa anterior,
+    # ver historico do commit) deixa essas referencias penduradas e
+    # corrompe o arquivo de verdade (nem o LibreOffice abre mais). Em
+    # vez disso, copia so os VALORES das linhas 1-6 (cabecalho/instrucao
+    # da propria Shopee) pra um workbook novo e limpo, sem validacao
+    # nem nome definido de nenhuma aba auxiliar -- garante 1 aba so,
+    # sempre abrindo sem erro.
+    wb_original = _consertar_e_abrir(template_path)
+    ws_original = wb_original["Modelo"]
+    colunas = _mapa_de_colunas(ws_original)
+
+    wb = openpyxl.Workbook()
+    ws = wb.active
+    ws.title = "Modelo"
+    for linha in range(1, 7):
+        for coluna in range(1, ws_original.max_column + 1):
+            valor = ws_original.cell(row=linha, column=coluna).value
+            if valor is not None:
+                ws.cell(row=linha, column=coluna, value=valor)
 
     produtos = __import__("json").loads((DATA_DIR / "produtos.json").read_text(encoding="utf-8"))
 
@@ -241,14 +259,6 @@ def gerar(template_path: Path, saida_path: Path) -> int:
                     ws.cell(row=linha_atual, column=colunas[chave], value=valor)
                 linha_atual += 1
                 total += 1
-
-    # Usuario relatou erro ao subir o arquivo com as abas auxiliares da
-    # propria Shopee (Orientacao, Fazer upload do exemplo, Intervalo do
-    # PP para Encomenda, etc.) -- mantem so a aba "Modelo" (linhas 1-6
-    # de cabecalho da propria Shopee + os dados), removendo o resto.
-    for nome_aba in list(wb.sheetnames):
-        if nome_aba != "Modelo":
-            del wb[nome_aba]
 
     wb.save(saida_path)
     return total
