@@ -165,8 +165,13 @@ def _linhas_do_produto(produto: dict, formato: str) -> list[dict[str, object]]:
         "et_title_variation_integration_no": sku_pai,
         "ps_stock": ESTOQUE_PLACEHOLDER,
         "ps_item_cover_image": imagem_capa,
-        "channel_id.90024": "Ativar",
-        "channel_id.91003": "Ativar",
+        # Valor valido e´ "Ativado" (nao "Ativar") -- ver
+        # linha 6 da propria coluna no template ("Ativado/Desativado").
+        # Confirmado como a causa real da rejeicao "Falha em Todos" (ver
+        # conversa: motivo devolvido pela Shopee apontava exatamente
+        # pros IDs de canal 90024/91003 com o valor errado).
+        "channel_id.90024": "Ativado",
+        "channel_id.91003": "Ativado",
         "ps_product_pre_order_dts": PRAZO_POSTAGEM_DIAS,
         "ps_invoice_ncm": NCM.replace(".", ""),
         "ps_invoice_origin": ORIGEM_TEXTO,
