@@ -87,7 +87,7 @@ ESTOQUE_PLACEHOLDER = 999
 # Conferido na aba oficial "Intervalo do PP para Encomenda" do proprio
 # template da Shopee: as duas categorias abaixo aceitam faixa "3 - 15"
 # dias, entao 3 ja´ e´ o minimo permitido -- nao precisa subir.
-PRAZO_POSTAGEM_DIAS = ""  # TESTE 2 (ver conversa): sem prazo de encomenda, categoria preenchida -- inverso do teste 1
+PRAZO_POSTAGEM_DIAS = 3  # minimo permitido pras categorias 101399/101396 (ver Intervalo do PP para Encomenda)
 
 CATEGORIA_ID_POR_FORMATO = {"medalha": "101399", "entremeio": "101399", "chaveiro": "101396"}
 CATEGORIA_TEXTO_POR_FORMATO = {
@@ -165,18 +165,16 @@ def _linhas_do_produto(produto: dict, formato: str) -> list[dict[str, object]]:
         "et_title_variation_integration_no": sku_pai,
         "ps_stock": ESTOQUE_PLACEHOLDER,
         "ps_item_cover_image": imagem_capa,
-        # "Ativar"/"Off" -- CORRIGIDO (ver conversa): a linha 6 da
-        # coluna descreve "Ativado/Desativado", mas essa e´ so a
-        # instrucao em texto -- os valores de verdade usados na propria
-        # aba "Fazer upload do exemplo" da Shopee (dados reais de
-        # exemplo, nao descricao) sao "Ativar"/"Off". "Ativado" (usado
-        # antes) tambem falhava, entao a descricao da linha 6 nao
-        # reflete o token de verdade esperado. 90024 e´ "Retirada pelo
-        # Comprador" -- usuario decidiu nao oferecer essa opcao (ver
-        # conversa), entao fica Off de proposito (nao e´ erro, e´
-        # escolha). 91003 e´ "Shopee Xpress", o unico canal que o
-        # usuario realmente quer.
-        "channel_id.90024": "Off",
+        # "Ativar" -- ver conversa: a linha 6 da coluna descreve
+        # "Ativado/Desativado", mas os valores de verdade usados na
+        # propria aba "Fazer upload do exemplo" da Shopee (dados reais
+        # de exemplo, nao descricao) sao "Ativar"/"Off". O canal 90024
+        # (Retirada pelo Comprador) o usuario desativou na propria
+        # conta (nao queria oferecer essa opcao) -- a Shopee ja nem
+        # manda mais essa coluna nos templates baixados depois disso
+        # (a causa real da rejeicao "desatualizado" era essa, nao
+        # categoria/prazo). 91003 (Shopee Xpress) e´ o unico canal que
+        # sobrou, e o que o usuario realmente quer.
         "channel_id.91003": "Ativar",
         "ps_product_pre_order_dts": PRAZO_POSTAGEM_DIAS,
         "ps_invoice_ncm": NCM.replace(".", ""),
