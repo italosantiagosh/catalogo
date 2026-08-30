@@ -87,15 +87,9 @@ ESTOQUE_PLACEHOLDER = 999
 # Conferido na aba oficial "Intervalo do PP para Encomenda" do proprio
 # template da Shopee: as duas categorias abaixo aceitam faixa "3 - 15"
 # dias, entao 3 ja´ e´ o minimo permitido -- nao precisa subir.
-PRAZO_POSTAGEM_DIAS = 3
+PRAZO_POSTAGEM_DIAS = ""  # TESTE 2 (ver conversa): sem prazo de encomenda, categoria preenchida -- inverso do teste 1
 
-# TESTE (ver conversa): categoria em branco de proposito, pra isolar se
-# 101399/101396 e´ que rejeitava produto sob encomenda (Prazo de
-# Postagem preenchido). Se der certo com categoria em branco, o
-# problema era a combinacao categoria+encomenda; se continuar falhando
-# do mesmo jeito, o proximo teste e´ o oposto (categoria preenchida,
-# sem prazo de encomenda).
-CATEGORIA_ID_POR_FORMATO = {"medalha": "", "entremeio": "", "chaveiro": ""}
+CATEGORIA_ID_POR_FORMATO = {"medalha": "101399", "entremeio": "101399", "chaveiro": "101396"}
 CATEGORIA_TEXTO_POR_FORMATO = {
     "medalha": "101399 - Hobbies e Coleções/Souvenirs/Outros",
     "entremeio": "101399 - Hobbies e Coleções/Souvenirs/Outros",
@@ -287,8 +281,9 @@ def main() -> None:
     print()
     cat_medalha = CATEGORIA_ID_POR_FORMATO["medalha"] or "(EM BRANCO -- teste, ver conversa)"
     cat_chaveiro = CATEGORIA_ID_POR_FORMATO["chaveiro"] or "(EM BRANCO -- teste, ver conversa)"
+    prazo = PRAZO_POSTAGEM_DIAS if PRAZO_POSTAGEM_DIAS != "" else "(EM BRANCO -- teste, ver conversa)"
     print(f"Categoria: {cat_medalha} (medalha/entremeio), {cat_chaveiro} (chaveiro)")
-    print(f"Prazo de Postagem para Encomenda: {PRAZO_POSTAGEM_DIAS} dias (minimo permitido pras duas categorias e´ 3)")
+    print(f"Prazo de Postagem para Encomenda: {prazo}")
     print()
     print("CONFERIR ANTES DE SUBIR NA SHOPEE:")
     print(f"  - Estoque preenchido com {ESTOQUE_PLACEHOLDER} (placeholder, produto e´ sob encomenda) -- ajustar se quiser outro numero.")
