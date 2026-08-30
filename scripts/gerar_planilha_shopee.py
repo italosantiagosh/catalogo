@@ -22,12 +22,14 @@ Bug conhecido do proprio export da Shopee: o XML da planilha vem com
 Esse script conserta isso automaticamente (troca por "bottomLeft") antes
 de abrir, tanto no arquivo de entrada quanto ao salvar a saida.
 
-ESTRUTURA (ver conversa -- diferente da planilha da Tiny de proposito):
-  - 1 anuncio por SANTO + FORMATO (nao mais por santo+modelo) -- "Modelo"
-    agora e´ a propria Variacao 1, pra nao duplicar anuncio por modelo.
-  - Medalha:   Variacao 1 = Modelo   | Variacao 2 = Tamanho (12mm/16mm)
-  - Entremeio: Variacao 1 = Modelo   | Variacao 2 = Cor (Ouro Velho/Prata)
-  - Chaveiro:  Variacao 1 = Modelo   | sem Variacao 2 (chaveiro nao varia)
+ESTRUTURA (ver conversa -- ajustada depois de testar de verdade na
+Shopee: anuncio com 2 niveis de variacao (Modelo + Tamanho/Cor) sempre
+falhava "Geral" sem explicacao; anuncio com 1 nivel so (Modelo, no
+chaveiro) publicou certo. Por isso a estrutura NAO e´ igual pros 3
+formatos):
+  - Medalha:   1 anuncio POR MODELO (nome do modelo no titulo) | Variacao unica = Tamanho (12mm/16mm)
+  - Entremeio: 1 anuncio POR MODELO (nome do modelo no titulo) | Variacao unica = Cor (Ouro Velho/Prata)
+  - Chaveiro:  1 anuncio por SANTO (todos os modelos juntos)   | Variacao unica = Modelo
   - Preco fixo por formato, DIFERENTE do preco da Tiny de proposito (ver
     conversa): R$15,00 medalha/entremeio, R$25,00 chaveiro.
   - SKU por variacao reaproveita o MESMO esquema ja confirmado em
@@ -140,27 +142,11 @@ def _url_imagem(caminho_relativo: str) -> str:
     return f"{DOMINIO}/static/{caminho_relativo}"
 
 
-def _linhas_do_produto(produto: dict, formato: str) -> list[dict[str, object]]:
-    """Monta as linhas de UM anuncio (santo + formato), com Modelo como
-    Variacao 1 e Tamanho/Cor como Variacao 2 (exceto chaveiro, sem
-    Variacao 2) -- ver docstring do modulo."""
-    produto_id = produto["id"]
-    nome_santo = produto["nome"]
-    prefixo = {"medalha": "MED", "entremeio": "ENT", "chaveiro": "CHAV"}[formato]
-    sku_pai = f"{prefixo}-{produto_id.upper()}"
-    preco = PRECO_SHOPEE_POR_FORMATO[formato]
-    imagem_capa = _url_imagem(produto["modelos"][0]["imagem" if formato == "medalha" else (
-        "imagem_entremeio_prata" if formato == "entremeio" else "imagem_chaveiro"
-    )])
-
-    base_comum = {
+def _base_comum(formato: str, nome_titulo: str, descricao_santo: str, sku_pai: str, imagem_capa: str) -> dict:
+    return {
         "ps_category": CATEGORIA_ID_POR_FORMATO[formato],
-        "ps_product_name": {
-            "medalha": f"Medalha {nome_santo} - Aço Inox Resinado - Nove de Julho",
-            "entremeio": f"Entremeio {nome_santo} para Terço - Nove de Julho",
-            "chaveiro": f"Chaveiro {nome_santo} - Nove de Julho",
-        }[formato],
-        "ps_product_description": _DESCRICOES_POR_FORMATO[formato](nome_santo),
+        "ps_product_name": nome_titulo,
+        "ps_product_description": _DESCRICOES_POR_FORMATO[formato](descricao_santo),
         "ps_sku_parent_short": sku_pai,
         "et_title_variation_integration_no": sku_pai,
         "ps_stock": ESTOQUE_PLACEHOLDER,
@@ -185,49 +171,67 @@ def _linhas_do_produto(produto: dict, formato: str) -> list[dict[str, object]]:
         "ps_height": ALTURA_CM,
     }
 
-    linhas: list[dict[str, object]] = []
-    for modelo in produto["modelos"]:
-        modelo_id = modelo["id"]
-        modelo_nome = modelo["nome"]
 
-        if formato == "medalha":
-            imagem_variacao = _url_imagem(modelo["imagem"])
+def _linhas_do_produto(produto: dict, formato: str) -> list[dict[str, object]]:
+    """Monta as linhas de anuncio pra um santo + formato -- ver
+    docstring do modulo. Medalha/Entremeio: 1 anuncio POR MODELO (nome
+    do modelo entra no titulo), com Tamanho/Cor como UNICA variacao.
+    Chaveiro: 1 anuncio pro santo inteiro, com Modelo como a variacao
+    (essa estrutura -- 1 so nivel de variacao -- e´ a que a Shopee
+    aceitou de verdade: chaveiro publicou certo, mas medalha/entremeio
+    com 2 niveis (Modelo + Tamanho/Cor) sempre falhava "Geral" sem
+    explicacao -- ver conversa)."""
+    produto_id = produto["id"]
+    nome_santo = produto["nome"]
+    prefixo = {"medalha": "MED", "entremeio": "ENT", "chaveiro": "CHAV"}[formato]
+    preco = PRECO_SHOPEE_POR_FORMATO[formato]
+    linhas: list[dict[str, object]] = []
+
+    if formato == "medalha":
+        for modelo in produto["modelos"]:
+            modelo_id = modelo["id"]
+            sku_pai = f"{prefixo}-{produto_id.upper()}-M{modelo_id}"
+            imagem = _url_imagem(modelo["imagem"])
+            base = _base_comum(
+                formato, f"Medalha {nome_santo} - {modelo['nome']} - Nove de Julho", nome_santo, sku_pai, imagem
+            )
             for tamanho in modelo["tamanhos"]:
                 linhas.append({
-                    **base_comum,
-                    "et_title_variation_1": "Modelo", "et_title_option_for_variation_1": modelo_nome,
-                    "et_title_image_per_variation": imagem_variacao,
-                    "et_title_variation_2": "Tamanho", "et_title_option_for_variation_2": tamanho,
+                    **base,
+                    "et_title_variation_1": "Tamanho", "et_title_option_for_variation_1": tamanho,
+                    "et_title_image_per_variation": imagem,
                     "ps_price": preco, "ps_weight": PESO_KG_POR_CHAVE[tamanho],
-                    "ps_sku_short": f"{sku_pai}-M{modelo_id}-{tamanho}",
+                    "ps_sku_short": f"{sku_pai}-{tamanho}",
                 })
-        elif formato == "entremeio":
-            # A Shopee exige a MESMA imagem em todas as linhas que
-            # compartilham a mesma opcao de Variacao 1 (aqui, Modelo) --
-            # ver conversa/docstring do modulo. Por isso a imagem por
-            # variacao usa sempre a foto do modelo (prata), nunca varia
-            # por Cor (Variacao 2); a foto ouro velho entra como imagem
-            # extra da galeria (S/ps_item_image_1) pra nao perder a
-            # referencia visual da outra cor.
-            imagem_variacao = _url_imagem(modelo["imagem_entremeio_prata"])
-            imagem_extra = _url_imagem(modelo["imagem_entremeio_ouro_velho"])
-            for cor in ("Ouro Velho", "Prata"):
+    elif formato == "entremeio":
+        for modelo in produto["modelos"]:
+            modelo_id = modelo["id"]
+            sku_pai = f"{prefixo}-{produto_id.upper()}-M{modelo_id}"
+            imagem_prata = _url_imagem(modelo["imagem_entremeio_prata"])
+            imagem_ouro = _url_imagem(modelo["imagem_entremeio_ouro_velho"])
+            base = _base_comum(
+                formato, f"Entremeio {nome_santo} - {modelo['nome']} - Nove de Julho", nome_santo, sku_pai,
+                imagem_prata,
+            )
+            for cor, imagem_cor in (("Ouro Velho", imagem_ouro), ("Prata", imagem_prata)):
                 linhas.append({
-                    **base_comum,
-                    "et_title_variation_1": "Modelo", "et_title_option_for_variation_1": modelo_nome,
-                    "et_title_image_per_variation": imagem_variacao,
-                    "et_title_variation_2": "Cor", "et_title_option_for_variation_2": cor,
+                    **base,
+                    "et_title_variation_1": "Cor", "et_title_option_for_variation_1": cor,
+                    "et_title_image_per_variation": imagem_cor,
                     "ps_price": preco, "ps_weight": PESO_KG_POR_CHAVE["entremeio"],
-                    "ps_sku_short": f"{sku_pai}-M{modelo_id}-{cor[:2].upper()}",
-                    "ps_item_image_1": imagem_extra,
+                    "ps_sku_short": f"{sku_pai}-{cor[:2].upper()}",
                 })
-        else:  # chaveiro -- so Variacao 1 (Modelo), sem Variacao 2
+    else:  # chaveiro -- 1 anuncio pro santo, Modelo como unica variacao (ja confirmado funcionando)
+        sku_pai = f"{prefixo}-{produto_id.upper()}"
+        imagem_capa = _url_imagem(produto["modelos"][0]["imagem_chaveiro"])
+        base = _base_comum(formato, f"Chaveiro {nome_santo} - Nove de Julho", nome_santo, sku_pai, imagem_capa)
+        for modelo in produto["modelos"]:
             linhas.append({
-                **base_comum,
-                "et_title_variation_1": "Modelo", "et_title_option_for_variation_1": modelo_nome,
+                **base,
+                "et_title_variation_1": "Modelo", "et_title_option_for_variation_1": modelo["nome"],
                 "et_title_image_per_variation": _url_imagem(modelo["imagem_chaveiro"]),
                 "ps_price": preco, "ps_weight": PESO_KG_POR_CHAVE["chaveiro"],
-                "ps_sku_short": f"{sku_pai}-M{modelo_id}",
+                "ps_sku_short": f"{sku_pai}-M{modelo['id']}",
             })
     return linhas
 
