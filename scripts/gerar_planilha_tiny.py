@@ -232,12 +232,17 @@ def gerar_linhas(produtos: list[dict]) -> list[dict]:
             # na pratica: das 436 linhas que deram erro na 1a importacao,
             # TODAS eram linhas pai sem preco -- nenhuma variacao/filho
             # deu erro). Repete o preco de entrada da propria familia.
+            # Peso do pai (ver conversa): a Tiny aceita peso 0 na linha
+            # pai, mas o Shopee rejeita ("O peso do produto e´
+            # obrigatorio") ao anunciar um produto com variacao -- usa o
+            # peso do maior filho (16mm) pra nunca declarar o pai mais
+            # leve que uma variacao de verdade.
             sku_pai_medalha = f"MED-{base_id}"
             linhas.append(_linha_base(
                 sku=sku_pai_medalha, descricao_titulo=f"Medalha {descricao_base}",
                 nome_santo=nome_santo, formato="medalha", categoria_produto=categoria_produto,
                 categoria="Medalhas", tipo="V", preco=PRECO_VAREJO_POR_CHAVE["12mm"],
-                peso_kg=0.0, imagem=modelo.get("imagem"),
+                peso_kg=PESO_KG_POR_CHAVE["16mm"], imagem=modelo.get("imagem"),
             ))
             for tamanho in modelo["tamanhos"]:
                 chave = tamanho
@@ -252,13 +257,15 @@ def gerar_linhas(produtos: list[dict]) -> list[dict]:
                     codigo_pai=sku_pai_medalha, variacoes=f"Tamanho:{tamanho}",
                 ))
 
-            # Entremeio (pai com variacao de cor)
+            # Entremeio (pai com variacao de cor) -- mesmo ajuste de peso
+            # do pai da medalha acima (ver comentario la em cima).
+            # Ouro Velho/Prata pesam igual, entao sem ambiguidade aqui.
             sku_pai_entremeio = f"ENT-{base_id}"
             linhas.append(_linha_base(
                 sku=sku_pai_entremeio, descricao_titulo=f"Entremeio {descricao_base}",
                 nome_santo=nome_santo, formato="entremeio", categoria_produto=categoria_produto,
                 categoria="Entremeios", tipo="V", preco=PRECO_VAREJO_POR_CHAVE["entremeio"],
-                peso_kg=0.0, imagem=modelo.get("imagem_entremeio_prata"),
+                peso_kg=PESO_KG_POR_CHAVE["entremeio"], imagem=modelo.get("imagem_entremeio_prata"),
             ))
             for cor, campo_imagem in (
                 ("Ouro Velho", "imagem_entremeio_ouro_velho"),
