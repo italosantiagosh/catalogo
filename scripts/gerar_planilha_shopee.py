@@ -80,12 +80,20 @@ COMPRIMENTO_CM = 16
 
 PRECO_SHOPEE_POR_FORMATO = {"medalha": 15.00, "entremeio": 15.00, "chaveiro": 25.00}
 ESTOQUE_PLACEHOLDER = 999
-PRAZO_POSTAGEM_DIAS = 5  # config.py::PRODUCAO_DIAS_UTEIS
 
+# Prazo de Postagem para Encomenda -- usuario pediu 3 dias (o mais
+# rapido que o real prazo de producao, config.py::PRODUCAO_DIAS_UTEIS=5,
+# permitiria arredondar pra baixo) "ou o minimo, se for mais que isso".
+# Conferido na aba oficial "Intervalo do PP para Encomenda" do proprio
+# template da Shopee: as duas categorias abaixo aceitam faixa "3 - 15"
+# dias, entao 3 ja´ e´ o minimo permitido -- nao precisa subir.
+PRAZO_POSTAGEM_DIAS = 3
+
+CATEGORIA_ID_POR_FORMATO = {"medalha": "101399", "entremeio": "101399", "chaveiro": "101396"}
 CATEGORIA_TEXTO_POR_FORMATO = {
-    "medalha": "Hobbies e Coleções > Souvenires > Outros",
-    "entremeio": "Hobbies e Coleções > Souvenires > Outros",
-    "chaveiro": "Hobbies e Coleções > Souvenires > Chaveiros",
+    "medalha": "101399 - Hobbies e Coleções/Souvenirs/Outros",
+    "entremeio": "101399 - Hobbies e Coleções/Souvenirs/Outros",
+    "chaveiro": "101396 - Hobbies e Coleções/Souvenirs/Chaveiros",
 }
 
 ORIGEM_TEXTO = {0: "0 - Nacional, exceto as indicadas nos códigos 3, 4, 5 e 8"}[ORIGEM]
@@ -146,7 +154,7 @@ def _linhas_do_produto(produto: dict, formato: str) -> list[dict[str, object]]:
     )])
 
     base_comum = {
-        "ps_category": "",
+        "ps_category": CATEGORIA_ID_POR_FORMATO[formato],
         "ps_product_name": {
             "medalha": f"Medalha {nome_santo} - Aço Inox Resinado - Nove de Julho",
             "entremeio": f"Entremeio {nome_santo} para Terço - Nove de Julho",
@@ -234,6 +242,14 @@ def gerar(template_path: Path, saida_path: Path) -> int:
                 linha_atual += 1
                 total += 1
 
+    # Usuario relatou erro ao subir o arquivo com as abas auxiliares da
+    # propria Shopee (Orientacao, Fazer upload do exemplo, Intervalo do
+    # PP para Encomenda, etc.) -- mantem so a aba "Modelo" (linhas 1-6
+    # de cabecalho da propria Shopee + os dados), removendo o resto.
+    for nome_aba in list(wb.sheetnames):
+        if nome_aba != "Modelo":
+            del wb[nome_aba]
+
     wb.save(saida_path)
     return total
 
@@ -246,11 +262,13 @@ def main() -> None:
     saida_path = Path(sys.argv[2]) if len(sys.argv) > 2 else BASE_DIR / "planilha_shopee_catalogo.xlsx"
 
     total = gerar(template_path, saida_path)
-    print(f"{total} linhas geradas em {saida_path}")
+    print(f"{total} linhas geradas em {saida_path} (so a aba 'Modelo', sem as abas auxiliares da Shopee)")
+    print()
+    print("Categoria: " + CATEGORIA_TEXTO_POR_FORMATO["medalha"] + " (medalha/entremeio), "
+          + CATEGORIA_TEXTO_POR_FORMATO["chaveiro"] + " (chaveiro)")
+    print(f"Prazo de Postagem para Encomenda: {PRAZO_POSTAGEM_DIAS} dias (minimo permitido pras duas categorias e´ 3)")
     print()
     print("CONFERIR ANTES DE SUBIR NA SHOPEE:")
-    print(f"  - Categoria (coluna em branco): {CATEGORIA_TEXTO_POR_FORMATO['medalha']} (medalha/entremeio),")
-    print(f"    {CATEGORIA_TEXTO_POR_FORMATO['chaveiro']} (chaveiro) -- selecionar/confirmar na Shopee.")
     print(f"  - Estoque preenchido com {ESTOQUE_PLACEHOLDER} (placeholder, produto e´ sob encomenda) -- ajustar se quiser outro numero.")
     print("  - Campos fiscais que dependem do regime tributario (CFOP, CSOSN, CEST, % de tributos,")
     print("    Tipo de Operacao, CST PIS/Cofins) ficaram em branco de proposito -- preencher com o contador.")
