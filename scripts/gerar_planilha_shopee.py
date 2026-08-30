@@ -224,27 +224,21 @@ def _linhas_do_produto(produto: dict, formato: str) -> list[dict[str, object]]:
 
 
 def gerar(template_path: Path, saida_path: Path) -> int:
-    # NAO reaproveita o workbook original pra montar a saida: a aba
-    # "Modelo" tem validacao de dropdown apontando pras abas auxiliares
-    # (HiddenTax etc.) -- so´ deletar essas abas (tentativa anterior,
-    # ver historico do commit) deixa essas referencias penduradas e
-    # corrompe o arquivo de verdade (nem o LibreOffice abre mais). Em
-    # vez disso, copia so os VALORES das linhas 1-6 (cabecalho/instrucao
-    # da propria Shopee) pra um workbook novo e limpo, sem validacao
-    # nem nome definido de nenhuma aba auxiliar -- garante 1 aba so,
-    # sempre abrindo sem erro.
-    wb_original = _consertar_e_abrir(template_path)
-    ws_original = wb_original["Modelo"]
-    colunas = _mapa_de_colunas(ws_original)
-
-    wb = openpyxl.Workbook()
-    ws = wb.active
-    ws.title = "Modelo"
-    for linha in range(1, 7):
-        for coluna in range(1, ws_original.max_column + 1):
-            valor = ws_original.cell(row=linha, column=coluna).value
-            if valor is not None:
-                ws.cell(row=linha, column=coluna, value=valor)
+    # Duas tentativas anteriores de "limpar" o arquivo pioraram as coisas
+    # (ver historico do commit): apagar as abas auxiliares corrompeu o
+    # arquivo (referencia de validacao pendurada), e montar um workbook
+    # novo do zero passou no leitor xlsx generico mas a propria Shopee
+    # rejeitou como "arquivo invalido" -- o uploader deles e´ mais
+    # exigente que o padrao OOXML generico e espera o formato exato do
+    # template que eles mesmos exportam. A 1a versao (so escrever os
+    # dados dentro do template real, sem tocar em mais nada) foi a UNICA
+    # que a Shopee aceitou estruturalmente (chegou a contar 405
+    # produtos, so rejeitou por conteudo) -- entao e´ essa abordagem que
+    # fica valendo: edita o workbook original de verdade, todas as abas
+    # intactas, so escreve nas celulas da aba "Modelo".
+    wb = _consertar_e_abrir(template_path)
+    ws = wb["Modelo"]
+    colunas = _mapa_de_colunas(ws)
 
     produtos = __import__("json").loads((DATA_DIR / "produtos.json").read_text(encoding="utf-8"))
 
@@ -272,7 +266,7 @@ def main() -> None:
     saida_path = Path(sys.argv[2]) if len(sys.argv) > 2 else BASE_DIR / "planilha_shopee_catalogo.xlsx"
 
     total = gerar(template_path, saida_path)
-    print(f"{total} linhas geradas em {saida_path} (so a aba 'Modelo', sem as abas auxiliares da Shopee)")
+    print(f"{total} linhas geradas em {saida_path} (dentro do template original, todas as abas intactas)")
     print()
     print("Categoria: " + CATEGORIA_TEXTO_POR_FORMATO["medalha"] + " (medalha/entremeio), "
           + CATEGORIA_TEXTO_POR_FORMATO["chaveiro"] + " (chaveiro)")
