@@ -171,14 +171,19 @@ def _linhas_do_produto(produto: dict, formato: str) -> list[dict[str, object]]:
         "et_title_variation_integration_no": sku_pai,
         "ps_stock": ESTOQUE_PLACEHOLDER,
         "ps_item_cover_image": imagem_capa,
-        # Valor valido e´ "Ativado" (nao "Ativar") -- ver linha 6 da
-        # propria coluna no template ("Ativado/Desativado"). 90024 e´
-        # "Retirada pelo Comprador" -- usuario decidiu nao oferecer essa
-        # opcao (ver conversa), entao fica Desativado de proposito
-        # (nao e´ erro, e´ escolha). 91003 e´ "Shopee Xpress", o unico
-        # canal que o usuario realmente quer.
-        "channel_id.90024": "Desativado",
-        "channel_id.91003": "Ativado",
+        # "Ativar"/"Off" -- CORRIGIDO (ver conversa): a linha 6 da
+        # coluna descreve "Ativado/Desativado", mas essa e´ so a
+        # instrucao em texto -- os valores de verdade usados na propria
+        # aba "Fazer upload do exemplo" da Shopee (dados reais de
+        # exemplo, nao descricao) sao "Ativar"/"Off". "Ativado" (usado
+        # antes) tambem falhava, entao a descricao da linha 6 nao
+        # reflete o token de verdade esperado. 90024 e´ "Retirada pelo
+        # Comprador" -- usuario decidiu nao oferecer essa opcao (ver
+        # conversa), entao fica Off de proposito (nao e´ erro, e´
+        # escolha). 91003 e´ "Shopee Xpress", o unico canal que o
+        # usuario realmente quer.
+        "channel_id.90024": "Off",
+        "channel_id.91003": "Ativar",
         "ps_product_pre_order_dts": PRAZO_POSTAGEM_DIAS,
         "ps_invoice_ncm": NCM.replace(".", ""),
         "ps_invoice_origin": ORIGEM_TEXTO,
