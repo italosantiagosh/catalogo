@@ -677,6 +677,28 @@ def confirmar_venda_manual(
     return obter_pedido(token)
 
 
+def editar_valor(
+    token: str, *, subtotal: float, frete_preco: float, valor_pago: float | None
+) -> dict | None:
+    """Corrige o valor de um pedido ja existente (ver conversa -- admin
+    digitou errado no confirmar-venda manual do WhatsApp e so percebeu
+    depois). Reconstroi total = subtotal + frete_preco, o mesmo
+    invariante usado em criar_pedido/confirmar_venda_manual -- nunca
+    deixa a pagina do pedido (templates/pedido.html) mostrar um
+    Subtotal + Frete que nao bate com o Total. `valor_pago` fica None
+    quando o pedido ainda nao foi pago (nao sobrescreve com 0)."""
+    pedido = obter_pedido(token)
+    if pedido is None:
+        return None
+    total = round(subtotal + frete_preco, 2)
+    with _conexao() as conexao:
+        conexao.execute(
+            "UPDATE pedidos SET subtotal = ?, frete_preco = ?, total = ?, valor_pago = ? WHERE token = ?",
+            (subtotal, frete_preco, total, valor_pago, token),
+        )
+    return obter_pedido(token)
+
+
 def atualizar_status(
     token: str,
     novo_status: str,

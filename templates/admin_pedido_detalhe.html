@@ -137,7 +137,8 @@
         </p>
       {% endif %}
       <h2>Total</h2>
-      <p>{{ pedido.total | preco }}</p>
+      <p>Subtotal: {{ pedido.subtotal | preco }} + Frete: {{ pedido.frete_preco | preco }} = <strong>{{ pedido.total | preco }}</strong></p>
+      {% if pedido.valor_pago %}<p>Valor pago: {{ pedido.valor_pago | preco }}</p>{% endif %}
       {% set previsoes = previsoes_do_pedido(pedido) %}
       {% if pedido.pago_em %}
         <h2>Prazos</h2>
@@ -170,6 +171,45 @@
         <p><a href="{{ pedido.link_nota_fiscal }}" target="_blank" rel="noopener">Ver link salvo</a></p>
       {% endif %}
     </div>
+  {% endif %}
+
+  {% if pedido.status not in ('whatsapp', 'cancelado', 'excluido') %}
+    <div class="bloco">
+      <h2>Corrigir valor</h2>
+      <p>Use isso só pra corrigir erro de digitação (ex: valor errado no confirmar-venda manual do
+      WhatsApp). Não muda nada no gateway de pagamento nem estorna/cobra diferença — se o pedido já
+      foi pago pelo site, a diferença com o que foi cobrado de verdade precisa ser resolvida por
+      fora (Pix, reembolso etc.).</p>
+      <form method="post" action="{{ url_for('admin_pedido_editar_valor', token=pedido.token) }}"
+            id="form-editar-valor"
+            onsubmit="return confirm('Confirma a correção do valor desse pedido?');">
+        <label for="editar_subtotal">Subtotal (R$)</label>
+        <input type="text" name="subtotal" id="editar_subtotal" inputmode="numeric"
+               value="{{ '%.2f' | format(pedido.subtotal) | replace('.', ',') }}">
+        <label for="editar_frete_preco">Frete (R$)</label>
+        <input type="text" name="frete_preco" id="editar_frete_preco" inputmode="numeric"
+               value="{{ '%.2f' | format(pedido.frete_preco) | replace('.', ',') }}">
+        <label for="editar_valor_pago">Valor pago (R$, deixe em branco se ainda não foi pago)</label>
+        <input type="text" name="valor_pago" id="editar_valor_pago" inputmode="numeric"
+               value="{{ ('%.2f' | format(pedido.valor_pago) | replace('.', ',')) if pedido.valor_pago else '' }}">
+        <button type="submit">💾 Corrigir valor</button>
+      </form>
+    </div>
+    <script>
+      (function () {
+        function ligarMascaraMoedaValor(input) {
+          if (!input) return;
+          input.addEventListener('input', () => {
+            const digitos = input.value.replace(/\D/g, '') || '0';
+            const centavos = parseInt(digitos, 10);
+            input.value = (centavos / 100).toFixed(2).replace('.', ',');
+          });
+        }
+        ligarMascaraMoedaValor(document.getElementById('editar_subtotal'));
+        ligarMascaraMoedaValor(document.getElementById('editar_frete_preco'));
+        ligarMascaraMoedaValor(document.getElementById('editar_valor_pago'));
+      })();
+    </script>
   {% endif %}
 
   {% if pedido.status == 'whatsapp' %}

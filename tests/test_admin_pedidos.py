@@ -187,6 +187,105 @@ def test_alterar_status_para_faturado(client, monkeypatch):
     assert pedido["status"] == "faturado"
 
 
+def test_editar_valor_corrige_subtotal_frete_e_total(client, monkeypatch):
+    """Ver conversa: usuaria errou o valor de um pedido ja confirmado
+    e nao tinha como corrigir -- essa rota existe pra isso."""
+    _preparar_admin(monkeypatch)
+    with patch("app.criar_link_pagamento", return_value={"url": "https://checkout.infinitepay.io/abc"}):
+        criado = client.post("/api/pedido/criar", json=_corpo_valido()).get_json()
+
+    resposta = client.post(
+        f"/admin/pedidos/{criado['token']}/editar-valor",
+        data={"subtotal": "650,00", "frete_preco": "42,50", "valor_pago": "692,50"},
+        auth=("admin", "segredo123"),
+    )
+    assert resposta.status_code == 302
+
+    pedido = pedidos.obter_pedido(criado["token"])
+    assert pedido["subtotal"] == 650.0
+    assert pedido["frete_preco"] == 42.5
+    assert pedido["total"] == 692.5
+    assert pedido["valor_pago"] == 692.5
+
+
+def test_editar_valor_sem_valor_pago_mantem_nulo(client, monkeypatch):
+    """Pedido "pendente" (ainda nao pago) -- corrigir subtotal/frete
+    nao deveria inventar um valor_pago que nunca existiu."""
+    _preparar_admin(monkeypatch)
+    with patch("app.criar_link_pagamento", return_value={"url": "https://checkout.infinitepay.io/abc"}):
+        criado = client.post("/api/pedido/criar", json=_corpo_valido()).get_json()
+
+    client.post(
+        f"/admin/pedidos/{criado['token']}/editar-valor",
+        data={"subtotal": "650,00", "frete_preco": "42,50"},
+        auth=("admin", "segredo123"),
+    )
+
+    pedido = pedidos.obter_pedido(criado["token"])
+    assert pedido["total"] == 692.5
+    assert pedido["valor_pago"] is None
+
+
+def test_editar_valor_exige_autenticacao(client, monkeypatch):
+    _preparar_admin(monkeypatch)
+    with patch("app.criar_link_pagamento", return_value={"url": "https://checkout.infinitepay.io/abc"}):
+        criado = client.post("/api/pedido/criar", json=_corpo_valido()).get_json()
+    resposta = client.post(
+        f"/admin/pedidos/{criado['token']}/editar-valor", data={"subtotal": "1", "frete_preco": "0"}
+    )
+    assert resposta.status_code == 401
+
+
+def test_editar_valor_numeros_invalidos_400(client, monkeypatch):
+    _preparar_admin(monkeypatch)
+    with patch("app.criar_link_pagamento", return_value={"url": "https://checkout.infinitepay.io/abc"}):
+        criado = client.post("/api/pedido/criar", json=_corpo_valido()).get_json()
+    resposta = client.post(
+        f"/admin/pedidos/{criado['token']}/editar-valor",
+        data={"subtotal": "abc", "frete_preco": "0"},
+        auth=("admin", "segredo123"),
+    )
+    assert resposta.status_code == 400
+
+
+def test_editar_valor_negativo_400(client, monkeypatch):
+    _preparar_admin(monkeypatch)
+    with patch("app.criar_link_pagamento", return_value={"url": "https://checkout.infinitepay.io/abc"}):
+        criado = client.post("/api/pedido/criar", json=_corpo_valido()).get_json()
+    resposta = client.post(
+        f"/admin/pedidos/{criado['token']}/editar-valor",
+        data={"subtotal": "-10", "frete_preco": "0"},
+        auth=("admin", "segredo123"),
+    )
+    assert resposta.status_code == 400
+
+
+def test_editar_valor_bloqueado_para_lead_whatsapp(client, monkeypatch):
+    """Lead do WhatsApp usa "confirmar venda" pra virar pedido de
+    verdade -- editar-valor so faz sentido depois disso."""
+    _preparar_admin(monkeypatch)
+    lead = _criar_lead_whatsapp(client)
+    resposta = client.post(
+        f"/admin/pedidos/{lead['token']}/editar-valor",
+        data={"subtotal": "1", "frete_preco": "0"},
+        auth=("admin", "segredo123"),
+    )
+    assert resposta.status_code == 400
+
+
+def test_editar_valor_bloqueado_para_pedido_cancelado(client, monkeypatch):
+    _preparar_admin(monkeypatch)
+    with patch("app.criar_link_pagamento", return_value={"url": "https://checkout.infinitepay.io/abc"}):
+        criado = client.post("/api/pedido/criar", json=_corpo_valido()).get_json()
+    pedidos.cancelar_pedido(criado["token"])
+    resposta = client.post(
+        f"/admin/pedidos/{criado['token']}/editar-valor",
+        data={"subtotal": "1", "frete_preco": "0"},
+        auth=("admin", "segredo123"),
+    )
+    assert resposta.status_code == 400
+
+
 def test_alterar_status_para_enviado_dispara_email_uma_vez(client, monkeypatch):
     _preparar_admin(monkeypatch)
     with patch("app.criar_link_pagamento", return_value={"url": "https://checkout.infinitepay.io/abc"}):

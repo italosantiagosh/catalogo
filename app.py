@@ -130,6 +130,7 @@ from services.pedidos import (
     confirmar_venda_manual,
     contagem_pedidos_por_status,
     criar_pedido,
+    editar_valor,
     estatisticas_hoje,
     excluir_pedido,
     listar_pedidos,
@@ -1940,6 +1941,48 @@ def admin_pedido_status(token: str):
     if link_nota_fiscal and not pedido_antes.get("link_nota_fiscal"):
         _reenviar_email_nota_fiscal(token)
 
+    return redirect(url_for("admin_pedido_detalhe", token=token))
+
+
+@app.route("/admin/pedidos/<token>/editar-valor", methods=["POST"])
+def admin_pedido_editar_valor(token: str):
+    """Corrige o valor de um pedido ja existente (ver conversa -- admin
+    digitou errado no confirmar-venda manual do WhatsApp e so percebeu
+    depois de confirmado). Reconstroi total = subtotal + frete_preco
+    (ver services.pedidos.editar_valor), nunca deixa a pagina do
+    pedido mostrar uma quebra que nao bate. Nao muda nada em gateway
+    de pagamento nenhum -- so corrige o registro aqui, a diferenca com
+    o que foi cobrado de verdade (Pix/cartao/boleto) precisa ser
+    resolvida por fora quando o pedido ja foi pago pelo site."""
+    if not _autenticacao_admin_valida(request.authorization):
+        return Response(
+            "Autenticação necessária.", 401, {"WWW-Authenticate": 'Basic realm="Painel de pedidos"'}
+        )
+    pedido = obter_pedido(token)
+    if pedido is None:
+        abort(404)
+    if pedido["status"] in ("whatsapp", "cancelado", "excluido"):
+        abort(400, description="Esse pedido não pode ter o valor corrigido por aqui.")
+
+    try:
+        subtotal = float(str(request.form.get("subtotal", "")).replace(",", "."))
+        frete_preco = float(str(request.form.get("frete_preco", "")).replace(",", "."))
+    except ValueError:
+        abort(400, description="Subtotal e frete precisam ser números válidos.")
+    if subtotal < 0 or frete_preco < 0:
+        abort(400, description="Subtotal e frete não podem ser negativos.")
+
+    valor_pago_bruto = str(request.form.get("valor_pago", "")).strip()
+    valor_pago = None
+    if valor_pago_bruto:
+        try:
+            valor_pago = float(valor_pago_bruto.replace(",", "."))
+        except ValueError:
+            abort(400, description="Valor pago precisa ser um número válido.")
+        if valor_pago < 0:
+            abort(400, description="Valor pago não pode ser negativo.")
+
+    editar_valor(token, subtotal=subtotal, frete_preco=frete_preco, valor_pago=valor_pago)
     return redirect(url_for("admin_pedido_detalhe", token=token))
 
 
