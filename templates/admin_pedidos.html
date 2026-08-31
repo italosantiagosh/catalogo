@@ -163,21 +163,32 @@
        de rolar na horizontal, pra ficar de fato usavel no polegar. */
     @media (max-width: 720px) {
       .tabela-wrap { overflow-x: visible; background: transparent; box-shadow: none; border-radius: 0; }
-      table, thead, tbody, th, td, tr { display: block; }
+      /* a tabela herdava min-width:760px da regra de desktop -- mesmo
+         com overflow visible, isso forcava a linha inteira a ficar mais
+         larga que a tela e cortava os valores fora da vista (usuario
+         via so os rotulos, precisava arrastar pro lado pra ver o
+         resto). Zera aqui, largura sempre 100% do celular. */
+      table { min-width: 0; width: 100%; }
+      thead, tbody, th, td, tr { display: block; }
       thead tr { position: absolute; top: -9999px; left: -9999px; }
       tbody tr {
         background: var(--cartao); border-radius: 14px; margin-bottom: 10px; padding: 6px 4px;
         box-shadow: 0 8px 20px -16px rgba(20, 51, 92, 0.4); border: 1px solid var(--linha);
       }
       tbody tr:nth-child(even) { background: var(--cartao); }
-      td { border-bottom: 1px dashed var(--linha); padding: 8px 12px; display: flex; justify-content: space-between; gap: 12px; align-items: center; }
+      /* rotulo em cima, valor embaixo (em vez de lado a lado) -- valor
+         longo (e-mail, descricao de frete, erro do Tiny) precisa de
+         espaco pra quebrar linha, nao cabe numa so linha ao lado do
+         rotulo numa tela de celular. */
+      td { border-bottom: 1px dashed var(--linha); padding: 8px 12px; }
       td:last-child { border-bottom: none; }
       td[data-rotulo]::before {
-        content: attr(data-rotulo); font-size: 0.68rem; font-weight: 700; text-transform: uppercase;
-        letter-spacing: 0.03em; color: var(--texto-suave); flex-shrink: 0;
+        content: attr(data-rotulo); display: block; font-size: 0.68rem; font-weight: 700;
+        text-transform: uppercase; letter-spacing: 0.03em; color: var(--texto-suave); margin-bottom: 3px;
       }
-      td.linha-cabecalho { justify-content: flex-start; gap: 10px; padding-top: 12px; }
-      td.linha-acoes { justify-content: flex-start; padding-bottom: 12px; }
+      td.linha-cabecalho { padding-top: 12px; }
+      td.linha-acoes { padding-bottom: 12px; }
+      td.linha-acoes a { display: inline-block; margin-top: 2px; }
     }
   </style>
 </head>
