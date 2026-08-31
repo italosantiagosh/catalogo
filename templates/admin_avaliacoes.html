@@ -5,81 +5,140 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="robots" content="noindex, nofollow">
   <title>Avaliações — Painel — Nove de Julho</title>
+  <link rel="icon" type="image/png" href="{{ url_for('static', filename='img/icon-192.png') }}">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Public+Sans:wght@400;500;600;700&display=swap"
+        rel="stylesheet" media="print" onload="this.media='all'">
+  <noscript><link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Public+Sans:wght@400;500;600;700&display=swap" rel="stylesheet"></noscript>
   <style>
-    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #f5f7fa; color: #142238; margin: 0; padding: 24px; }
-    h1 { font-size: 1.3rem; margin: 0 0 16px; }
-    .filtros { margin: 0 0 16px; }
-    .filtros a { margin-right: 16px; text-decoration: none; color: #14335c; font-weight: 600; font-size: 0.9rem; }
-    .filtros a.ativo { text-decoration: underline; }
-    .vazio { padding: 24px; text-align: center; color: #5b6b82; }
+    :root {
+      --azul-escuro: #14335c; --azul-claro: #29aae1; --dourado: #dba53b;
+      --fundo: #eef2f7; --cartao: #ffffff; --texto: #142238; --texto-suave: #5b6b82; --linha: #e2e7ee;
+    }
+    * { box-sizing: border-box; }
+    body {
+      font-family: 'Public Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--fundo); color: var(--texto); margin: 0; padding: 0 0 40px;
+    }
+    header.masthead {
+      background: linear-gradient(135deg, var(--azul-escuro) 0%, #1c4a80 100%);
+      color: #fff; padding: 20px clamp(16px, 4vw, 32px) 28px; border-radius: 0 0 20px 20px; margin-bottom: 24px;
+    }
+    .masthead-linha { display: flex; align-items: center; gap: 12px; }
+    .masthead-linha img { width: 38px; height: 38px; border-radius: 9px; flex-shrink: 0; }
+    .masthead-titulos h1 { font-family: 'Fraunces', Georgia, serif; font-weight: 700; font-size: 1.35rem; margin: 0; letter-spacing: -0.01em; }
+    .masthead-titulos p { margin: 2px 0 0; font-size: 0.8rem; color: #b9d0e8; }
+    .masthead-nav { margin: 14px 0 0; display: flex; gap: 14px; flex-wrap: wrap; }
+    .masthead-nav a { color: #dfeaf6; text-decoration: none; font-size: 0.8rem; font-weight: 600; }
+    .masthead-nav a:hover { color: #fff; }
+
+    .conteudo { max-width: 900px; margin: 0 auto; padding: 0 clamp(16px, 4vw, 32px); position: relative; z-index: 1; }
+
+    h2.secao-titulo { font-family: 'Fraunces', Georgia, serif; font-size: 1.05rem; margin: 4px 0 14px; display: flex; align-items: center; gap: 8px; }
+    .contagem-pill { background: var(--azul-claro); color: #fff; font-size: 0.72rem; font-weight: 700; padding: 2px 9px; border-radius: 999px; }
+
+    .filtros { margin: 0 0 18px; display: flex; flex-wrap: wrap; gap: 6px; }
+    .filtros a {
+      text-decoration: none; color: var(--azul-escuro); font-weight: 600; font-size: 0.8rem;
+      padding: 6px 13px; border-radius: 999px; background: var(--cartao); border: 1px solid var(--linha);
+    }
+    .filtros a:hover { border-color: var(--azul-claro); }
+    .filtros a.ativo { background: var(--azul-escuro); color: #fff; border-color: var(--azul-escuro); }
+
+    .vazio { padding: 40px 24px; text-align: center; color: var(--texto-suave); background: var(--cartao); border-radius: 14px; }
     .cartoes { display: flex; flex-direction: column; gap: 14px; }
-    .cartao { background: #fff; border-radius: 12px; padding: 16px; display: flex; gap: 14px; }
-    .cartao img { width: 96px; height: 96px; object-fit: cover; border-radius: 10px; flex-shrink: 0; }
+    .cartao {
+      background: var(--cartao); border-radius: 14px; padding: 16px; display: flex; gap: 14px;
+      border: 1px solid var(--linha); box-shadow: 0 8px 20px -16px rgba(20, 51, 92, 0.35);
+    }
+    .cartao img { width: 88px; height: 88px; object-fit: cover; border-radius: 10px; flex-shrink: 0; border: 1px solid var(--linha); }
     .cartao-corpo { flex: 1; min-width: 0; }
     .cartao-topo { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; flex-wrap: wrap; }
     .cartao-nome { font-weight: 700; }
-    .cartao-nota { color: #b8923d; font-weight: 700; }
-    .cartao-produto { font-size: 0.82rem; color: #5b6b82; margin: 2px 0 8px; }
-    .cartao-texto { font-size: 0.88rem; margin: 0 0 10px; }
-    .status { display: inline-block; padding: 3px 10px; border-radius: 999px; font-size: 0.75rem; font-weight: 700; margin-bottom: 8px; }
+    .cartao-nota { color: var(--dourado); font-weight: 700; letter-spacing: 1px; }
+    .cartao-produto { font-size: 0.8rem; color: var(--texto-suave); margin: 3px 0 10px; }
+    .cartao-texto { font-size: 0.88rem; margin: 0 0 12px; line-height: 1.5; }
+
+    .status { display: inline-flex; align-items: center; gap: 5px; padding: 3px 11px; border-radius: 999px; font-size: 0.72rem; font-weight: 700; margin-bottom: 9px; }
+    .status::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
     .status-pendente { background: #f4ecd8; color: #7a5c1f; }
     .status-aprovada { background: #e3f6ea; color: #1e7a43; }
     .status-recusada { background: #fbe3e0; color: #a13a2a; }
+
     .acoes form { display: inline; }
-    .acoes button { margin-right: 8px; padding: 8px 14px; border: none; border-radius: 8px; font-weight: 700; cursor: pointer; font-size: 0.82rem; }
+    .acoes button { margin-right: 8px; padding: 8px 15px; border: none; border-radius: 8px; font-weight: 700; cursor: pointer; font-size: 0.82rem; }
     .btn-aprovar { background: #1e7a43; color: #fff; }
+    .btn-aprovar:hover { background: #17632f; }
     .btn-recusar { background: #a13a2a; color: #fff; }
+    .btn-recusar:hover { background: #8c2f22; }
   </style>
 </head>
 <body>
-  <h1>Avaliações ({{ avaliacoes | length }})</h1>
-  <p><a href="{{ url_for('admin_pedidos') }}">← Pedidos</a></p>
-  <div class="filtros">
-    <a href="{{ url_for('admin_avaliacoes') }}" class="{{ 'ativo' if not status_filtro else '' }}">Todas</a>
-    <a href="{{ url_for('admin_avaliacoes', status='pendente') }}" class="{{ 'ativo' if status_filtro == 'pendente' else '' }}">Pendentes</a>
-    <a href="{{ url_for('admin_avaliacoes', status='aprovada') }}" class="{{ 'ativo' if status_filtro == 'aprovada' else '' }}">Aprovadas</a>
-    <a href="{{ url_for('admin_avaliacoes', status='recusada') }}" class="{{ 'ativo' if status_filtro == 'recusada' else '' }}">Recusadas</a>
-  </div>
-
-  {% if avaliacoes %}
-    <div class="cartoes">
-      {% for avaliacao in avaliacoes %}
-        <div class="cartao">
-          {% if avaliacao.foto %}<img src="{{ avaliacao.foto }}" alt="">{% endif %}
-          <div class="cartao-corpo">
-            <span class="status status-{{ avaliacao.status }}">{{ avaliacao.status }}</span>
-            <div class="cartao-topo">
-              <span class="cartao-nome">{{ avaliacao.nome_cliente }}</span>
-              <span class="cartao-nota">{{ "★" * avaliacao.nota }}{{ "☆" * (5 - avaliacao.nota) }}</span>
-            </div>
-            <p class="cartao-produto">
-              Produto: {{ avaliacao.produto_id }}{% if avaliacao.formato %} — {{ avaliacao.formato }}{% endif %}
-              — {{ avaliacao.criado_em[:16] }}
-            </p>
-            {% if avaliacao.texto %}<p class="cartao-texto">{{ avaliacao.texto }}</p>{% endif %}
-            {% if avaliacao.status == 'pendente' %}
-              <div class="acoes">
-                <form method="post" action="{{ url_for('admin_avaliacao_aprovar', id_=avaliacao.id) }}">
-                  <button type="submit" class="btn-aprovar">Aprovar</button>
-                </form>
-                <form method="post" action="{{ url_for('admin_avaliacao_recusar', id_=avaliacao.id) }}">
-                  <button type="submit" class="btn-recusar">Recusar</button>
-                </form>
-              </div>
-            {% elif avaliacao.status == 'aprovada' %}
-              <div class="acoes">
-                <form method="post" action="{{ url_for('admin_avaliacao_recusar', id_=avaliacao.id) }}"
-                      onsubmit="return confirm('Excluir essa avaliação? Ela sai do site imediatamente.');">
-                  <button type="submit" class="btn-recusar">Excluir do site</button>
-                </form>
-              </div>
-            {% endif %}
-          </div>
-        </div>
-      {% endfor %}
+  <header class="masthead">
+    <div class="masthead-linha">
+      <img src="{{ url_for('static', filename='img/icon-192.png') }}" alt="">
+      <div class="masthead-titulos">
+        <h1>Avaliações</h1>
+        <p>Nove de Julho</p>
+      </div>
     </div>
-  {% else %}
-    <p class="vazio">Nenhuma avaliação por aqui.</p>
-  {% endif %}
+    <nav class="masthead-nav">
+      <a href="{{ url_for('admin_pedidos') }}">📦 Pedidos</a>
+      <a href="{{ url_for('admin_analytics') }}">📊 Analytics</a>
+    </nav>
+  </header>
+
+  <div class="conteudo">
+    <h2 class="secao-titulo">Avaliações <span class="contagem-pill">{{ avaliacoes | length }}</span></h2>
+
+    <div class="filtros">
+      <a href="{{ url_for('admin_avaliacoes') }}" class="{{ 'ativo' if not status_filtro else '' }}">Todas</a>
+      <a href="{{ url_for('admin_avaliacoes', status='pendente') }}" class="{{ 'ativo' if status_filtro == 'pendente' else '' }}">Pendentes</a>
+      <a href="{{ url_for('admin_avaliacoes', status='aprovada') }}" class="{{ 'ativo' if status_filtro == 'aprovada' else '' }}">Aprovadas</a>
+      <a href="{{ url_for('admin_avaliacoes', status='recusada') }}" class="{{ 'ativo' if status_filtro == 'recusada' else '' }}">Recusadas</a>
+    </div>
+
+    {% if avaliacoes %}
+      <div class="cartoes">
+        {% for avaliacao in avaliacoes %}
+          <div class="cartao">
+            {% if avaliacao.foto %}<img src="{{ avaliacao.foto }}" alt="">{% endif %}
+            <div class="cartao-corpo">
+              <span class="status status-{{ avaliacao.status }}">{{ avaliacao.status }}</span>
+              <div class="cartao-topo">
+                <span class="cartao-nome">{{ avaliacao.nome_cliente }}</span>
+                <span class="cartao-nota">{{ "★" * avaliacao.nota }}{{ "☆" * (5 - avaliacao.nota) }}</span>
+              </div>
+              <p class="cartao-produto">
+                Produto: {{ avaliacao.produto_id }}{% if avaliacao.formato %} — {{ avaliacao.formato }}{% endif %}
+                — {{ avaliacao.criado_em[:16] }}
+              </p>
+              {% if avaliacao.texto %}<p class="cartao-texto">{{ avaliacao.texto }}</p>{% endif %}
+              {% if avaliacao.status == 'pendente' %}
+                <div class="acoes">
+                  <form method="post" action="{{ url_for('admin_avaliacao_aprovar', id_=avaliacao.id) }}">
+                    <button type="submit" class="btn-aprovar">Aprovar</button>
+                  </form>
+                  <form method="post" action="{{ url_for('admin_avaliacao_recusar', id_=avaliacao.id) }}">
+                    <button type="submit" class="btn-recusar">Recusar</button>
+                  </form>
+                </div>
+              {% elif avaliacao.status == 'aprovada' %}
+                <div class="acoes">
+                  <form method="post" action="{{ url_for('admin_avaliacao_recusar', id_=avaliacao.id) }}"
+                        onsubmit="return confirm('Excluir essa avaliação? Ela sai do site imediatamente.');">
+                    <button type="submit" class="btn-recusar">Excluir do site</button>
+                  </form>
+                </div>
+              {% endif %}
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <p class="vazio">Nenhuma avaliação por aqui.</p>
+    {% endif %}
+  </div>
 </body>
 </html>

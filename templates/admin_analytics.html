@@ -5,99 +5,217 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="robots" content="noindex, nofollow">
   <title>Analytics — Painel — Nove de Julho</title>
+  <link rel="icon" type="image/png" href="{{ url_for('static', filename='img/icon-192.png') }}">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Public+Sans:wght@400;500;600;700&display=swap"
+        rel="stylesheet" media="print" onload="this.media='all'">
+  <noscript><link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Public+Sans:wght@400;500;600;700&display=swap" rel="stylesheet"></noscript>
   <style>
-    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #f5f7fa; color: #142238; margin: 0; padding: 24px; max-width: 720px; }
-    a.voltar { color: #14335c; font-weight: 600; text-decoration: none; font-size: 0.88rem; }
-    h1 { font-size: 1.2rem; margin: 12px 0 16px; }
-    .cartoes { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin-bottom: 20px; }
-    .cartao { background: #fff; border-radius: 10px; padding: 14px 16px; }
-    .cartao .numero { font-size: 1.6rem; font-weight: 700; color: #14335c; }
-    .cartao .rotulo { font-size: 0.78rem; color: #5b6b82; margin-top: 2px; }
-    .cartao.ao-vivo .numero { color: #1e7a43; }
-    .bloco { background: #fff; border-radius: 10px; padding: 16px; margin: 0 0 16px; }
-    .bloco h2 { font-size: 0.95rem; margin: 0 0 10px; }
+    :root {
+      --azul-escuro: #14335c; --azul-claro: #29aae1; --dourado: #dba53b;
+      --fundo: #eef2f7; --cartao: #ffffff; --texto: #142238; --texto-suave: #5b6b82; --linha: #e2e7ee;
+    }
+    * { box-sizing: border-box; }
+    body {
+      font-family: 'Public Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--fundo); color: var(--texto); margin: 0; padding: 0 0 40px;
+    }
+    header.masthead {
+      background: linear-gradient(135deg, var(--azul-escuro) 0%, #1c4a80 100%);
+      color: #fff; padding: 20px clamp(16px, 4vw, 32px) 28px; border-radius: 0 0 20px 20px; margin-bottom: 24px;
+    }
+    .masthead-linha { display: flex; align-items: center; gap: 12px; }
+    .masthead-linha img { width: 38px; height: 38px; border-radius: 9px; flex-shrink: 0; }
+    .masthead-titulos h1 { font-family: 'Fraunces', Georgia, serif; font-weight: 700; font-size: 1.35rem; margin: 0; letter-spacing: -0.01em; }
+    .masthead-titulos p { margin: 2px 0 0; font-size: 0.8rem; color: #b9d0e8; }
+    .masthead-nav { margin: 14px 0 0; display: flex; gap: 14px; flex-wrap: wrap; }
+    .masthead-nav a { color: #dfeaf6; text-decoration: none; font-size: 0.8rem; font-weight: 600; }
+    .masthead-nav a:hover { color: #fff; }
+
+    .conteudo { max-width: 1080px; margin: 0 auto; padding: 0 clamp(16px, 4vw, 32px); position: relative; z-index: 1; }
+
+    h2.secao-titulo { font-family: 'Fraunces', Georgia, serif; font-size: 1.05rem; margin: 30px 0 14px; }
+    h2.secao-titulo:first-of-type { margin-top: 4px; }
+    .secao-nota { font-size: 0.78rem; color: var(--texto-suave); margin: -8px 0 16px; }
+
+    .stat-grade { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; }
+    .stat-cartao { background: var(--cartao); border-radius: 14px; padding: 14px 16px; box-shadow: 0 8px 20px -14px rgba(20, 51, 92, 0.35); border: 1px solid var(--linha); }
+    .stat-cartao .stat-numero { font-family: 'Fraunces', Georgia, serif; font-size: 1.5rem; font-weight: 700; color: var(--azul-escuro); line-height: 1.1; }
+    .stat-cartao .stat-rotulo { font-size: 0.76rem; color: var(--texto-suave); margin-top: 3px; font-weight: 600; }
+    .stat-cartao.ao-vivo .stat-numero { color: #1e7a43; }
+    .stat-cartao.ao-vivo .stat-rotulo::before { content: "🟢 "; }
+
+    .bloco { background: var(--cartao); border-radius: 14px; padding: 18px 20px; margin: 0 0 18px; border: 1px solid var(--linha); box-shadow: 0 8px 20px -16px rgba(20, 51, 92, 0.3); }
+    .bloco h3 { font-size: 0.9rem; margin: 0 0 14px; font-weight: 700; }
+
+    /* Funil de conversao -- barra vai encolhendo, largura proporcional
+       ao numero de visitas (100% na primeira etapa). Construido so com
+       divs+CSS, sem biblioteca de grafico externa (ver conversa --
+       projeto todo evita dependencia JS de CDN). */
+    .funil-etapa { margin-bottom: 14px; }
+    .funil-etapa:last-child { margin-bottom: 0; }
+    .funil-cabecalho { display: flex; justify-content: space-between; align-items: baseline; font-size: 0.82rem; margin-bottom: 5px; }
+    .funil-rotulo { font-weight: 600; }
+    .funil-valores { color: var(--texto-suave); font-variant-numeric: tabular-nums; }
+    .funil-valores strong { color: var(--texto); font-weight: 700; }
+    .funil-trilho { background: #eef2f7; border-radius: 999px; height: 22px; overflow: hidden; }
+    .funil-barra {
+      height: 100%; border-radius: 999px;
+      background: linear-gradient(90deg, var(--azul-escuro), var(--azul-claro));
+      min-width: 6px; transition: width .3s ease;
+    }
+
+    .proporcoes-grade { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; }
+    .proporcao-cartao { border: 1px solid var(--linha); border-radius: 12px; padding: 12px 14px; }
+    .proporcao-numero { font-family: 'Fraunces', Georgia, serif; font-size: 1.4rem; font-weight: 700; color: var(--dourado); }
+    .proporcao-rotulo { font-size: 0.76rem; color: var(--texto-suave); margin-top: 2px; }
+    .proporcao-cartao.destaque .proporcao-numero { color: #1e7a43; }
+
+    /* Paginas mais vistas -- barra proporcional ao maior valor da
+       lista (a 1a linha, ja que a consulta vem ordenada desc). */
+    .barra-lista-item { margin-bottom: 10px; }
+    .barra-lista-item:last-child { margin-bottom: 0; }
+    .barra-lista-topo { display: flex; justify-content: space-between; gap: 10px; font-size: 0.82rem; margin-bottom: 4px; }
+    .barra-lista-pagina { font-weight: 600; word-break: break-all; }
+    .barra-lista-numero { color: var(--texto-suave); font-variant-numeric: tabular-nums; flex-shrink: 0; }
+    .barra-lista-trilho { background: #eef2f7; border-radius: 6px; height: 8px; overflow: hidden; }
+    .barra-lista-preenchido { height: 100%; background: var(--dourado); border-radius: 6px; }
+
     table { width: 100%; border-collapse: collapse; }
-    th, td { text-align: left; padding: 8px 6px; border-bottom: 1px solid #eef1f5; font-size: 0.85rem; }
-    .nao-configurado { background: #fff; border-radius: 10px; padding: 20px; font-size: 0.9rem; line-height: 1.6; }
+    th, td { text-align: left; padding: 8px 6px; border-bottom: 1px solid var(--linha); font-size: 0.85rem; }
+    .nao-configurado { background: var(--cartao); border-radius: 14px; padding: 20px; font-size: 0.9rem; line-height: 1.6; margin-top: 20px; }
     .nao-configurado code { background: #f0f2f5; padding: 2px 6px; border-radius: 4px; }
   </style>
 </head>
 <body>
-  <a class="voltar" href="{{ url_for('admin_pedidos') }}">← Pedidos</a>
-  <h1>Analytics</h1>
-
-  {% if not configurado %}
-    <div class="nao-configurado">
-      <p>Dashboard ainda não configurado.</p>
-      <p>Faltam as variáveis de ambiente <code>GA4_SERVICE_ACCOUNT_JSON</code> e
-      <code>GA4_PROPERTY_ID</code> no servidor.</p>
-    </div>
-  {% else %}
-    <div class="cartoes">
-      <div class="cartao ao-vivo">
-        <div class="numero">{{ ao_vivo if ao_vivo is not none else "—" }}</div>
-        <div class="rotulo">🟢 Pessoas no site agora</div>
-      </div>
-      <div class="cartao">
-        <div class="numero">{{ resumo_hoje.visitas if resumo_hoje else "—" }}</div>
-        <div class="rotulo">Visitas (hoje)</div>
-      </div>
-      <div class="cartao">
-        <div class="numero">{{ fretes_simulados_hoje if fretes_simulados_hoje is not none else "—" }}</div>
-        <div class="rotulo">Simulações de frete (hoje)</div>
-      </div>
-      <div class="cartao">
-        <div class="numero">{{ resumo_7d.visitas if resumo_7d else "—" }}</div>
-        <div class="rotulo">Visitas (7 dias)</div>
-      </div>
-      <div class="cartao">
-        <div class="numero">{{ resumo_7d.pessoas if resumo_7d else "—" }}</div>
-        <div class="rotulo">Pessoas (7 dias)</div>
-      </div>
-      <div class="cartao">
-        <div class="numero">{{ fretes_simulados_7d if fretes_simulados_7d is not none else "—" }}</div>
-        <div class="rotulo">Simulações de frete (7 dias)</div>
-      </div>
-      <div class="cartao ao-vivo">
-        <div class="numero">{{ fretes_simulados_agora if fretes_simulados_agora is not none else "—" }}</div>
-        <div class="rotulo">🟢 Simulações de frete (últimos 30 min)</div>
+  <header class="masthead">
+    <div class="masthead-linha">
+      <img src="{{ url_for('static', filename='img/icon-192.png') }}" alt="">
+      <div class="masthead-titulos">
+        <h1>Analytics</h1>
+        <p>Nove de Julho</p>
       </div>
     </div>
-    <p style="font-size:0.78rem;color:#5b6b82;margin:-10px 0 20px;">
-      Os cartões 🟢 usam o relatório em tempo real do GA4 (reflete na hora). Os demais números
-      (7 e 30 dias) usam o relatório padrão, que pode levar minutos a horas pra processar um
-      evento novo -- não é bug se um teste que você acabou de fazer não aparecer ali de imediato.
-    </p>
+    <nav class="masthead-nav">
+      <a href="{{ url_for('admin_pedidos') }}">📦 Pedidos</a>
+      <a href="{{ url_for('admin_avaliacoes') }}">⭐ Avaliações</a>
+    </nav>
+  </header>
 
-    <div class="bloco">
-      <h2>Últimos 30 dias</h2>
-      <table>
-        <tr><td>Visitas</td><td>{{ resumo_30d.visitas if resumo_30d else "—" }}</td></tr>
-        <tr><td>Pessoas</td><td>{{ resumo_30d.pessoas if resumo_30d else "—" }}</td></tr>
-        <tr><td>Visualizações de página</td><td>{{ resumo_30d.visualizacoes if resumo_30d else "—" }}</td></tr>
-        <tr><td>Simulações de frete</td><td>{{ fretes_simulados_30d if fretes_simulados_30d is not none else "—" }}</td></tr>
-      </table>
-    </div>
+  <div class="conteudo">
+    {% if not configurado %}
+      <div class="nao-configurado">
+        <p>Dashboard ainda não configurado.</p>
+        <p>Faltam as variáveis de ambiente <code>GA4_SERVICE_ACCOUNT_JSON</code> e
+        <code>GA4_PROPERTY_ID</code> no servidor.</p>
+      </div>
+    {% else %}
+      <h2 class="secao-titulo">Agora e hoje</h2>
+      <div class="stat-grade">
+        <div class="stat-cartao ao-vivo">
+          <div class="stat-numero">{{ ao_vivo if ao_vivo is not none else "—" }}</div>
+          <div class="stat-rotulo">Pessoas no site agora</div>
+        </div>
+        <div class="stat-cartao">
+          <div class="stat-numero">{{ resumo_hoje.visitas if resumo_hoje else "—" }}</div>
+          <div class="stat-rotulo">Visitas hoje</div>
+        </div>
+        <div class="stat-cartao">
+          <div class="stat-numero">{{ fretes_simulados_hoje if fretes_simulados_hoje is not none else "—" }}</div>
+          <div class="stat-rotulo">Simulações de frete hoje</div>
+        </div>
+        <div class="stat-cartao ao-vivo">
+          <div class="stat-numero">{{ fretes_simulados_agora if fretes_simulados_agora is not none else "—" }}</div>
+          <div class="stat-rotulo">Simulações (últimos 30 min)</div>
+        </div>
+      </div>
 
-    <div class="bloco">
-      <h2>Páginas mais vistas (7 dias)</h2>
-      {% if paginas_7d %}
+      <h2 class="secao-titulo">Funil de conversão (7 dias)</h2>
+      <p class="secao-nota">De cada 100 visitas, quantas simularam frete, iniciaram um pedido e realmente compraram.</p>
+      <div class="bloco">
+        {% for etapa in funil_7d %}
+          <div class="funil-etapa">
+            <div class="funil-cabecalho">
+              <span class="funil-rotulo">{{ etapa.rotulo }}</span>
+              <span class="funil-valores">
+                <strong>{{ etapa.valor if etapa.valor is not none else "—" }}</strong>
+                {% if etapa.pct is not none %}({{ etapa.pct }}%){% endif %}
+              </span>
+            </div>
+            <div class="funil-trilho">
+              <div class="funil-barra" style="width: {{ etapa.pct if etapa.pct is not none else 0 }}%;"></div>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+
+      <h2 class="secao-titulo">Proporções (7 dias)</h2>
+      <div class="bloco">
+        <div class="proporcoes-grade">
+          <div class="proporcao-cartao">
+            <div class="proporcao-numero">{{ (proporcao_simulacao_visita ~ "%") if proporcao_simulacao_visita is not none else "—" }}</div>
+            <div class="proporcao-rotulo">Simulação de frete / visita</div>
+          </div>
+          <div class="proporcao-cartao">
+            <div class="proporcao-numero">{{ (proporcao_pedido_visita ~ "%") if proporcao_pedido_visita is not none else "—" }}</div>
+            <div class="proporcao-rotulo">Pedido iniciado / visita</div>
+          </div>
+          <div class="proporcao-cartao destaque">
+            <div class="proporcao-numero">{{ (proporcao_venda_visita ~ "%") if proporcao_venda_visita is not none else "—" }}</div>
+            <div class="proporcao-rotulo">Venda paga / visita</div>
+          </div>
+          <div class="proporcao-cartao">
+            <div class="proporcao-numero">{{ (proporcao_venda_simulacao ~ "%") if proporcao_venda_simulacao is not none else "—" }}</div>
+            <div class="proporcao-rotulo">De quem simulou frete, quantos compraram</div>
+          </div>
+          <div class="proporcao-cartao destaque">
+            <div class="proporcao-numero">{{ vendas_7d.ticket_medio | preco }}</div>
+            <div class="proporcao-rotulo">Ticket médio ({{ vendas_7d.quantidade }} venda{{ 's' if vendas_7d.quantidade != 1 else '' }})</div>
+          </div>
+        </div>
+      </div>
+
+      <h2 class="secao-titulo">Páginas mais vistas (7 dias)</h2>
+      <div class="bloco">
+        {% if paginas_7d %}
+          {% set maior = paginas_7d[0].visualizacoes %}
+          {% for p in paginas_7d %}
+            <div class="barra-lista-item">
+              <div class="barra-lista-topo">
+                <span class="barra-lista-pagina">{{ p.pagina }}</span>
+                <span class="barra-lista-numero">{{ p.visualizacoes }}</span>
+              </div>
+              <div class="barra-lista-trilho">
+                <div class="barra-lista-preenchido" style="width: {{ (p.visualizacoes / maior * 100) if maior else 0 }}%;"></div>
+              </div>
+            </div>
+          {% endfor %}
+          <p class="secao-nota" style="margin-top: 14px;">
+            Cada produto tem sua própria página (/produto/&lt;nome&gt;) -- aqui já mostra
+            quais santos/devoções foram mais vistos.
+          </p>
+        {% else %}
+          <p class="secao-nota" style="margin: 0;">Sem dados ainda.</p>
+        {% endif %}
+      </div>
+
+      <h2 class="secao-titulo">Últimos 30 dias</h2>
+      <div class="bloco">
         <table>
-          <thead><tr><th>Página</th><th>Visualizações</th></tr></thead>
-          <tbody>
-            {% for p in paginas_7d %}
-              <tr><td>{{ p.pagina }}</td><td>{{ p.visualizacoes }}</td></tr>
-            {% endfor %}
-          </tbody>
+          <tr><td>Visitas</td><td>{{ resumo_30d.visitas if resumo_30d else "—" }}</td></tr>
+          <tr><td>Pessoas</td><td>{{ resumo_30d.pessoas if resumo_30d else "—" }}</td></tr>
+          <tr><td>Visualizações de página</td><td>{{ resumo_30d.visualizacoes if resumo_30d else "—" }}</td></tr>
+          <tr><td>Simulações de frete</td><td>{{ fretes_simulados_30d if fretes_simulados_30d is not none else "—" }}</td></tr>
         </table>
-        <p style="font-size:0.78rem;color:#5b6b82;margin-top:10px;">
-          Cada produto tem sua própria página (/produto/&lt;nome&gt;) -- aqui já mostra
-          quais santos/devoções foram mais vistos.
-        </p>
-      {% else %}
-        <p style="font-size:0.85rem;color:#5b6b82;">Sem dados ainda.</p>
-      {% endif %}
-    </div>
-  {% endif %}
+      </div>
+
+      <p class="secao-nota">
+        Os cartões 🟢 usam o relatório em tempo real do GA4 (reflete na hora). Os demais números
+        (hoje, 7 e 30 dias) usam o relatório padrão, que pode levar minutos a horas pra processar um
+        evento novo -- não é bug se um teste que você acabou de fazer não aparecer ali de imediato.
+      </p>
+    {% endif %}
+  </div>
 </body>
 </html>

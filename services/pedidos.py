@@ -360,6 +360,34 @@ def estatisticas_hoje() -> dict:
     }
 
 
+def contagem_pedidos_por_status(dias: int, status_lista: tuple[str, ...]) -> int:
+    """Quantos pedidos com status em `status_lista` foram CRIADOS nos
+    ultimos `dias` dias -- usado pro painel de analytics (ver
+    app.py:admin_analytics) calcular proporcao de pedidos por visita
+    (ex: pendente+pago / visitas)."""
+    inicializar_db()
+    limite = (datetime.now(timezone.utc) - timedelta(days=dias)).isoformat()
+    marcadores = ",".join("?" for _ in status_lista)
+    with _conexao() as conexao:
+        return conexao.execute(
+            f"SELECT COUNT(*) FROM pedidos WHERE criado_em >= ? AND status IN ({marcadores})",
+            (limite, *status_lista),
+        ).fetchone()[0]
+
+
+def resumo_vendas_periodo(dias: int) -> dict:
+    """Quantidade, faturamento total e ticket medio das vendas pagas
+    (por pago_em) nos ultimos `dias` dias -- ver app.py:admin_analytics."""
+    inicializar_db()
+    limite = (datetime.now(timezone.utc) - timedelta(days=dias)).isoformat()
+    with _conexao() as conexao:
+        quantidade, valor_total = conexao.execute(
+            "SELECT COUNT(*), COALESCE(SUM(total), 0) FROM pedidos WHERE pago_em >= ?", (limite,)
+        ).fetchone()
+    ticket_medio = (valor_total / quantidade) if quantidade else 0.0
+    return {"quantidade": quantidade, "valor_total": valor_total, "ticket_medio": ticket_medio}
+
+
 def listar_pedidos_pendentes_para_lembrete(minutos: int) -> list[dict]:
     """Pedidos "pendente" ha´ pelo menos `minutos`, que ainda nao
     receberam o lembrete de pagamento -- usado pelo job agendado em

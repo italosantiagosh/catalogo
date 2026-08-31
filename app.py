@@ -128,6 +128,7 @@ from services.pedidos import (
     atualizar_status,
     cancelar_pedido,
     confirmar_venda_manual,
+    contagem_pedidos_por_status,
     criar_pedido,
     estatisticas_hoje,
     excluir_pedido,
@@ -151,6 +152,7 @@ from services.pedidos import (
     marcar_tiny_sincronizado,
     obter_pedido,
     previsoes_do_pedido,
+    resumo_vendas_periodo,
     salvar_dados_boleto_inter,
 )
 from services.imagens_personalizadas import (
@@ -2503,29 +2505,65 @@ def api_avaliacoes_criar():
     return jsonify(ok=True)
 
 
+def _percentual(numerador: float | None, denominador: float | None) -> float | None:
+    """Arredonda numerador/denominador em % -- None quando nao da pra
+    calcular (denominador zero/vazio ou algum dos dois faltando), pra
+    o template mostrar "—" em vez de um erro ou um 0% enganoso."""
+    if not numerador and numerador != 0:
+        return None
+    if not denominador:
+        return None
+    return round(100 * numerador / denominador, 1)
+
+
 @app.route("/admin/analytics", methods=["GET"])
 def admin_analytics():
-    """Dashboard de leitura do GA4 dentro do painel (ver
-    services/analytics.py) -- visitas/pessoas/paginas mais vistas/
-    quantas simularam frete, sem precisar abrir o Google Analytics."""
+    """Dashboard de leitura do GA4 + do proprio banco de pedidos dentro
+    do painel (ver services/analytics.py) -- visitas/pessoas/paginas
+    mais vistas/quantas simularam frete/funil de conversao, sem
+    precisar abrir o Google Analytics. O funil e as proporcoes usam a
+    janela de 7 dias (mesma ja em destaque no resto da pagina) --
+    cruza visita (GA4) com pedido de verdade (banco proprio, ver
+    conversa)."""
     if not _autenticacao_admin_valida(request.authorization):
         return Response(
             "Autenticação necessária.", 401, {"WWW-Authenticate": 'Basic realm="Painel de analytics"'}
         )
     if not analytics.configurado():
         return render_template("admin_analytics.html", configurado=False)
+
+    resumo_7d = analytics.resumo_ultimos_dias(7)
+    fretes_simulados_7d = analytics.contagem_evento("calculate_shipping", 7)
+    pedidos_iniciados_7d = contagem_pedidos_por_status(7, ("pendente", "pago"))
+    pedidos_pagos_7d = contagem_pedidos_por_status(7, ("pago",))
+    vendas_7d = resumo_vendas_periodo(7)
+    visitas_7d = resumo_7d["visitas"] if resumo_7d else None
+
     return render_template(
         "admin_analytics.html",
         configurado=True,
         ao_vivo=analytics.usuarios_ativos_agora(),
         resumo_hoje=analytics.resumo_ultimos_dias(0),
-        resumo_7d=analytics.resumo_ultimos_dias(7),
+        resumo_7d=resumo_7d,
         resumo_30d=analytics.resumo_ultimos_dias(30),
-        paginas_7d=analytics.paginas_mais_vistas(7, limite=10),
+        paginas_7d=analytics.paginas_mais_vistas(7, limite=8),
         fretes_simulados_hoje=analytics.contagem_evento("calculate_shipping", 0),
-        fretes_simulados_7d=analytics.contagem_evento("calculate_shipping", 7),
+        fretes_simulados_7d=fretes_simulados_7d,
         fretes_simulados_30d=analytics.contagem_evento("calculate_shipping", 30),
         fretes_simulados_agora=analytics.contagem_evento_tempo_real("calculate_shipping"),
+        pedidos_iniciados_7d=pedidos_iniciados_7d,
+        pedidos_pagos_7d=pedidos_pagos_7d,
+        vendas_7d=vendas_7d,
+        funil_7d=[
+            {"rotulo": "Visitas", "valor": visitas_7d, "pct": 100.0 if visitas_7d else None},
+            {"rotulo": "Simularam frete", "valor": fretes_simulados_7d, "pct": _percentual(fretes_simulados_7d, visitas_7d)},
+            {"rotulo": "Iniciaram pedido", "valor": pedidos_iniciados_7d, "pct": _percentual(pedidos_iniciados_7d, visitas_7d)},
+            {"rotulo": "Compraram", "valor": pedidos_pagos_7d, "pct": _percentual(pedidos_pagos_7d, visitas_7d)},
+        ],
+        proporcao_simulacao_visita=_percentual(fretes_simulados_7d, visitas_7d),
+        proporcao_pedido_visita=_percentual(pedidos_iniciados_7d, visitas_7d),
+        proporcao_venda_visita=_percentual(pedidos_pagos_7d, visitas_7d),
+        proporcao_venda_simulacao=_percentual(pedidos_pagos_7d, fretes_simulados_7d),
     )
 
 

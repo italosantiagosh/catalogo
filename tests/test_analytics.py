@@ -4,11 +4,16 @@ from unittest.mock import patch
 
 import pytest
 
+import services.pedidos as pedidos
 from app import app
 
 
 @pytest.fixture
-def client():
+def client(monkeypatch, tmp_path):
+    # admin_analytics agora tambem cruza com o banco de pedidos (funil
+    # de conversao/proporcoes, ver conversa) -- isola num banco vazio
+    # por teste, senao os testes leriam o data/pedidos.db real do repo.
+    monkeypatch.setattr(pedidos, "DB_PATH", str(tmp_path / "pedidos.db"))
     app.config["TESTING"] = True
     return app.test_client()
 
@@ -64,10 +69,62 @@ def test_admin_analytics_mostra_visitas_e_fretes_de_hoje(client, monkeypatch):
          patch("app.analytics.contagem_evento_tempo_real", return_value=0):
         resposta = client.get("/admin/analytics", auth=("admin", "segredo123"))
     corpo = resposta.get_data(as_text=True)
-    assert "Visitas (hoje)" in corpo
-    assert "Simulações de frete (hoje)" in corpo
+    assert "Visitas hoje" in corpo
+    assert "Simulações de frete hoje" in corpo
     assert ">9<" in corpo
     assert ">4<" in corpo
+
+
+def _corpo_pedido_valido(**overrides):
+    base = dict(
+        itens=[{"chave_preco": "16mm", "quantidade": 10, "produtoNome": "São José", "modeloNome": "Modelo 1"}],
+        frete={"texto": "Correios PAC — R$ 10,00", "preco": 10.0},
+        cliente={"nome": "Maria Teste", "tipo_pessoa": "fisica", "documento": "11144477735",
+                 "telefone": "84999999999", "email": "maria@example.com"},
+        endereco={"cep": "59000000", "logradouro": "Rua Teste", "numero": "100", "complemento": "",
+                  "bairro": "Centro", "cidade": "Natal", "uf": "RN"},
+    )
+    base.update(overrides)
+    return base
+
+
+def test_admin_analytics_mostra_funil_e_proporcoes_com_pedidos_reais(client, monkeypatch):
+    """Ver conversa: usuario pediu proporcao de simulacao/venda por
+    visita, cruzando o GA4 (mockado) com pedidos de verdade no banco."""
+    _preparar_admin(monkeypatch)
+
+    with patch("app.criar_link_pagamento", return_value={"url": "https://checkout.infinitepay.io/abc"}):
+        pago = client.post("/api/pedido/criar", json=_corpo_pedido_valido()).get_json()
+        client.post("/api/pedido/criar", json=_corpo_pedido_valido())  # fica pendente
+    with patch("app.criar_pedido_tiny", return_value={"erro": "não configurado"}), \
+         patch("app.enviar_confirmacao_pedido", return_value={"erro": "não configurado"}), \
+         patch("app.enviar_notificacao_venda", return_value={"ok": True}), \
+         patch("app.enviar_notificacao_push", return_value={"ok": True}):
+        client.post(
+            "/webhook/infinitepay",
+            json={"order_nsu": pago["token"], "paid_amount": 6000, "capture_method": "pix"},
+        )
+
+    with patch("app.analytics.configurado", return_value=True), \
+         patch("app.analytics.usuarios_ativos_agora", return_value=0), \
+         patch("app.analytics.resumo_ultimos_dias", return_value={"visitas": 100, "pessoas": 80, "visualizacoes": 200}), \
+         patch("app.analytics.paginas_mais_vistas", return_value=[]), \
+         patch("app.analytics.contagem_evento", return_value=10), \
+         patch("app.analytics.contagem_evento_tempo_real", return_value=0):
+        resposta = client.get("/admin/analytics", auth=("admin", "segredo123"))
+    corpo = resposta.get_data(as_text=True)
+
+    assert "Funil de conversão" in corpo
+    assert "Iniciaram pedido" in corpo
+    assert "Compraram" in corpo
+    # 2 pedidos iniciados (1 pago + 1 pendente) / 100 visitas = 2.0%
+    assert "2.0%" in corpo
+    # 1 pago / 100 visitas = 1.0%
+    assert "1.0%" in corpo
+    # 10 simulacoes / 100 visitas = 10.0%
+    assert "10.0%" in corpo
+    assert "Ticket médio" in corpo
+    assert "R$ 60,00" in corpo  # unica venda paga
 
 
 def test_analytics_service_sem_config_devolve_none():
