@@ -51,10 +51,30 @@ _TIPO_PESSOA = {"fisica": "F", "juridica": "J"}
 _FORMA_PAGAMENTO = {"pix": "pix", "credit_card": "cartao_credito"}
 
 
+# Inscricao Estadual so faz sentido pra pessoa juridica (isento nunca
+# guarda numero -- ver services.pedidos/_cliente_valido em app.py).
+# "contribuinte" segue os valores documentados na API 2.0 da Tiny: 1 =
+# Contribuinte ICMS, 2 = Contribuinte isento de Inscricao Estadual, 9 =
+# Nao Contribuinte. AINDA NAO confirmado com pedido de teste real (o
+# campo nunca tinha sido mandado ate agora -- usuario reportou que a IE
+# nao estava chegando na Tiny, ver conversa. Ate esse ponto so ficava
+# guardada no banco do site, nunca ia pro corpo do pedido.incluir.php).
+def _contribuinte_tiny(pedido: dict) -> str | None:
+    if pedido.get("cliente_tipo_pessoa") != "juridica":
+        return None
+    if pedido.get("cliente_ie_isento"):
+        return "2"
+    if pedido.get("cliente_ie_nao_contribuinte"):
+        return "9"
+    if pedido.get("cliente_inscricao_estadual"):
+        return "1"
+    return None
+
+
 def _cliente_para_tiny(pedido: dict) -> dict:
     documento = pedido.get("cliente_documento", "")
     telefone = pedido.get("cliente_telefone", "")
-    return {
+    cliente = {
         "nome": pedido.get("cliente_nome", ""),
         "tipo_pessoa": _TIPO_PESSOA.get(pedido.get("cliente_tipo_pessoa"), "F"),
         "cpf_cnpj": documento,
@@ -75,6 +95,12 @@ def _cliente_para_tiny(pedido: dict) -> dict:
         "cidade": pedido.get("endereco_cidade", ""),
         "uf": pedido.get("endereco_uf", ""),
     }
+    if pedido.get("cliente_inscricao_estadual"):
+        cliente["ie"] = pedido["cliente_inscricao_estadual"]
+    contribuinte = _contribuinte_tiny(pedido)
+    if contribuinte:
+        cliente["contribuinte"] = contribuinte
+    return cliente
 
 
 # Codigo mandado pra Tiny -- ATE aqui era so agregado por materia-prima

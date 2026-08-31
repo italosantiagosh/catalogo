@@ -263,6 +263,61 @@ def test_tipo_pessoa_juridica_mapeia_para_j(monkeypatch):
     assert pedido_json["cliente"]["tipo_pessoa"] == "J"
 
 
+def test_inscricao_estadual_vai_pro_campo_ie(monkeypatch):
+    """Ver conversa: usuaria relatou que a Inscricao Estadual nao
+    estava indo pra Tiny -- o campo nunca era mandado no corpo do
+    pedido.incluir.php, so ficava guardado no banco do site."""
+    monkeypatch.setattr(tiny, "TINY_API_TOKEN", "segredo123")
+    with patch("services.tiny.requests.post", return_value=_resposta_ok()) as post_mock:
+        tiny.criar_pedido_tiny(_pedido_exemplo(
+            cliente_tipo_pessoa="juridica", cliente_inscricao_estadual="123.456.789",
+        ))
+    pedido_json = json.loads(post_mock.call_args.kwargs["data"]["pedido"])["pedido"]
+    assert pedido_json["cliente"]["ie"] == "123.456.789"
+    assert pedido_json["cliente"]["contribuinte"] == "1"
+
+
+def test_ie_isento_manda_contribuinte_2_sem_campo_ie(monkeypatch):
+    monkeypatch.setattr(tiny, "TINY_API_TOKEN", "segredo123")
+    with patch("services.tiny.requests.post", return_value=_resposta_ok()) as post_mock:
+        tiny.criar_pedido_tiny(_pedido_exemplo(
+            cliente_tipo_pessoa="juridica", cliente_ie_isento=1, cliente_inscricao_estadual="",
+        ))
+    pedido_json = json.loads(post_mock.call_args.kwargs["data"]["pedido"])["pedido"]
+    assert pedido_json["cliente"]["contribuinte"] == "2"
+    assert "ie" not in pedido_json["cliente"]
+
+
+def test_ie_nao_contribuinte_manda_contribuinte_9(monkeypatch):
+    monkeypatch.setattr(tiny, "TINY_API_TOKEN", "segredo123")
+    with patch("services.tiny.requests.post", return_value=_resposta_ok()) as post_mock:
+        tiny.criar_pedido_tiny(_pedido_exemplo(
+            cliente_tipo_pessoa="juridica", cliente_ie_nao_contribuinte=1,
+            cliente_inscricao_estadual="123.456.789",
+        ))
+    pedido_json = json.loads(post_mock.call_args.kwargs["data"]["pedido"])["pedido"]
+    assert pedido_json["cliente"]["ie"] == "123.456.789"
+    assert pedido_json["cliente"]["contribuinte"] == "9"
+
+
+def test_pessoa_fisica_nunca_manda_ie_ou_contribuinte(monkeypatch):
+    monkeypatch.setattr(tiny, "TINY_API_TOKEN", "segredo123")
+    with patch("services.tiny.requests.post", return_value=_resposta_ok()) as post_mock:
+        tiny.criar_pedido_tiny(_pedido_exemplo(cliente_tipo_pessoa="fisica"))
+    pedido_json = json.loads(post_mock.call_args.kwargs["data"]["pedido"])["pedido"]
+    assert "ie" not in pedido_json["cliente"]
+    assert "contribuinte" not in pedido_json["cliente"]
+
+
+def test_juridica_sem_ie_preenchida_nao_manda_ie_nem_contribuinte(monkeypatch):
+    monkeypatch.setattr(tiny, "TINY_API_TOKEN", "segredo123")
+    with patch("services.tiny.requests.post", return_value=_resposta_ok()) as post_mock:
+        tiny.criar_pedido_tiny(_pedido_exemplo(cliente_tipo_pessoa="juridica"))
+    pedido_json = json.loads(post_mock.call_args.kwargs["data"]["pedido"])["pedido"]
+    assert "ie" not in pedido_json["cliente"]
+    assert "contribuinte" not in pedido_json["cliente"]
+
+
 def test_forma_pagamento_desconhecida_nao_e_enviada(monkeypatch):
     monkeypatch.setattr(tiny, "TINY_API_TOKEN", "segredo123")
     with patch("services.tiny.requests.post", return_value=_resposta_ok()) as post_mock:
