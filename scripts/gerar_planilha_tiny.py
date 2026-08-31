@@ -215,6 +215,93 @@ def _linha_base(*, sku: str, descricao_titulo: str, nome_santo: str, formato: st
     return linha
 
 
+# Medalha/entremeio/chaveiro PERSONALIZADOS (foto do cliente, ver
+# templates/personalizada.html) nao tem santo/modelo -- entao nunca
+# entravam nessa planilha, e o codigo que services/tiny.py manda pra
+# esses itens (_codigo_estoque_tiny, fallback sem produtoId/modeloId:
+# so o chave_preco puro, ex "16mm"/"chaveiro", ou "entremeio_{cor}")
+# nunca correspondia a NENHUM produto cadastrado na Tiny -- por isso a
+# nota fiscal desses pedidos chegava sem NCM/descricao (usuaria
+# reportou, ver conversa). Essas 5 linhas fecham essa lacuna: cadastram
+# exatamente os mesmos codigos que _codigo_estoque_tiny ja envia (nunca
+# mexer nos dois sem mexer no outro junto). Sem imagem/variacao -- cada
+# combinacao tamanho/cor vira um produto simples (tipo S) proprio, sem
+# pai, ja que nao existe uma "familia" (santo+modelo) pra agrupar.
+_DESCRICOES_PERSONALIZADA = {
+    "12mm": (
+        "Medalha personalizada com a foto enviada pelo cliente (1 lado), "
+        "12mm, produzida artesanalmente pela Nove de Julho em aço inoxidável "
+        f"de qualidade, resinada à mão. Cuidados com a peça: {_CUIDADOS}"
+    ),
+    "16mm": (
+        "Medalha personalizada com a foto enviada pelo cliente (1 lado), "
+        "16mm, produzida artesanalmente pela Nove de Julho em aço inoxidável "
+        f"de qualidade, resinada à mão. Cuidados com a peça: {_CUIDADOS}"
+    ),
+    "entremeio_prata": (
+        "Entremeio personalizado com a foto enviada pelo cliente, na cor "
+        "prata antigo, em liga de zinco resinada. Pra quem monta ou "
+        f"personaliza terços e rosários artesanais. Cuidados com a peça: {_CUIDADOS}"
+    ),
+    "entremeio_ouro_velho": (
+        "Entremeio personalizado com a foto enviada pelo cliente, na cor "
+        "ouro velho, em liga de zinco resinada. Pra quem monta ou "
+        f"personaliza terços e rosários artesanais. Cuidados com a peça: {_CUIDADOS}"
+    ),
+    "chaveiro": (
+        "Chaveiro personalizado com a foto enviada pelo cliente, em liga de "
+        f"zinco resinada. Cuidados com a peça: {_CUIDADOS}"
+    ),
+}
+
+_PRECO_CHAVE_PERSONALIZADA = {
+    "12mm": "12mm", "16mm": "16mm", "entremeio_prata": "entremeio",
+    "entremeio_ouro_velho": "entremeio", "chaveiro": "chaveiro",
+}
+
+
+def gerar_linhas_personalizada() -> list[dict]:
+    linhas: list[dict] = []
+    for sku, descricao_titulo in (
+        ("12mm", "Medalha Personalizada - 12mm"),
+        ("16mm", "Medalha Personalizada - 16mm"),
+        ("entremeio_prata", "Entremeio Personalizado - Prata"),
+        ("entremeio_ouro_velho", "Entremeio Personalizado - Ouro Velho"),
+        ("chaveiro", "Chaveiro Personalizado"),
+    ):
+        chave = _PRECO_CHAVE_PERSONALIZADA[sku]
+        linha = {c: "" for c in COLUNAS}
+        linha.update({
+            "Código (SKU)": sku,
+            "Descrição": descricao_titulo,
+            "Unidade": UNIDADE,
+            "NCM (Classificação fiscal)": NCM,
+            "Origem": ORIGEM,
+            "Preço": PRECO_VAREJO_POR_CHAVE[chave],
+            "Situação": "Ativo",
+            "Peso líquido (Kg)": round(PESO_KG_POR_CHAVE[chave], 3),
+            "Peso bruto (Kg)": round(PESO_KG_POR_CHAVE[chave], 3),
+            "Formato embalagem": FORMATO_EMBALAGEM,
+            "Largura embalagem": LARGURA_CM,
+            "Altura Embalagem": ALTURA_CM,
+            "Comprimento embalagem": COMPRIMENTO_CM,
+            "Tipo do produto": "S",
+            "Categoria": descricao_titulo,
+            "Sob encomenda": "Não",
+            "Controlar lotes": "Não",
+            "Descrição complementar": _DESCRICOES_PERSONALIZADA[sku],
+            "Título SEO": descricao_titulo,
+            "Descrição SEO": (
+                f"{descricao_titulo} com foto enviada por você -- compre no "
+                "atacado, com nota fiscal."
+            ),
+            "Palavras chave SEO": "medalha personalizada, medalha com foto, presente personalizado",
+            "Marca": "Nove de Julho",
+        })
+        linhas.append(linha)
+    return linhas
+
+
 def gerar_linhas(produtos: list[dict]) -> list[dict]:
     linhas: list[dict] = []
     for produto in produtos:
@@ -296,7 +383,7 @@ def gerar_linhas(produtos: list[dict]) -> list[dict]:
 
 def main() -> None:
     produtos = json.loads((DATA_DIR / "produtos.json").read_text(encoding="utf-8"))
-    linhas = gerar_linhas(produtos)
+    linhas = gerar_linhas(produtos) + gerar_linhas_personalizada()
     df = pd.DataFrame(linhas, columns=COLUNAS)
 
     saida = Path(sys.argv[1]) if len(sys.argv) > 1 else BASE_DIR / "planilha_tiny_catalogo.xlsx"
