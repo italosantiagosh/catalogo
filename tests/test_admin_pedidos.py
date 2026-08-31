@@ -441,10 +441,12 @@ def test_confirmar_venda_com_destinatario_diferente(client, monkeypatch):
         resposta = client.post(
             f"/admin/pedidos/{lead['token']}/confirmar-venda",
             data={
-                "cliente_nome": "Paróquia São José", "cliente_documento": "12345678000199",
+                "cliente_nome": "Paróquia São José", "cliente_tipo_pessoa": "juridica",
+                "cliente_documento": "11222333000181",
                 "endereco_cep": "59000000", "endereco_logradouro": "Rua Teste", "endereco_numero": "100",
                 "endereco_bairro": "Centro", "endereco_cidade": "Natal", "endereco_uf": "RN",
-                "destinatario_nome": "Livraria Shalom", "destinatario_documento": "98765432000188",
+                "destinatario_nome": "Livraria Shalom", "destinatario_tipo_pessoa": "juridica",
+                "destinatario_documento": "11222333000181",
                 "destinatario_cep": "59100000", "destinatario_logradouro": "Av. Livraria",
                 "destinatario_numero": "500", "destinatario_bairro": "Centro",
                 "destinatario_cidade": "Natal", "destinatario_uf": "RN",
@@ -476,10 +478,12 @@ def test_confirmar_venda_com_telefone_do_destinatario_aparece_clicavel(client, m
         client.post(
             f"/admin/pedidos/{lead['token']}/confirmar-venda",
             data={
-                "cliente_nome": "Paróquia São José", "cliente_documento": "12345678000199",
+                "cliente_nome": "Paróquia São José", "cliente_tipo_pessoa": "juridica",
+                "cliente_documento": "11222333000181",
                 "endereco_cep": "59000000", "endereco_logradouro": "Rua Teste", "endereco_numero": "100",
                 "endereco_bairro": "Centro", "endereco_cidade": "Natal", "endereco_uf": "RN",
-                "destinatario_nome": "Livraria Shalom", "destinatario_documento": "98765432000188",
+                "destinatario_nome": "Livraria Shalom", "destinatario_tipo_pessoa": "juridica",
+                "destinatario_documento": "11222333000181",
                 "destinatario_telefone": "84988887777",
                 "destinatario_cep": "59100000", "destinatario_logradouro": "Av. Livraria",
                 "destinatario_numero": "500", "destinatario_bairro": "Centro",
@@ -495,6 +499,121 @@ def test_confirmar_venda_com_telefone_do_destinatario_aparece_clicavel(client, m
 
     pagina = client.get(f"/admin/pedidos/{lead['token']}", auth=("admin", "segredo123")).get_data(as_text=True)
     assert "https://wa.me/5584988887777" in pagina
+
+
+def test_confirmar_venda_com_cpf_invalido_400(client, monkeypatch):
+    """Ver conversa: usuaria pediu pra checar CPF/CNPJ/celular tambem
+    no formulario do WhatsApp, mesma validacao do checkout do site."""
+    _preparar_admin(monkeypatch)
+    lead = _criar_lead_whatsapp(client)
+    resposta = client.post(
+        f"/admin/pedidos/{lead['token']}/confirmar-venda",
+        data={"cliente_nome": "Maria Teste", "cliente_documento": "11111111111"},
+        auth=("admin", "segredo123"),
+    )
+    assert resposta.status_code == 400
+    assert "CPF" in resposta.get_data(as_text=True)
+
+
+def test_confirmar_venda_com_cnpj_invalido_400(client, monkeypatch):
+    _preparar_admin(monkeypatch)
+    lead = _criar_lead_whatsapp(client)
+    resposta = client.post(
+        f"/admin/pedidos/{lead['token']}/confirmar-venda",
+        data={
+            "cliente_nome": "Loja Teste", "cliente_tipo_pessoa": "juridica",
+            "cliente_documento": "11222333000199",
+        },
+        auth=("admin", "segredo123"),
+    )
+    assert resposta.status_code == 400
+    assert "CNPJ" in resposta.get_data(as_text=True)
+
+
+def test_confirmar_venda_com_telefone_invalido_400(client, monkeypatch):
+    _preparar_admin(monkeypatch)
+    lead = _criar_lead_whatsapp(client)
+    resposta = client.post(
+        f"/admin/pedidos/{lead['token']}/confirmar-venda",
+        data={"cliente_nome": "Maria Teste", "cliente_telefone": "123"},
+        auth=("admin", "segredo123"),
+    )
+    assert resposta.status_code == 400
+    assert "Telefone" in resposta.get_data(as_text=True)
+
+
+def test_confirmar_venda_com_destinatario_cnpj_invalido_400(client, monkeypatch):
+    _preparar_admin(monkeypatch)
+    lead = _criar_lead_whatsapp(client)
+    resposta = client.post(
+        f"/admin/pedidos/{lead['token']}/confirmar-venda",
+        data={
+            "cliente_nome": "Maria Teste",
+            "destinatario_nome": "Livraria Shalom", "destinatario_tipo_pessoa": "juridica",
+            "destinatario_documento": "11222333000199",
+        },
+        auth=("admin", "segredo123"),
+    )
+    assert resposta.status_code == 400
+    assert "CNPJ" in resposta.get_data(as_text=True)
+
+
+def test_confirmar_venda_com_cnpj_valido_e_ie_isento(client, monkeypatch):
+    """Ver conversa: mesma logica de Inscricao Estadual/isento/nao
+    contribuinte do checkout do site, agora disponivel no formulario
+    manual de venda combinada no WhatsApp."""
+    _preparar_admin(monkeypatch)
+    lead = _criar_lead_whatsapp(client)
+
+    with patch("app.criar_pedido_tiny", return_value={"ok": True, "numero": 55, "id": 1}), \
+         patch("app.enviar_confirmacao_pedido", return_value={"ok": True}), \
+         patch("app.enviar_notificacao_venda", return_value={"ok": True}), \
+         patch("app.enviar_notificacao_push", return_value={"ok": True}):
+        client.post(
+            f"/admin/pedidos/{lead['token']}/confirmar-venda",
+            data={
+                "cliente_nome": "Loja Teste", "cliente_tipo_pessoa": "juridica",
+                "cliente_documento": "11222333000181",
+                "cliente_ie_isento": "on", "cliente_inscricao_estadual": "123456",  # deve ser ignorado, isento
+                "endereco_cep": "59000000", "endereco_logradouro": "Rua Teste", "endereco_numero": "100",
+                "endereco_bairro": "Centro", "endereco_cidade": "Natal", "endereco_uf": "RN",
+                "frete_descricao": "Combinado no WhatsApp", "frete_preco": "15,00",
+                "forma_pagamento": "Pix", "valor_pago": "65,00",
+            },
+            auth=("admin", "segredo123"),
+        )
+
+    pedido = pedidos.obter_pedido(lead["token"])
+    assert pedido["cliente_ie_isento"] == 1
+    assert pedido["cliente_inscricao_estadual"] == ""
+
+
+def test_confirmar_venda_com_cnpj_valido_e_inscricao_estadual(client, monkeypatch):
+    _preparar_admin(monkeypatch)
+    lead = _criar_lead_whatsapp(client)
+
+    with patch("app.criar_pedido_tiny", return_value={"ok": True, "numero": 55, "id": 1}), \
+         patch("app.enviar_confirmacao_pedido", return_value={"ok": True}), \
+         patch("app.enviar_notificacao_venda", return_value={"ok": True}), \
+         patch("app.enviar_notificacao_push", return_value={"ok": True}):
+        client.post(
+            f"/admin/pedidos/{lead['token']}/confirmar-venda",
+            data={
+                "cliente_nome": "Loja Teste", "cliente_tipo_pessoa": "juridica",
+                "cliente_documento": "11222333000181",
+                "cliente_inscricao_estadual": "123.456.789", "cliente_ie_nao_contribuinte": "on",
+                "endereco_cep": "59000000", "endereco_logradouro": "Rua Teste", "endereco_numero": "100",
+                "endereco_bairro": "Centro", "endereco_cidade": "Natal", "endereco_uf": "RN",
+                "frete_descricao": "Combinado no WhatsApp", "frete_preco": "15,00",
+                "forma_pagamento": "Pix", "valor_pago": "65,00",
+            },
+            auth=("admin", "segredo123"),
+        )
+
+    pedido = pedidos.obter_pedido(lead["token"])
+    assert pedido["cliente_inscricao_estadual"] == "123.456.789"
+    assert pedido["cliente_ie_isento"] == 0
+    assert pedido["cliente_ie_nao_contribuinte"] == 1
 
 
 def test_admin_tiny_buscar_contato_exige_autenticacao(client, monkeypatch):

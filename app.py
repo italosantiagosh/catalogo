@@ -2009,12 +2009,30 @@ def admin_pedido_confirmar_venda(token: str):
     if pedido is None:
         abort(404)
 
+    # Mesmas regras de tipo de pessoa/IE/validacao de documento e telefone
+    # do checkout do site (ver _cliente_valido/_endereco_valido acima) --
+    # usuaria pediu pra preencher pedido de WhatsApp com as mesmas funcoes
+    # (ver conversa). So valida FORMATO (digito verificador/DDD real, ver
+    # services/documentos.py) quando o campo vem preenchido -- documento e
+    # telefone continuam opcionais aqui (lead do WhatsApp as vezes fecha
+    # sem todo dado logo de cara), mas se vier tem que bater.
+    cliente_tipo_pessoa = str(request.form.get("cliente_tipo_pessoa", "fisica")).strip()
+    cliente_tipo_pessoa = cliente_tipo_pessoa if cliente_tipo_pessoa in ("fisica", "juridica") else "fisica"
+    cliente_documento = str(request.form.get("cliente_documento", "")).strip()
+    cliente_telefone = str(request.form.get("cliente_telefone", "")).strip()
+    cliente_ie_isento = cliente_tipo_pessoa == "juridica" and bool(request.form.get("cliente_ie_isento"))
+    cliente_inscricao_estadual = (
+        "" if cliente_ie_isento else str(request.form.get("cliente_inscricao_estadual", "")).strip()
+    ) if cliente_tipo_pessoa == "juridica" else ""
     cliente = {
         "nome": str(request.form.get("cliente_nome", "")).strip(),
-        "tipo_pessoa": str(request.form.get("cliente_tipo_pessoa", "fisica")).strip(),
-        "documento": str(request.form.get("cliente_documento", "")).strip(),
-        "telefone": str(request.form.get("cliente_telefone", "")).strip(),
+        "tipo_pessoa": cliente_tipo_pessoa,
+        "documento": cliente_documento,
+        "telefone": cliente_telefone,
         "email": str(request.form.get("cliente_email", "")).strip(),
+        "inscricao_estadual": cliente_inscricao_estadual,
+        "ie_isento": cliente_ie_isento,
+        "ie_nao_contribuinte": cliente_tipo_pessoa == "juridica" and bool(request.form.get("cliente_ie_nao_contribuinte")),
     }
     endereco = {
         "cep": str(request.form.get("endereco_cep", "")).strip(),
@@ -2027,6 +2045,11 @@ def admin_pedido_confirmar_venda(token: str):
     }
     if not cliente["nome"]:
         abort(400, description="Informe ao menos o nome do cliente.")
+    rotulo_documento = "CNPJ" if cliente_tipo_pessoa == "juridica" else "CPF"
+    if cliente_documento and not documento_valido(cliente_tipo_pessoa, cliente_documento):
+        abort(400, description=f"{rotulo_documento} do cliente inválido. Confira o número digitado.")
+    if cliente_telefone and not telefone_valido(cliente_telefone):
+        abort(400, description="Telefone do cliente inválido. Confira o DDD e o número digitado.")
 
     # Entrega em endereco diferente (ex: livraria que recebe por conta
     # de outra pessoa/paroquia, ver conversa) -- so monta o bloco
@@ -2036,10 +2059,19 @@ def admin_pedido_confirmar_venda(token: str):
     destinatario_nome = str(request.form.get("destinatario_nome", "")).strip()
     destinatario = None
     if destinatario_nome:
+        destinatario_tipo_pessoa = str(request.form.get("destinatario_tipo_pessoa", "fisica")).strip()
+        destinatario_tipo_pessoa = destinatario_tipo_pessoa if destinatario_tipo_pessoa in ("fisica", "juridica") else "fisica"
+        destinatario_documento = str(request.form.get("destinatario_documento", "")).strip()
+        destinatario_telefone = str(request.form.get("destinatario_telefone", "")).strip()
+        rotulo_destinatario = "CNPJ" if destinatario_tipo_pessoa == "juridica" else "CPF"
+        if destinatario_documento and not documento_valido(destinatario_tipo_pessoa, destinatario_documento):
+            abort(400, description=f"{rotulo_destinatario} de quem recebe é inválido. Confira o número digitado.")
+        if destinatario_telefone and not telefone_valido(destinatario_telefone):
+            abort(400, description="Telefone de quem recebe é inválido. Confira o DDD e o número digitado.")
         destinatario = {
             "nome": destinatario_nome,
-            "tipo_pessoa": str(request.form.get("destinatario_tipo_pessoa", "fisica")).strip(),
-            "documento": str(request.form.get("destinatario_documento", "")).strip(),
+            "tipo_pessoa": destinatario_tipo_pessoa,
+            "documento": destinatario_documento,
             "cep": str(request.form.get("destinatario_cep", "")).strip(),
             "logradouro": str(request.form.get("destinatario_logradouro", "")).strip(),
             "numero": str(request.form.get("destinatario_numero", "")).strip(),
@@ -2047,7 +2079,7 @@ def admin_pedido_confirmar_venda(token: str):
             "bairro": str(request.form.get("destinatario_bairro", "")).strip(),
             "cidade": str(request.form.get("destinatario_cidade", "")).strip(),
             "uf": str(request.form.get("destinatario_uf", "")).strip(),
-            "telefone": str(request.form.get("destinatario_telefone", "")).strip(),
+            "telefone": destinatario_telefone,
         }
 
     try:

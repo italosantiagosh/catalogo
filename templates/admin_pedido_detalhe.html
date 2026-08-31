@@ -48,6 +48,12 @@
     .checkbox-linha { display: flex; align-items: center; gap: 8px; margin: 16px 0 4px; }
     .checkbox-linha input { width: auto; }
     .checkbox-linha label { margin: 0; }
+    .tipo-pessoa { border: none; padding: 0; margin: 14px 0 0; }
+    .tipo-pessoa legend { font-size: 0.78rem; font-weight: 600; color: #5b6b82; margin: 0 0 4px; padding: 0; }
+    .tipo-pessoa label { display: inline-flex; align-items: center; gap: 6px; font-weight: 400; font-size: 0.88rem; margin: 0 16px 0 0; color: #142238; }
+    .tipo-pessoa input { width: auto; }
+    .campo-erro { color: #a13a2a; font-size: 0.78rem; margin: 4px 0 0; }
+    .campo-ie { margin-top: 4px; }
   </style>
 </head>
 <body>
@@ -182,11 +188,32 @@
         <label for="cliente_nome">Nome completo / Razão social</label>
         <input type="text" name="cliente_nome" id="cliente_nome" required>
 
-        <label for="cliente_documento">CPF/CNPJ</label>
+        <fieldset class="tipo-pessoa">
+          <legend>Tipo de pessoa</legend>
+          <label><input type="radio" name="cliente_tipo_pessoa" id="cliente_tipo_pessoa_fisica" value="fisica" checked> Física (CPF)</label>
+          <label><input type="radio" name="cliente_tipo_pessoa" id="cliente_tipo_pessoa_juridica" value="juridica"> Jurídica (CNPJ)</label>
+        </fieldset>
+
+        <label for="cliente_documento" id="label-cliente-documento">CPF</label>
         <input type="text" name="cliente_documento" id="cliente_documento">
+        <p class="campo-erro" id="erro-cliente-documento" hidden></p>
+
+        <div id="cliente-ie-wrap" class="campo-ie" hidden>
+          <label for="cliente_inscricao_estadual">Inscrição Estadual (opcional)</label>
+          <input type="text" name="cliente_inscricao_estadual" id="cliente_inscricao_estadual">
+          <div class="checkbox-linha">
+            <input type="checkbox" name="cliente_ie_isento" id="cliente_ie_isento">
+            <label for="cliente_ie_isento">Isento de Inscrição Estadual</label>
+          </div>
+          <div class="checkbox-linha">
+            <input type="checkbox" name="cliente_ie_nao_contribuinte" id="cliente_ie_nao_contribuinte">
+            <label for="cliente_ie_nao_contribuinte">Não contribuinte de ICMS</label>
+          </div>
+        </div>
 
         <label for="cliente_telefone">Telefone/WhatsApp</label>
         <input type="text" name="cliente_telefone" id="cliente_telefone">
+        <p class="campo-erro" id="erro-cliente-telefone" hidden></p>
 
         <label for="cliente_email">E-mail (opcional)</label>
         <input type="text" name="cliente_email" id="cliente_email">
@@ -223,10 +250,20 @@
 
           <label for="destinatario_nome">Nome de quem recebe</label>
           <input type="text" name="destinatario_nome" id="destinatario_nome">
-          <label for="destinatario_documento">CPF/CNPJ</label>
+
+          <fieldset class="tipo-pessoa">
+            <legend>Tipo de pessoa (de quem recebe)</legend>
+            <label><input type="radio" name="destinatario_tipo_pessoa" id="destinatario_tipo_pessoa_fisica" value="fisica" checked> Física (CPF)</label>
+            <label><input type="radio" name="destinatario_tipo_pessoa" id="destinatario_tipo_pessoa_juridica" value="juridica"> Jurídica (CNPJ)</label>
+          </fieldset>
+
+          <label for="destinatario_documento" id="label-destinatario-documento">CPF</label>
           <input type="text" name="destinatario_documento" id="destinatario_documento">
+          <p class="campo-erro" id="erro-destinatario-documento" hidden></p>
+
           <label for="destinatario_telefone">Celular/telefone de quem recebe (opcional)</label>
           <input type="text" name="destinatario_telefone" id="destinatario_telefone" placeholder="(00) 00000-0000">
+          <p class="campo-erro" id="erro-destinatario-telefone" hidden></p>
           <label for="destinatario_cep">CEP de entrega</label>
           <input type="text" name="destinatario_cep" id="destinatario_cep" inputmode="numeric" placeholder="00000-000">
           <label for="destinatario_logradouro">Endereço (rua/avenida)</label>
@@ -241,7 +278,6 @@
           <input type="text" name="destinatario_cidade" id="destinatario_cidade">
           <label for="destinatario_uf">UF</label>
           <input type="text" name="destinatario_uf" id="destinatario_uf" maxlength="2">
-          <input type="hidden" name="destinatario_tipo_pessoa" id="destinatario_tipo_pessoa" value="fisica">
         </div>
 
         <label for="frete_descricao">Frete combinado</label>
@@ -265,6 +301,108 @@
     </div>
 
     <script>
+      // ---- CPF/CNPJ (digito verificador modulo-11) e telefone (DDD real) --
+      // mesmo algoritmo de services/documentos.py e static/js/carrinho_pagina.js
+      // (ver conversa: usuaria pediu as mesmas funcoes do checkout do site
+      // aqui no formulario manual de venda do WhatsApp). So confere
+      // FORMATO -- nao confirma que o documento/numero existe de verdade
+      // cadastrado (isso exigiria consulta paga a API externa, fora do
+      // escopo; o servidor sempre reconfere isso tambem).
+      function cpfValido(cpf) {
+        const digitos = (cpf || '').replace(/\D/g, '');
+        if (digitos.length !== 11 || /^(\d)\1{10}$/.test(digitos)) return false;
+        for (const i of [9, 10]) {
+          let soma = 0;
+          for (let num = 0; num < i; num++) soma += parseInt(digitos[num], 10) * ((i + 1) - num);
+          const digito = ((soma * 10) % 11) % 10;
+          if (digito !== parseInt(digitos[i], 10)) return false;
+        }
+        return true;
+      }
+
+      function cnpjValido(cnpj) {
+        const digitos = (cnpj || '').replace(/\D/g, '');
+        if (digitos.length !== 14 || /^(\d)\1{13}$/.test(digitos)) return false;
+        const pesos1 = [5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2];
+        const pesos2 = [6, 5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2];
+        let soma1 = 0;
+        for (let i = 0; i < 12; i++) soma1 += parseInt(digitos[i], 10) * pesos1[i];
+        let d1 = 11 - (soma1 % 11);
+        d1 = d1 >= 10 ? 0 : d1;
+        if (d1 !== parseInt(digitos[12], 10)) return false;
+        let soma2 = 0;
+        for (let i = 0; i < 13; i++) soma2 += parseInt(digitos[i], 10) * pesos2[i];
+        let d2 = 11 - (soma2 % 11);
+        d2 = d2 >= 10 ? 0 : d2;
+        if (d2 !== parseInt(digitos[13], 10)) return false;
+        return true;
+      }
+
+      function documentoValido(tipoPessoa, documento) {
+        return tipoPessoa === 'juridica' ? cnpjValido(documento) : cpfValido(documento);
+      }
+
+      const DDDS_VALIDOS = new Set([
+        11, 12, 13, 14, 15, 16, 17, 18, 19,
+        21, 22, 24, 27, 28,
+        31, 32, 33, 34, 35, 37, 38,
+        41, 42, 43, 44, 45, 46, 47, 48, 49,
+        51, 53, 54, 55,
+        61, 62, 63, 64, 65, 66, 67, 68, 69,
+        71, 73, 74, 75, 77, 79,
+        81, 82, 83, 84, 85, 86, 87, 88, 89,
+        91, 92, 93, 94, 95, 96, 97, 98, 99,
+      ]);
+
+      function telefoneValido(telefone) {
+        const digitos = (telefone || '').replace(/\D/g, '');
+        if (digitos.length !== 10 && digitos.length !== 11) return false;
+        if (!DDDS_VALIDOS.has(parseInt(digitos.slice(0, 2), 10))) return false;
+        if (digitos.length === 11 && digitos[2] !== '9') return false;
+        return true;
+      }
+
+      // ---- tipo de pessoa (fisica/juridica) -- alterna rotulo CPF/CNPJ e,
+      // pro cliente, mostra os campos de Inscricao Estadual (so faz
+      // sentido pra juridica, mesma logica de static/js/carrinho_pagina.js).
+      function ligarTipoPessoa(prefixo, comIe) {
+        const radioFisica = document.getElementById(`${prefixo}_tipo_pessoa_fisica`);
+        const radioJuridica = document.getElementById(`${prefixo}_tipo_pessoa_juridica`);
+        const labelDocumento = document.getElementById(`label-${prefixo}-documento`);
+        const erro = document.getElementById(`erro-${prefixo}-documento`);
+        const ieWrap = comIe ? document.getElementById(`${prefixo}-ie-wrap`) : null;
+        const ieInput = comIe ? document.getElementById(`${prefixo}_inscricao_estadual`) : null;
+        const ieIsento = comIe ? document.getElementById(`${prefixo}_ie_isento`) : null;
+        const ieNaoContribuinte = comIe ? document.getElementById(`${prefixo}_ie_nao_contribuinte`) : null;
+
+        function atualizar() {
+          const ehJuridica = radioJuridica && radioJuridica.checked;
+          if (labelDocumento) labelDocumento.textContent = ehJuridica ? 'CNPJ' : 'CPF';
+          if (ieWrap) ieWrap.hidden = !ehJuridica;
+          if (!ehJuridica && ieInput) ieInput.value = '';
+          if (!ehJuridica && ieIsento) ieIsento.checked = false;
+          if (!ehJuridica && ieNaoContribuinte) ieNaoContribuinte.checked = false;
+          if (erro) erro.hidden = true;
+        }
+        if (radioFisica) radioFisica.addEventListener('change', atualizar);
+        if (radioJuridica) radioJuridica.addEventListener('change', atualizar);
+        if (ieIsento && ieInput) {
+          ieIsento.addEventListener('change', () => {
+            ieInput.disabled = ieIsento.checked;
+            if (ieIsento.checked) ieInput.value = '';
+          });
+        }
+        return {
+          setTipo(valor) {
+            if (valor === 'juridica' && radioJuridica) radioJuridica.checked = true;
+            else if (radioFisica) radioFisica.checked = true;
+            atualizar();
+          },
+        };
+      }
+      const tipoPessoaCliente = ligarTipoPessoa('cliente', true);
+      const tipoPessoaDestinatario = ligarTipoPessoa('destinatario', false);
+
       // ---- entrega em endereco diferente (ex: livraria) ----
       const chkDestinatario = document.getElementById('chk-destinatario');
       const blocoDestinatario = document.getElementById('bloco-destinatario');
@@ -327,7 +465,7 @@
           if (campos.documento) campos.documento.value = contato.documento || '';
           if (campos.telefone) campos.telefone.value = contato.telefone || '';
           if (campos.email) campos.email.value = contato.email || '';
-          if (campos.tipoPessoa) campos.tipoPessoa.value = contato.tipo_pessoa || 'fisica';
+          if (campos.tipoPessoa) campos.tipoPessoa.setTipo(contato.tipo_pessoa || 'fisica');
           campos.cep.value = mascararCep(contato.cep || '');
           campos.logradouro.value = contato.logradouro || '';
           campos.numero.value = contato.numero || '';
@@ -386,6 +524,7 @@
           documento: document.getElementById('cliente_documento'),
           telefone: document.getElementById('cliente_telefone'),
           email: document.getElementById('cliente_email'),
+          tipoPessoa: tipoPessoaCliente,
           cep: document.getElementById('endereco_cep'),
           logradouro: document.getElementById('endereco_logradouro'),
           numero: document.getElementById('endereco_numero'),
@@ -402,7 +541,7 @@
         {
           nome: document.getElementById('destinatario_nome'),
           documento: document.getElementById('destinatario_documento'),
-          tipoPessoa: document.getElementById('destinatario_tipo_pessoa'),
+          tipoPessoa: tipoPessoaDestinatario,
           cep: document.getElementById('destinatario_cep'),
           logradouro: document.getElementById('destinatario_logradouro'),
           numero: document.getElementById('destinatario_numero'),
@@ -412,6 +551,77 @@
           uf: document.getElementById('destinatario_uf'),
         }
       );
+
+      // ---- valida CPF/CNPJ e telefone antes de enviar (mesma checagem
+      // que o servidor faz de qualquer forma -- ver app.py:
+      // admin_pedido_confirmar_venda) -- pega erro de digitacao na hora,
+      // sem precisar recarregar a pagina com erro 400 (ver conversa).
+      const formConfirmarVenda = document.getElementById('form-confirmar-venda');
+      const clienteDocumentoInput = document.getElementById('cliente_documento');
+      const clienteTelefoneInput = document.getElementById('cliente_telefone');
+      const erroClienteDocumentoEl = document.getElementById('erro-cliente-documento');
+      const erroClienteTelefoneEl = document.getElementById('erro-cliente-telefone');
+      const destinatarioDocumentoInput = document.getElementById('destinatario_documento');
+      const destinatarioTelefoneInput = document.getElementById('destinatario_telefone');
+      const erroDestinatarioDocumentoEl = document.getElementById('erro-destinatario-documento');
+      const erroDestinatarioTelefoneEl = document.getElementById('erro-destinatario-telefone');
+
+      formConfirmarVenda.addEventListener('submit', (evento) => {
+        if (erroClienteDocumentoEl) erroClienteDocumentoEl.hidden = true;
+        if (erroClienteTelefoneEl) erroClienteTelefoneEl.hidden = true;
+        if (erroDestinatarioDocumentoEl) erroDestinatarioDocumentoEl.hidden = true;
+        if (erroDestinatarioTelefoneEl) erroDestinatarioTelefoneEl.hidden = true;
+
+        const clienteJuridica = document.getElementById('cliente_tipo_pessoa_juridica').checked;
+        const tipoCliente = clienteJuridica ? 'juridica' : 'fisica';
+        const documentoCliente = clienteDocumentoInput.value.trim();
+        if (documentoCliente && !documentoValido(tipoCliente, documentoCliente)) {
+          const rotulo = tipoCliente === 'juridica' ? 'CNPJ' : 'CPF';
+          if (erroClienteDocumentoEl) {
+            erroClienteDocumentoEl.textContent = `${rotulo} inválido. Confira o número digitado.`;
+            erroClienteDocumentoEl.hidden = false;
+          }
+          clienteDocumentoInput.focus();
+          evento.preventDefault();
+          return;
+        }
+        const telefoneCliente = clienteTelefoneInput.value.trim();
+        if (telefoneCliente && !telefoneValido(telefoneCliente)) {
+          if (erroClienteTelefoneEl) {
+            erroClienteTelefoneEl.textContent = 'Telefone inválido. Confira o DDD e o número digitado.';
+            erroClienteTelefoneEl.hidden = false;
+          }
+          clienteTelefoneInput.focus();
+          evento.preventDefault();
+          return;
+        }
+
+        if (blocoDestinatario.classList.contains('ativo')) {
+          const destinatarioJuridica = document.getElementById('destinatario_tipo_pessoa_juridica').checked;
+          const tipoDestinatario = destinatarioJuridica ? 'juridica' : 'fisica';
+          const documentoDestinatario = destinatarioDocumentoInput.value.trim();
+          if (documentoDestinatario && !documentoValido(tipoDestinatario, documentoDestinatario)) {
+            const rotuloDest = tipoDestinatario === 'juridica' ? 'CNPJ' : 'CPF';
+            if (erroDestinatarioDocumentoEl) {
+              erroDestinatarioDocumentoEl.textContent = `${rotuloDest} inválido. Confira o número digitado.`;
+              erroDestinatarioDocumentoEl.hidden = false;
+            }
+            destinatarioDocumentoInput.focus();
+            evento.preventDefault();
+            return;
+          }
+          const telefoneDestinatario = destinatarioTelefoneInput.value.trim();
+          if (telefoneDestinatario && !telefoneValido(telefoneDestinatario)) {
+            if (erroDestinatarioTelefoneEl) {
+              erroDestinatarioTelefoneEl.textContent = 'Telefone inválido. Confira o DDD e o número digitado.';
+              erroDestinatarioTelefoneEl.hidden = false;
+            }
+            destinatarioTelefoneInput.focus();
+            evento.preventDefault();
+            return;
+          }
+        }
+      });
     </script>
   {% endif %}
 
