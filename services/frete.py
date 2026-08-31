@@ -333,14 +333,49 @@ def _resultado_frete_gratis(opcoes: list[dict]) -> dict:
     return {"frete_gratis": True, "opcoes": opcoes_com_credito, "aviso": AVISO_FRETE_GRATIS}
 
 
+def _resultado_desconto_atacado(opcoes: list[dict], desconto: float) -> dict:
+    """Aplica o desconto de frete por atacado (8% do subtotal do grupo
+    que ja atingiu a primeira faixa de atacado, ver
+    services.pricing.DESCONTO_FRETE_ATACADO_PCT -- pedido do usuario,
+    regra separada e ANTERIOR ao credito de frete gratis) em cima das
+    cotacoes reais: mesmo layout visual do credito de frete gratis
+    (preco original riscado + preco final), so que aqui o credito e um
+    valor FIXO em R$ (o desconto calculado), nao o preco da opcao mais
+    barata -- entao raramente zera o frete inteiro, so abate uma parte."""
+    return {
+        "frete_gratis": False,
+        "desconto_atacado_reais": desconto,
+        "opcoes": [
+            {
+                "transportadora": opcao["transportadora"],
+                "servico": opcao["servico"],
+                "prazo_dias": opcao["prazo_dias"],
+                "preco_original": opcao["preco"],
+                "preco_final": (preco_final := round(max(opcao["preco"] - desconto, 0.0), 2)),
+                "gratis": preco_final == 0.0,
+            }
+            for opcao in opcoes
+        ],
+    }
+
+
 def calcular_frete(
-    itens: list[dict], cep_destino: str, subtotal: float, frete_gratis_atingido: bool
+    itens: list[dict],
+    cep_destino: str,
+    subtotal: float,
+    frete_gratis_atingido: bool,
+    desconto_frete_atacado: float = 0.0,
 ) -> dict:
     """Combina a regra de frete gratis com a cotacao real da Frenet +
     Melhor Envio. Quando o pedido ja atinge frete gratis, ainda cotamos
     tudo normalmente e aplicamos o credito de frete gratis em cima
     (ver _resultado_frete_gratis) -- pedido do usuario, pra mostrar
-    todas as opcoes mesmo com frete gratis."""
+    todas as opcoes mesmo com frete gratis. Antes de chegar la, se
+    algum grupo do carrinho ja atingiu a primeira faixa de atacado
+    (ver services.pricing.calcular_carrinho -> desconto_frete_atacado),
+    aplica um desconto parcial em cima da cotacao real (ver
+    _resultado_desconto_atacado) -- as duas regras nunca se somam, o
+    frete gratis (mais vantajoso) sempre tem prioridade quando atingido."""
     peso_real_kg = peso_total_kg(itens)
     peso_kg = peso_padrao_kg(peso_real_kg)
 
@@ -354,5 +389,8 @@ def calcular_frete(
 
     if not opcoes and "erro" in resultado:
         return {"frete_gratis": False, "opcoes": [], "erro": resultado["erro"]}
+
+    if desconto_frete_atacado > 0 and opcoes:
+        return _resultado_desconto_atacado(opcoes, desconto_frete_atacado)
 
     return {"frete_gratis": False, "opcoes": opcoes}

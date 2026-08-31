@@ -49,6 +49,29 @@ def test_criar_pedido_frete_real_passa(client):
     assert resposta.status_code == 200
 
 
+def test_criar_pedido_com_desconto_de_frete_atacado_passa(client):
+    """Ver conversa: 20 medalhas ja e´ atacado -> desconto no frete.
+    O preco final (ja com o desconto abatido) tem que ser aceito na
+    reconferencia do checkout, nao barrado como "frete mudou"."""
+    corpo = _corpo_valido(
+        itens=[{"chave_preco": "16mm", "quantidade": 20, "produtoNome": "São José", "modeloNome": "Modelo 1"}],
+        frete={"texto": "Correios PAC — R$ 2,80", "preco": 2.80},
+    )
+    with patch("app.calcular_frete", return_value={
+        "frete_gratis": False,
+        "desconto_atacado_reais": 7.20,
+        "opcoes": [{
+            "transportadora": "Correios", "servico": "PAC", "prazo_dias": 6,
+            "preco_original": 10.0, "preco_final": 2.80, "gratis": False,
+        }],
+    }) as mock_frete, patch("app.criar_link_pagamento", return_value={"url": "https://checkout.infinitepay.io/abc"}):
+        resposta = client.post("/api/pedido/criar", json=corpo)
+    assert resposta.status_code == 200
+    # o desconto calculado (calculo["desconto_frete_atacado"]) precisa
+    # ter sido passado adiante pra calcular_frete
+    assert mock_frete.call_args.args[-1] == 7.20
+
+
 def test_criar_pedido_frete_indisponivel_nao_bloqueia_venda(client):
     """Fail-open: se a cotacao de frete falhar (rede fora, token nao
     configurado) na hora do checkout, o pedido segue confiando no

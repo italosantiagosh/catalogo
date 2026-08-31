@@ -663,6 +663,47 @@
       return;
     }
 
+    // desconto de frete por atacado (ver services/pricing.py:
+    // DESCONTO_FRETE_ATACADO_PCT) -- regra separada e ANTERIOR ao
+    // frete gratis (ja tratado acima): mesmo layout de preco riscado +
+    // preco final, so que o credito e um valor fixo em R$, raramente
+    // zera o frete inteiro.
+    if (dados.desconto_atacado_reais) {
+      freteResultadoEl.innerHTML =
+        `<p class="frete-gratis-aviso">🎉 Sua quantidade em atacado já garantiu ` +
+        `${formatarPreco(dados.desconto_atacado_reais)} de desconto no frete!</p>`;
+      dados.opcoes.forEach((opcao, i) => {
+        const botao = document.createElement('button');
+        botao.type = 'button';
+        botao.className = 'frete-opcao';
+        botao.setAttribute('aria-pressed', 'false');
+        const prazo = opcao.prazo_dias ? `${opcao.prazo_dias} dia(s) úteis` : '';
+        const rotulo = opcao.gratis
+          ? '<span class="frete-opcao-gratis">Grátis</span>'
+          : `<span class="frete-opcao-por">Por ${formatarPreco(opcao.preco_final)}</span>`;
+        botao.innerHTML = `
+          <div>
+            <div class="frete-opcao-nome">${opcao.transportadora} — ${opcao.servico}</div>
+            <div class="frete-opcao-prazo">${prazo}</div>
+          </div>
+          <div class="frete-opcao-preco">
+            <span class="frete-opcao-preco-original">${formatarPreco(opcao.preco_original)}</span>
+            ${rotulo}
+          </div>
+        `;
+        const escolha = {
+          texto: `${opcao.transportadora} ${opcao.servico} — ${formatarPreco(opcao.preco_final)}`,
+          preco: opcao.preco_final,
+          prazo_dias: opcao.prazo_dias || null,
+        };
+        botao.addEventListener('click', () => selecionarOpcaoFrete(botao, escolha));
+        freteResultadoEl.appendChild(botao);
+        if (i === 0) selecionarOpcaoFrete(botao, escolha);
+      });
+      adicionarOpcaoRetirada();
+      return;
+    }
+
     freteResultadoEl.innerHTML = '';
     dados.opcoes.forEach((opcao, i) => {
       const botao = document.createElement('button');

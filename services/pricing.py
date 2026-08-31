@@ -38,6 +38,20 @@ GRUPO_DE_CHAVE = {
 CHAVES_PRECO = tuple(GRUPO_DE_CHAVE)
 GRUPOS = ("padrao", "chaveiro")
 
+# Desconto no FRETE (nao no preco do produto) quando um grupo atinge a
+# primeira faixa de atacado (ver conversa: "antes do frete gratis...
+# quando um item atinge a primeira quantidade de atacado, 8% desse
+# valor vai ser desconto nos fretes"). Exemplo dado pelo usuario: 20
+# medalhas 16mm ja e´ atacado (R$4,50/un = R$90,00) -> 8% de 90 =
+# R$7,20 de desconto no frete. Independente por grupo (padrao e
+# chaveiro cada um so conta se ELE MESMO atingiu a propria primeira
+# faixa de atacado, mesmo criterio de GRUPO ja usado no resto do
+# motor de preco) -- se nenhum grupo atingiu atacado, sem desconto
+# (frete cheio). Regra separada e ANTERIOR ao credito de frete gratis
+# (frete_gratis_reais, ver calcular_carrinho) -- so faz sentido
+# aplicar quando o pedido ainda nao chegou la.
+DESCONTO_FRETE_ATACADO_PCT = 0.08
+
 
 def carregar_precos() -> dict:
     with PRECOS_PATH.open(encoding="utf-8") as f:
@@ -113,6 +127,15 @@ def faixa_label(chave_preco: str, quantidade_total_grupo: int) -> str:
     return ""
 
 
+def _grupo_atingiu_atacado(chave_preco: str, quantidade_total_grupo: int) -> bool:
+    """True quando a quantidade ja passou da faixa "1" (varejo) pra
+    qualquer faixa de atacado seguinte -- ver DESCONTO_FRETE_ATACADO_PCT."""
+    if quantidade_total_grupo <= 0:
+        return False
+    faixas = _faixas_ordenadas(chave_preco)
+    return _faixa_atual(chave_preco, quantidade_total_grupo)[0] > faixas[0][0]
+
+
 def _calcular_grupo(chave_referencia: str, quantidade_total_grupo: int) -> dict:
     if quantidade_total_grupo == 0:
         # carrinho (ou grupo) vazio: nao ha faixa atingida nem "proxima
@@ -156,11 +179,13 @@ def calcular_carrinho(itens: list[dict]) -> dict:
 
     itens_calculados = []
     subtotal_total = 0.0
+    subtotal_por_grupo = {g: 0.0 for g in GRUPOS}
     for item in itens:
         grupo = GRUPO_DE_CHAVE[item["chave_preco"]]
         preco_unitario = calcular_preco(item["chave_preco"], quantidade_por_grupo[grupo])
         subtotal = round(preco_unitario * item["quantidade"], 2)
         subtotal_total += subtotal
+        subtotal_por_grupo[grupo] += subtotal
         itens_calculados.append(
             {**item, "preco_unitario": preco_unitario, "subtotal": subtotal}
         )
@@ -170,6 +195,18 @@ def calcular_carrinho(itens: list[dict]) -> dict:
         g: _calcular_grupo(chave_referencia_por_grupo[g], quantidade_por_grupo[g])
         for g in GRUPOS
     }
+
+    # Desconto de frete por atacado (ver DESCONTO_FRETE_ATACADO_PCT) --
+    # soma 8% do subtotal de CADA grupo que, sozinho, ja atingiu a
+    # propria primeira faixa de atacado (nao mistura grupo com grupo).
+    desconto_frete_atacado = round(
+        sum(
+            subtotal_por_grupo[g] * DESCONTO_FRETE_ATACADO_PCT
+            for g in GRUPOS
+            if _grupo_atingiu_atacado(chave_referencia_por_grupo[g], quantidade_por_grupo[g])
+        ),
+        2,
+    )
 
     frete_gratis = frete_gratis_reais()
     falta_frete = round(frete_gratis - subtotal_total, 2)
@@ -184,4 +221,5 @@ def calcular_carrinho(itens: list[dict]) -> dict:
         "frete_gratis_reais": frete_gratis,
         "frete_gratis_atingido": subtotal_total >= frete_gratis if itens else False,
         "falta_para_frete_gratis": max(0.0, falta_frete) if itens else frete_gratis,
+        "desconto_frete_atacado": desconto_frete_atacado,
     }

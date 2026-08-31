@@ -1238,6 +1238,7 @@ def api_calcular_frete():
         cep,
         resumo_carrinho["subtotal_total"],
         resumo_carrinho["frete_gratis_atingido"],
+        resumo_carrinho["desconto_frete_atacado"],
     )
     return jsonify(resultado)
 
@@ -1299,7 +1300,8 @@ def api_pedido_criar():
     else:
         cep_frete = endereco.get("destinatario_cep") or endereco["cep"]
         frete_minimo = _frete_preco_minimo_valido(
-            itens_validos, cep_frete, calculo["subtotal_total"], calculo["frete_gratis_atingido"]
+            itens_validos, cep_frete, calculo["subtotal_total"], calculo["frete_gratis_atingido"],
+            calculo["desconto_frete_atacado"],
         )
         if frete_minimo is not None and frete_preco < frete_minimo - 0.50:
             return jsonify(erro="O frete mudou -- recalcule antes de pagar."), 400
@@ -1390,7 +1392,8 @@ def api_pedido_criar_boleto():
     else:
         cep_frete = endereco.get("destinatario_cep") or endereco["cep"]
         frete_minimo = _frete_preco_minimo_valido(
-            itens_validos, cep_frete, calculo["subtotal_total"], calculo["frete_gratis_atingido"]
+            itens_validos, cep_frete, calculo["subtotal_total"], calculo["frete_gratis_atingido"],
+            calculo["desconto_frete_atacado"],
         )
         if frete_minimo is not None and frete_preco < frete_minimo - 0.50:
             return jsonify(erro="O frete mudou -- recalcule antes de pagar."), 400
@@ -1528,29 +1531,38 @@ def _itens_pagamento_de_pedido(pedido: dict) -> list[dict]:
     return itens_pagamento
 
 
-def _frete_preco_minimo_valido(itens: list[dict], cep: str, subtotal: float, frete_gratis_atingido: bool) -> float | None:
+def _frete_preco_minimo_valido(
+    itens: list[dict],
+    cep: str,
+    subtotal: float,
+    frete_gratis_atingido: bool,
+    desconto_frete_atacado: float = 0.0,
+) -> float | None:
     """Reconfere o preco de frete que o navegador mandou contra uma nova
     cotacao real (Frenet/Melhor Envio) -- sem isso, um cliente podia
     interceptar o POST e mandar qualquer frete_preco (ex: 0,01) pra
     qualquer opcao, mesmo pesada/longe (ver conversa "tornar o site e
     apis seguros"). Devolve o menor preco aceitavel (0.0 quando o
-    pedido ja atinge frete gratis) ou None quando nao da pra confirmar
-    (nenhuma cotacao respondeu, CEP invalido, etc.) -- nesse caso o
-    chamador NAO bloqueia o pedido (fail-open: um problema temporario
-    na Frenet/Melhor Envio nunca deve impedir uma venda de verdade, so
-    a manipulacao deliberada de preco e´ bloqueada)."""
+    pedido ja atinge frete gratis, ou com o desconto de atacado ja
+    abatido -- ver services.frete.calcular_frete/_resultado_desconto_atacado)
+    ou None quando nao da pra confirmar (nenhuma cotacao respondeu, CEP
+    invalido, etc.) -- nesse caso o chamador NAO bloqueia o pedido
+    (fail-open: um problema temporario na Frenet/Melhor Envio nunca
+    deve impedir uma venda de verdade, so a manipulacao deliberada de
+    preco e´ bloqueada)."""
     try:
-        resultado = calcular_frete(itens, cep, subtotal, frete_gratis_atingido)
+        resultado = calcular_frete(itens, cep, subtotal, frete_gratis_atingido, desconto_frete_atacado)
     except Exception:
         return None
     if resultado.get("erro"):
         return None
-    if resultado.get("frete_gratis"):
-        opcoes = resultado.get("opcoes") or []
-        return 0.0 if not opcoes else min(o["preco_final"] for o in opcoes)
     opcoes = resultado.get("opcoes") or []
     if not opcoes:
-        return None
+        return 0.0 if resultado.get("frete_gratis") else None
+    # frete_gratis e desconto_atacado_reais usam o mesmo formato de
+    # opcao (com "preco_final" ja abatido) -- generaliza os dois casos.
+    if "preco_final" in opcoes[0]:
+        return min(o["preco_final"] for o in opcoes)
     return min(o["preco"] for o in opcoes)
 
 

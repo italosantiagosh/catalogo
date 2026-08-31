@@ -155,6 +155,51 @@ def test_frete_gratis_atingido():
     assert resultado["falta_para_frete_gratis"] == 0.0
 
 
+def test_desconto_frete_atacado_zero_antes_da_primeira_faixa():
+    resultado = calcular_carrinho([{"chave_preco": "16mm", "quantidade": 19}])
+    assert resultado["desconto_frete_atacado"] == 0
+
+
+def test_desconto_frete_atacado_carrinho_vazio():
+    assert calcular_carrinho([])["desconto_frete_atacado"] == 0
+
+
+def test_desconto_frete_atacado_exemplo_do_usuario():
+    """Ver conversa: 20 medalhas 16mm ja e´ atacado (R$4,50/un = R$90) ->
+    8% de 90 = R$7,20 de desconto no frete."""
+    resultado = calcular_carrinho([{"chave_preco": "16mm", "quantidade": 20}])
+    assert resultado["subtotal_total"] == 90.00
+    assert resultado["desconto_frete_atacado"] == 7.20
+
+
+def test_desconto_frete_atacado_escala_com_a_quantidade():
+    # 25 unidades ainda na faixa 20-29 (R$4,50/un) = R$112,50 -> 8% = R$9,00
+    resultado = calcular_carrinho([{"chave_preco": "16mm", "quantidade": 25}])
+    assert resultado["subtotal_total"] == 112.50
+    assert resultado["desconto_frete_atacado"] == 9.00
+
+
+def test_desconto_frete_atacado_por_grupo_independente():
+    # so o chaveiro atinge atacado (20 un) -- medalha continua no varejo,
+    # nao entra no calculo do desconto
+    resultado = calcular_carrinho([
+        {"chave_preco": "16mm", "quantidade": 5},
+        {"chave_preco": "chaveiro", "quantidade": 20},
+    ])
+    assert resultado["grupos"]["padrao"]["quantidade_total"] == 5
+    assert resultado["grupos"]["chaveiro"]["quantidade_total"] == 20
+    # 20 chaveiros x R$12,00 = R$240,00 -> 8% = R$19,20
+    assert resultado["desconto_frete_atacado"] == 19.20
+
+
+def test_desconto_frete_atacado_soma_os_dois_grupos_quando_ambos_atingem():
+    resultado = calcular_carrinho([
+        {"chave_preco": "16mm", "quantidade": 20},   # 20 x 4,50 = 90,00 -> 7,20
+        {"chave_preco": "chaveiro", "quantidade": 20},  # 20 x 12,00 = 240,00 -> 19,20
+    ])
+    assert resultado["desconto_frete_atacado"] == 26.40
+
+
 def test_frete_gratis_considera_subtotal_combinado_de_ambos_grupos():
     # medalhas + chaveiros somam pro frete gratis, mesmo sem se misturar na faixa
     resultado = calcular_carrinho([

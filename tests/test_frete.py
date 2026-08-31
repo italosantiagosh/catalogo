@@ -96,6 +96,121 @@ def test_calcular_frete_com_frete_gratis_mostra_todas_opcoes_com_credito(monkeyp
     assert sedex["gratis"] is False
 
 
+def test_calcular_frete_com_desconto_atacado_abate_valor_fixo_de_cada_opcao(monkeypatch):
+    """Ver conversa: regra separada e ANTERIOR ao frete gratis -- 8% do
+    subtotal do grupo que atingiu a primeira faixa de atacado vira um
+    credito FIXO em R$ (nao "a mais barata sai gratis" como no credito
+    de frete gratis), abatido de toda cotacao."""
+    monkeypatch.setattr(frete, "FRENET_TOKEN", "token-fake")
+    monkeypatch.setattr(frete, "CEP_ORIGEM", "59000000")
+    monkeypatch.setattr(frete, "MELHOR_ENVIO_TOKEN", "")
+
+    with patch(
+        "services.frete.requests.post",
+        return_value=_resposta_frenet_fake(
+            {"Carrier": "Correios", "ServiceDescription": "PAC", "ShippingPrice": "10.00",
+             "DeliveryTime": 8, "Error": False},
+            {"Carrier": "Correios", "ServiceDescription": "SEDEX", "ShippingPrice": "20.00",
+             "DeliveryTime": 3, "Error": False},
+        ),
+    ):
+        resultado = frete.calcular_frete(
+            itens=[{"chave_preco": "16mm", "quantidade": 20}],
+            cep_destino="20040020",
+            subtotal=90.0,
+            frete_gratis_atingido=False,
+            desconto_frete_atacado=7.20,
+        )
+
+    assert resultado["frete_gratis"] is False
+    assert resultado["desconto_atacado_reais"] == 7.20
+    pac, sedex = resultado["opcoes"]
+    assert pac["preco_original"] == 10.00
+    assert pac["preco_final"] == 2.80  # 10 - 7,20
+    assert pac["gratis"] is False
+    assert sedex["preco_original"] == 20.00
+    assert sedex["preco_final"] == 12.80  # 20 - 7,20
+
+
+def test_calcular_frete_com_desconto_atacado_maior_que_frete_zera_sem_ficar_negativo(monkeypatch):
+    monkeypatch.setattr(frete, "FRENET_TOKEN", "token-fake")
+    monkeypatch.setattr(frete, "CEP_ORIGEM", "59000000")
+    monkeypatch.setattr(frete, "MELHOR_ENVIO_TOKEN", "")
+
+    with patch(
+        "services.frete.requests.post",
+        return_value=_resposta_frenet_fake(
+            {"Carrier": "Correios", "ServiceDescription": "PAC", "ShippingPrice": "5.00",
+             "DeliveryTime": 8, "Error": False},
+        ),
+    ):
+        resultado = frete.calcular_frete(
+            itens=[{"chave_preco": "16mm", "quantidade": 20}],
+            cep_destino="20040020",
+            subtotal=90.0,
+            frete_gratis_atingido=False,
+            desconto_frete_atacado=19.20,
+        )
+
+    pac = resultado["opcoes"][0]
+    assert pac["preco_final"] == 0.0
+    assert pac["gratis"] is True
+
+
+def test_calcular_frete_sem_desconto_atacado_mantem_cotacao_normal(monkeypatch):
+    """Sem desconto (grupo nenhum atingiu atacado), continua o mesmo
+    formato de sempre -- so "preco", sem preco_original/preco_final."""
+    monkeypatch.setattr(frete, "FRENET_TOKEN", "token-fake")
+    monkeypatch.setattr(frete, "CEP_ORIGEM", "59000000")
+    monkeypatch.setattr(frete, "MELHOR_ENVIO_TOKEN", "")
+
+    with patch(
+        "services.frete.requests.post",
+        return_value=_resposta_frenet_fake(
+            {"Carrier": "Correios", "ServiceDescription": "PAC", "ShippingPrice": "10.00",
+             "DeliveryTime": 8, "Error": False},
+        ),
+    ):
+        resultado = frete.calcular_frete(
+            itens=[{"chave_preco": "16mm", "quantidade": 5}],
+            cep_destino="20040020",
+            subtotal=25.0,
+            frete_gratis_atingido=False,
+            desconto_frete_atacado=0.0,
+        )
+
+    assert "desconto_atacado_reais" not in resultado
+    assert resultado["opcoes"][0]["preco"] == 10.00
+    assert "preco_final" not in resultado["opcoes"][0]
+
+
+def test_calcular_frete_gratis_tem_prioridade_sobre_desconto_atacado(monkeypatch):
+    """As duas regras nunca se somam -- se o pedido ja atingiu frete
+    gratis, o credito de frete gratis (mais vantajoso) sempre vence."""
+    monkeypatch.setattr(frete, "FRENET_TOKEN", "token-fake")
+    monkeypatch.setattr(frete, "CEP_ORIGEM", "59000000")
+    monkeypatch.setattr(frete, "MELHOR_ENVIO_TOKEN", "")
+
+    with patch(
+        "services.frete.requests.post",
+        return_value=_resposta_frenet_fake(
+            {"Carrier": "Correios", "ServiceDescription": "PAC", "ShippingPrice": "10.00",
+             "DeliveryTime": 8, "Error": False},
+        ),
+    ):
+        resultado = frete.calcular_frete(
+            itens=[{"chave_preco": "16mm", "quantidade": 110}],
+            cep_destino="20040020",
+            subtotal=330.0,
+            frete_gratis_atingido=True,
+            desconto_frete_atacado=26.40,
+        )
+
+    assert resultado["frete_gratis"] is True
+    assert "desconto_atacado_reais" not in resultado
+    assert resultado["opcoes"][0]["preco_final"] == 0.0
+
+
 def test_consultar_frenet_sem_token_retorna_erro(monkeypatch):
     monkeypatch.setattr(frete, "FRENET_TOKEN", "")
     monkeypatch.setattr(frete, "CEP_ORIGEM", "59000000")
