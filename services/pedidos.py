@@ -332,6 +332,34 @@ def listar_pedidos(*, status: str | None = None, limite: int = 200) -> list[dict
     return pedidos
 
 
+def estatisticas_hoje() -> dict:
+    """Resumo rapido pro topo do painel (ver app.py:admin_pedidos) --
+    "hoje" aqui e´ o dia em UTC (mesmo criterio ja usado em todo o
+    resto do app pra criado_em/pago_em, ver conversa: nao ha conversao
+    de fuso em nenhum outro lugar do codigo, entao manter consistente
+    em vez de introduzir um criterio novo so pra essa tela). Pendentes
+    conta o total em aberto AGORA (nao so os de hoje), pra sempre
+    mostrar quanto falta resolver."""
+    inicializar_db()
+    hoje = datetime.now(timezone.utc).date().isoformat()
+    with _conexao() as conexao:
+        pedidos_hoje = conexao.execute(
+            "SELECT COUNT(*) FROM pedidos WHERE substr(criado_em, 1, 10) = ?", (hoje,)
+        ).fetchone()[0]
+        linha_pagos = conexao.execute(
+            "SELECT COUNT(*), COALESCE(SUM(total), 0) FROM pedidos WHERE substr(pago_em, 1, 10) = ?", (hoje,)
+        ).fetchone()
+        pendentes = conexao.execute(
+            "SELECT COUNT(*) FROM pedidos WHERE status IN ('pendente', 'whatsapp')"
+        ).fetchone()[0]
+    return {
+        "pedidos_hoje": pedidos_hoje,
+        "vendas_hoje": linha_pagos[0],
+        "faturamento_hoje": linha_pagos[1],
+        "pendentes": pendentes,
+    }
+
+
 def listar_pedidos_pendentes_para_lembrete(minutos: int) -> list[dict]:
     """Pedidos "pendente" ha´ pelo menos `minutos`, que ainda nao
     receberam o lembrete de pagamento -- usado pelo job agendado em

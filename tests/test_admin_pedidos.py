@@ -72,6 +72,29 @@ def test_credenciais_certas_lista_pedidos(client, monkeypatch):
     assert "Maria Teste" in corpo
 
 
+def test_painel_mostra_estatisticas_de_hoje(client, monkeypatch):
+    import app as app_module
+
+    monkeypatch.setattr(app_module, "ADMIN_USER", "admin")
+    monkeypatch.setattr(app_module, "ADMIN_PASSWORD", "segredo123")
+
+    with patch("app.criar_link_pagamento", return_value={"url": "https://checkout.infinitepay.io/abc"}):
+        pago = client.post("/api/pedido/criar", json=_corpo_valido()).get_json()
+    with patch("app.criar_pedido_tiny", return_value={"erro": "não configurado"}), \
+         patch("app.enviar_confirmacao_pedido", return_value={"erro": "não configurado"}), \
+         patch("app.enviar_notificacao_venda", return_value={"ok": True}), \
+         patch("app.enviar_notificacao_push", return_value={"ok": True}):
+        client.post(
+            "/webhook/infinitepay",
+            json={"order_nsu": pago["token"], "paid_amount": 6000, "capture_method": "pix"},
+        )
+
+    resposta = client.get("/admin/pedidos", auth=("admin", "segredo123"))
+    corpo = resposta.get_data(as_text=True)
+    assert "Pedidos hoje" in corpo
+    assert "Faturado hoje (1 venda)" in corpo
+
+
 def test_filtro_por_status(client, monkeypatch):
     import app as app_module
 

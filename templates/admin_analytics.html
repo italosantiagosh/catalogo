@@ -39,6 +39,14 @@
         <div class="rotulo">🟢 Pessoas no site agora</div>
       </div>
       <div class="cartao">
+        <div class="numero">{{ resumo_hoje.visitas if resumo_hoje else "—" }}</div>
+        <div class="rotulo">Visitas (hoje)</div>
+      </div>
+      <div class="cartao">
+        <div class="numero">{{ fretes_simulados_hoje if fretes_simulados_hoje is not none else "—" }}</div>
+        <div class="rotulo">Simulações de frete (hoje)</div>
+      </div>
+      <div class="cartao">
         <div class="numero">{{ resumo_7d.visitas if resumo_7d else "—" }}</div>
         <div class="rotulo">Visitas (7 dias)</div>
       </div>

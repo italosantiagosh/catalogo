@@ -8,17 +8,129 @@
   <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
   <link rel="icon" type="image/png" href="{{ url_for('static', filename='img/icon-192.png') }}">
   <link rel="apple-touch-icon" href="{{ url_for('static', filename='img/apple-touch-icon.png') }}">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Public+Sans:wght@400;500;600;700&display=swap"
+        rel="stylesheet" media="print" onload="this.media='all'">
+  <noscript><link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Public+Sans:wght@400;500;600;700&display=swap" rel="stylesheet"></noscript>
   <style>
-    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #f5f7fa; color: #142238; margin: 0; padding: 24px; }
-    h1 { font-size: 1.3rem; margin: 0 0 16px; }
-    .filtros { margin: 0 0 16px; }
-    .filtros a { margin-right: 16px; text-decoration: none; color: #14335c; font-weight: 600; font-size: 0.9rem; }
-    .filtros a.ativo { text-decoration: underline; }
-    .tabela-wrap { overflow-x: auto; background: #fff; border-radius: 10px; }
+    :root {
+      --azul-escuro: #14335c;
+      --azul-claro: #29aae1;
+      --dourado: #dba53b;
+      --fundo: #eef2f7;
+      --cartao: #ffffff;
+      --texto: #142238;
+      --texto-suave: #5b6b82;
+      --linha: #e2e7ee;
+    }
+    * { box-sizing: border-box; }
+    body {
+      font-family: 'Public Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--fundo);
+      color: var(--texto);
+      margin: 0;
+      padding: 0 0 40px;
+    }
+
+    header.masthead {
+      background: linear-gradient(135deg, var(--azul-escuro) 0%, #1c4a80 100%);
+      color: #fff;
+      padding: 20px clamp(16px, 4vw, 32px) 28px;
+      border-radius: 0 0 20px 20px;
+      margin-bottom: -20px;
+    }
+    .masthead-linha { display: flex; align-items: center; gap: 12px; }
+    .masthead-linha img { width: 38px; height: 38px; border-radius: 9px; flex-shrink: 0; }
+    .masthead-titulos h1 {
+      font-family: 'Fraunces', Georgia, serif;
+      font-weight: 700;
+      font-size: 1.35rem;
+      margin: 0;
+      letter-spacing: -0.01em;
+    }
+    .masthead-titulos p { margin: 2px 0 0; font-size: 0.8rem; color: #b9d0e8; }
+    .masthead-nav { margin: 14px 0 0; display: flex; gap: 14px; flex-wrap: wrap; }
+    .masthead-nav a {
+      color: #dfeaf6; text-decoration: none; font-size: 0.8rem; font-weight: 600;
+      display: inline-flex; align-items: center; gap: 4px;
+    }
+    .masthead-nav a:hover { color: #fff; }
+
+    .conteudo { max-width: 1180px; margin: 0 auto; padding: 0 clamp(16px, 4vw, 32px); }
+
+    .stat-grade {
+      position: relative;
+      z-index: 1;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 12px;
+      margin: 0 0 22px;
+    }
+    .stat-cartao {
+      background: var(--cartao);
+      border-radius: 14px;
+      padding: 14px 16px;
+      box-shadow: 0 8px 20px -14px rgba(20, 51, 92, 0.35);
+      border: 1px solid var(--linha);
+    }
+    .stat-cartao .stat-numero {
+      font-family: 'Fraunces', Georgia, serif;
+      font-size: 1.55rem;
+      font-weight: 700;
+      color: var(--azul-escuro);
+      line-height: 1.1;
+    }
+    .stat-cartao .stat-rotulo { font-size: 0.76rem; color: var(--texto-suave); margin-top: 3px; font-weight: 600; }
+    .stat-cartao.destaque .stat-numero { color: #1e7a43; }
+    .stat-cartao.alerta .stat-numero { color: #a1651f; }
+
+    h2.secao-titulo {
+      font-family: 'Fraunces', Georgia, serif;
+      font-size: 1.05rem;
+      margin: 4px 0 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .contagem-pill {
+      background: var(--azul-claro);
+      color: #fff;
+      font-size: 0.72rem;
+      font-weight: 700;
+      padding: 2px 9px;
+      border-radius: 999px;
+    }
+
+    #btn-ativar-notificacoes {
+      padding: 10px 16px; border: none; border-radius: 10px; background: var(--dourado); color: #3d2a06;
+      font-weight: 700; font-size: 0.85rem; cursor: pointer; margin-bottom: 16px;
+      box-shadow: 0 6px 14px -8px rgba(219, 165, 59, 0.7);
+    }
+    #btn-ativar-notificacoes:disabled { opacity: 0.6; cursor: default; box-shadow: none; }
+
+    .filtros { margin: 0 0 16px; display: flex; flex-wrap: wrap; gap: 6px; }
+    .filtros a {
+      text-decoration: none; color: var(--azul-escuro); font-weight: 600; font-size: 0.8rem;
+      padding: 6px 13px; border-radius: 999px; background: var(--cartao); border: 1px solid var(--linha);
+      transition: background .12s ease, color .12s ease, border-color .12s ease;
+    }
+    .filtros a:hover { border-color: var(--azul-claro); }
+    .filtros a.ativo { background: var(--azul-escuro); color: #fff; border-color: var(--azul-escuro); }
+
+    .tabela-wrap { overflow-x: auto; background: var(--cartao); border-radius: 14px; box-shadow: 0 10px 24px -18px rgba(20, 51, 92, 0.4); }
     table { width: 100%; border-collapse: collapse; min-width: 760px; }
-    th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid #dde3ec; font-size: 0.85rem; vertical-align: top; }
-    th { background: #14335c; color: #fff; position: sticky; top: 0; }
-    .status { display: inline-block; padding: 3px 10px; border-radius: 999px; font-size: 0.75rem; font-weight: 700; }
+    th, td { text-align: left; padding: 11px 13px; border-bottom: 1px solid var(--linha); font-size: 0.85rem; vertical-align: top; }
+    th { background: var(--azul-escuro); color: #fff; position: sticky; top: 0; font-weight: 600; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.03em; }
+    th:first-child { border-top-left-radius: 14px; }
+    th:last-child { border-top-right-radius: 14px; }
+    tbody tr { transition: background .1s ease; }
+    tbody tr:nth-child(even) { background: #f7f9fc; }
+    tbody tr:hover { background: #eaf3fb; }
+    tbody tr:last-child td { border-bottom: none; }
+
+    .status { display: inline-flex; align-items: center; gap: 5px; padding: 3px 11px; border-radius: 999px; font-size: 0.74rem; font-weight: 700; }
+    .status::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
     .status-pago { background: #e3f6ea; color: #1e7a43; }
     .status-pendente { background: #f4ecd8; color: #7a5c1f; }
     .status-faturado { background: #e0eefc; color: #14548c; }
@@ -27,133 +139,190 @@
     .status-cancelado { background: #fbe3e0; color: #a13a2a; }
     .status-whatsapp { background: #dcf4e3; color: #1c7d3f; }
     .status-excluido { background: #f0f0f0; color: #5b6b82; }
-    a.ver, a.editar { color: #14335c; font-weight: 600; text-decoration: none; margin-right: 10px; }
-    .vazio { padding: 24px; text-align: center; color: #5b6b82; }
-    .cliente-email { color: #5b6b82; font-size: 0.78rem; }
-    .tiny-erro { color: #7a2118; }
-    #btn-ativar-notificacoes { padding: 10px 16px; border: none; border-radius: 8px; background: #14335c; color: #fff; font-weight: 700; font-size: 0.85rem; cursor: pointer; margin-bottom: 12px; }
-    #btn-ativar-notificacoes:disabled { opacity: 0.6; cursor: default; }
-    .barra-massa { display: none; align-items: center; gap: 10px; flex-wrap: wrap; background: #14335c; color: #fff; border-radius: 10px; padding: 10px 14px; margin-bottom: 14px; font-size: 0.85rem; }
+
+    a.ver, a.editar { color: var(--azul-escuro); font-weight: 700; text-decoration: none; margin-right: 12px; font-size: 0.82rem; }
+    a.ver:hover, a.editar:hover { text-decoration: underline; }
+    .vazio { padding: 40px 24px; text-align: center; color: var(--texto-suave); background: var(--cartao); border-radius: 14px; }
+    .cliente-email { color: var(--texto-suave); font-size: 0.76rem; }
+    .tiny-erro { color: #a1332a; }
+
+    .barra-massa {
+      display: none; align-items: center; gap: 10px; flex-wrap: wrap;
+      background: var(--azul-escuro); color: #fff; border-radius: 12px; padding: 12px 16px; margin-bottom: 14px; font-size: 0.85rem;
+    }
     .barra-massa.ativa { display: flex; }
     .barra-massa button, .barra-massa select, .barra-massa input[type="text"] { padding: 7px 12px; border: none; border-radius: 8px; font-size: 0.82rem; }
-    .barra-massa button { background: #fff; color: #14335c; font-weight: 700; cursor: pointer; }
+    .barra-massa button { background: #fff; color: var(--azul-escuro); font-weight: 700; cursor: pointer; }
+    .barra-massa button:hover { background: #eef4fb; }
     .barra-massa button.perigo { background: #a13a2a; color: #fff; }
+    .barra-massa button.perigo:hover { background: #8c2f22; }
     .barra-massa input[type="text"] { min-width: 180px; }
+
+    /* Abaixo de ~720px o painel roda no celular quase sempre (ver
+       conversa) -- a tabela vira uma lista de cartoes empilhados em vez
+       de rolar na horizontal, pra ficar de fato usavel no polegar. */
+    @media (max-width: 720px) {
+      .tabela-wrap { overflow-x: visible; background: transparent; box-shadow: none; border-radius: 0; }
+      table, thead, tbody, th, td, tr { display: block; }
+      thead tr { position: absolute; top: -9999px; left: -9999px; }
+      tbody tr {
+        background: var(--cartao); border-radius: 14px; margin-bottom: 10px; padding: 6px 4px;
+        box-shadow: 0 8px 20px -16px rgba(20, 51, 92, 0.4); border: 1px solid var(--linha);
+      }
+      tbody tr:nth-child(even) { background: var(--cartao); }
+      td { border-bottom: 1px dashed var(--linha); padding: 8px 12px; display: flex; justify-content: space-between; gap: 12px; align-items: center; }
+      td:last-child { border-bottom: none; }
+      td[data-rotulo]::before {
+        content: attr(data-rotulo); font-size: 0.68rem; font-weight: 700; text-transform: uppercase;
+        letter-spacing: 0.03em; color: var(--texto-suave); flex-shrink: 0;
+      }
+      td.linha-cabecalho { justify-content: flex-start; gap: 10px; padding-top: 12px; }
+      td.linha-acoes { justify-content: flex-start; padding-bottom: 12px; }
+    }
   </style>
 </head>
 <body>
-  <h1>Pedidos ({{ pedidos | length }})</h1>
-  <p>
-    <a href="{{ url_for('admin_avaliacoes') }}">Ver avaliações →</a> ·
-    <a href="{{ url_for('admin_analytics') }}">Ver analytics →</a>
-  </p>
-  {% if vapid_chave_publica %}
-    <button type="button" id="btn-ativar-notificacoes">🔔 Ativar notificações de venda</button>
-  {% endif %}
-  <div class="filtros">
-    <a href="{{ url_for('admin_pedidos') }}" class="{{ 'ativo' if not status_filtro else '' }}">Todos</a>
-    <a href="{{ url_for('admin_pedidos', status='whatsapp') }}" class="{{ 'ativo' if status_filtro == 'whatsapp' else '' }}">💬 WhatsApp</a>
-    <a href="{{ url_for('admin_pedidos', status='pendente') }}" class="{{ 'ativo' if status_filtro == 'pendente' else '' }}">Pendentes</a>
-    <a href="{{ url_for('admin_pedidos', status='pago') }}" class="{{ 'ativo' if status_filtro == 'pago' else '' }}">Pagos</a>
-    <a href="{{ url_for('admin_pedidos', status='faturado') }}" class="{{ 'ativo' if status_filtro == 'faturado' else '' }}">Faturados</a>
-    <a href="{{ url_for('admin_pedidos', status='enviado') }}" class="{{ 'ativo' if status_filtro == 'enviado' else '' }}">Enviados</a>
-    <a href="{{ url_for('admin_pedidos', status='entregue') }}" class="{{ 'ativo' if status_filtro == 'entregue' else '' }}">Entregues</a>
-    <a href="{{ url_for('admin_pedidos', status='cancelado') }}" class="{{ 'ativo' if status_filtro == 'cancelado' else '' }}">Cancelados</a>
-    <a href="{{ url_for('admin_pedidos', status='excluido') }}" class="{{ 'ativo' if status_filtro == 'excluido' else '' }}">Excluídos</a>
-  </div>
+  <header class="masthead">
+    <div class="masthead-linha">
+      <img src="{{ url_for('static', filename='img/icon-192.png') }}" alt="">
+      <div class="masthead-titulos">
+        <h1>Nove de Julho</h1>
+        <p>Painel de pedidos</p>
+      </div>
+    </div>
+    <nav class="masthead-nav">
+      <a href="{{ url_for('admin_avaliacoes') }}">⭐ Avaliações</a>
+      <a href="{{ url_for('admin_analytics') }}">📊 Analytics</a>
+    </nav>
+  </header>
 
-  {% if pedidos %}
-    <form method="post" action="{{ url_for('admin_pedidos_acao_em_massa') }}" id="form-massa">
-      <input type="hidden" name="status_filtro" value="{{ status_filtro or '' }}">
-      <div class="barra-massa" id="barra-massa">
-        <span id="contagem-selecionados">0 selecionados</span>
-        <button type="submit" name="acao" value="tiny">Sincronizar com Tiny</button>
-        <button type="submit" name="acao" value="email">Reenviar e-mail</button>
-        <select name="novo_status">
-          <option value="pago">Pago</option>
-          <option value="faturado">Faturado</option>
-          <option value="enviado">Enviado</option>
-          <option value="entregue">Entregue</option>
-        </select>
-        <button type="submit" name="acao" value="status">Mudar status</button>
-        <input type="text" name="motivo" placeholder="Motivo da exclusão">
-        <button type="submit" name="acao" value="excluir" class="perigo"
-                onclick="return confirm('Excluir os pedidos selecionados? Cada cliente recebe um e-mail avisando.');">
-          🗑️ Excluir selecionados
-        </button>
+  <div class="conteudo">
+    <div class="stat-grade">
+      <div class="stat-cartao">
+        <div class="stat-numero">{{ estatisticas.pedidos_hoje }}</div>
+        <div class="stat-rotulo">Pedidos hoje</div>
       </div>
-      <div class="tabela-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th><input type="checkbox" id="marcar-todos"></th>
-              <th>Código</th>
-              <th>Status</th>
-              <th>Cliente</th>
-              <th>Total</th>
-              <th>Prazo</th>
-              <th>Frete</th>
-              <th>Tiny</th>
-              <th>E-mail</th>
-              <th>Criado em</th>
-              <th></th>
-            </tr>
-          </thead>
-          <tbody>
-            {% for pedido in pedidos %}
+      <div class="stat-cartao destaque">
+        <div class="stat-numero">{{ estatisticas.faturamento_hoje | preco }}</div>
+        <div class="stat-rotulo">Faturado hoje ({{ estatisticas.vendas_hoje }} venda{{ 's' if estatisticas.vendas_hoje != 1 else '' }})</div>
+      </div>
+      <div class="stat-cartao alerta">
+        <div class="stat-numero">{{ estatisticas.pendentes }}</div>
+        <div class="stat-rotulo">Aguardando (pendente/WhatsApp)</div>
+      </div>
+    </div>
+
+    <h2 class="secao-titulo">Pedidos <span class="contagem-pill">{{ pedidos | length }}</span></h2>
+
+    {% if vapid_chave_publica %}
+      <button type="button" id="btn-ativar-notificacoes">🔔 Ativar notificações de venda</button>
+    {% endif %}
+
+    <div class="filtros">
+      <a href="{{ url_for('admin_pedidos') }}" class="{{ 'ativo' if not status_filtro else '' }}">Todos</a>
+      <a href="{{ url_for('admin_pedidos', status='whatsapp') }}" class="{{ 'ativo' if status_filtro == 'whatsapp' else '' }}">💬 WhatsApp</a>
+      <a href="{{ url_for('admin_pedidos', status='pendente') }}" class="{{ 'ativo' if status_filtro == 'pendente' else '' }}">Pendentes</a>
+      <a href="{{ url_for('admin_pedidos', status='pago') }}" class="{{ 'ativo' if status_filtro == 'pago' else '' }}">Pagos</a>
+      <a href="{{ url_for('admin_pedidos', status='faturado') }}" class="{{ 'ativo' if status_filtro == 'faturado' else '' }}">Faturados</a>
+      <a href="{{ url_for('admin_pedidos', status='enviado') }}" class="{{ 'ativo' if status_filtro == 'enviado' else '' }}">Enviados</a>
+      <a href="{{ url_for('admin_pedidos', status='entregue') }}" class="{{ 'ativo' if status_filtro == 'entregue' else '' }}">Entregues</a>
+      <a href="{{ url_for('admin_pedidos', status='cancelado') }}" class="{{ 'ativo' if status_filtro == 'cancelado' else '' }}">Cancelados</a>
+      <a href="{{ url_for('admin_pedidos', status='excluido') }}" class="{{ 'ativo' if status_filtro == 'excluido' else '' }}">Excluídos</a>
+    </div>
+
+    {% if pedidos %}
+      <form method="post" action="{{ url_for('admin_pedidos_acao_em_massa') }}" id="form-massa">
+        <input type="hidden" name="status_filtro" value="{{ status_filtro or '' }}">
+        <div class="barra-massa" id="barra-massa">
+          <span id="contagem-selecionados">0 selecionados</span>
+          <button type="submit" name="acao" value="tiny">Sincronizar com Tiny</button>
+          <button type="submit" name="acao" value="email">Reenviar e-mail</button>
+          <select name="novo_status">
+            <option value="pago">Pago</option>
+            <option value="faturado">Faturado</option>
+            <option value="enviado">Enviado</option>
+            <option value="entregue">Entregue</option>
+          </select>
+          <button type="submit" name="acao" value="status">Mudar status</button>
+          <input type="text" name="motivo" placeholder="Motivo da exclusão">
+          <button type="submit" name="acao" value="excluir" class="perigo"
+                  onclick="return confirm('Excluir os pedidos selecionados? Cada cliente recebe um e-mail avisando.');">
+            🗑️ Excluir selecionados
+          </button>
+        </div>
+        <div class="tabela-wrap">
+          <table>
+            <thead>
               <tr>
-                <td><input type="checkbox" name="tokens" value="{{ pedido.token }}" class="check-pedido"></td>
-                <td>{{ pedido.codigo }}</td>
-              <td><span class="status status-{{ pedido.status }}">{{ pedido.status }}</span></td>
-              <td>
-                {{ pedido.cliente_nome }}<br>
-                <span class="cliente-email">{{ pedido.cliente_email }}</span>
-              </td>
-              <td>{{ pedido.total | preco }}</td>
-              <td>
-                {% if pedido.status in ('pago', 'faturado') %}
-                  {% set previsoes = previsoes_do_pedido(pedido) %}
-                  {% if previsoes.previsao_envio %}Enviar até {{ previsoes.previsao_envio | data_br }}{% else %}—{% endif %}
-                {% else %}
-                  —
-                {% endif %}
-              </td>
-              <td>{{ pedido.frete_descricao or "—" }}</td>
-              <td>
-                {% if not pedido.tiny_sincronizado %}
-                  —
-                {% elif pedido.tiny_erro %}
-                  <span class="tiny-erro">⚠️ {{ pedido.tiny_erro }}</span>
-                {% else %}
-                  ✅ #{{ pedido.tiny_numero_pedido }}
-                {% endif %}
-              </td>
-              <td>
-                {% if pedido.email_pedido_criado_enviado %}
-                  {{ '⚠️ link' if pedido.email_pedido_criado_erro else '✅ link' }}
-                {% endif %}
-                {% if pedido.email_enviado %}
-                  {{ '⚠️ confirmação' if pedido.email_erro else '✅ confirmação' }}
-                {% endif %}
-                {% if pedido.email_cancelado_enviado %}
-                  {{ '⚠️ cancelamento' if pedido.email_cancelado_erro else '✅ cancelamento' }}
-                {% endif %}
-                {% if not pedido.email_pedido_criado_enviado and not pedido.email_enviado and not pedido.email_cancelado_enviado %}—{% endif %}
-              </td>
-              <td>{{ pedido.criado_em[:16] }}</td>
-              <td>
-                <a class="editar" href="{{ url_for('admin_pedido_detalhe', token=pedido.token) }}">editar</a>
-                <a class="ver" href="{{ url_for('ver_pedido', token=pedido.token) }}" target="_blank" rel="noopener">ver →</a>
-              </td>
-            </tr>
-          {% endfor %}
-        </tbody>
-        </table>
-      </div>
-    </form>
-  {% else %}
-    <p class="vazio">Nenhum pedido ainda.</p>
-  {% endif %}
+                <th><input type="checkbox" id="marcar-todos"></th>
+                <th>Código</th>
+                <th>Status</th>
+                <th>Cliente</th>
+                <th>Total</th>
+                <th>Prazo</th>
+                <th>Frete</th>
+                <th>Tiny</th>
+                <th>E-mail</th>
+                <th>Criado em</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for pedido in pedidos %}
+                <tr>
+                  <td class="linha-cabecalho"><input type="checkbox" name="tokens" value="{{ pedido.token }}" class="check-pedido"></td>
+                  <td data-rotulo="Código">{{ pedido.codigo }}</td>
+                <td data-rotulo="Status"><span class="status status-{{ pedido.status }}">{{ pedido.status }}</span></td>
+                <td data-rotulo="Cliente">
+                  {{ pedido.cliente_nome }}<br>
+                  <span class="cliente-email">{{ pedido.cliente_email }}</span>
+                </td>
+                <td data-rotulo="Total">{{ pedido.total | preco }}</td>
+                <td data-rotulo="Prazo">
+                  {% if pedido.status in ('pago', 'faturado') %}
+                    {% set previsoes = previsoes_do_pedido(pedido) %}
+                    {% if previsoes.previsao_envio %}Enviar até {{ previsoes.previsao_envio | data_br }}{% else %}—{% endif %}
+                  {% else %}
+                    —
+                  {% endif %}
+                </td>
+                <td data-rotulo="Frete">{{ pedido.frete_descricao or "—" }}</td>
+                <td data-rotulo="Tiny">
+                  {% if not pedido.tiny_sincronizado %}
+                    —
+                  {% elif pedido.tiny_erro %}
+                    <span class="tiny-erro">⚠️ {{ pedido.tiny_erro }}</span>
+                  {% else %}
+                    ✅ #{{ pedido.tiny_numero_pedido }}
+                  {% endif %}
+                </td>
+                <td data-rotulo="E-mail">
+                  {% if pedido.email_pedido_criado_enviado %}
+                    {{ '⚠️ link' if pedido.email_pedido_criado_erro else '✅ link' }}
+                  {% endif %}
+                  {% if pedido.email_enviado %}
+                    {{ '⚠️ confirmação' if pedido.email_erro else '✅ confirmação' }}
+                  {% endif %}
+                  {% if pedido.email_cancelado_enviado %}
+                    {{ '⚠️ cancelamento' if pedido.email_cancelado_erro else '✅ cancelamento' }}
+                  {% endif %}
+                  {% if not pedido.email_pedido_criado_enviado and not pedido.email_enviado and not pedido.email_cancelado_enviado %}—{% endif %}
+                </td>
+                <td data-rotulo="Criado em">{{ pedido.criado_em[:16] }}</td>
+                <td class="linha-acoes">
+                  <a class="editar" href="{{ url_for('admin_pedido_detalhe', token=pedido.token) }}">editar</a>
+                  <a class="ver" href="{{ url_for('ver_pedido', token=pedido.token) }}" target="_blank" rel="noopener">ver →</a>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+          </table>
+        </div>
+      </form>
+    {% else %}
+      <p class="vazio">Nenhum pedido ainda.</p>
+    {% endif %}
+  </div>
 
   {% if vapid_chave_publica %}
     <script>window.VAPID_CHAVE_PUBLICA = {{ vapid_chave_publica | tojson }};</script>

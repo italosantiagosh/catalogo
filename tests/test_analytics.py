@@ -52,6 +52,24 @@ def test_admin_analytics_mostra_numeros(client, monkeypatch):
     assert "últimos 30 min" in corpo
 
 
+def test_admin_analytics_mostra_visitas_e_fretes_de_hoje(client, monkeypatch):
+    """Ver conversa: usuario pediu numero de hoje, alem dos de 7/30
+    dias, tanto pra visita quanto pra simulacao de frete."""
+    _preparar_admin(monkeypatch)
+    with patch("app.analytics.configurado", return_value=True), \
+         patch("app.analytics.usuarios_ativos_agora", return_value=1), \
+         patch("app.analytics.resumo_ultimos_dias", side_effect=lambda dias: {"visitas": 9 if dias == 0 else 100, "pessoas": 5, "visualizacoes": 20}), \
+         patch("app.analytics.paginas_mais_vistas", return_value=[]), \
+         patch("app.analytics.contagem_evento", side_effect=lambda nome, dias: 4 if dias == 0 else 40), \
+         patch("app.analytics.contagem_evento_tempo_real", return_value=0):
+        resposta = client.get("/admin/analytics", auth=("admin", "segredo123"))
+    corpo = resposta.get_data(as_text=True)
+    assert "Visitas (hoje)" in corpo
+    assert "Simulações de frete (hoje)" in corpo
+    assert ">9<" in corpo
+    assert ">4<" in corpo
+
+
 def test_analytics_service_sem_config_devolve_none():
     import services.analytics as analytics
 

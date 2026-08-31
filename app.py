@@ -129,6 +129,7 @@ from services.pedidos import (
     cancelar_pedido,
     confirmar_venda_manual,
     criar_pedido,
+    estatisticas_hoje,
     excluir_pedido,
     listar_pedidos,
     listar_pedidos_boleto_pendentes,
@@ -1849,6 +1850,7 @@ def admin_pedidos():
         pedidos=pedidos,
         status_filtro=status_filtro,
         vapid_chave_publica=obter_application_server_key(),
+        estatisticas=estatisticas_hoje(),
     )
 
 
@@ -2516,9 +2518,11 @@ def admin_analytics():
         "admin_analytics.html",
         configurado=True,
         ao_vivo=analytics.usuarios_ativos_agora(),
+        resumo_hoje=analytics.resumo_ultimos_dias(0),
         resumo_7d=analytics.resumo_ultimos_dias(7),
         resumo_30d=analytics.resumo_ultimos_dias(30),
         paginas_7d=analytics.paginas_mais_vistas(7, limite=10),
+        fretes_simulados_hoje=analytics.contagem_evento("calculate_shipping", 0),
         fretes_simulados_7d=analytics.contagem_evento("calculate_shipping", 7),
         fretes_simulados_30d=analytics.contagem_evento("calculate_shipping", 30),
         fretes_simulados_agora=analytics.contagem_evento_tempo_real("calculate_shipping"),

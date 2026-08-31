@@ -300,3 +300,47 @@ def test_previsoes_sem_envio_ainda_nao_marca_antecipado(monkeypatch, tmp_path):
     previsoes = pedidos.previsoes_do_pedido(pedidos.obter_pedido(pedido["token"]))
     assert previsoes["enviado_antecipado"] is False
     assert previsoes["previsao_entrega"] is not None
+
+
+def test_estatisticas_hoje_conta_pedidos_criados_hoje(monkeypatch, tmp_path):
+    _reapontar_db(monkeypatch, tmp_path)
+    pedidos.criar_pedido(**_pedido_exemplo())
+    outro = pedidos.criar_pedido(**_pedido_exemplo())
+    # criado ontem -- nao deve contar como "hoje"
+    ontem = (datetime.now(timezone.utc) - timedelta(days=1)).isoformat()
+    with pedidos._conexao() as conexao:
+        conexao.execute("UPDATE pedidos SET criado_em = ? WHERE token = ?", (ontem, outro["token"]))
+
+    stats = pedidos.estatisticas_hoje()
+    assert stats["pedidos_hoje"] == 1
+
+
+def test_estatisticas_hoje_soma_faturamento_so_de_vendas_pagas_hoje(monkeypatch, tmp_path):
+    _reapontar_db(monkeypatch, tmp_path)
+    pago_hoje = pedidos.criar_pedido(**_pedido_exemplo(subtotal=100.0, frete_preco=0.0))
+    pedidos.marcar_pago(pago_hoje["token"], forma_pagamento="pix", parcelas=None, valor_pago=100.0, transaction_nsu="tx1")
+
+    pago_ontem = pedidos.criar_pedido(**_pedido_exemplo(subtotal=50.0, frete_preco=0.0))
+    pedidos.marcar_pago(pago_ontem["token"], forma_pagamento="pix", parcelas=None, valor_pago=50.0, transaction_nsu="tx2")
+    _marcar_pago_em(pago_ontem["token"], datetime.now(timezone.utc) - timedelta(days=1))
+
+    # ainda pendente -- nunca deve entrar no faturamento
+    pedidos.criar_pedido(**_pedido_exemplo(subtotal=999.0, frete_preco=0.0))
+
+    stats = pedidos.estatisticas_hoje()
+    assert stats["vendas_hoje"] == 1
+    assert stats["faturamento_hoje"] == 100.0
+
+
+def test_estatisticas_hoje_conta_pendentes_e_whatsapp_independente_da_data(monkeypatch, tmp_path):
+    _reapontar_db(monkeypatch, tmp_path)
+    pendente = pedidos.criar_pedido(**_pedido_exemplo())
+    antigo = (datetime.now(timezone.utc) - timedelta(days=10)).isoformat()
+    with pedidos._conexao() as conexao:
+        conexao.execute("UPDATE pedidos SET criado_em = ? WHERE token = ?", (antigo, pendente["token"]))
+    pedidos.criar_pedido(**_pedido_exemplo(status_inicial="whatsapp"))
+    pago = pedidos.criar_pedido(**_pedido_exemplo())
+    pedidos.marcar_pago(pago["token"], forma_pagamento="pix", parcelas=None, valor_pago=140.0, transaction_nsu="tx3")
+
+    stats = pedidos.estatisticas_hoje()
+    assert stats["pendentes"] == 2
