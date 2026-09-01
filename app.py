@@ -601,8 +601,8 @@ def llms_txt():
 > a partir de foto enviada pelo cliente.
 
 Site institucional/loja da Nove de Julho, empresa brasileira. Preços em Real
-(R$), pagamento via Pix (padrão) ou cartão sob consulta, com nota fiscal para
-CPF ou CNPJ. Pedido mínimo de R$ 30 em produtos (frete calculado à parte);
+(R$), pagamento via Pix (padrão), cartão em até 12x ou boleto, com nota fiscal
+para CPF ou CNPJ. Pedido mínimo de R$ 30 em produtos (frete calculado à parte);
 frete grátis para o Brasil todo acima de R$ 300 em compras. Produção sob
 encomenda em até 5 dias úteis após confirmação do pagamento.
 
