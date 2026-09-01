@@ -359,53 +359,52 @@ DESCRICOES_CATEGORIA = {
     "Nossa Senhora": (
         "Mais de 30 apresentações e títulos de Nossa Senhora — Aparecida, Desatadora dos "
         "Nós, Imaculado Coração, La Salete e outras devoções marianas — em medalha, "
-        "entremeio ou chaveiro. Desconto de atacado automático conforme a quantidade, "
-        "sem cupom."
+        "entremeio ou chaveiro, com desconto de atacado automático (sem cupom)."
     ),
     "Santos": (
         "O maior grupo do catálogo, com 36 santos canonizados — de Santo Antônio e Santo "
-        "Expedito a Carlo Acutis e São José — em medalha, entremeio ou chaveiro. Desconto "
-        "de atacado automático conforme a quantidade, sem cupom."
+        "Expedito a Carlo Acutis e São José — em medalha, entremeio ou chaveiro, com "
+        "desconto de atacado automático (sem cupom)."
     ),
     "Santas": (
         "20 santas da Igreja Católica — Santa Clara, Santa Dulce, Santa Faustina, Edith "
-        "Stein e outras — em medalha, entremeio ou chaveiro. Desconto de atacado "
-        "automático conforme a quantidade, sem cupom."
+        "Stein e outras — em medalha, entremeio ou chaveiro, com desconto de atacado "
+        "automático (sem cupom)."
     ),
     "Devoções": (
         "Devoções e passagens marcantes da fé católica — Bodas de Caná, Cântico dos "
-        "Cânticos, Filho Pródigo, Frei Damião — em medalha, entremeio ou chaveiro. "
-        "Desconto de atacado automático conforme a quantidade, sem cupom."
+        "Cânticos, Filho Pródigo, Frei Damião — em medalha, entremeio ou chaveiro, com "
+        "desconto de atacado automático (sem cupom)."
     ),
     "Jesus": (
         "Representações de Jesus Cristo — Bom Pastor, Cristo Rei, Jesus Misericordioso, "
-        "Sagrada Face — em medalha, entremeio ou chaveiro. Desconto de atacado automático "
-        "conforme a quantidade, sem cupom."
+        "Sagrada Face — em medalha, entremeio ou chaveiro, com desconto de atacado "
+        "automático (sem cupom)."
     ),
     "Outros": (
         "Peças e devoções que não se encaixam nas demais categorias, com a mesma "
-        "variedade e qualidade do catálogo — em medalha, entremeio ou chaveiro. Desconto "
-        "de atacado automático conforme a quantidade, sem cupom."
+        "variedade e qualidade do catálogo — em medalha, entremeio ou chaveiro, com "
+        "desconto de atacado automático (sem cupom)."
     ),
     "Famílias": (
         "Representações de família na tradição católica — Sagrada Família, Família "
-        "Martin, Pais de Teresinha — em medalha, entremeio ou chaveiro. Desconto de "
-        "atacado automático conforme a quantidade, sem cupom."
+        "Martin, Pais de Teresinha — em medalha, entremeio ou chaveiro, com desconto de "
+        "atacado automático (sem cupom)."
     ),
     "Beatos": (
         "Beatos e beatas da Igreja, em diferentes etapas do processo de canonização — "
         "Carlo Acutis, Sandra Sabattini, Beata Nhá Xica — em medalha, entremeio ou "
-        "chaveiro. Desconto de atacado automático conforme a quantidade, sem cupom."
+        "chaveiro, com desconto de atacado automático (sem cupom)."
     ),
     "Anjos": (
         "Anjos e arcanjos da tradição católica — São Miguel, São Gabriel, São Rafael e "
-        "os Santos Arcanjos — em medalha, entremeio ou chaveiro. Desconto de atacado "
-        "automático conforme a quantidade, sem cupom."
+        "os Santos Arcanjos — em medalha, entremeio ou chaveiro, com desconto de atacado "
+        "automático (sem cupom)."
     ),
     "Espírito Santo": (
         "O Espírito Santo, Pentecostes e a Santíssima Trindade — presente tradicional de "
-        "crisma e confirmação — em medalha, entremeio ou chaveiro. Desconto de atacado "
-        "automático conforme a quantidade, sem cupom."
+        "crisma e confirmação — em medalha, entremeio ou chaveiro, com desconto de "
+        "atacado automático (sem cupom)."
     ),
 }
 
@@ -417,16 +416,15 @@ DESCRICOES_CATEGORIA = {
 # geometria calibrada -- aqui e so o texto explicativo pro cliente).
 DESCRICOES_FORMATO = {
     "medalha": (
-        "Medalha resinada em aço inoxidável, disponível em 1,2 cm ou 1,6 cm de diâmetro. "
-        "O formato mais tradicional, ideal pra usar em colar ou pulseira no dia a dia."
+        "Medalha resinada em aço inoxidável, 1,2 cm ou 1,6 cm de diâmetro — o formato "
+        "mais tradicional, pra colar ou pulseira no dia a dia."
     ),
     "entremeio": (
-        "Entremeio resinado em aço inoxidável, com 1,6 cm de diâmetro interno. Passa "
-        "direto no cordão do terço/rosário, pra montar seu próprio terço com o santo "
-        "de devoção."
+        "Entremeio resinado em aço inoxidável, 1,6 cm de diâmetro interno — passa direto "
+        "no cordão do terço/rosário, pra montar o seu com o santo de devoção."
     ),
     "chaveiro": (
-        "Peça resinada em aço inoxidável, com 3 cm de diâmetro interno — o maior formato "
-        "do catálogo. Ótimo pra levar na bolsa, mochila ou chaveiro, ou pra presentear."
+        "Peça resinada em aço inoxidável, 3 cm de diâmetro interno — o maior formato do "
+        "catálogo, ótimo pra bolsa, mochila ou presente."
     ),
 }

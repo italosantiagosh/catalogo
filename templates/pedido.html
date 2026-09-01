@@ -26,7 +26,7 @@
           {% if etapa.chave == 'entregue' and not etapa.concluido and previsoes.previsao_entrega %}
             <span class="pedido-timeline-previsao">Previsão de entrega: {{ previsoes.previsao_entrega | data_br }}</span>
             <span class="pedido-timeline-aviso-transportadora">
-              ℹ️ Prazo estimado pela transportadora — imprevistos dela fogem do nosso controle e podem mudar essa data.
+              ℹ️ Prazo estimado pela transportadora — imprevistos podem mudar essa data.
             </span>
           {% endif %}
         </li>
@@ -55,8 +55,7 @@
       </p>
     {% endif %}
     <p class="pedido-aviso-transportadora">
-      ℹ️ O pagamento do boleto é confirmado em até 2 dias úteis após você pagar -- o prazo de produção
-      só começa depois dessa confirmação, não na hora em que você paga.
+      ℹ️ Boleto confirma em até 2 dias úteis — a produção só começa depois disso.
     </p>
   {% elif pedido.status == 'pendente' %}
     <p class="pedido-status pedido-status-pendente">⏳ Aguardando confirmação do pagamento</p>
@@ -69,12 +68,12 @@
     {% if mostrar_obrigado %}
       <div class="pedido-obrigado">
         <h2>Obrigado pela sua compra!</h2>
-        <p>Seu pedido foi recebido com sucesso e já está na fila de produção.</p>
+        <p>Seu pedido já está na fila de produção.</p>
         <div class="pedido-obrigado-prazo">
           <strong>Prazo de produção</strong>
           <span>De 1 a 5 dias úteis, com todo cuidado e atenção aos detalhes.</span>
         </div>
-        <p>Desde 2020, a Nove de Julho já produziu e enviou milhares de medalhas para todo o Brasil.</p>
+        <p>Desde 2020, já produzimos e enviamos milhares de medalhas pelo Brasil.</p>
         {% if oportunidades_upsell %}
           <div class="pedido-obrigado-upsell">
             <strong>💰 Uma dica pro seu próximo pedido</strong>
@@ -89,7 +88,7 @@
             </ul>
           </div>
         {% endif %}
-        <p>Se tiver alguma dúvida sobre o seu pedido, é só falar pelo WhatsApp.</p>
+        <p>Dúvidas sobre o pedido? Fala no WhatsApp.</p>
         <a class="botao-pagar" href="https://wa.me/{{ whatsapp_number }}?text={{ ('Oi! Acabei de finalizar meu pedido #' ~ pedido.codigo ~ ' e preciso de ajuda.') | urlencode }}" target="_blank" rel="noopener">Falar no WhatsApp</a>
         <a class="botao-secundario pedido-obrigado-instagram" href="{{ instagram_url }}" target="_blank" rel="noopener">Seguir no Instagram</a>
         <p class="pedido-obrigado-bencao">Obrigado por confiar no nosso trabalho. Deus abençoe!</p>
@@ -104,8 +103,8 @@
       <p class="pedido-status pedido-status-enviado">📦 Pedido enviado</p>
       {% if previsoes.enviado_antecipado %}
         <p class="pedido-envio-antecipado">
-          🎉 Boa notícia: seu pedido saiu antes do prazo que a gente tinha previsto!
-          {% if previsoes.previsao_entrega %}Com isso, a nova previsão de entrega é <strong>{{ previsoes.previsao_entrega | data_br }}</strong>.{% endif %}
+          🎉 Seu pedido saiu antes do prazo previsto!
+          {% if previsoes.previsao_entrega %}Nova previsão de entrega: <strong>{{ previsoes.previsao_entrega | data_br }}</strong>.{% endif %}
         </p>
       {% endif %}
     {% endif %}
@@ -120,8 +119,7 @@
     {% endif %}
     {% if pedido.frete_descricao != 'Retirada no local' %}
       <p class="pedido-aviso-transportadora">
-        ℹ️ O prazo de entrega é uma estimativa da transportadora — imprevistos dela (trânsito, feriados, clima)
-        fogem do nosso controle e podem alterar essa data.
+        ℹ️ Prazo estimado pela transportadora — imprevistos (trânsito, feriados, clima) podem mudar essa data.
       </p>
     {% endif %}
   {% elif pedido.status == 'entregue' %}

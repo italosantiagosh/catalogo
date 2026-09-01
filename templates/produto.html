@@ -28,14 +28,12 @@
   <p class="instrucao">Escolha um modelo:</p>
 
   <p class="aviso-preco-atacado" id="aviso-preco-atacado">
-    Preço unitário a partir de <strong>{{ preco_varejo | preco }}</strong>.
-    O desconto de atacado é calculado automaticamente pela quantidade total
-    do seu carrinho, assim que você adicionar os itens.
+    A partir de <strong>{{ preco_varejo | preco }}</strong> — desconto de atacado calculado
+    automático pela quantidade do carrinho.
   </p>
   <p class="aviso-formatos">
-    Cada santo está disponível em <strong>medalha</strong> (1,2 ou 1,6 cm),
-    <strong>entremeio</strong> (prata ou ouro velho) e <strong>chaveiro</strong>
-    -- escolha o formato depois de selecionar o modelo.
+    Disponível em <strong>medalha</strong> (1,2 ou 1,6 cm), <strong>entremeio</strong>
+    (prata ou ouro velho) e <strong>chaveiro</strong> — escolha após o modelo.
   </p>
 
   <div class="modelos-grid" id="modelos-grid" data-produto-id="{{ produto.id }}" data-produto-nome="{{ produto.nome }}">
@@ -237,7 +235,7 @@
 
   <section class="prova-social">
     <h3>Quem já comprou, recomenda ✨</h3>
-    <p>Mensagens reais de clientes e um pouco do que postamos no Instagram. Isso ajuda você a comprar com mais segurança.</p>
+    <p>Mensagens reais de clientes e um pouco do que postamos no Instagram.</p>
     <div class="prova-social-linha">
       {% for item in prova_social %}
         <div class="prova-social-card">
