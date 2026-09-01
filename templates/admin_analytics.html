@@ -84,8 +84,20 @@
 
     table { width: 100%; border-collapse: collapse; }
     th, td { text-align: left; padding: 8px 6px; border-bottom: 1px solid var(--linha); font-size: 0.85rem; }
-    .nao-configurado { background: var(--cartao); border-radius: 14px; padding: 20px; font-size: 0.9rem; line-height: 1.6; margin-top: 20px; }
+    .nao-configurado { background: var(--cartao); border-radius: 14px; padding: 20px; font-size: 0.9rem; line-height: 1.6; margin: 0 0 20px; }
     .nao-configurado code { background: #f0f2f5; padding: 2px 6px; border-radius: 4px; }
+
+    /* Grafico de vendas por dia -- colunas de altura proporcional ao
+       maior valor do periodo, so com div+CSS (sem lib de grafico
+       externa, mesmo criterio do funil de conversao acima). Valor
+       exato de cada dia fica no title (tooltip nativo do navegador). */
+    .grafico-dias { display: flex; align-items: flex-end; gap: 3px; height: 130px; }
+    .grafico-dia { flex: 1; height: 100%; display: flex; align-items: flex-end; }
+    .grafico-dia-barra {
+      width: 100%; background: linear-gradient(180deg, var(--azul-claro), var(--azul-escuro));
+      border-radius: 3px 3px 0 0; min-height: 2px;
+    }
+    .grafico-dias-eixo { display: flex; justify-content: space-between; font-size: 0.72rem; color: var(--texto-suave); margin-top: 6px; }
   </style>
 </head>
 <body>
@@ -104,9 +116,104 @@
   </header>
 
   <div class="conteudo">
+    <h2 class="secao-titulo">Vendas (30 dias)</h2>
+    <div class="stat-grade">
+      <div class="stat-cartao">
+        <div class="stat-numero">{{ vendas_30d.valor_total | preco }}</div>
+        <div class="stat-rotulo">Faturamento</div>
+      </div>
+      <div class="stat-cartao">
+        <div class="stat-numero">{{ vendas_30d.quantidade }}</div>
+        <div class="stat-rotulo">Pedidos pagos</div>
+      </div>
+      <div class="stat-cartao">
+        <div class="stat-numero">{{ vendas_30d.ticket_medio | preco }}</div>
+        <div class="stat-rotulo">Ticket médio</div>
+      </div>
+      <div class="stat-cartao">
+        <div class="stat-numero">{{ cancelamento_30d.taxa_pct }}%</div>
+        <div class="stat-rotulo">Taxa de cancelamento ({{ cancelamento_30d.cancelados }}/{{ cancelamento_30d.total }})</div>
+      </div>
+      <div class="stat-cartao">
+        <div class="stat-numero">{{ recorrencia_30d.taxa_pct }}%</div>
+        <div class="stat-rotulo">Clientes recorrentes ({{ recorrencia_30d.recorrentes }}/{{ recorrencia_30d.total }})</div>
+      </div>
+    </div>
+
+    <h2 class="secao-titulo">Vendas por dia (30 dias)</h2>
+    <div class="bloco">
+      {% set maior_dia = vendas_por_dia_30d | map(attribute='valor') | max %}
+      <div class="grafico-dias">
+        {% for d in vendas_por_dia_30d %}
+          <div class="grafico-dia" title="{{ d.dia }}: {{ d.quantidade }} pedido{{ 's' if d.quantidade != 1 else '' }} · {{ d.valor | preco }}">
+            <div class="grafico-dia-barra" style="height: {{ (d.valor / maior_dia * 100) if maior_dia else 0 }}%;"></div>
+          </div>
+        {% endfor %}
+      </div>
+      <div class="grafico-dias-eixo">
+        <span>{{ vendas_por_dia_30d[0].dia }}</span>
+        <span>{{ vendas_por_dia_30d[-1].dia }}</span>
+      </div>
+      <p class="secao-nota" style="margin: 10px 0 0;">Passe o mouse em cima de uma barra pra ver o valor do dia.</p>
+    </div>
+
+    <h2 class="secao-titulo">Pedidos pagos por estado</h2>
+    <div class="bloco">
+      {% if pedidos_por_uf_30d %}
+        {% set maior_uf = pedidos_por_uf_30d[0].quantidade %}
+        {% for u in pedidos_por_uf_30d %}
+          <div class="barra-lista-item">
+            <div class="barra-lista-topo">
+              <span class="barra-lista-pagina">{{ u.uf }}</span>
+              <span class="barra-lista-numero">{{ u.quantidade }}</span>
+            </div>
+            <div class="barra-lista-trilho">
+              <div class="barra-lista-preenchido" style="width: {{ (u.quantidade / maior_uf * 100) if maior_uf else 0 }}%;"></div>
+            </div>
+          </div>
+        {% endfor %}
+      {% else %}
+        <p class="secao-nota" style="margin: 0;">Sem venda paga nos últimos 30 dias.</p>
+      {% endif %}
+    </div>
+
+    <h2 class="secao-titulo">Formas de pagamento</h2>
+    <div class="bloco">
+      {% if formas_pagamento_30d %}
+        <table>
+          <tr><th>Forma</th><th>Pedidos</th><th>Valor</th></tr>
+          {% for f in formas_pagamento_30d %}
+            <tr><td>{{ f.forma }}</td><td>{{ f.quantidade }}</td><td>{{ f.valor | preco }}</td></tr>
+          {% endfor %}
+        </table>
+      {% else %}
+        <p class="secao-nota" style="margin: 0;">Sem venda paga nos últimos 30 dias.</p>
+      {% endif %}
+    </div>
+
+    <h2 class="secao-titulo">Produtos mais vendidos (30 dias)</h2>
+    <div class="bloco">
+      {% if produtos_mais_vendidos_30d %}
+        {% set maior_produto = produtos_mais_vendidos_30d[0].quantidade %}
+        {% for p in produtos_mais_vendidos_30d %}
+          <div class="barra-lista-item">
+            <div class="barra-lista-topo">
+              <span class="barra-lista-pagina">{{ p.produto }}</span>
+              <span class="barra-lista-numero">{{ p.quantidade }}</span>
+            </div>
+            <div class="barra-lista-trilho">
+              <div class="barra-lista-preenchido" style="width: {{ (p.quantidade / maior_produto * 100) if maior_produto else 0 }}%;"></div>
+            </div>
+          </div>
+        {% endfor %}
+      {% else %}
+        <p class="secao-nota" style="margin: 0;">Sem venda paga nos últimos 30 dias.</p>
+      {% endif %}
+    </div>
+
     {% if not configurado %}
       <div class="nao-configurado">
-        <p>Dashboard ainda não configurado.</p>
+        <p>O resto do dashboard (visitas, funil de conversão, páginas mais vistas) ainda não está configurado.</p>
         <p>Faltam as variáveis de ambiente <code>GA4_SERVICE_ACCOUNT_JSON</code> e
         <code>GA4_PROPERTY_ID</code> no servidor.</p>
       </div>

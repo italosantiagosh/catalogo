@@ -344,3 +344,123 @@ def test_estatisticas_hoje_conta_pendentes_e_whatsapp_independente_da_data(monke
 
     stats = pedidos.estatisticas_hoje()
     assert stats["pendentes"] == 2
+
+
+def test_vendas_por_dia_preenche_dias_sem_venda_com_zero(monkeypatch, tmp_path):
+    _reapontar_db(monkeypatch, tmp_path)
+    hoje_pago = pedidos.criar_pedido(**_pedido_exemplo(subtotal=100.0, frete_preco=0.0))
+    pedidos.marcar_pago(hoje_pago["token"], forma_pagamento="pix", parcelas=None, valor_pago=100.0, transaction_nsu="tx1")
+
+    resultado = pedidos.vendas_por_dia(3)
+    assert len(resultado) == 3
+    assert resultado[-1]["quantidade"] == 1
+    assert resultado[-1]["valor"] == 100.0
+    assert resultado[0]["quantidade"] == 0
+    assert resultado[0]["valor"] == 0.0
+
+
+def test_vendas_por_dia_soma_mais_de_uma_venda_no_mesmo_dia(monkeypatch, tmp_path):
+    _reapontar_db(monkeypatch, tmp_path)
+    p1 = pedidos.criar_pedido(**_pedido_exemplo(subtotal=100.0, frete_preco=0.0))
+    pedidos.marcar_pago(p1["token"], forma_pagamento="pix", parcelas=None, valor_pago=100.0, transaction_nsu="tx1")
+    p2 = pedidos.criar_pedido(**_pedido_exemplo(subtotal=50.0, frete_preco=0.0))
+    pedidos.marcar_pago(p2["token"], forma_pagamento="pix", parcelas=None, valor_pago=50.0, transaction_nsu="tx2")
+
+    resultado = pedidos.vendas_por_dia(1)
+    assert resultado[0]["quantidade"] == 2
+    assert resultado[0]["valor"] == 150.0
+
+
+def test_pedidos_por_uf_usa_uf_do_destinatario_quando_diferente(monkeypatch, tmp_path):
+    _reapontar_db(monkeypatch, tmp_path)
+    normal = pedidos.criar_pedido(**_pedido_exemplo(endereco={
+        "cep": "59000000", "logradouro": "Rua A", "numero": "1", "complemento": "",
+        "bairro": "Centro", "cidade": "Natal", "uf": "RN",
+    }))
+    pedidos.marcar_pago(normal["token"], forma_pagamento="pix", parcelas=None, valor_pago=140.0, transaction_nsu="tx1")
+
+    com_destinatario = pedidos.criar_pedido(**_pedido_exemplo(endereco={
+        "cep": "59000000", "logradouro": "Rua B", "numero": "2", "complemento": "",
+        "bairro": "Centro", "cidade": "Natal", "uf": "RN",
+        "destinatario_nome": "Livraria", "destinatario_tipo_pessoa": "juridica",
+        "destinatario_documento": "11222333000181",
+        "destinatario_cep": "80000000", "destinatario_logradouro": "Rua C", "destinatario_numero": "3",
+        "destinatario_complemento": "", "destinatario_bairro": "Centro", "destinatario_cidade": "Curitiba",
+        "destinatario_uf": "PR", "destinatario_telefone": "",
+    }))
+    pedidos.marcar_pago(com_destinatario["token"], forma_pagamento="pix", parcelas=None, valor_pago=140.0, transaction_nsu="tx2")
+
+    resultado = {r["uf"]: r["quantidade"] for r in pedidos.pedidos_por_uf(7)}
+    assert resultado == {"RN": 1, "PR": 1}
+
+
+def test_taxa_cancelamento_ignora_lead_whatsapp(monkeypatch, tmp_path):
+    _reapontar_db(monkeypatch, tmp_path)
+    pedidos.criar_pedido(**_pedido_exemplo(status_inicial="whatsapp"))
+    cancelado = pedidos.criar_pedido(**_pedido_exemplo())
+    pedidos.cancelar_pedido(cancelado["token"])
+    pedidos.criar_pedido(**_pedido_exemplo())  # pendente
+
+    resultado = pedidos.taxa_cancelamento(7)
+    assert resultado["total"] == 2  # so o cancelado + o pendente, nao o lead whatsapp
+    assert resultado["cancelados"] == 1
+    assert resultado["taxa_pct"] == 50.0
+
+
+def test_formas_pagamento_periodo_normaliza_rotulos(monkeypatch, tmp_path):
+    _reapontar_db(monkeypatch, tmp_path)
+    pix = pedidos.criar_pedido(**_pedido_exemplo(subtotal=100.0, frete_preco=0.0))
+    pedidos.marcar_pago(pix["token"], forma_pagamento="pix", parcelas=None, valor_pago=100.0, transaction_nsu="tx1")
+    cartao = pedidos.criar_pedido(**_pedido_exemplo(subtotal=50.0, frete_preco=0.0))
+    pedidos.marcar_pago(cartao["token"], forma_pagamento="credit_card", parcelas=3, valor_pago=50.0, transaction_nsu="tx2")
+
+    resultado = {r["forma"]: r for r in pedidos.formas_pagamento_periodo(7)}
+    assert resultado["Pix"]["quantidade"] == 1
+    assert resultado["Pix"]["valor"] == 100.0
+    assert resultado["Cartão de crédito"]["quantidade"] == 1
+    assert resultado["Cartão de crédito"]["valor"] == 50.0
+
+
+def test_produtos_mais_vendidos_soma_quantidade_por_nome(monkeypatch, tmp_path):
+    _reapontar_db(monkeypatch, tmp_path)
+    p1 = pedidos.criar_pedido(**_pedido_exemplo(
+        itens=[{"chave_preco": "16mm", "quantidade": 20, "produtoNome": "São José"}],
+        subtotal=100.0, frete_preco=0.0,
+    ))
+    pedidos.marcar_pago(p1["token"], forma_pagamento="pix", parcelas=None, valor_pago=100.0, transaction_nsu="tx1")
+    p2 = pedidos.criar_pedido(**_pedido_exemplo(
+        itens=[{"chave_preco": "16mm", "quantidade": 5, "produtoNome": "São José"},
+               {"chave_preco": "12mm", "quantidade": 3}],  # sem produtoNome -- personalizada
+        subtotal=40.0, frete_preco=0.0,
+    ))
+    pedidos.marcar_pago(p2["token"], forma_pagamento="pix", parcelas=None, valor_pago=40.0, transaction_nsu="tx2")
+
+    resultado = {r["produto"]: r["quantidade"] for r in pedidos.produtos_mais_vendidos(7)}
+    assert resultado["São José"] == 25
+    assert resultado["Personalizada"] == 3
+
+
+def test_taxa_clientes_recorrentes_conta_so_quem_ja_comprou_antes(monkeypatch, tmp_path):
+    _reapontar_db(monkeypatch, tmp_path)
+    cliente_novo = pedidos.criar_pedido(**_pedido_exemplo(
+        cliente={"nome": "Nova", "tipo_pessoa": "fisica", "documento": "11111111111",
+                 "telefone": "84999999999", "email": "nova@example.com"},
+    ))
+    pedidos.marcar_pago(cliente_novo["token"], forma_pagamento="pix", parcelas=None, valor_pago=140.0, transaction_nsu="tx1")
+
+    doc_recorrente = "22222222222"
+    compra_antiga = pedidos.criar_pedido(**_pedido_exemplo(
+        cliente={"nome": "Recorrente", "tipo_pessoa": "fisica", "documento": doc_recorrente,
+                 "telefone": "84999999999", "email": "r@example.com"},
+    ))
+    _marcar_pago_em(compra_antiga["token"], datetime.now(timezone.utc) - timedelta(days=30))
+    compra_nova = pedidos.criar_pedido(**_pedido_exemplo(
+        cliente={"nome": "Recorrente", "tipo_pessoa": "fisica", "documento": doc_recorrente,
+                 "telefone": "84999999999", "email": "r@example.com"},
+    ))
+    pedidos.marcar_pago(compra_nova["token"], forma_pagamento="pix", parcelas=None, valor_pago=140.0, transaction_nsu="tx2")
+
+    resultado = pedidos.taxa_clientes_recorrentes(7)
+    assert resultado["total"] == 2
+    assert resultado["recorrentes"] == 1
+    assert resultado["taxa_pct"] == 50.0

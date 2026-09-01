@@ -152,9 +152,15 @@ from services.pedidos import (
     marcar_pago,
     marcar_tiny_sincronizado,
     obter_pedido,
+    pedidos_por_uf,
     previsoes_do_pedido,
+    produtos_mais_vendidos,
     resumo_vendas_periodo,
     salvar_dados_boleto_inter,
+    taxa_cancelamento,
+    taxa_clientes_recorrentes,
+    formas_pagamento_periodo,
+    vendas_por_dia,
 )
 from services.imagens_personalizadas import (
     marcar_imagem_usada,
@@ -2616,8 +2622,27 @@ def admin_analytics():
         return Response(
             "Autenticação necessária.", 401, {"WWW-Authenticate": 'Basic realm="Painel de analytics"'}
         )
+
+    # Estatisticas de VENDAS, direto do banco proprio de pedidos -- nao
+    # dependem do GA4, entao sempre aparecem (mesmo sem GA4 configurado,
+    # ver abaixo). Ver conversa: usuaria mandou print do dashboard da
+    # Yampi como referencia (grafico de vendas por dia, pedidos por
+    # estado, taxa de cancelamento, formas de pagamento, produtos mais
+    # vendidos, clientes recorrentes) -- so entrou aqui o que da pra
+    # calcular com dado real do proprio site (sem cupom/order bump, essas
+    # duas features do print da Yampi simplesmente nao existem aqui).
+    contexto_vendas = dict(
+        vendas_30d=resumo_vendas_periodo(30),
+        vendas_por_dia_30d=vendas_por_dia(30),
+        pedidos_por_uf_30d=pedidos_por_uf(30),
+        cancelamento_30d=taxa_cancelamento(30),
+        formas_pagamento_30d=formas_pagamento_periodo(30),
+        produtos_mais_vendidos_30d=produtos_mais_vendidos(30),
+        recorrencia_30d=taxa_clientes_recorrentes(30),
+    )
+
     if not analytics.configurado():
-        return render_template("admin_analytics.html", configurado=False)
+        return render_template("admin_analytics.html", configurado=False, **contexto_vendas)
 
     resumo_7d = analytics.resumo_ultimos_dias(7)
     fretes_simulados_7d = analytics.contagem_evento("calculate_shipping", 7)
@@ -2629,6 +2654,7 @@ def admin_analytics():
     return render_template(
         "admin_analytics.html",
         configurado=True,
+        **contexto_vendas,
         ao_vivo=analytics.usuarios_ativos_agora(),
         resumo_hoje=analytics.resumo_ultimos_dias(0),
         resumo_7d=resumo_7d,

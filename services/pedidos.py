@@ -388,6 +388,163 @@ def resumo_vendas_periodo(dias: int) -> dict:
     return {"quantidade": quantidade, "valor_total": valor_total, "ticket_medio": ticket_medio}
 
 
+def vendas_por_dia(dias: int) -> list[dict]:
+    """[{"dia": "01/08", "quantidade": int, "valor": float}, ...] um item
+    por dia do periodo (0 nos dias sem venda), baseado em pago_em -- pro
+    grafico de vendas por dia (ver conversa: usuaria mandou print do
+    dashboard da Yampi como referencia)."""
+    inicializar_db()
+    hoje = datetime.now(timezone.utc).date()
+    inicio = hoje - timedelta(days=dias - 1)
+    with _conexao() as conexao:
+        linhas = conexao.execute(
+            "SELECT pago_em, total FROM pedidos WHERE pago_em >= ?", (inicio.isoformat(),)
+        ).fetchall()
+    por_dia: dict[str, dict] = {}
+    for linha in linhas:
+        chave = linha["pago_em"][:10]
+        registro = por_dia.setdefault(chave, {"quantidade": 0, "valor": 0.0})
+        registro["quantidade"] += 1
+        registro["valor"] += linha["total"]
+    resultado = []
+    for i in range(dias):
+        data = inicio + timedelta(days=i)
+        dados = por_dia.get(data.isoformat(), {"quantidade": 0, "valor": 0.0})
+        resultado.append({
+            "dia": data.strftime("%d/%m"),
+            "quantidade": dados["quantidade"],
+            "valor": round(dados["valor"], 2),
+        })
+    return resultado
+
+
+def pedidos_por_uf(dias: int) -> list[dict]:
+    """[{"uf": "SP", "quantidade": int}, ...] pedidos PAGOS no periodo,
+    ordenado do estado com mais pedidos pro com menos -- usa o UF de
+    ENTREGA (destinatario, quando diferente) porque e´ o que importa
+    pra logistica, mesmo criterio ja usado no calculo de frete."""
+    inicializar_db()
+    limite = (datetime.now(timezone.utc) - timedelta(days=dias)).isoformat()
+    with _conexao() as conexao:
+        linhas = conexao.execute(
+            """
+            SELECT CASE WHEN endereco_destinatario_uf != '' THEN endereco_destinatario_uf ELSE endereco_uf END AS uf,
+                   COUNT(*) AS quantidade
+            FROM pedidos WHERE pago_em >= ? AND uf != ''
+            GROUP BY uf ORDER BY quantidade DESC
+            """,
+            (limite,),
+        ).fetchall()
+    return [{"uf": linha["uf"], "quantidade": linha["quantidade"]} for linha in linhas]
+
+
+def taxa_cancelamento(dias: int) -> dict:
+    """{"cancelados": int, "total": int, "taxa_pct": float} sobre pedidos
+    CRIADOS pelo site no periodo (exclui leads "whatsapp", que nunca
+    chegam a virar pedido de verdade) -- so conta status "cancelado"
+    (auto-cancelamento de pendente abandonado, ver cancelar_pedido),
+    nao "excluido" (acao manual do admin com motivo, natureza diferente)."""
+    inicializar_db()
+    limite = (datetime.now(timezone.utc) - timedelta(days=dias)).isoformat()
+    with _conexao() as conexao:
+        total = conexao.execute(
+            "SELECT COUNT(*) FROM pedidos WHERE criado_em >= ? AND status != 'whatsapp'", (limite,)
+        ).fetchone()[0]
+        cancelados = conexao.execute(
+            "SELECT COUNT(*) FROM pedidos WHERE criado_em >= ? AND status = 'cancelado'", (limite,)
+        ).fetchone()[0]
+    taxa = round(cancelados / total * 100, 2) if total else 0.0
+    return {"cancelados": cancelados, "total": total, "taxa_pct": taxa}
+
+
+# Normaliza os valores brutos de forma_pagamento (que vem de fontes bem
+# diferentes -- "pix"/"credit_card" do webhook da InfinitePay, "boleto"
+# do Banco Inter, "manual" da confirmacao manual do admin, ou texto
+# livre digitado no confirmar-venda do WhatsApp, tipo "Pix"/"Dinheiro")
+# pra um rotulo consistente no relatorio -- ver formas_pagamento_periodo.
+_ROTULO_FORMA_PAGAMENTO = {
+    "pix": "Pix", "credit_card": "Cartão de crédito", "boleto": "Boleto", "manual": "Confirmado manualmente",
+}
+
+
+def _rotulo_forma_pagamento(bruto: str) -> str:
+    bruto = (bruto or "").strip()
+    if not bruto:
+        return "Não informado"
+    return _ROTULO_FORMA_PAGAMENTO.get(bruto.lower(), bruto)
+
+
+def formas_pagamento_periodo(dias: int) -> list[dict]:
+    """[{"forma": "Pix", "quantidade": int, "valor": float}, ...] pedidos
+    PAGOS no periodo, agrupados pelo rotulo normalizado acima, do mais
+    usado pro menos."""
+    inicializar_db()
+    limite = (datetime.now(timezone.utc) - timedelta(days=dias)).isoformat()
+    with _conexao() as conexao:
+        linhas = conexao.execute(
+            "SELECT forma_pagamento, total FROM pedidos WHERE pago_em >= ?", (limite,)
+        ).fetchall()
+    agregados: dict[str, dict] = {}
+    for linha in linhas:
+        rotulo = _rotulo_forma_pagamento(linha["forma_pagamento"])
+        registro = agregados.setdefault(rotulo, {"quantidade": 0, "valor": 0.0})
+        registro["quantidade"] += 1
+        registro["valor"] += linha["total"]
+    resultado = [
+        {"forma": rotulo, "quantidade": dados["quantidade"], "valor": round(dados["valor"], 2)}
+        for rotulo, dados in agregados.items()
+    ]
+    resultado.sort(key=lambda r: r["quantidade"], reverse=True)
+    return resultado
+
+
+def produtos_mais_vendidos(dias: int, limite_itens: int = 6) -> list[dict]:
+    """[{"produto": nome, "quantidade": int}, ...] a partir dos ITENS
+    (json) dos pedidos PAGOS no periodo, somando quantidade por nome de
+    produto -- item personalizado (sem produtoNome, ver
+    app.py:_itens_com_descricao_do_corpo) vira "Personalizada"."""
+    inicializar_db()
+    limite = (datetime.now(timezone.utc) - timedelta(days=dias)).isoformat()
+    with _conexao() as conexao:
+        linhas = conexao.execute("SELECT itens FROM pedidos WHERE pago_em >= ?", (limite,)).fetchall()
+    contagem: dict[str, int] = {}
+    for linha in linhas:
+        for item in json.loads(linha["itens"]):
+            nome = item.get("produtoNome") or "Personalizada"
+            contagem[nome] = contagem.get(nome, 0) + int(item.get("quantidade", 0))
+    resultado = [{"produto": nome, "quantidade": quantidade} for nome, quantidade in contagem.items()]
+    resultado.sort(key=lambda r: r["quantidade"], reverse=True)
+    return resultado[:limite_itens]
+
+
+def taxa_clientes_recorrentes(dias: int) -> dict:
+    """{"recorrentes": int, "total": int, "taxa_pct": float} -- de quantos
+    documentos distintos pagaram no periodo, quantos ja tinham pelo
+    menos 1 pedido pago ANTES do periodo comecar (cliente recorrente,
+    nao so quem comprou 2x dentro da mesma janela)."""
+    inicializar_db()
+    limite = (datetime.now(timezone.utc) - timedelta(days=dias)).isoformat()
+    with _conexao() as conexao:
+        documentos = [
+            linha["cliente_documento"]
+            for linha in conexao.execute(
+                "SELECT DISTINCT cliente_documento FROM pedidos WHERE pago_em >= ? AND cliente_documento != ''",
+                (limite,),
+            ).fetchall()
+        ]
+        recorrentes = 0
+        for documento in documentos:
+            existe_antes = conexao.execute(
+                "SELECT 1 FROM pedidos WHERE cliente_documento = ? AND pago_em < ? LIMIT 1",
+                (documento, limite),
+            ).fetchone()
+            if existe_antes:
+                recorrentes += 1
+    total = len(documentos)
+    taxa = round(recorrentes / total * 100, 2) if total else 0.0
+    return {"recorrentes": recorrentes, "total": total, "taxa_pct": taxa}
+
+
 def listar_pedidos_pendentes_para_lembrete(minutos: int) -> list[dict]:
     """Pedidos "pendente" ha´ pelo menos `minutos`, que ainda nao
     receberam o lembrete de pagamento -- usado pelo job agendado em

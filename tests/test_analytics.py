@@ -36,7 +36,10 @@ def test_admin_analytics_nao_configurado(client, monkeypatch):
     with patch("app.analytics.configurado", return_value=False):
         resposta = client.get("/admin/analytics", auth=("admin", "segredo123"))
     assert resposta.status_code == 200
-    assert "ainda não configurado" in resposta.get_data(as_text=True)
+    corpo = resposta.get_data(as_text=True)
+    assert "ainda não está configurado" in corpo
+    # a secao de Vendas nao depende do GA4, tem que continuar aparecendo
+    assert "Vendas (30 dias)" in corpo
 
 
 def test_admin_analytics_mostra_numeros(client, monkeypatch):
@@ -125,6 +128,37 @@ def test_admin_analytics_mostra_funil_e_proporcoes_com_pedidos_reais(client, mon
     assert "10.0%" in corpo
     assert "Ticket médio" in corpo
     assert "R$ 60,00" in corpo  # unica venda paga
+
+
+def test_admin_analytics_mostra_secao_de_vendas_com_pedidos_reais(client, monkeypatch):
+    """Ver conversa: usuaria mandou print do dashboard da Yampi como
+    referencia -- grafico por dia, pedidos por estado, formas de
+    pagamento, produtos mais vendidos, cancelamento/recorrencia."""
+    _preparar_admin(monkeypatch)
+
+    with patch("app.criar_link_pagamento", return_value={"url": "https://checkout.infinitepay.io/abc"}):
+        pago = client.post("/api/pedido/criar", json=_corpo_pedido_valido()).get_json()
+    with patch("app.criar_pedido_tiny", return_value={"erro": "não configurado"}), \
+         patch("app.enviar_confirmacao_pedido", return_value={"erro": "não configurado"}), \
+         patch("app.enviar_notificacao_venda", return_value={"ok": True}), \
+         patch("app.enviar_notificacao_push", return_value={"ok": True}):
+        client.post(
+            "/webhook/infinitepay",
+            json={"order_nsu": pago["token"], "paid_amount": 6000, "capture_method": "pix"},
+        )
+
+    with patch("app.analytics.configurado", return_value=False):
+        resposta = client.get("/admin/analytics", auth=("admin", "segredo123"))
+    corpo = resposta.get_data(as_text=True)
+
+    assert "Vendas (30 dias)" in corpo
+    assert "R$ 60,00" in corpo  # faturamento = ticket unico
+    assert "Pedidos pagos por estado" in corpo
+    assert "RN" in corpo
+    assert "Formas de pagamento" in corpo
+    assert "Pix" in corpo
+    assert "Produtos mais vendidos" in corpo
+    assert "São José" in corpo
 
 
 def test_analytics_service_sem_config_devolve_none():
