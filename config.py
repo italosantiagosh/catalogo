@@ -428,3 +428,34 @@ DESCRICOES_FORMATO = {
         "catálogo, ótimo pra bolsa, mochila ou presente."
     ),
 }
+
+# Snapshot dos produtos existentes na migração pro dominio proprio
+# (lojanovedejulho.com.br) -- pedido do usuario: manter o <title> antigo
+# ("... -- Catalogo de Atacado | Nove de Julho") nesses produtos, e usar
+# um titulo novo/mais geral em qualquer produto adicionado dai pra frente
+# (templates/produto.html). NAO adicionar novos ids aqui.
+PRODUTOS_TITULO_ANTIGO = frozenset({
+    'anunciacao', 'banquete-eterno', 'beata-benigna', 'beata-elisabeth-trindade', 'beata-nha-xica', 'beata-sandra-sabatine',
+    'bodas-de-cana', 'bom-pastor', 'cantico-dos-canticos', 'carlo-acutis', 'castissimo-coracao-de-sao-jose', 'chiara-corbella',
+    'chiara-luce', 'cristo-rei', 'dom-henrique', 'edith-stein', 'espirito-santo', 'esposa-do-espirito',
+    'esposo-eucaristico', 'familia-martin', 'filho-prodigo-acamps', 'francisco-de-fatima', 'frei-alberto', 'frei-damiao',
+    'frei-galvao', 'guido', 'imaculado-coracao-de-maria', 'irma-clare', 'jacques-fach', 'jardim-fechado',
+    'jesus-misericordioso', 'jesus-pantokrator', 'jesus-semeador', 'nossa-senhora-aparecida', 'nossa-senhora-aparecida-infantil', 'nossa-senhora-da-apresentacao',
+    'nossa-senhora-da-guia', 'nossa-senhora-da-rosa-mistica', 'nossa-senhora-das-dores', 'nossa-senhora-das-gracas', 'nossa-senhora-de-candelaria', 'nossa-senhora-de-fatima',
+    'nossa-senhora-de-guadalupe', 'nossa-senhora-de-lourdes', 'nossa-senhora-de-nazare', 'nossa-senhora-de-pieta', 'nossa-senhora-desatadora-dos-nos', 'nossa-senhora-do-advento',
+    'nossa-senhora-do-carmo', 'nossa-senhora-do-perpetuo-socorro', 'nossa-senhora-do-silencio', 'nossa-senhora-do-sorriso', 'nossa-senhora-dos-desterro', 'nossa-senhora-esperanca-dos-homens',
+    'nossa-senhora-imaculada-conceicao', 'nossa-senhora-mae-da-ternura', 'nossa-senhora-mae-dulcissima', 'nossa-senhora-marajoara', 'nossa-senhora-porta-do-ceu', 'nossa-senhora-rainha-da-paz',
+    'nossa-senhora-toda-pequena', 'obra-nova', 'padre-cicero', 'padre-ibiapina', 'padre-jonas', 'pais-de-teresinha',
+    'pais-de-teresinha-com-teresinha', 'pentecostes', 'ressuscitado', 'ronaldo-pereira', 'sagrada-face-de-jesus', 'sagrada-familia',
+    'sagrado-coracao-de-jesus', 'salete', 'santa-bakhita', 'santa-cecilia', 'santa-clara', 'santa-dulce',
+    'santa-faustina', 'santa-gemma', 'santa-gianna', 'santa-joana-darc', 'santa-luzia', 'santa-maria-goretti',
+    'santa-maria-madalena', 'santa-rita-de-cassia', 'santa-teresa-davila', 'santa-teresa-de-calcuta', 'santa-teresinha', 'santa-teresinha-crianca',
+    'santa-zelia', 'santas-chagas', 'santas-felicidade-e-perpetua', 'santissima-trindade', 'santo-afonso', 'santo-agostinho',
+    'santo-antonio', 'santo-expedito', 'santos-arcanjos', 'santos-inocentes', 'santos-martires-do-rn', 'sao-bento',
+    'sao-cristovao', 'sao-dom-bosco', 'sao-francisco', 'sao-francisco-de-sales', 'sao-gabriel', 'sao-gabriel-da-virgem-dolorosa',
+    'sao-joao-batista', 'sao-joao-da-cruz', 'sao-joao-evangelista', 'sao-joao-maria-vianney', 'sao-joao-paulo-ii', 'sao-jorge',
+    'sao-jose', 'sao-jose-de-anchieta', 'sao-jose-dormindo', 'sao-jose-maria-escriva', 'sao-jose-moscatti', 'sao-jose-sanchez',
+    'sao-jose-terror-dos-demonios', 'sao-judas-tadeu', 'sao-lucas', 'sao-luis-martin', 'sao-miguel', 'sao-padre-pio',
+    'sao-paulo', 'sao-pier-giorgio-frassati', 'sao-rafael', 'sao-tarcisio', 'sao-timoteo', 'sao-tome',
+    'teresas-do-carmelo', 'tres-coracoes', 'virgens-prudentes',
+})

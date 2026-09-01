@@ -4,12 +4,25 @@
    Santo" -- sem essa excecao, os dois geravam o MESMO <title>
    (achado de auditoria de SEO). So esse caso especifico colide hoje;
    deixado como excecao pontual em vez de mudar o formato de todos os
-   135 produtos (isso deixaria varios titulos > 70 caracteres). #}
+   135 produtos (isso deixaria varios titulos > 70 caracteres).
+
+   titulo_antigo (config.py:PRODUTOS_TITULO_ANTIGO) distingue produtos
+   ja existentes na migracao pro dominio proprio (mantem o titulo
+   antigo) dos produtos novos cadastrados dai pra frente (titulo mais
+   geral, sem "Catalogo de Atacado" -- pedido do usuario). #}
 {% block titulo %}
-  {%- if produto.id == 'espirito-santo' -%}
-    Medalha Espírito Santo — Catálogo de Atacado | Nove de Julho
+  {%- if titulo_antigo -%}
+    {%- if produto.id == 'espirito-santo' -%}
+      Medalha Espírito Santo — Catálogo de Atacado | Nove de Julho
+    {%- else -%}
+      {{ produto.nome }} — Catálogo de Atacado | Nove de Julho
+    {%- endif -%}
   {%- else -%}
-    {{ produto.nome }} — Catálogo de Atacado | Nove de Julho
+    {%- if produto.id == 'espirito-santo' -%}
+      Medalha Espírito Santo — Medalhas Católicas | Nove de Julho
+    {%- else -%}
+      {{ produto.nome }} — Medalhas Católicas | Nove de Julho
+    {%- endif -%}
   {%- endif -%}
 {% endblock %}
 {% block meta_descricao %}Medalha, entremeio e chaveiro de {{ produto.nome }} a partir de {{ preco_varejo | preco }} -- desconto de atacado automático conforme a quantidade, sem cupom. Peça pelo catálogo Nove de Julho.{% endblock %}
