@@ -103,43 +103,60 @@ def _cliente_para_tiny(pedido: dict) -> dict:
     return cliente
 
 
-# Codigo mandado pra Tiny -- ATE aqui era so agregado por materia-prima
-# (ex: "12mm", "entremeio_prata"), pensado pro estoque bater com a
-# compra de material, sem misturar santo/modelo. Trocado a pedido do
-# usuario (ver conversa) pro MESMO codigo por santo+modelo+variacao
-# cadastrado na Tiny via scripts/gerar_planilha_tiny.py (ex:
-# "MED-ANUNCIACAO-M1-16mm") -- assim a nota fiscal ja puxa NCM sozinha
-# do cadastro do produto, e o relatorio de vendas da Tiny separa por
-# Categoria (ver scripts/gerar_planilha_tiny.py: "Medalha 1 lado 16mm"
-# etc.). Efeito colateral aceito pelo usuario: o estoque na Tiny passa
-# a ser controlado por santo+modelo+tamanho, nao mais agregado por
-# materia-prima comprada.
+# Codigo/descricao mandados pra Tiny -- ja foi por santo+modelo+variacao
+# (ex: "MED-ANUNCIACAO-M1-16mm", descricao "São José — Modelo 1 —
+# Medalha · 16mm"), mas isso quebrava a EMISSAO da nota fiscal ("A
+# descrição do produto está em branco, incompleta ou contém caracteres
+# inválidos" -- o travessão "—" nao e´ um caractere valido pro XML da
+# NF-e) e deixava a nota gigante (uma linha por santo+modelo+tamanho em
+# vez de uma por formato). Revertido a pedido da usuaria (ver conversa)
+# pro codigo/descricao AGREGADOS por materia-prima -- santo/modelo
+# continuam especificos so no painel admin e na pagina do pedido pro
+# cliente (ver app.py:_itens_com_descricao_do_corpo), nunca mandados
+# pra Tiny. Efeito aceito pela usuaria: a Tiny nao separa mais
+# estoque/relatorio de vendas por santo, so por formato+tamanho.
 #
-# So funciona pra item com produtoId+modeloId (produto do catalogo, ver
-# static/js/produto.js) -- medalha PERSONALIZADA (foto do cliente, sem
-# produto/modelo do catalogo) nao tem cadastro correspondente na Tiny
-# ainda, entao continua usando o codigo agregado antigo nesse caso.
-_COR_SUFIXO_TINY = {"ouro_velho": "OU", "prata": "PR"}
+# IMPORTANTE: os codigos abaixo NAO sao inventados aqui -- sao os SKUs
+# reais das VARIACOES de dois produtos "pai" que a usuaria ja usa ha
+# anos na Tiny ("Medalha Personalizada", variacao Tamanho; "Entremeio
+# Personalizado de 1 lado", variacao Cor; ver conversa, print de
+# erp.olist.com/produtos#edit/.../variacoes). Nao precisa importar
+# nada nem cadastrar produto novo -- so mandar o codigo certo. Chaveiro
+# ja e´ um produto simples (sem variacao), codigo "Chaveiro" mesmo,
+# confirmado num pedido real que sincronizou certo.
+_CODIGO_MATERIAL_TINY = {
+    "12mm": "WSL5RSRKA",
+    "16mm": "LCEHXXXNP",
+    "entremeio_prata": "XQWBRR2FK",
+    "entremeio_ouro_velho": "KY5EZHCF5",
+    "chaveiro": "Chaveiro",
+}
+
+_DESCRICAO_MATERIAL_TINY = {
+    "12mm": "Medalha Personalizada - 1,2cm",
+    "16mm": "Medalha Personalizada - 1,6cm",
+    "entremeio_prata": "Entremeio Personalizado de 1 lado - Prata",
+    "entremeio_ouro_velho": "Entremeio Personalizado de 1 lado - Ouro velho",
+    "chaveiro": "Chaveiro Personalizado",
+}
+
+
+def _chave_material(item: dict) -> str:
+    chave_preco = item.get("chave_preco", "")
+    if chave_preco == "entremeio":
+        cor = str(item.get("cor", ""))
+        return f"entremeio_{cor}" if cor else chave_preco
+    return chave_preco
 
 
 def _codigo_estoque_tiny(item: dict) -> str:
-    chave_preco = item.get("chave_preco", "")
-    produto_id = str(item.get("produtoId") or "").strip()
-    modelo_id = str(item.get("modeloId") or "").strip()
+    chave = _chave_material(item)
+    return _CODIGO_MATERIAL_TINY.get(chave, chave)
 
-    if produto_id and modelo_id:
-        base = f"{produto_id.upper()}-M{modelo_id}"
-        if chave_preco in ("12mm", "16mm"):
-            return f"MED-{base}-{chave_preco}"
-        if chave_preco == "entremeio":
-            cor = str(item.get("cor", ""))
-            return f"ENT-{base}-{_COR_SUFIXO_TINY.get(cor, 'XX')}"
-        if chave_preco == "chaveiro":
-            return f"CHAV-{base}"
 
-    if chave_preco == "entremeio" and item.get("cor"):
-        return f"entremeio_{item['cor']}"
-    return chave_preco
+def _descricao_estoque_tiny(item: dict) -> str:
+    chave = _chave_material(item)
+    return _DESCRICAO_MATERIAL_TINY.get(chave, chave)
 
 
 def _primeiro_registro(registros_bruto) -> dict:
@@ -166,7 +183,7 @@ def _itens_para_tiny(itens: list[dict]) -> list[dict]:
         {
             "item": {
                 "codigo": _codigo_estoque_tiny(item),
-                "descricao": item.get("descricao") or item.get("chave_preco", ""),
+                "descricao": _descricao_estoque_tiny(item),
                 "unidade": "UN",
                 "quantidade": str(item.get("quantidade", 1)),
                 "valor_unitario": f"{item.get('valor_unitario', 0):.2f}",

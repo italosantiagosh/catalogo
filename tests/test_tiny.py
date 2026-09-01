@@ -71,7 +71,13 @@ def test_monta_payload_com_cliente_itens_e_numero_pedido_ecommerce(monkeypatch):
     assert pedido_json["cliente"]["tipo_pessoa"] == "F"
     assert pedido_json["cliente"]["cpf_cnpj"] == "12345678900"
     assert pedido_json["cliente"]["cep"] == "59000000"
-    assert pedido_json["itens"][0]["item"]["descricao"] == "São José — Modelo 1"
+    # codigo/descricao mandados pra Tiny sao os SKUs reais das variacoes
+    # que a usuaria ja usa ha anos (ver conversa: o travessão especifico
+    # por santo/modelo quebrava a NF-e) -- santo/modelo continuam so no
+    # proprio "descricao" do item guardado no pedido do site (nao
+    # mandado pra Tiny), aqui so confere o codigo.
+    assert pedido_json["itens"][0]["item"]["descricao"] == "Medalha Personalizada - 1,6cm"
+    assert pedido_json["itens"][0]["item"]["codigo"] == "LCEHXXXNP"
     assert pedido_json["itens"][0]["item"]["quantidade"] == "10"
     assert pedido_json["itens"][0]["item"]["valor_unitario"] == "5.00"
     assert pedido_json["numero_pedido_ecommerce"] == "ABC123"
@@ -81,22 +87,22 @@ def test_monta_payload_com_cliente_itens_e_numero_pedido_ecommerce(monkeypatch):
 
 
 def test_item_sem_produto_do_catalogo_usa_codigo_agregado(monkeypatch):
-    """Sem produtoId/modeloId (medalha personalizada com foto, sem
-    cadastro correspondente na Tiny ainda -- ver
-    services/tiny.py:_codigo_estoque_tiny), cai no codigo agregado por
-    material antigo."""
+    """Sem produtoId/modeloId (medalha personalizada com foto), usa o
+    SKU real da variacao "Medalha Personalizada" que a usuaria ja usa
+    ha anos na Tiny -- ver services/tiny.py:_CODIGO_MATERIAL_TINY."""
     monkeypatch.setattr(tiny, "TINY_API_TOKEN", "segredo123")
     with patch("services.tiny.requests.post", return_value=_resposta_ok()) as post_mock:
         tiny.criar_pedido_tiny(_pedido_exemplo(
             itens=[{"chave_preco": "16mm", "quantidade": 10, "descricao": "Personalizada", "valor_unitario": 5.0}]
         ))
     pedido_json = json.loads(post_mock.call_args.kwargs["data"]["pedido"])["pedido"]
-    assert pedido_json["itens"][0]["item"]["codigo"] == "16mm"
+    assert pedido_json["itens"][0]["item"]["codigo"] == "LCEHXXXNP"
+    assert pedido_json["itens"][0]["item"]["descricao"] == "Medalha Personalizada - 1,6cm"
 
 
 def test_item_sem_produto_do_catalogo_entremeio_prata_e_ouro_velho_viram_codigos_diferentes(monkeypatch):
-    """Mesmo fallback acima, mas confirma que a cor do entremeio ainda
-    diferencia o codigo mesmo sem produtoId/modeloId."""
+    """Confirma que a cor do entremeio ainda diferencia o codigo/descricao
+    (SKUs reais das variacoes "Entremeio Personalizado de 1 lado")."""
     monkeypatch.setattr(tiny, "TINY_API_TOKEN", "segredo123")
     itens = [
         {"chave_preco": "entremeio", "quantidade": 5, "descricao": "Entremeio · Prata",
@@ -107,15 +113,21 @@ def test_item_sem_produto_do_catalogo_entremeio_prata_e_ouro_velho_viram_codigos
     with patch("services.tiny.requests.post", return_value=_resposta_ok()) as post_mock:
         tiny.criar_pedido_tiny(_pedido_exemplo(itens=itens))
     pedido_json = json.loads(post_mock.call_args.kwargs["data"]["pedido"])["pedido"]
-    assert pedido_json["itens"][0]["item"]["codigo"] == "entremeio_prata"
-    assert pedido_json["itens"][1]["item"]["codigo"] == "entremeio_ouro_velho"
+    assert pedido_json["itens"][0]["item"]["codigo"] == "XQWBRR2FK"
+    assert pedido_json["itens"][0]["item"]["descricao"] == "Entremeio Personalizado de 1 lado - Prata"
+    assert pedido_json["itens"][1]["item"]["codigo"] == "KY5EZHCF5"
+    assert pedido_json["itens"][1]["item"]["descricao"] == "Entremeio Personalizado de 1 lado - Ouro velho"
 
 
-def test_item_do_catalogo_usa_codigo_por_santo_modelo_tamanho(monkeypatch):
-    """Com produtoId+modeloId (produto real do catalogo), o codigo bate
-    com o SKU cadastrado na Tiny via scripts/gerar_planilha_tiny.py --
-    trocado a pedido do usuario, pra nota fiscal puxar NCM sozinha e o
-    relatorio de vendas separar por Categoria (ver conversa)."""
+def test_item_do_catalogo_tambem_usa_codigo_agregado_por_material(monkeypatch):
+    """Ver conversa: a nota fiscal quebrava ("A descrição do produto
+    está em branco, incompleta ou contém caracteres inválidos" -- o
+    travessão da descricao especifica por santo/modelo nao e´ valido
+    pro XML da NF-e) e ficava enorme (uma linha por santo+modelo).
+    Revertido pra codigo/descricao agregados por material SEMPRE,
+    mesmo com produtoId/modeloId preenchidos (produto real do
+    catalogo) -- santo/modelo continuam so no painel/pedido do
+    cliente, nunca mandados pra Tiny."""
     monkeypatch.setattr(tiny, "TINY_API_TOKEN", "segredo123")
     itens = [
         {"chave_preco": "16mm", "quantidade": 10, "descricao": "Anunciação — Modelo 1", "valor_unitario": 5.0,
@@ -124,10 +136,11 @@ def test_item_do_catalogo_usa_codigo_por_santo_modelo_tamanho(monkeypatch):
     with patch("services.tiny.requests.post", return_value=_resposta_ok()) as post_mock:
         tiny.criar_pedido_tiny(_pedido_exemplo(itens=itens))
     pedido_json = json.loads(post_mock.call_args.kwargs["data"]["pedido"])["pedido"]
-    assert pedido_json["itens"][0]["item"]["codigo"] == "MED-ANUNCIACAO-M1-16mm"
+    assert pedido_json["itens"][0]["item"]["codigo"] == "LCEHXXXNP"
+    assert pedido_json["itens"][0]["item"]["descricao"] == "Medalha Personalizada - 1,6cm"
 
 
-def test_item_do_catalogo_entremeio_e_chaveiro_usam_codigo_por_santo_modelo(monkeypatch):
+def test_item_do_catalogo_entremeio_e_chaveiro_tambem_usam_codigo_agregado(monkeypatch):
     monkeypatch.setattr(tiny, "TINY_API_TOKEN", "segredo123")
     itens = [
         {"chave_preco": "entremeio", "quantidade": 5, "descricao": "Anunciação — Entremeio · Ouro velho",
@@ -138,8 +151,10 @@ def test_item_do_catalogo_entremeio_e_chaveiro_usam_codigo_por_santo_modelo(monk
     with patch("services.tiny.requests.post", return_value=_resposta_ok()) as post_mock:
         tiny.criar_pedido_tiny(_pedido_exemplo(itens=itens))
     pedido_json = json.loads(post_mock.call_args.kwargs["data"]["pedido"])["pedido"]
-    assert pedido_json["itens"][0]["item"]["codigo"] == "ENT-ANUNCIACAO-M1-OU"
-    assert pedido_json["itens"][1]["item"]["codigo"] == "CHAV-ANUNCIACAO-M1"
+    assert pedido_json["itens"][0]["item"]["codigo"] == "KY5EZHCF5"
+    assert pedido_json["itens"][0]["item"]["descricao"] == "Entremeio Personalizado de 1 lado - Ouro velho"
+    assert pedido_json["itens"][1]["item"]["codigo"] == "Chaveiro"
+    assert pedido_json["itens"][1]["item"]["descricao"] == "Chaveiro Personalizado"
 
 
 def test_sem_endereco_de_entrega_diferente_nao_manda_bloco(monkeypatch):
