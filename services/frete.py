@@ -301,10 +301,8 @@ def consultar_melhor_envio(cep_destino: str, peso_kg: float, subtotal: float) ->
 
 
 AVISO_FRETE_GRATIS = (
-    "Seu pedido já garantiu frete grátis — o valor da opção mais barata sai por "
-    "conta da casa em qualquer transportadora escolhida. Quer receber mais rápido? "
-    "Fale com a gente pelo WhatsApp enviando seu carrinho para consultar um envio "
-    "expresso com desconto."
+    "Frete grátis garantido, em qualquer transportadora escolhida. Quer mais "
+    "rápido? Chama no WhatsApp pra consultar um envio expresso."
 )
 
 
