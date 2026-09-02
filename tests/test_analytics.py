@@ -78,6 +78,27 @@ def test_admin_analytics_mostra_visitas_e_fretes_de_hoje(client, monkeypatch):
     assert ">4<" in corpo
 
 
+def test_admin_analytics_mostra_visitas_e_fretes_de_ontem(client, monkeypatch):
+    """Ver conversa 2026-09-02: "hoje" no relatorio padrao do GA4 fica em
+    0 o dia inteiro (so fecha no dia seguinte) -- "ontem" e´ o numero
+    confiavel mais recente, tem que aparecer no painel."""
+    _preparar_admin(monkeypatch)
+    with patch("app.analytics.configurado", return_value=True), \
+         patch("app.analytics.usuarios_ativos_agora", return_value=1), \
+         patch("app.analytics.resumo_ultimos_dias", return_value={"visitas": 100, "pessoas": 50, "visualizacoes": 300}), \
+         patch("app.analytics.resumo_ontem", return_value={"visitas": 42, "pessoas": 30, "visualizacoes": 90}), \
+         patch("app.analytics.paginas_mais_vistas", return_value=[]), \
+         patch("app.analytics.contagem_evento", return_value=7), \
+         patch("app.analytics.contagem_evento_ontem", return_value=15), \
+         patch("app.analytics.contagem_evento_tempo_real", return_value=0):
+        resposta = client.get("/admin/analytics", auth=("admin", "segredo123"))
+    corpo = resposta.get_data(as_text=True)
+    assert "Visitas ontem" in corpo
+    assert "Simulações de frete ontem" in corpo
+    assert ">42<" in corpo
+    assert ">15<" in corpo
+
+
 def _corpo_pedido_valido(**overrides):
     base = dict(
         itens=[{"chave_preco": "16mm", "quantidade": 10, "produtoNome": "São José", "modeloNome": "Modelo 1"}],
@@ -174,8 +195,10 @@ def test_analytics_service_sem_config_devolve_none():
         assert analytics.configurado() is False
         assert analytics.usuarios_ativos_agora() is None
         assert analytics.resumo_ultimos_dias(7) is None
+        assert analytics.resumo_ontem() is None
         assert analytics.paginas_mais_vistas(7) is None
         assert analytics.contagem_evento("calculate_shipping", 7) is None
+        assert analytics.contagem_evento_ontem("calculate_shipping") is None
         assert analytics.contagem_evento_tempo_real("calculate_shipping") is None
     finally:
         analytics.GA4_SERVICE_ACCOUNT_JSON = modulo_original_json

@@ -2926,10 +2926,19 @@ def admin_analytics():
         **contexto_vendas,
         ao_vivo=analytics.usuarios_ativos_agora(),
         resumo_hoje=analytics.resumo_ultimos_dias(0),
+        # "hoje" (acima) usa o relatorio PADRAO do GA4, que so fecha os
+        # dados do dia atual no dia SEGUINTE -- na pratica fica em 0 (ou
+        # quase) o dia inteiro, todo dia, e isso confunde quem olha o
+        # painel achando que esta quebrado (ver conversa 2026-09-02:
+        # "teve duas vendas hj" mas o cartao mostrava 0). "ontem" e´ o
+        # numero mais recente CONFIAVEL desse mesmo relatorio -- ver
+        # services/analytics.py:resumo_ontem.
+        resumo_ontem=analytics.resumo_ontem(),
         resumo_7d=resumo_7d,
         resumo_30d=analytics.resumo_ultimos_dias(30),
         paginas_7d=analytics.paginas_mais_vistas(7, limite=8),
         fretes_simulados_hoje=analytics.contagem_evento("calculate_shipping", 0),
+        fretes_simulados_ontem=analytics.contagem_evento_ontem("calculate_shipping"),
         fretes_simulados_7d=fretes_simulados_7d,
         fretes_simulados_30d=analytics.contagem_evento("calculate_shipping", 30),
         fretes_simulados_agora=analytics.contagem_evento_tempo_real("calculate_shipping"),

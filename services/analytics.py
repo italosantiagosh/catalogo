@@ -73,9 +73,12 @@ def usuarios_ativos_agora() -> int | None:
     return int(resposta.rows[0].metric_values[0].value)
 
 
-def resumo_ultimos_dias(dias: int) -> dict | None:
-    """Visitas (sessions), pessoas (totalUsers) e visualizacoes de
-    pagina (screenPageViews) nos ultimos `dias` dias."""
+def resumo_periodo(inicio: str, fim: str) -> dict | None:
+    """Visitas (sessions), pessoas (totalUsers) e visualizacoes de pagina
+    (screenPageViews) num periodo do GA4 (strings tipo "yesterday",
+    "today", "NdaysAgo" ou "YYYY-MM-DD" -- mesmo formato aceito pela Data
+    API). Base de resumo_ultimos_dias (periodo corrido ate hoje) e de
+    resumo_ontem (UM dia so, ja fechado -- ver docstring de resumo_ontem)."""
     cliente = _client()
     if cliente is None:
         return None
@@ -85,7 +88,7 @@ def resumo_ultimos_dias(dias: int) -> dict | None:
         resposta = cliente.run_report(
             RunReportRequest(
                 property=f"properties/{GA4_PROPERTY_ID}",
-                date_ranges=[DateRange(start_date=f"{dias}daysAgo", end_date="today")],
+                date_ranges=[DateRange(start_date=inicio, end_date=fim)],
                 metrics=[Metric(name="sessions"), Metric(name="totalUsers"), Metric(name="screenPageViews")],
             )
         )
@@ -99,6 +102,25 @@ def resumo_ultimos_dias(dias: int) -> dict | None:
         "pessoas": int(valores[1].value),
         "visualizacoes": int(valores[2].value),
     }
+
+
+def resumo_ultimos_dias(dias: int) -> dict | None:
+    """Visitas/pessoas/visualizacoes nos ultimos `dias` dias ATE hoje --
+    ver resumo_periodo. `dias=0` da "so hoje", mas ver a ressalva na
+    docstring de resumo_ontem: o numero de hoje sozinho costuma vir 0."""
+    return resumo_periodo(f"{dias}daysAgo", "today")
+
+
+def resumo_ontem() -> dict | None:
+    """Visitas/pessoas/visualizacoes de ONTEM (dia certo, ja fechado no
+    GA4) -- ver conversa 2026-09-02: "Visitas hoje"/"Simulações de frete
+    hoje" (resumo_ultimos_dias(0)/contagem_evento(..., 0)) usam o
+    relatorio PADRAO do GA4, que so fecha os dados do dia atual no dia
+    SEGUINTE -- na pratica isso mostra 0 (ou quase) o dia inteiro, nao e´
+    bug daqui, e´ como a Data API funciona (so o relatorio em tempo real,
+    usuarios_ativos_agora/contagem_evento_tempo_real, reflete na hora).
+    "Ontem" e´ o numero mais recente confiavel desse relatorio."""
+    return resumo_periodo("yesterday", "yesterday")
 
 
 def paginas_mais_vistas(dias: int, limite: int = 10) -> list[dict] | None:
@@ -130,10 +152,7 @@ def paginas_mais_vistas(dias: int, limite: int = 10) -> list[dict] | None:
     ]
 
 
-def contagem_evento(nome_evento: str, dias: int) -> int | None:
-    """Quantas vezes um evento (ver static/js/carrinho.js:rastrearEventoGA4)
-    foi disparado nos ultimos `dias` dias -- usado pra "quantas pessoas
-    simularam o frete" (evento calculate_shipping)."""
+def _contagem_evento_periodo(nome_evento: str, inicio: str, fim: str) -> int | None:
     cliente = _client()
     if cliente is None:
         return None
@@ -143,7 +162,7 @@ def contagem_evento(nome_evento: str, dias: int) -> int | None:
         resposta = cliente.run_report(
             RunReportRequest(
                 property=f"properties/{GA4_PROPERTY_ID}",
-                date_ranges=[DateRange(start_date=f"{dias}daysAgo", end_date="today")],
+                date_ranges=[DateRange(start_date=inicio, end_date=fim)],
                 dimensions=[Dimension(name="eventName")],
                 metrics=[Metric(name="eventCount")],
                 dimension_filter=FilterExpression(
@@ -159,6 +178,21 @@ def contagem_evento(nome_evento: str, dias: int) -> int | None:
     if not resposta.rows:
         return 0
     return int(resposta.rows[0].metric_values[0].value)
+
+
+def contagem_evento(nome_evento: str, dias: int) -> int | None:
+    """Quantas vezes um evento (ver static/js/carrinho.js:rastrearEventoGA4)
+    foi disparado nos ultimos `dias` dias ATE hoje -- usado pra "quantas
+    pessoas simularam o frete" (evento calculate_shipping). `dias=0` tem
+    a mesma ressalva de resumo_ontem: o numero de "so hoje" costuma vir
+    0 (relatorio padrao do GA4 so fecha o dia atual no dia seguinte)."""
+    return _contagem_evento_periodo(nome_evento, f"{dias}daysAgo", "today")
+
+
+def contagem_evento_ontem(nome_evento: str) -> int | None:
+    """Mesma ideia de resumo_ontem, pra um evento especifico -- numero de
+    ONTEM (dia ja fechado no GA4), mais confiavel que o de "hoje"."""
+    return _contagem_evento_periodo(nome_evento, "yesterday", "yesterday")
 
 
 def contagem_evento_tempo_real(nome_evento: str) -> int | None:

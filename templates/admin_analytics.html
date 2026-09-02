@@ -218,11 +218,15 @@
         <code>GA4_PROPERTY_ID</code> no servidor.</p>
       </div>
     {% else %}
-      <h2 class="secao-titulo">Agora e hoje</h2>
+      <h2 class="secao-titulo">Agora, hoje e ontem</h2>
       <div class="stat-grade">
         <div class="stat-cartao ao-vivo">
           <div class="stat-numero">{{ ao_vivo if ao_vivo is not none else "—" }}</div>
           <div class="stat-rotulo">Pessoas no site agora</div>
+        </div>
+        <div class="stat-cartao ao-vivo">
+          <div class="stat-numero">{{ fretes_simulados_agora if fretes_simulados_agora is not none else "—" }}</div>
+          <div class="stat-rotulo">Simulações (últimos 30 min)</div>
         </div>
         <div class="stat-cartao">
           <div class="stat-numero">{{ resumo_hoje.visitas if resumo_hoje else "—" }}</div>
@@ -232,11 +236,21 @@
           <div class="stat-numero">{{ fretes_simulados_hoje if fretes_simulados_hoje is not none else "—" }}</div>
           <div class="stat-rotulo">Simulações de frete hoje</div>
         </div>
-        <div class="stat-cartao ao-vivo">
-          <div class="stat-numero">{{ fretes_simulados_agora if fretes_simulados_agora is not none else "—" }}</div>
-          <div class="stat-rotulo">Simulações (últimos 30 min)</div>
+        <div class="stat-cartao">
+          <div class="stat-numero">{{ resumo_ontem.visitas if resumo_ontem else "—" }}</div>
+          <div class="stat-rotulo">Visitas ontem</div>
+        </div>
+        <div class="stat-cartao">
+          <div class="stat-numero">{{ fretes_simulados_ontem if fretes_simulados_ontem is not none else "—" }}</div>
+          <div class="stat-rotulo">Simulações de frete ontem</div>
         </div>
       </div>
+      <p class="secao-nota" style="margin-top: 10px;">
+        Os cartões 🟢 são em tempo real. Os de <strong>hoje</strong> quase sempre mostram 0 (ou bem
+        menos que o real) o dia inteiro — não é bug: o relatório padrão do GA4 só fecha os dados do
+        dia atual no dia seguinte. Pra saber o que aconteceu de verdade recentemente, use os
+        cartões 🟢 (agora) ou os de <strong>ontem</strong> (dia já fechado, número confiável).
+      </p>
 
       <h2 class="secao-titulo">Funil de conversão (7 dias)</h2>
       <p class="secao-nota">De cada 100 visitas, quantas simularam frete, iniciaram um pedido e realmente compraram.</p>
@@ -318,9 +332,8 @@
       </div>
 
       <p class="secao-nota">
-        Os cartões 🟢 usam o relatório em tempo real do GA4 (reflete na hora). Os demais números
-        (hoje, 7 e 30 dias) usam o relatório padrão, que pode levar minutos a horas pra processar um
-        evento novo -- não é bug se um teste que você acabou de fazer não aparecer ali de imediato.
+        Os números de 7 e 30 dias usam o relatório padrão do GA4 -- já fechados, confiáveis. Sobre
+        os de <strong>hoje</strong>, veja a nota logo acima da seção "Agora, hoje e ontem".
       </p>
     {% endif %}
   </div>
