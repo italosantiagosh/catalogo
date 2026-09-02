@@ -33,10 +33,13 @@ def slugify(texto: str) -> str:
 
 
 def normalizar_busca(texto: str) -> str:
-    """minusculo sem acento, pra comparar nomes de forma tolerante a
-    acentuacao -- usado tanto no filtro client-side de /catalogo (via
-    equivalente em JS) quanto na busca ao vivo da home (/api/busca)."""
-    return unicodedata.normalize("NFKD", texto).encode("ascii", "ignore").decode("ascii").lower()
+    """minusculo sem acento nem apostrofo, pra comparar nomes de forma
+    tolerante a acentuacao -- usado tanto no filtro client-side de
+    /catalogo (via equivalente em JS) quanto na busca ao vivo da home
+    (/api/busca). Sem apostrofo pra "Santa Teresa d'Avila" ser encontrada
+    digitando "davila", sem precisar do "'" (ver conversa)."""
+    sem_acento = unicodedata.normalize("NFKD", texto).encode("ascii", "ignore").decode("ascii").lower()
+    return re.sub(r"['’`´]", "", sem_acento)
 
 
 def categorias_com_slug(produtos: list[dict]) -> list[dict]:

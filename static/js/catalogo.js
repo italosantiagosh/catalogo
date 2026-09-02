@@ -2,6 +2,7 @@ function normalizar(texto) {
   return texto
     .normalize('NFD')
     .replace(/[̀-ͯ]/g, '')
+    .replace(/['’`´]/g, '')
     .toLowerCase()
     .trim();
 }
