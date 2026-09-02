@@ -15,6 +15,7 @@
   const formatosFieldset = document.getElementById('sel-formatos');
   const tamanhosFieldset = document.getElementById('sel-tamanhos');
   const coresFieldset = document.getElementById('sel-cores');
+  const dropzoneImagem = document.getElementById('dropzone-imagem');
   const inputImagem = document.getElementById('input-imagem');
   const nomeArquivoDiv = document.getElementById('nome-arquivo');
   const qtdFormInput = document.getElementById('qtd-form');
@@ -126,6 +127,55 @@
     if (!customizerIniciado && inputImagem.files.length > 0) {
       customizerIniciado = true;
       rastrearEventoGA4('start_customizer', {});
+    }
+  });
+
+  // Arrastar o arquivo pra dropzone ou colar (Ctrl+V) uma imagem
+  // copiada -- so faz sentido no desktop (ver conversa), mas nao
+  // atrapalha em touch (esses eventos simplesmente nunca disparam la).
+  // Reaproveita o MESMO <input type="file"> via DataTransfer, pra nao
+  // duplicar nenhuma logica de validacao/preview -- so preenche
+  // inputImagem.files e dispara 'change' como se a pessoa tivesse
+  // escolhido o arquivo pelo seletor normal.
+  function definirArquivoNoInput(file) {
+    if (!file || !file.type.startsWith('image/')) return;
+    const dt = new DataTransfer();
+    dt.items.add(file);
+    inputImagem.files = dt.files;
+    inputImagem.dispatchEvent(new Event('change'));
+  }
+
+  if (dropzoneImagem) {
+    ['dragenter', 'dragover'].forEach((tipo) => {
+      dropzoneImagem.addEventListener(tipo, (evento) => {
+        evento.preventDefault();
+        dropzoneImagem.classList.add('dropzone-arrastando');
+      });
+    });
+    ['dragleave', 'dragend'].forEach((tipo) => {
+      dropzoneImagem.addEventListener(tipo, () => {
+        dropzoneImagem.classList.remove('dropzone-arrastando');
+      });
+    });
+    dropzoneImagem.addEventListener('drop', (evento) => {
+      evento.preventDefault();
+      dropzoneImagem.classList.remove('dropzone-arrastando');
+      const arquivo = evento.dataTransfer.files[0];
+      definirArquivoNoInput(arquivo);
+    });
+  }
+
+  document.addEventListener('paste', (evento) => {
+    // Nao intercepta colar se a view de upload nem esta visivel (ex:
+    // pessoa ja esta no editor de recorte ou na tela de preview).
+    if (viewUpload.hidden) return;
+    const itens = evento.clipboardData ? evento.clipboardData.items : null;
+    if (!itens) return;
+    for (const item of itens) {
+      if (item.type && item.type.startsWith('image/')) {
+        definirArquivoNoInput(item.getAsFile());
+        break;
+      }
     }
   });
 

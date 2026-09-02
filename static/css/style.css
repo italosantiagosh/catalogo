@@ -1793,6 +1793,24 @@ label.dropzone:active {
   border-color: var(--accent);
 }
 
+/* estado visual enquanto o arquivo esta sendo arrastado por cima (ver
+   static/js/personalizada.js) -- so faz sentido em ponteiro com mouse
+   de verdade, arrastar arquivo pro navegador nao existe em touch. */
+label.dropzone.dropzone-arrastando {
+  border-color: var(--accent);
+  background: var(--bg);
+}
+
+.dropzone-dica-desktop {
+  display: none;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .dropzone-dica-desktop {
+    display: block;
+  }
+}
+
 label.dropzone .icone {
   font-size: 2rem;
 }
