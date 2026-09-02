@@ -182,16 +182,23 @@ def test_personalizada_ignora_formato_invalido_na_query_string(client):
 
 def test_api_produto_modelos_devolve_imagens_por_formato(client):
     """Usado pelo "escolher um santo do catálogo" dentro do assistente
-    de entremeio de 2 lados (ver static/js/personalizada.js) -- mesmo
-    formato de dados ja usado em templates/produto.html:modelos-grid."""
+    de 2 lados (ver static/js/personalizada.js) -- mesmo formato de
+    dados ja usado em templates/produto.html:modelos-grid.
+    medalha_2lados_prata/ouro_velho tambem vem preenchidas pra sao-jose
+    (regenerado no gabarito novo, ver conversa 2026-09-02)."""
     resposta = client.get("/api/produto/sao-jose/modelos")
     assert resposta.status_code == 200
     dados = resposta.get_json()
     assert len(dados) >= 1
     modelo = dados[0]
     assert {"id", "nome", "imagens"} <= modelo.keys()
-    assert {"medalha", "entremeio_prata", "entremeio_ouro_velho", "chaveiro"} <= modelo["imagens"].keys()
+    chaves_esperadas = {
+        "medalha", "entremeio_prata", "entremeio_ouro_velho", "chaveiro",
+        "medalha_2lados_prata", "medalha_2lados_ouro_velho",
+    }
+    assert chaves_esperadas <= modelo["imagens"].keys()
     assert modelo["imagens"]["entremeio_prata"].startswith("/static/")
+    assert modelo["imagens"]["medalha_2lados_prata"].startswith("/static/")
 
 
 def test_api_produto_modelos_produto_inexistente_404(client):

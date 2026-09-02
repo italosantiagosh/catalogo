@@ -2694,12 +2694,20 @@ def api_produto_modelos(produto_id: str):
     """Modelos de um produto do catalogo, com a URL de cada imagem por
     formato (mesmo formato de dados ja usado em templates/produto.html:
     modelos-grid data-imagens) -- usado pelo "escolher um santo do
-    catálogo" dentro do assistente de entremeio de 2 lados (ver
-    static/js/personalizada.js), pra deixar o cliente escolher o
-    modelo especifico depois de achar o santo pela busca."""
+    catálogo" dentro do assistente de 2 lados (ver static/js/
+    personalizada.js), pra deixar o cliente escolher o modelo especifico
+    depois de achar o santo pela busca. "medalha_2lados_*" so existe nos
+    modelos que ja foram regenerados no gabarito novo (ver conversa
+    2026-09-02) -- .get() retorna None nos que ainda nao tem, e o
+    personalizada.js esconde da lista quem vier sem essas 2 chaves."""
     produto = buscar_produto(produto_id)
     if produto is None:
         abort(404)
+
+    def _url_opcional(modelo: dict, chave: str) -> str | None:
+        caminho = modelo.get(chave)
+        return url_for("static", filename=caminho) if caminho else None
+
     return jsonify(
         [
             {
@@ -2710,6 +2718,8 @@ def api_produto_modelos(produto_id: str):
                     "entremeio_prata": url_for("static", filename=modelo["imagem_entremeio_prata"]),
                     "entremeio_ouro_velho": url_for("static", filename=modelo["imagem_entremeio_ouro_velho"]),
                     "chaveiro": url_for("static", filename=modelo["imagem_chaveiro"]),
+                    "medalha_2lados_prata": _url_opcional(modelo, "imagem_medalha_2lados_prata"),
+                    "medalha_2lados_ouro_velho": _url_opcional(modelo, "imagem_medalha_2lados_ouro_velho"),
                 },
             }
             for modelo in produto["modelos"]

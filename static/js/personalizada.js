@@ -165,12 +165,15 @@
     // lados isso e´ depois dos dois lados prontos (view-preview-duas-faces),
     // nao aqui em cada lado.
     if (quantidadeUploadDiv) quantidadeUploadDiv.hidden = duasFacesAtual();
-    // "escolher do catalogo" so faz sentido pro entremeio de 2 lados
-    // (mesma base do entremeio de 1 lado, com foto pronta pra cada
-    // santo/modelo) -- medalha_2lados e´ um aro novo, sem foto composta
-    // ainda pra nenhum santo do catalogo (ver conversa).
+    // "escolher do catalogo" -- entremeio_2lados reaproveita a mesma
+    // foto composta do entremeio de 1 lado; medalha_2lados tem seu
+    // proprio gabarito novo, com todos os santos do catalogo ja
+    // regenerados nele (ver conversa 2026-09-02) -- so os santos
+    // adicionados DEPOIS dessa regeneracao (nenhum, hoje) ficariam sem
+    // essa opcao, por isso renderizarModelosCatalogo filtra quem nao
+    // tiver a imagem.
     if (escolherCatalogoDiv) {
-      escolherCatalogoDiv.hidden = formato !== 'entremeio_2lados';
+      escolherCatalogoDiv.hidden = formato !== 'entremeio_2lados' && formato !== 'medalha_2lados';
       resetarEscolherCatalogo();
     }
     resetarFluxoDuasFaces();
@@ -216,11 +219,10 @@
     }
   });
 
-  // ---- escolher um santo do catalogo (so entremeio_2lados -- ver
-  // atualizarSubSelecao acima). Pula upload+recorte: a foto do
-  // modelo escolhido ja e´ um render pronto (mesma base do entremeio
-  // de 1 lado, ver services/gerador/config.py), so avanca o lado
-  // direto com ela. ----
+  // ---- escolher um santo do catalogo (entremeio_2lados e medalha_2lados
+  // -- ver atualizarSubSelecao acima). Pula upload+recorte: a foto do
+  // modelo escolhido ja e´ um render pronto (ver services/gerador/
+  // config.py), so avanca o lado direto com ela. ----
 
   const buscaCatalogoInput = document.getElementById('busca-personalizada');
   const buscaCatalogoResultados = document.getElementById('busca-personalizada-resultados');
@@ -242,14 +244,26 @@
     escolherCatalogoBuscaWrap.hidden = false;
   }
 
-  function chaveImagemEntremeioAtual() {
-    return corAtual() === 'ouro_velho' ? 'entremeio_ouro_velho' : 'entremeio_prata';
+  function chaveImagemCatalogoAtual() {
+    const ouroVelho = corAtual() === 'ouro_velho';
+    if (formatoAtual() === 'medalha_2lados') {
+      return ouroVelho ? 'medalha_2lados_ouro_velho' : 'medalha_2lados_prata';
+    }
+    return ouroVelho ? 'entremeio_ouro_velho' : 'entremeio_prata';
   }
 
   function renderizarModelosCatalogo(santo, modelos) {
-    const chave = chaveImagemEntremeioAtual();
+    const chave = chaveImagemCatalogoAtual();
     modelosGridCatalogo.innerHTML = '';
-    modelos.forEach((modelo) => {
+    // medalha_2lados: nem todo modelo do catalogo tem imagem nesse
+    // gabarito ainda (ver conversa) -- filtra em vez de mostrar link
+    // quebrado.
+    const disponiveis = modelos.filter((modelo) => modelo.imagens[chave]);
+    if (disponiveis.length === 0) {
+      modelosGridCatalogo.innerHTML = '<p class="busca-resultados-vazio">Nenhum modelo disponível nesse formato ainda.</p>';
+      return;
+    }
+    disponiveis.forEach((modelo) => {
       const url = modelo.imagens[chave];
       const botao = document.createElement('button');
       botao.type = 'button';
