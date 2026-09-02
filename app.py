@@ -68,6 +68,7 @@ from config import (
     CANCELAMENTO_MINUTOS_APOS_LEMBRETE,
     CANONICAL_DOMAIN,
     CATEGORIA_PERSONALIZADOS,
+    COMBOS_2LADOS_PRONTOS,
     DESCRICOES_CATEGORIA,
     DESCRICOES_FORMATO,
     DESTAQUES_HOME,
@@ -770,6 +771,25 @@ def _itens_personalizados_do_grid() -> list[dict]:
     ]
 
 
+def _itens_combos_do_grid() -> list[dict]:
+    """Combos "medalha de 2 lados" prontos (config.py:COMBOS_2LADOS_PRONTOS)
+    no card da home (ver DESTAQUES_HOME "novidades") -- mesmo padrao de
+    "personalizada_url" que _itens_personalizados_do_grid, so que aqui o
+    link manda pra /personalizada com os 2 lados JA escolhidos
+    (?combo=<id>, ver personalizada() abaixo e static/js/personalizada.js:
+    tentarAutoPreencherCombo)."""
+    return [
+        {
+            "id": c["id"],
+            "nome": c["nome"],
+            "thumbnail": c["thumbnail"],
+            "thumbnail_chaveiro": c["thumbnail"],
+            "personalizada_url": url_for("personalizada", formato="medalha_2lados", combo=c["id"]),
+        }
+        for c in COMBOS_2LADOS_PRONTOS
+    ]
+
+
 @app.route("/", methods=["GET"])
 def index():
     """Home -- landing page comercial (hero, vantagens, destaques, banners),
@@ -780,6 +800,11 @@ def index():
     produtos = carregar_produtos()
     itens = _itens_do_grid(produtos)
     itens_por_id = {item["id"]: item for item in itens}
+    # combos "medalha de 2 lados" prontos (ver DESTAQUES_HOME "novidades")
+    # entram no mesmo dict pra _montar_destaques resolver os ids deles
+    # igual aos santos normais -- nao aparecem em mais nenhum outro lugar
+    # (catalogo/busca), so nesse destaque da home.
+    itens_por_id.update({item["id"]: item for item in _itens_combos_do_grid()})
     destaques = _montar_destaques(produtos, itens_por_id)
     # A home intercala esses 3 grupos com outras secoes (historia,
     # banner de preco automatico -- ver templates/index.html), entao
@@ -2664,14 +2689,45 @@ _FORMATOS_PERSONALIZADA_VALIDOS = {
 }
 
 
+def _combo_2lados_para_js(combo_id: str) -> dict | None:
+    """Resolve um combo de config.py:COMBOS_2LADOS_PRONTOS pro formato que
+    static/js/personalizada.js:tentarAutoPreencherCombo espera -- inclui
+    produto_nome/modelo_nome ja resolvidos aqui (o JS so precisa buscar a
+    URL da imagem por /api/produto/<id>/modelos, nao o nome). Combo com id
+    desconhecido, ou lado apontando pra produto/modelo que nao existe mais
+    no catalogo, retorna None (personalizada abre normal, sem pre-preencher)."""
+    combo = next((c for c in COMBOS_2LADOS_PRONTOS if c["id"] == combo_id), None)
+    if combo is None:
+        return None
+    lados = {}
+    for chave in ("lado1", "lado2"):
+        produto = buscar_produto(combo[chave]["produto_id"])
+        modelo = next((m for m in produto["modelos"] if m["id"] == combo[chave]["modelo_id"]), None) if produto else None
+        if produto is None or modelo is None:
+            return None
+        lados[chave] = {
+            "produto_id": produto["id"],
+            "produto_nome": produto["nome"],
+            "modelo_id": modelo["id"],
+            "modelo_nome": modelo["nome"],
+        }
+    return lados
+
+
 @app.route("/personalizada", methods=["GET"])
 def personalizada():
     """`?formato=` (opcional) vem dos cards "produto" da personalizada no
     catalogo/busca (ver _itens_personalizados_do_grid) -- pre-seleciona o
-    formato certo em vez de sempre abrir em "Medalha"."""
+    formato certo em vez de sempre abrir em "Medalha". `?combo=` (opcional,
+    ver _itens_combos_do_grid/COMBOS_2LADOS_PRONTOS) pre-preenche os 2
+    lados de uma dupla ja pronta -- forca formato_inicial pra
+    medalha_2lados quando um combo valido vem sem `?formato=` explicito."""
+    combo_id = request.args.get("combo", "")
+    combo_2lados = _combo_2lados_para_js(combo_id) if combo_id else None
+
     formato_inicial = request.args.get("formato", "")
     if formato_inicial not in _FORMATOS_PERSONALIZADA_VALIDOS:
-        formato_inicial = "medalha"
+        formato_inicial = "medalha_2lados" if combo_2lados else "medalha"
     dados_breadcrumb = _dados_breadcrumb(
         [
             ("Catálogo", url_for("index", _external=True)),
@@ -2681,6 +2737,7 @@ def personalizada():
     return render_template(
         "personalizada.html",
         formato_inicial=formato_inicial,
+        combo_2lados=combo_2lados,
         preco_varejo=preco_varejo(),
         preco_varejo_chaveiro=preco_varejo("chaveiro"),
         preco_varejo_2lados=preco_varejo("medalha_2lados"),

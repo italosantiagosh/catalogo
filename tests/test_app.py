@@ -180,6 +180,31 @@ def test_personalizada_ignora_formato_invalido_na_query_string(client):
     assert resposta.status_code == 200
 
 
+def test_destaque_novidades_mostra_combos_2lados_prontos(client):
+    """Ver conversa 2026-09-02: cards de combo "medalha de 2 lados" pronta
+    (config.py:COMBOS_2LADOS_PRONTOS) tem que aparecer no destaque
+    "Novidades" da home, ao lado dos santos normais."""
+    resposta = client.get("/").get_data(as_text=True)
+    assert "Santa Teresinha &amp; Sagrada Face" in resposta or "Santa Teresinha & Sagrada Face" in resposta
+    assert 'href="/personalizada?formato=medalha_2lados&amp;combo=combo-teresinha-sagrada-face"' in resposta
+    assert "img/combo-faustina-misericordioso.jpg" in resposta
+
+
+def test_personalizada_combo_valido_preenche_formato_e_window_combo(client):
+    resposta = client.get("/personalizada?combo=combo-teresinha-sagrada-face").get_data(as_text=True)
+    assert 'window.FORMATO_INICIAL = "medalha_2lados"' in resposta
+    assert "window.COMBO_2LADOS" in resposta
+    assert "santa-teresinha" in resposta
+    assert "sagrada-face-de-jesus" in resposta
+    assert "Santa Teresinha" in resposta
+
+
+def test_personalizada_combo_invalido_nao_quebra_pagina(client):
+    resposta = client.get("/personalizada?combo=nao-existe")
+    assert resposta.status_code == 200
+    assert "window.COMBO_2LADOS = null" in resposta.get_data(as_text=True)
+
+
 def test_api_produto_modelos_devolve_imagens_por_formato(client):
     """Usado pelo "escolher um santo do catálogo" dentro do assistente
     de 2 lados (ver static/js/personalizada.js) -- mesmo formato de

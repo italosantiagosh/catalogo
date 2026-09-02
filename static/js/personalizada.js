@@ -210,12 +210,16 @@
     if (evento.target.name === 'formato') atualizarSubSelecao();
   });
   tamanhosFieldset.addEventListener('change', (evento) => {
-    if (evento.target.name === 'tamanho') atualizarBotoesUpload();
+    if (evento.target.name === 'tamanho') {
+      atualizarBotoesUpload();
+      tentarAutoPreencherCombo();
+    }
   });
   coresFieldset.addEventListener('change', (evento) => {
     if (evento.target.name === 'cor') {
       atualizarBotoesUpload();
       rerenderizarModelosCatalogoSeNecessario();
+      tentarAutoPreencherCombo();
     }
   });
 
@@ -302,6 +306,52 @@
       renderizarModelosCatalogo(item, modelos);
     } catch (err) {
       modelosGridCatalogo.innerHTML = '<p class="busca-resultados-vazio">Não foi possível carregar os modelos agora.</p>';
+    }
+  }
+
+  // ---- combo "medalha de 2 lados" pronto (window.COMBO_2LADOS, ver
+  // config.py:COMBOS_2LADOS_PRONTOS e app.py:personalizada -- card de
+  // novidade da home que ja vem com os 2 lados escolhidos). Assim que a
+  // sub-selecao fica completa (tamanho + cor, ver subSelecaoCompleta),
+  // busca a imagem de cada lado no gabarito/cor certos e pula direto pra
+  // tela final combinada -- sem precisar buscar/clicar nada. Reaproveita
+  // a MESMA API que a busca manual usa (/api/produto/<id>/modelos), so
+  // que preenchendo resultadoLado1/2 direto em vez de passar por
+  // avancarLado()/prepararProximoLado() (que existem pra transicao de
+  // TELA entre os 2 lados, desnecessaria aqui). ----
+  let comboEmAndamento = false;
+
+  async function buscarImagemModeloCatalogo(produtoId, modeloId) {
+    const resp = await fetch(`/api/produto/${encodeURIComponent(produtoId)}/modelos`);
+    if (!resp.ok) return null;
+    const modelos = await resp.json();
+    const modelo = modelos.find((m) => m.id === modeloId);
+    return modelo ? modelo.imagens[chaveImagemCatalogoAtual()] : null;
+  }
+
+  async function tentarAutoPreencherCombo() {
+    const combo = window.COMBO_2LADOS;
+    if (!combo || !duasFacesAtual() || !subSelecaoCompleta() || comboEmAndamento) return;
+    comboEmAndamento = true;
+    try {
+      const [url1, url2] = await Promise.all([
+        buscarImagemModeloCatalogo(combo.lado1.produto_id, combo.lado1.modelo_id),
+        buscarImagemModeloCatalogo(combo.lado2.produto_id, combo.lado2.modelo_id),
+      ]);
+      if (!url1 || !url2) return; // gabarito/cor sem imagem pronta -- deixa o fluxo normal (busca manual)
+      resultadoLado1 = {
+        origem: 'catalogo', imagem: url1,
+        produtoId: combo.lado1.produto_id, produtoNome: combo.lado1.produto_nome,
+        modeloId: combo.lado1.modelo_id, modeloNome: combo.lado1.modelo_nome,
+      };
+      resultadoLado2 = {
+        origem: 'catalogo', imagem: url2,
+        produtoId: combo.lado2.produto_id, produtoNome: combo.lado2.produto_nome,
+        modeloId: combo.lado2.modelo_id, modeloNome: combo.lado2.modelo_nome,
+      };
+      mostrarPreviewDuasFaces();
+    } finally {
+      comboEmAndamento = false;
     }
   }
 

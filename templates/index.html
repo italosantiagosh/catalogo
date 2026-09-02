@@ -7,7 +7,7 @@
         <h2 class="destaques-titulo">{{ grupo.titulo }}</h2>
         <div class="destaques-linha">
           {% for produto in grupo.produtos %}
-            <a class="destaque-card" href="{{ url_for('produto', produto_id=produto.id) }}">
+            <a class="destaque-card" href="{{ produto.personalizada_url or url_for('produto', produto_id=produto.id) }}">
               <img src="{{ url_for('static', filename=produto.thumbnail) }}" alt="{{ produto.nome }}" loading="lazy" decoding="async" width="480" height="480">
               <span>{{ produto.nome }}</span>
             </a>

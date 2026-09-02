@@ -342,6 +342,34 @@ PRODUTOS_PERSONALIZADOS = [
 ]
 CATEGORIA_PERSONALIZADOS = "Personalizada"
 
+# Combos "medalha de 2 lados" PRONTOS (pedido 2026-09-02: cards de
+# novidade com uma dupla de santos ja escolhida, pra quem quer uma
+# combinacao classica sem precisar buscar/escolher os 2 lados sozinho).
+# Cada card manda pra /personalizada com o formato e os 2 lados
+# pre-preenchidos (ver app.py:personalizada, static/js/personalizada.js:
+# tentarAutoPreencherCombo) -- assim que a pessoa escolhe cor, a previa
+# dos 2 lados ja aparece pronta, so falta tamanho/quantidade e adicionar
+# ao carrinho. "thumbnail" e´ um recorte dos 2 mockups (cor prata) lado a
+# lado, gerado a partir das imagens ja compostas do catalogo (mesma
+# tecnica dos cards de Personalizada, ver app.py:_THUMBNAIL_PERSONALIZADOS
+# -- so que aqui com santos de verdade nos 2 lados em vez do placeholder).
+COMBOS_2LADOS_PRONTOS = [
+    {
+        "id": "combo-teresinha-sagrada-face",
+        "nome": "Santa Teresinha & Sagrada Face — Medalha 2 Lados",
+        "thumbnail": "img/combo-teresinha-sagrada-face.jpg",
+        "lado1": {"produto_id": "santa-teresinha", "modelo_id": 3},
+        "lado2": {"produto_id": "sagrada-face-de-jesus", "modelo_id": 1},
+    },
+    {
+        "id": "combo-faustina-misericordioso",
+        "nome": "Santa Faustina & Jesus Misericordioso — Medalha 2 Lados",
+        "thumbnail": "img/combo-faustina-misericordioso.jpg",
+        "lado1": {"produto_id": "santa-faustina", "modelo_id": 1},
+        "lado2": {"produto_id": "jesus-misericordioso", "modelo_id": 1},
+    },
+]
+
 # Destaques da home (ver app.py:_montar_destaques, templates/index.html)
 # -- reduz a paralisia de escolha de quem chega e ve os 130+ santos
 # todos "iguais". IDs conferidos contra data/produtos.json; um id que
@@ -365,7 +393,16 @@ DESTAQUES_HOME = [
     {
         "chave": "novidades",
         "titulo": "✨ Novidades",
-        "produtos": ["sao-pier-giorgio-frassati", "beata-sandra-sabatine", "filho-prodigo-acamps"],
+        # combo-* sao os COMBOS_2LADOS_PRONTOS acima (ver
+        # app.py:_montar_destaques, que mescla os 2 catalogos de id antes
+        # de resolver essa lista).
+        "produtos": [
+            "sao-pier-giorgio-frassati",
+            "beata-sandra-sabatine",
+            "filho-prodigo-acamps",
+            "combo-teresinha-sagrada-face",
+            "combo-faustina-misericordioso",
+        ],
     },
 ]
 
