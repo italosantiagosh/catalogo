@@ -28,6 +28,26 @@ def test_gerar_pdf_catalogo_tem_uma_pagina_por_categoria_no_minimo(monkeypatch):
     assert paginas >= 4  # orientacoes + precos + kit + pelo menos 1 de catalogo
 
 
+def test_paginas_precos_inclui_tabela_e_imagem_de_2lados():
+    """Ver conversa: faltava a tabela de atacado de 2 lados no PDF --
+    tabela propria (mesmos precos de medalha_2lados/entremeio_2lados) +
+    a imagem ilustrativa do combo Teresinha/Sagrada Face logo abaixo,
+    sem grade de fotos por santo (essa base ainda nao tem todo o
+    catalogo com foto propria no PDF). Cabecalho+tabela+imagem viajam
+    num KeepTogether (ver _bloco_precos_2lados) -- por isso o teste olha
+    tambem dentro de ._content, nao so na lista plana."""
+    from reportlab.platypus import Image as RLImage, KeepTogether
+
+    estilos = catalogo_pdf._estilos()
+    elementos = catalogo_pdf._paginas_precos(estilos)
+    achatados = []
+    for e in elementos:
+        achatados += e._content if isinstance(e, KeepTogether) else [e]
+    textos = [e.text for e in achatados if hasattr(e, "text")]
+    assert any("2 lados" in t for t in textos)
+    assert any(isinstance(e, RLImage) for e in achatados)
+
+
 def test_itens_kit_bate_com_a_configuracao(monkeypatch):
     from config import KIT_LIVRARIA_SHALOM
     from services.catalogo import carregar_produtos

@@ -25,6 +25,7 @@ from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
 from reportlab.lib.units import cm
 from reportlab.platypus import (
     Image as RLImage,
+    KeepTogether,
     PageBreak,
     Paragraph,
     SimpleDocTemplate,
@@ -56,7 +57,7 @@ LADO_FOTO_PX = 180
 QUALIDADE_JPEG = 72
 
 _cache_pdf: bytes | None = None
-_cache_fotos: dict[str, io.BytesIO] = {}
+_cache_fotos: dict[tuple[str, int], io.BytesIO] = {}
 
 
 def _estilos() -> dict:
@@ -117,9 +118,9 @@ def _paragrafo_orientacoes(estilos: dict) -> list:
         Paragraph("Desconto progressivo", estilos["secao"]),
         Paragraph(
             "Medalhas (12mm/16mm) e entremeios somam juntos para a faixa de desconto — pode "
-            "misturar livremente santos, tamanhos e cores no mesmo pedido. Chaveiros têm "
-            "tabela de atacado própria, contada separadamente. Veja as faixas completas na "
-            "próxima página.",
+            "misturar livremente santos, tamanhos e cores no mesmo pedido. Chaveiros, e "
+            "medalhas/entremeios de 2 lados, têm cada um sua própria tabela de atacado, "
+            "contada separadamente. Veja as faixas completas na próxima página.",
             estilos["corpo"],
         ),
         Paragraph("Medalha personalizada", estilos["secao"]),
@@ -153,9 +154,38 @@ def _tabela_faixas(tabela: dict, estilos: dict) -> Table:
     return tabela_pdf
 
 
+# Imagem ilustrativa da tabela de 2 lados (ver conversa: "não precisa da
+# foto de cada santo na base de 2 lados, só add a tabela de atacado, e
+# embaixo da tabela, essa imagem de teresinha com a sagrada face, basta
+# ela") -- so essa, nao a grade completa com todos os santos regenerados
+# no gabarito novo (config.py:COMBOS_2LADOS_PRONTOS).
+IMAGEM_ILUSTRATIVA_2LADOS = "img/combo-teresinha-sagrada-face.jpg"
+LADO_FOTO_2LADOS = 6 * cm
+LADO_FOTO_2LADOS_PX = 500
+
+
+def _bloco_precos_2lados(precos: dict, estilos: dict) -> list:
+    """Cabecalho + tabela + imagem ilustrativa das 2 lados -- agrupado num
+    KeepTogether pra reportlab jogar o bloco inteiro pra proxima pagina
+    em vez de partir a tabela ou separar a imagem dela quando nao cabe
+    mais no que sobrou da pagina (ver conversa: split feio testado sem
+    isso -- tabela cortada no meio, imagem numa pagina 3 quase vazia)."""
+    bloco = [
+        Paragraph("Medalhas e entremeios de 2 lados — tabela própria", estilos["categoria"]),
+        _tabela_faixas(precos["medalha_2lados"], estilos),
+    ]
+    buffer = _foto_reduzida(IMAGEM_ILUSTRATIVA_2LADOS, LADO_FOTO_2LADOS_PX)
+    if buffer is not None:
+        bloco += [
+            Spacer(1, 0.4 * cm),
+            RLImage(buffer, width=LADO_FOTO_2LADOS, height=LADO_FOTO_2LADOS, hAlign="CENTER"),
+        ]
+    return [KeepTogether(bloco)]
+
+
 def _paginas_precos(estilos: dict) -> list:
     precos = carregar_precos()
-    return [
+    elementos = [
         Paragraph("Tabela de preços de atacado", estilos["titulo"]),
         Paragraph(
             "Medalhas (12mm/16mm) e entremeios — mesma tabela, faixas somadas juntas",
@@ -165,8 +195,11 @@ def _paginas_precos(estilos: dict) -> list:
         Spacer(1, 0.7 * cm),
         Paragraph("Chaveiros — tabela própria", estilos["categoria"]),
         _tabela_faixas(precos["chaveiro"], estilos),
-        PageBreak(),
+        Spacer(1, 0.7 * cm),
     ]
+    elementos += _bloco_precos_2lados(precos, estilos)
+    elementos.append(PageBreak())
+    return elementos
 
 
 # Cada modelo de um produto tem ate 4 fotos -- uma por formato/cor (ver
@@ -183,25 +216,28 @@ FORMATOS_MODELO = [
 ]
 
 
-def _foto_reduzida(caminho_relativo: str) -> io.BytesIO | None:
+def _foto_reduzida(caminho_relativo: str, tamanho_px: int = LADO_FOTO_PX) -> io.BytesIO | None:
     """Reabre a foto original, redimensiona pro tamanho de exibicao no
-    PDF e reencoda em JPEG -- cacheada por caminho pra nao reprocessar a
-    mesma foto 2x (medalha e chaveiro de modelos diferentes podem
-    reaproveitar a mesma imagem base em alguns produtos)."""
-    if caminho_relativo in _cache_fotos:
-        _cache_fotos[caminho_relativo].seek(0)
-        return _cache_fotos[caminho_relativo]
+    PDF e reencoda em JPEG -- cacheada por (caminho, tamanho_px) pra nao
+    reprocessar a mesma foto 2x (medalha e chaveiro de modelos diferentes
+    podem reaproveitar a mesma imagem base em alguns produtos) nem
+    misturar com a imagem ilustrativa de 2 lados, que usa um tamanho
+    maior (ver IMAGEM_ILUSTRATIVA_2LADOS)."""
+    chave_cache = (caminho_relativo, tamanho_px)
+    if chave_cache in _cache_fotos:
+        _cache_fotos[chave_cache].seek(0)
+        return _cache_fotos[chave_cache]
     caminho = STATIC_DIR / caminho_relativo
     try:
         with PilImage.open(caminho) as imagem:
             imagem = imagem.convert("RGB")
-            imagem.thumbnail((LADO_FOTO_PX, LADO_FOTO_PX), PilImage.LANCZOS)
+            imagem.thumbnail((tamanho_px, tamanho_px), PilImage.LANCZOS)
             buffer = io.BytesIO()
             imagem.save(buffer, format="JPEG", quality=QUALIDADE_JPEG)
     except Exception:
         return None
     buffer.seek(0)
-    _cache_fotos[caminho_relativo] = buffer
+    _cache_fotos[chave_cache] = buffer
     return buffer
 
 
