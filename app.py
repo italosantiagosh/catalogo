@@ -1175,6 +1175,13 @@ def _itens_com_descricao_do_corpo(dados: dict) -> list[dict]:
         imagem_recorte_lado1 = str(lado1.get("imagemRecorte", "") or "")
         imagem_lado2 = str(lado2.get("imagem", ""))
         imagem_recorte_lado2 = str(lado2.get("imagemRecorte", "") or "")
+        # so preenchido quando o lado veio de "escolher do catalogo" (ver
+        # static/js/personalizada.js:selecionarSantoDoCatalogo) -- upload
+        # e "sem foto" nao tem produto/modelo, ficam vazios.
+        produto_nome_lado1 = str(lado1.get("produtoNome", "")).strip()
+        modelo_nome_lado1 = str(lado1.get("modeloNome", "")).strip()
+        produto_nome_lado2 = str(lado2.get("produtoNome", "")).strip()
+        modelo_nome_lado2 = str(lado2.get("modeloNome", "")).strip()
 
         imagem = imagem_lado1 if duas_faces else str(item.get("imagem", ""))
         imagem_recorte = imagem_recorte_lado1 if duas_faces else str(item.get("imagemRecorte", "") or "")
@@ -1217,6 +1224,10 @@ def _itens_com_descricao_do_corpo(dados: dict) -> list[dict]:
                 "imagemRecorteLado1": imagem_recorte_lado1,
                 "imagemLado2": imagem_lado2,
                 "imagemRecorteLado2": imagem_recorte_lado2,
+                "produtoNomeLado1": produto_nome_lado1,
+                "modeloNomeLado1": modelo_nome_lado1,
+                "produtoNomeLado2": produto_nome_lado2,
+                "modeloNomeLado2": modelo_nome_lado2,
             }
         )
     return itens_validos
@@ -2676,6 +2687,34 @@ def personalizada():
         preco_varejo_2lados=preco_varejo("medalha_2lados"),
         dados_faq=_dados_faq(_FAQ_PERSONALIZADA),
         dados_breadcrumb=dados_breadcrumb,
+    )
+
+
+@app.route("/api/produto/<produto_id>/modelos", methods=["GET"])
+def api_produto_modelos(produto_id: str):
+    """Modelos de um produto do catalogo, com a URL de cada imagem por
+    formato (mesmo formato de dados ja usado em templates/produto.html:
+    modelos-grid data-imagens) -- usado pelo "escolher um santo do
+    catálogo" dentro do assistente de entremeio de 2 lados (ver
+    static/js/personalizada.js), pra deixar o cliente escolher o
+    modelo especifico depois de achar o santo pela busca."""
+    produto = buscar_produto(produto_id)
+    if produto is None:
+        abort(404)
+    return jsonify(
+        [
+            {
+                "id": modelo["id"],
+                "nome": modelo["nome"],
+                "imagens": {
+                    "medalha": url_for("static", filename=modelo["imagem"]),
+                    "entremeio_prata": url_for("static", filename=modelo["imagem_entremeio_prata"]),
+                    "entremeio_ouro_velho": url_for("static", filename=modelo["imagem_entremeio_ouro_velho"]),
+                    "chaveiro": url_for("static", filename=modelo["imagem_chaveiro"]),
+                },
+            }
+            for modelo in produto["modelos"]
+        ]
     )
 
 

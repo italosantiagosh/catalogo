@@ -180,6 +180,25 @@ def test_personalizada_ignora_formato_invalido_na_query_string(client):
     assert resposta.status_code == 200
 
 
+def test_api_produto_modelos_devolve_imagens_por_formato(client):
+    """Usado pelo "escolher um santo do catálogo" dentro do assistente
+    de entremeio de 2 lados (ver static/js/personalizada.js) -- mesmo
+    formato de dados ja usado em templates/produto.html:modelos-grid."""
+    resposta = client.get("/api/produto/sao-jose/modelos")
+    assert resposta.status_code == 200
+    dados = resposta.get_json()
+    assert len(dados) >= 1
+    modelo = dados[0]
+    assert {"id", "nome", "imagens"} <= modelo.keys()
+    assert {"medalha", "entremeio_prata", "entremeio_ouro_velho", "chaveiro"} <= modelo["imagens"].keys()
+    assert modelo["imagens"]["entremeio_prata"].startswith("/static/")
+
+
+def test_api_produto_modelos_produto_inexistente_404(client):
+    resposta = client.get("/api/produto/nao-existe/modelos")
+    assert resposta.status_code == 404
+
+
 def test_kit_livraria_shalom_lista_todos_os_itens_configurados(client):
     from config import KIT_LIVRARIA_SHALOM
 

@@ -26,6 +26,7 @@
   const botaoEnviar = document.getElementById('botao-enviar');
   const btnSemFoto = document.getElementById('btn-sem-foto');
   const indicadorLado = document.getElementById('indicador-lado');
+  const escolherCatalogoDiv = document.getElementById('escolher-catalogo');
 
   if (!viewUpload) return;
 
@@ -164,6 +165,14 @@
     // lados isso e´ depois dos dois lados prontos (view-preview-duas-faces),
     // nao aqui em cada lado.
     if (quantidadeUploadDiv) quantidadeUploadDiv.hidden = duasFacesAtual();
+    // "escolher do catalogo" so faz sentido pro entremeio de 2 lados
+    // (mesma base do entremeio de 1 lado, com foto pronta pra cada
+    // santo/modelo) -- medalha_2lados e´ um aro novo, sem foto composta
+    // ainda pra nenhum santo do catalogo (ver conversa).
+    if (escolherCatalogoDiv) {
+      escolherCatalogoDiv.hidden = formato !== 'entremeio_2lados';
+      resetarEscolherCatalogo();
+    }
     resetarFluxoDuasFaces();
     atualizarAvisoPreco();
     atualizarBotoesUpload();
@@ -201,8 +210,144 @@
     if (evento.target.name === 'tamanho') atualizarBotoesUpload();
   });
   coresFieldset.addEventListener('change', (evento) => {
-    if (evento.target.name === 'cor') atualizarBotoesUpload();
+    if (evento.target.name === 'cor') {
+      atualizarBotoesUpload();
+      rerenderizarModelosCatalogoSeNecessario();
+    }
   });
+
+  // ---- escolher um santo do catalogo (so entremeio_2lados -- ver
+  // atualizarSubSelecao acima). Pula upload+recorte: a foto do
+  // modelo escolhido ja e´ um render pronto (mesma base do entremeio
+  // de 1 lado, ver services/gerador/config.py), so avanca o lado
+  // direto com ela. ----
+
+  const buscaCatalogoInput = document.getElementById('busca-personalizada');
+  const buscaCatalogoResultados = document.getElementById('busca-personalizada-resultados');
+  const escolherCatalogoBuscaWrap = document.getElementById('escolher-catalogo-busca-wrap');
+  const escolherCatalogoModelosDiv = document.getElementById('escolher-catalogo-modelos');
+  const escolherCatalogoSantoNome = document.getElementById('escolher-catalogo-santo-nome');
+  const modelosGridCatalogo = document.getElementById('modelos-grid-catalogo');
+  const escolherCatalogoTrocarBtn = document.getElementById('escolher-catalogo-trocar');
+
+  let santoEModelosSelecionados = null; // { santo, modelos } -- pra re-renderizar se a cor mudar depois
+
+  function resetarEscolherCatalogo() {
+    if (!buscaCatalogoInput) return;
+    santoEModelosSelecionados = null;
+    buscaCatalogoInput.value = '';
+    buscaCatalogoResultados.hidden = true;
+    buscaCatalogoResultados.innerHTML = '';
+    escolherCatalogoModelosDiv.hidden = true;
+    escolherCatalogoBuscaWrap.hidden = false;
+  }
+
+  function chaveImagemEntremeioAtual() {
+    return corAtual() === 'ouro_velho' ? 'entremeio_ouro_velho' : 'entremeio_prata';
+  }
+
+  function renderizarModelosCatalogo(santo, modelos) {
+    const chave = chaveImagemEntremeioAtual();
+    modelosGridCatalogo.innerHTML = '';
+    modelos.forEach((modelo) => {
+      const url = modelo.imagens[chave];
+      const botao = document.createElement('button');
+      botao.type = 'button';
+      botao.className = 'modelo-card';
+      botao.innerHTML = `<img src="${url}" alt="${santo.nome} — ${modelo.nome}" loading="lazy"><span>${modelo.nome}</span>`;
+      botao.addEventListener('click', () => {
+        avancarLado({
+          origem: 'catalogo',
+          imagem: url,
+          produtoId: santo.id,
+          produtoNome: santo.nome,
+          modeloId: modelo.id,
+          modeloNome: modelo.nome,
+        });
+      });
+      modelosGridCatalogo.appendChild(botao);
+    });
+  }
+
+  function rerenderizarModelosCatalogoSeNecessario() {
+    if (!santoEModelosSelecionados || escolherCatalogoModelosDiv.hidden) return;
+    renderizarModelosCatalogo(santoEModelosSelecionados.santo, santoEModelosSelecionados.modelos);
+  }
+
+  async function selecionarSantoDoCatalogo(item) {
+    buscaCatalogoResultados.hidden = true;
+    escolherCatalogoSantoNome.textContent = item.nome;
+    modelosGridCatalogo.innerHTML = '<p class="busca-resultados-vazio">Carregando modelos…</p>';
+    escolherCatalogoModelosDiv.hidden = false;
+    escolherCatalogoBuscaWrap.hidden = true;
+    try {
+      const resp = await fetch(`/api/produto/${encodeURIComponent(item.id)}/modelos`);
+      if (!resp.ok) throw new Error('nao encontrado');
+      const modelos = await resp.json();
+      santoEModelosSelecionados = { santo: item, modelos };
+      renderizarModelosCatalogo(item, modelos);
+    } catch (err) {
+      modelosGridCatalogo.innerHTML = '<p class="busca-resultados-vazio">Não foi possível carregar os modelos agora.</p>';
+    }
+  }
+
+  if (buscaCatalogoInput) {
+    let buscaCatalogoTimer = null;
+    let buscaCatalogoReq = 0;
+
+    function renderizarResultadosBuscaCatalogo(itens) {
+      // so produtos de verdade tem modelos -- os cards "personalizada"
+      // (config.py:PRODUTOS_PERSONALIZADOS) tambem aparecem em
+      // /api/busca, mas nao servem aqui.
+      const encontrados = itens.filter((item) => !item.id.startsWith('personalizada-'));
+      if (encontrados.length === 0) {
+        buscaCatalogoResultados.innerHTML = '<p class="busca-resultados-vazio">Nenhum santo encontrado com esse nome.</p>';
+        buscaCatalogoResultados.hidden = false;
+        return;
+      }
+      buscaCatalogoResultados.innerHTML = '';
+      encontrados.forEach((item) => {
+        const botao = document.createElement('button');
+        botao.type = 'button';
+        botao.className = 'busca-resultado-item';
+        botao.style.cssText = 'width:100%;border:none;background:none;cursor:pointer;text-align:left;';
+        botao.innerHTML = `<img src="${item.thumbnail}" alt="" loading="lazy"><span>${item.nome}</span>`;
+        botao.addEventListener('click', () => selecionarSantoDoCatalogo(item));
+        buscaCatalogoResultados.appendChild(botao);
+      });
+      buscaCatalogoResultados.hidden = false;
+    }
+
+    function buscarNoCatalogo() {
+      const termo = buscaCatalogoInput.value.trim();
+      if (!termo) {
+        buscaCatalogoResultados.hidden = true;
+        buscaCatalogoResultados.innerHTML = '';
+        return;
+      }
+      const idReq = ++buscaCatalogoReq;
+      fetch(`/api/busca?q=${encodeURIComponent(termo)}`)
+        .then((resp) => (resp.ok ? resp.json() : []))
+        .then((itens) => {
+          if (idReq !== buscaCatalogoReq) return;
+          renderizarResultadosBuscaCatalogo(itens);
+        })
+        .catch(() => {});
+    }
+
+    buscaCatalogoInput.addEventListener('input', () => {
+      clearTimeout(buscaCatalogoTimer);
+      buscaCatalogoTimer = setTimeout(buscarNoCatalogo, 250);
+    });
+
+    document.addEventListener('click', (evento) => {
+      if (evento.target !== buscaCatalogoInput && !buscaCatalogoResultados.contains(evento.target)) {
+        buscaCatalogoResultados.hidden = true;
+      }
+    });
+
+    escolherCatalogoTrocarBtn.addEventListener('click', resetarEscolherCatalogo);
+  }
 
   let customizerIniciado = false;
   inputImagem.addEventListener('change', () => {
@@ -523,6 +668,7 @@
     nomeArquivoDiv.textContent = '';
     arquivoAtual = null;
     boxAnterior = null;
+    resetarEscolherCatalogo();
     atualizarIndicadorLado();
     atualizarBotoesUpload();
     mostrarView('upload');

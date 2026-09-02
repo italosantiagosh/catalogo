@@ -80,10 +80,14 @@
         <li>
           {{ item.produtoNome }} — {{ item.modeloNome }} — {{ item.detalhe }} — {{ item.quantidade }}x
           {% if item.duasFaces %}
-            {% if item.imagemRecorteLado1 %}
+            {% if item.produtoNomeLado1 %}
+              <br>Lado 1: {{ item.produtoNomeLado1 }} — {{ item.modeloNomeLado1 }} (catálogo)
+            {% elif item.imagemRecorteLado1 %}
               <br><a href="{{ item.imagemRecorteLado1 }}" download="recorte-{{ loop.index }}-lado1.png">⬇ Baixar lado 1 (imagem 1:1)</a>
             {% endif %}
-            {% if item.imagemRecorteLado2 %}
+            {% if item.produtoNomeLado2 %}
+              <br>Lado 2: {{ item.produtoNomeLado2 }} — {{ item.modeloNomeLado2 }} (catálogo)
+            {% elif item.imagemRecorteLado2 %}
               <br><a href="{{ item.imagemRecorteLado2 }}" download="recorte-{{ loop.index }}-lado2.png">⬇ Baixar lado 2 (imagem 1:1)</a>
             {% endif %}
           {% elif item.imagemRecorte %}

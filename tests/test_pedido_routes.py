@@ -266,6 +266,39 @@ def test_item_duas_faces_guarda_as_duas_fotos_separadas(client, monkeypatch):
     assert "sem-foto.svg" in pagina_cliente
 
 
+def test_item_duas_faces_lado_escolhido_do_catalogo_guarda_produto_e_modelo(client, monkeypatch):
+    """"Escolher um santo do catálogo" (so entremeio_2lados, ver
+    static/js/personalizada.js:selecionarSantoDoCatalogo) manda
+    produtoNome/modeloNome dentro do proprio lado, sem imagemRecorte
+    (a imagem ja e´ um render pronto do catalogo, sem recorte
+    novo) -- painel admin mostra qual santo/modelo foi escolhido em
+    vez de um link de download quebrado."""
+    _preparar_admin_env(monkeypatch)
+    corpo = _corpo_valido(itens=[{
+        "chave_preco": "entremeio_2lados", "quantidade": 10, "produtoNome": "Personalizada",
+        "formato": "entremeio_2lados", "cor": "prata",
+        "duasFaces": True,
+        "lado1": {
+            "origem": "catalogo", "imagem": "/static/img/produtos/sao-jose_modelo_1_entremeio_prata.jpg",
+            "produtoId": "sao-jose", "produtoNome": "São José", "modeloId": 1, "modeloNome": "Modelo 1",
+        },
+        "lado2": {"origem": "upload", "imagem": "data:image/png;base64,LADO2PREVIA", "imagemRecorte": "data:image/png;base64,LADO2RECORTE"},
+    }], frete={"texto": "Correios PAC — R$ 10,00", "preco": 10.0})
+    with patch("app.criar_link_pagamento", return_value={"url": "https://checkout.infinitepay.io/abc"}):
+        criado = client.post("/api/pedido/criar", json=corpo).get_json()
+
+    pedido = pedidos.obter_pedido(criado["token"])
+    item = pedido["itens"][0]
+    assert item["produtoNomeLado1"] == "São José"
+    assert item["modeloNomeLado1"] == "Modelo 1"
+    assert item["imagemRecorteLado1"] == ""
+    assert item["produtoNomeLado2"] == ""
+
+    detalhe = client.get(f"/admin/pedidos/{criado['token']}", auth=("admin", "segredo123")).get_data(as_text=True)
+    assert "Lado 1: São José — Modelo 1 (catálogo)" in detalhe
+    assert "Baixar lado 2 (imagem 1:1)" in detalhe
+
+
 def _preparar_admin_env(monkeypatch):
     import app as app_module
 

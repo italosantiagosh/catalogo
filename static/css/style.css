@@ -310,7 +310,8 @@ a.link-carrinho #contador-carrinho {
 }
 
 #busca,
-#busca-home {
+#busca-home,
+#busca-personalizada {
   width: 100%;
   padding: 14px 16px;
   font-size: 1rem;
@@ -1821,6 +1822,25 @@ label.dropzone.dropzone-arrastando {
 
 .dropzone-dica-desktop {
   display: none;
+}
+
+.escolher-catalogo {
+  margin: 14px 0;
+  padding-top: 14px;
+  border-top: 1px dashed var(--border);
+}
+
+.escolher-catalogo-titulo {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--muted);
+  margin: 0 0 8px;
+}
+
+.escolher-catalogo-santo-nome {
+  font-size: 0.9rem;
+  font-weight: 700;
+  margin: 0 0 10px;
 }
 
 @media (hover: hover) and (pointer: fine) {
