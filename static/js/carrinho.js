@@ -108,6 +108,26 @@ function carrinhoAtualizarQuantidade(chave, quantidade) {
   return itens;
 }
 
+// Tamanho (12/16mm medalha 1 lado, 14/18mm medalha 2 lados) e´ o MESMO
+// preco/imagem nas duas opcoes (ver conversa: "clicar na variação e
+// poder mudar") -- da pra editar direto no carrinho, sem voltar no
+// produto/personalizada pra recriar o item do zero.
+function carrinhoAtualizarTamanho(chave, novoTamanho) {
+  const itens = carrinhoObterItens();
+  const item = itens.find((i) => i.chave === chave);
+  if (item) {
+    item.tamanho = novoTamanho;
+    // medalha 1 lado usa o proprio tamanho como chave_preco (12mm/16mm,
+    // ver static/js/produto.js e personalizada.js); medalha_2lados tem
+    // chave_preco fixo "medalha_2lados" -- tamanho ali e´ so descritivo.
+    if (item.formato !== 'medalha_2lados') {
+      item.chave_preco = novoTamanho;
+    }
+    carrinhoSalvarItens(itens);
+  }
+  return itens;
+}
+
 function carrinhoLimpar() {
   carrinhoSalvarItens([]);
   // proximo pedido comeca com um ID novo, nao reaproveita o de um pedido

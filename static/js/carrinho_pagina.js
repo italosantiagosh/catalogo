@@ -160,6 +160,29 @@
     return `${FORMATO_LABEL.medalha} · ${TAMANHO_LABEL[item.tamanho] || item.tamanho}`;
   }
 
+  // Tamanho (12/16mm na medalha 1 lado; 14/18mm na de 2 lados) e´ o
+  // MESMO preco nas duas opcoes (ver conversa) e a simulacao visual e´
+  // identica -- so o texto/valor muda, nunca a imagem. Por isso da pra
+  // editar direto no carrinho sem precisar voltar no produto/personalizada
+  // -- cor (prata/ouro velho) muda a imagem de verdade, entao fica de
+  // fora por enquanto (ver conversa).
+  const OPCOES_TAMANHO_POR_FORMATO = { medalha: ['12mm', '16mm'], medalha_2lados: ['14mm', '18mm'] };
+
+  function subtituloEditavelHtml(item) {
+    const formato = item.formato || 'medalha';
+    const opcoes = OPCOES_TAMANHO_POR_FORMATO[formato];
+    if (!opcoes) return detalheFormato(item);
+
+    const corParte = formato === 'medalha_2lados' ? ` · ${COR_LABEL[item.cor] || item.cor}` : '';
+    const options = opcoes
+      .map((v) => `<option value="${v}" ${item.tamanho === v ? 'selected' : ''}>${TAMANHO_LABEL[v] || v}</option>`)
+      .join('');
+    return (
+      `${FORMATO_LABEL[formato]}${corParte} · ` +
+      `<select class="variacao-tamanho-select" data-chave="${item.chave}" aria-label="Mudar tamanho">${options}</select>`
+    );
+  }
+
   function montarListaPedido(itens) {
     return itens
       .map((item, i) => {
@@ -253,8 +276,8 @@
     const linha = document.createElement('article');
     linha.className = 'item-carrinho';
     const subtitulo = item.tipo === 'personalizada'
-      ? detalheFormato(item)
-      : `${item.modeloNome} &middot; ${detalheFormato(item)}`;
+      ? subtituloEditavelHtml(item)
+      : `${item.modeloNome} &middot; ${subtituloEditavelHtml(item)}`;
     let avisoFoto = '';
     if (item.tipo === 'personalizada') {
       const semFoto = item.duasFaces
@@ -313,6 +336,14 @@
       carrinhoRemoverItem(item.chave);
       render();
     });
+    const selectTamanho = linha.querySelector('.variacao-tamanho-select');
+    if (selectTamanho) {
+      selectTamanho.addEventListener('change', () => {
+        carrinhoAtualizarTamanho(item.chave, selectTamanho.value);
+        rastrearEventoGA4('mudar_tamanho_carrinho', { item_id: item.produtoId || item.tipo, tamanho: selectTamanho.value });
+        render();
+      });
+    }
     return linha;
   }
 

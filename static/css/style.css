@@ -1125,6 +1125,18 @@ button.botao-carrinho:disabled {
   margin: 0 0 8px;
 }
 
+.variacao-tamanho-select {
+  font: inherit;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--accent);
+  background: #e7edf6;
+  border: none;
+  border-radius: 6px;
+  padding: 2px 6px;
+  cursor: pointer;
+}
+
 .item-aviso-foto {
   font-size: 0.75rem !important;
   color: var(--accent) !important;
