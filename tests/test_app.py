@@ -149,6 +149,37 @@ def test_api_busca_sem_termo_retorna_vazio(client):
     assert resposta.get_json() == []
 
 
+def test_api_busca_encontra_produtos_personalizados(client):
+    """Ver conversa: os 5 "produtos" da personalizada (config.py:
+    PRODUTOS_PERSONALIZADOS) tem que aparecer na busca tambem, pra quem
+    nao sabe que a personalizada existe encontrar procurando -- url vai
+    pra /personalizada com o formato certo, nao pra /produto/<id>."""
+    resposta = client.get("/api/busca?q=personalizada")
+    dados = resposta.get_json()
+    nomes = {item["nome"] for item in dados}
+    assert "Medalha de 2 lados Personalizada" in nomes
+    item = next(i for i in dados if i["nome"] == "Medalha de 2 lados Personalizada")
+    assert item["url"] == "/personalizada?formato=medalha_2lados"
+
+
+def test_catalogo_completo_lista_produtos_personalizados_com_categoria_propria(client):
+    resposta = client.get("/catalogo").get_data(as_text=True)
+    assert "Entremeio de 2 lados Personalizado" in resposta
+    assert 'href="/personalizada?formato=entremeio_2lados"' in resposta
+    assert "Personalizada</a>" in resposta  # chip de categoria
+
+
+def test_personalizada_preseleciona_formato_da_query_string(client):
+    resposta = client.get("/personalizada?formato=medalha_2lados").get_data(as_text=True)
+    assert "window.FORMATO_INICIAL" in resposta
+    assert "medalha_2lados" in resposta
+
+
+def test_personalizada_ignora_formato_invalido_na_query_string(client):
+    resposta = client.get("/personalizada?formato=algo-invalido")
+    assert resposta.status_code == 200
+
+
 def test_kit_livraria_shalom_lista_todos_os_itens_configurados(client):
     from config import KIT_LIVRARIA_SHALOM
 

@@ -67,6 +67,7 @@ from config import (
     AVALIACAO_DIAS_APOS_PAGAMENTO,
     CANCELAMENTO_MINUTOS_APOS_LEMBRETE,
     CANONICAL_DOMAIN,
+    CATEGORIA_PERSONALIZADOS,
     DESCRICOES_CATEGORIA,
     DESCRICOES_FORMATO,
     DESTAQUES_HOME,
@@ -78,6 +79,7 @@ from config import (
     LEMBRETE_MINUTOS,
     META_PIXEL_ID,
     PROCURADOS_HOME,
+    PRODUTOS_PERSONALIZADOS,
     PRODUTOS_TITULO_ANTIGO,
     PROVA_SOCIAL,
     UPSELL_HORAS_APOS_PAGAMENTO,
@@ -408,11 +410,19 @@ CropBox = tuple[float, float, float, float]
 # MEDAL_SPECS (services/gerador/config.py). "medalha" e o mesmo mockup
 # independente do tamanho (12mm/16mm sao so o tamanho fisico impresso, a
 # simulacao visual e identica) -- so entremeio muda de spec conforme a cor.
+# entremeio_2lados reaproveita EXATAMENTE as mesmas specs do entremeio de
+# 1 lado (mesma base fisica, so aplicada nos dois lados -- ver conversa);
+# medalha_2lados usa as specs novas, uma por cor (ver services/gerador/
+# config.py:medalha_2lados_prata/ouro_velho).
 FORMATO_PARA_SPEC = {
     ("medalha", None): "prata_16mm",
     ("entremeio", "prata"): "entremeio_prata",
     ("entremeio", "ouro_velho"): "entremeio_ouro_velho",
     ("chaveiro", None): "chaveiro",
+    ("medalha_2lados", "prata"): "medalha_2lados_prata",
+    ("medalha_2lados", "ouro_velho"): "medalha_2lados_ouro_velho",
+    ("entremeio_2lados", "prata"): "entremeio_prata",
+    ("entremeio_2lados", "ouro_velho"): "entremeio_ouro_velho",
 }
 
 
@@ -737,6 +747,30 @@ def _itens_do_grid(produtos: list[dict]) -> list[dict]:
     ]
 
 
+_THUMBNAIL_PERSONALIZADOS = "img/imagem-personalizada.png"
+
+
+def _itens_personalizados_do_grid() -> list[dict]:
+    """"Produtos" da personalizada (config.py:PRODUTOS_PERSONALIZADOS) no
+    MESMO formato de _itens_do_grid, pra entrar direto na grade/busca do
+    catalogo -- so que "thumbnail" e´ sempre a imagem placeholder e o
+    card, em vez de ir pra /produto/<id>, manda pra /personalizada com o
+    formato certo pre-selecionado (ver templates/catalogo.html e
+    api_busca, que usam "personalizada_url" quando presente em vez de
+    montar url_for('produto', ...))."""
+    return [
+        {
+            "id": p["id"],
+            "nome": p["nome"],
+            "categoria": CATEGORIA_PERSONALIZADOS,
+            "thumbnail": _THUMBNAIL_PERSONALIZADOS,
+            "thumbnail_chaveiro": _THUMBNAIL_PERSONALIZADOS,
+            "personalizada_url": url_for("personalizada", formato=p["formato"]),
+        }
+        for p in PRODUTOS_PERSONALIZADOS
+    ]
+
+
 @app.route("/", methods=["GET"])
 def index():
     """Home -- landing page comercial (hero, vantagens, destaques, banners),
@@ -773,8 +807,14 @@ def catalogo_completo():
     ficava direto na home. `?q=` (opcional) vem do campo de busca da home
     e pre-preenche o filtro aqui (ver static/js/catalogo.js)."""
     produtos = carregar_produtos()
-    itens = _itens_do_grid(produtos)
-    categorias = categorias_com_slug(produtos)
+    # produtos "personalizada" (config.py:PRODUTOS_PERSONALIZADOS) entram
+    # no final da grade + como categoria propria pro cliente encontrar
+    # procurando/filtrando, mesmo sem saber que a personalizada existe
+    # (ver conversa). "Personalizada" nao tem pagina /categoria/<slug>
+    # de verdade (nao e´ uma categoria de santo, ver categoria() abaixo)
+    # -- slug=None faz o chip apontar pro proprio /catalogo em vez de 404.
+    itens = _itens_do_grid(produtos) + _itens_personalizados_do_grid()
+    categorias = categorias_com_slug(produtos) + [{"nome": CATEGORIA_PERSONALIZADOS, "slug": None}]
     dados_breadcrumb = _dados_breadcrumb(
         [
             ("Início", url_for("index", _external=True)),
@@ -1112,10 +1152,27 @@ def _itens_com_descricao_do_corpo(dados: dict) -> list[dict]:
         detalhe = _detalhe_formato_do_item(item)
         partes = [p for p in (produto_nome, modelo_nome, detalhe) if p]
         descricao = " — ".join(partes) or chave_preco
-        imagem = str(item.get("imagem", ""))
-        imagem_recorte = str(item.get("imagemRecorte", "") or "")
-        _marcar_imagem_personalizada_usada_se_aplicavel(imagem)
-        _marcar_imagem_personalizada_usada_se_aplicavel(imagem_recorte)
+
+        # medalha_2lados/entremeio_2lados (ver static/js/personalizada.js)
+        # mandam "lado1"/"lado2" em vez de imagem/imagemRecorte direto no
+        # item -- uma peca so, duas fotos (uma por lado). "imagem" segue
+        # preenchida com a do lado 1, como fallback pra qualquer lugar que
+        # ainda so saiba mostrar uma miniatura; quem precisa dos dois
+        # lados de verdade usa imagem_lado1/imagem_lado2 (ver pedido.html,
+        # admin_pedido_detalhe.html, services/email.py).
+        duas_faces = bool(item.get("duasFaces"))
+        lado1 = item.get("lado1") or {} if duas_faces else {}
+        lado2 = item.get("lado2") or {} if duas_faces else {}
+        imagem_lado1 = str(lado1.get("imagem", ""))
+        imagem_recorte_lado1 = str(lado1.get("imagemRecorte", "") or "")
+        imagem_lado2 = str(lado2.get("imagem", ""))
+        imagem_recorte_lado2 = str(lado2.get("imagemRecorte", "") or "")
+
+        imagem = imagem_lado1 if duas_faces else str(item.get("imagem", ""))
+        imagem_recorte = imagem_recorte_lado1 if duas_faces else str(item.get("imagemRecorte", "") or "")
+        for valor in (imagem, imagem_recorte, imagem_lado2, imagem_recorte_lado2):
+            _marcar_imagem_personalizada_usada_se_aplicavel(valor)
+
         itens_validos.append(
             {
                 "chave_preco": chave_preco,
@@ -1147,6 +1204,11 @@ def _itens_com_descricao_do_corpo(dados: dict) -> list[dict]:
                 # aqui pra nunca mais depender do cliente reenviar a foto
                 # pelo WhatsApp (ver conversa).
                 "imagemRecorte": imagem_recorte,
+                "duasFaces": duas_faces,
+                "imagemLado1": imagem_lado1,
+                "imagemRecorteLado1": imagem_recorte_lado1,
+                "imagemLado2": imagem_lado2,
+                "imagemRecorteLado2": imagem_recorte_lado2,
             }
         )
     return itens_validos
@@ -1239,7 +1301,10 @@ def api_busca():
     termo = normalizar_busca(request.args.get("q", ""))
     if not termo:
         return jsonify([])
-    itens = _itens_do_grid(carregar_produtos())
+    # produtos "personalizada" tambem aparecem na busca (config.py:
+    # PRODUTOS_PERSONALIZADOS, ver conversa) -- por ultimo, pra nao
+    # empurrar santos de verdade pra fora do limite de 6 resultados.
+    itens = _itens_do_grid(carregar_produtos()) + _itens_personalizados_do_grid()
     resultados = [item for item in itens if termo in normalizar_busca(item["nome"])][:6]
     return jsonify(
         [
@@ -1247,7 +1312,7 @@ def api_busca():
                 "id": item["id"],
                 "nome": item["nome"],
                 "thumbnail": url_for("static", filename=item["thumbnail"]),
-                "url": url_for("produto", produto_id=item["id"]),
+                "url": item.get("personalizada_url") or url_for("produto", produto_id=item["id"]),
             }
             for item in resultados
         ]
@@ -2576,8 +2641,19 @@ _FAQ_PERSONALIZADA = [
 ]
 
 
+_FORMATOS_PERSONALIZADA_VALIDOS = {
+    "medalha", "entremeio", "chaveiro", "medalha_2lados", "entremeio_2lados",
+}
+
+
 @app.route("/personalizada", methods=["GET"])
 def personalizada():
+    """`?formato=` (opcional) vem dos cards "produto" da personalizada no
+    catalogo/busca (ver _itens_personalizados_do_grid) -- pre-seleciona o
+    formato certo em vez de sempre abrir em "Medalha"."""
+    formato_inicial = request.args.get("formato", "")
+    if formato_inicial not in _FORMATOS_PERSONALIZADA_VALIDOS:
+        formato_inicial = "medalha"
     dados_breadcrumb = _dados_breadcrumb(
         [
             ("Catálogo", url_for("index", _external=True)),
@@ -2586,8 +2662,10 @@ def personalizada():
     )
     return render_template(
         "personalizada.html",
+        formato_inicial=formato_inicial,
         preco_varejo=preco_varejo(),
         preco_varejo_chaveiro=preco_varejo("chaveiro"),
+        preco_varejo_2lados=preco_varejo("medalha_2lados"),
         dados_faq=_dados_faq(_FAQ_PERSONALIZADA),
         dados_breadcrumb=dados_breadcrumb,
     )

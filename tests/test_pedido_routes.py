@@ -228,6 +228,44 @@ def test_item_personalizada_guarda_imagem_de_recorte_1x1(client, monkeypatch):
     assert "Baixar imagem 1:1" in detalhe
 
 
+def test_item_duas_faces_guarda_as_duas_fotos_separadas(client, monkeypatch):
+    """medalha_2lados/entremeio_2lados mandam lado1/lado2 em vez de
+    imagem/imagemRecorte direto no item (ver static/js/personalizada.js)
+    -- os dois precisam sobreviver no pedido, cada um na sua chave, pra
+    producao/admin verem as duas fotos (ver conversa)."""
+    _preparar_admin_env(monkeypatch)
+    corpo = _corpo_valido(itens=[{
+        "chave_preco": "medalha_2lados", "quantidade": 20, "produtoNome": "Personalizada",
+        "formato": "medalha_2lados", "cor": "prata",
+        "duasFaces": True,
+        "lado1": {"origem": "upload", "imagem": "data:image/png;base64,LADO1PREVIA", "imagemRecorte": "data:image/png;base64,LADO1RECORTE"},
+        "lado2": {"origem": "sem_foto", "imagem": "/static/img/sem-foto.svg"},
+    }], frete={"texto": "Correios PAC — R$ 10,00", "preco": 10.0})
+    with patch("app.criar_link_pagamento", return_value={"url": "https://checkout.infinitepay.io/abc"}):
+        criado = client.post("/api/pedido/criar", json=corpo).get_json()
+
+    pedido = pedidos.obter_pedido(criado["token"])
+    item = pedido["itens"][0]
+    assert item["duasFaces"] is True
+    assert item["imagemLado1"] == "data:image/png;base64,LADO1PREVIA"
+    assert item["imagemRecorteLado1"] == "data:image/png;base64,LADO1RECORTE"
+    assert item["imagemLado2"] == "/static/img/sem-foto.svg"
+    assert item["imagemRecorteLado2"] == ""
+    # fallback pra qualquer lugar que so saiba mostrar "imagem" (unica)
+    assert item["imagem"] == "data:image/png;base64,LADO1PREVIA"
+    assert item["detalhe"] == "Medalha 2 lados · Prata"
+
+    detalhe = client.get(f"/admin/pedidos/{criado['token']}", auth=("admin", "segredo123")).get_data(as_text=True)
+    assert "Baixar lado 1 (imagem 1:1)" in detalhe
+    # lado 2 nao tem imagemRecorte (foi "enviar depois") -- nao deve
+    # aparecer link de download quebrado pra ele
+    assert "Baixar lado 2 (imagem 1:1)" not in detalhe
+
+    pagina_cliente = client.get(f"/pedido/{criado['token']}").get_data(as_text=True)
+    assert "data:image/png;base64,LADO1PREVIA" in pagina_cliente
+    assert "sem-foto.svg" in pagina_cliente
+
+
 def _preparar_admin_env(monkeypatch):
     import app as app_module
 

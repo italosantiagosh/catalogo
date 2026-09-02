@@ -291,6 +291,25 @@ PROVA_SOCIAL = [
 # (devocao muito procurada atualmente).
 PROCURADOS_HOME = ["sao-miguel", "sao-bento", "nossa-senhora-aparecida", "nossa-senhora-desatadora-dos-nos"]
 
+# "Produtos" da personalizada (pedido 2026-09-02: aparecer no catalogo/
+# busca como se fossem um produto normal, pra quem nao sabe que a
+# personalizada existe encontrar procurando). NAO ficam em
+# data/produtos.json (nao sao santos de verdade, nao tem "modelos") --
+# ver app.py:_itens_personalizados_do_grid, que monta o card reaproveitando
+# o mesmo layout dos produtos normais, so que o link vai pra /personalizada
+# com o formato certo pre-selecionado (?formato=...) em vez de /produto/<id>.
+# thumbnail e sempre static/img/imagem-personalizada.png (arquivo enviado
+# pelo usuario). "cor" so entra na URL pros formatos que exigem escolher
+# prata/ouro velho antes de simular (entremeio e os dois "2 lados").
+PRODUTOS_PERSONALIZADOS = [
+    {"id": "personalizada-medalha-1lado", "nome": "Medalha de 1 lado Personalizada", "formato": "medalha"},
+    {"id": "personalizada-medalha-2lados", "nome": "Medalha de 2 lados Personalizada", "formato": "medalha_2lados"},
+    {"id": "personalizada-entremeio-1lado", "nome": "Entremeio de 1 lado Personalizado", "formato": "entremeio"},
+    {"id": "personalizada-entremeio-2lados", "nome": "Entremeio de 2 lados Personalizado", "formato": "entremeio_2lados"},
+    {"id": "personalizada-chaveiro", "nome": "Chaveiro Personalizado", "formato": "chaveiro"},
+]
+CATEGORIA_PERSONALIZADOS = "Personalizada"
+
 # Destaques da home (ver app.py:_montar_destaques, templates/index.html)
 # -- reduz a paralisia de escolha de quem chega e ve os 130+ santos
 # todos "iguais". IDs conferidos contra data/produtos.json; um id que

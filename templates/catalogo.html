@@ -19,7 +19,7 @@
   <div class="filtros-categoria" id="filtros-categoria">
     <a href="{{ url_for('catalogo_completo') }}" class="chip-categoria" data-categoria="" aria-pressed="true">Todos</a>
     {% for categoria in categorias %}
-      <a href="{{ url_for('categoria', slug=categoria.slug) }}" class="chip-categoria" data-categoria="{{ categoria.nome }}" aria-pressed="false">{{ categoria.nome }}</a>
+      <a href="{{ url_for('categoria', slug=categoria.slug) if categoria.slug else url_for('catalogo_completo') }}" class="chip-categoria" data-categoria="{{ categoria.nome }}" aria-pressed="false">{{ categoria.nome }}</a>
     {% endfor %}
   </div>
 
@@ -27,16 +27,23 @@
 
   <div class="grid-produtos" id="grid-produtos">
     {% for produto in produtos %}
-      <a class="card-produto" href="{{ url_for('produto', produto_id=produto.id) }}" data-nome="{{ produto.nome }}" data-categoria="{{ produto.categoria }}">
+      <a class="card-produto" href="{{ produto.personalizada_url or url_for('produto', produto_id=produto.id) }}" data-nome="{{ produto.nome }}" data-categoria="{{ produto.categoria }}">
         <div class="card-imagem-wrap">
           <img src="{{ url_for('static', filename=produto.thumbnail) }}" alt="{{ produto.nome }}" loading="lazy" decoding="async">
-          <img class="card-imagem-alt" src="{{ url_for('static', filename=produto.thumbnail_chaveiro) }}" alt="" loading="lazy" decoding="async" aria-hidden="true">
-          <span class="badge-formatos">Medalha · Entremeio · Chaveiro</span>
+          {% if not produto.personalizada_url %}
+            <img class="card-imagem-alt" src="{{ url_for('static', filename=produto.thumbnail_chaveiro) }}" alt="" loading="lazy" decoding="async" aria-hidden="true">
+            <span class="badge-formatos">Medalha · Entremeio · Chaveiro</span>
+          {% endif %}
         </div>
         <div class="card-corpo">
           <h2>{{ produto.nome }}</h2>
-          <p class="preco">{{ preco_varejo | preco }} no varejo <span class="preco-atacado">· até 65% OFF no atacado</span></p>
-          <span class="ver-modelos">Ver modelos →</span>
+          {% if produto.personalizada_url %}
+            <p class="preco">Envie sua foto e simule antes de pedir</p>
+            <span class="ver-modelos">Simular agora →</span>
+          {% else %}
+            <p class="preco">{{ preco_varejo | preco }} no varejo <span class="preco-atacado">· até 65% OFF no atacado</span></p>
+            <span class="ver-modelos">Ver modelos →</span>
+          {% endif %}
         </div>
       </a>
     {% endfor %}

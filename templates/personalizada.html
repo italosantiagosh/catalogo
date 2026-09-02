@@ -23,6 +23,8 @@
 
   <!-- 1) escolha de formato + foto -->
   <section id="view-upload" class="card-upload">
+    <p class="indicador-lado" id="indicador-lado" hidden></p>
+
     <fieldset class="formatos" id="sel-formatos">
       <legend>Formato *</legend>
       <label class="opcao-formato">
@@ -36,6 +38,14 @@
       <label class="opcao-formato">
         <input type="radio" name="formato" id="formato-chaveiro" value="chaveiro">
         Chaveiro
+      </label>
+      <label class="opcao-formato">
+        <input type="radio" name="formato" id="formato-medalha-2lados" value="medalha_2lados">
+        Medalha 2 lados
+      </label>
+      <label class="opcao-formato">
+        <input type="radio" name="formato" id="formato-entremeio-2lados" value="entremeio_2lados">
+        Entremeio 2 lados (para terço)
       </label>
     </fieldset>
 
@@ -68,7 +78,7 @@
     <input type="file" id="input-imagem" accept="image/*">
     <div id="nome-arquivo"></div>
 
-    <div class="quantidade">
+    <div class="quantidade" id="quantidade-upload">
       <label for="qtd-form">Quantidade</label>
       <div class="stepper">
         <button type="button" id="qtd-menos-form" aria-label="Diminuir quantidade">−</button>
@@ -129,6 +139,40 @@
     <a class="voltar" href="{{ url_for('personalizada') }}">&larr; Gerar outra</a>
   </section>
 
+  <!-- 3b) resultado combinado -- so aparece pra medalha_2lados/entremeio_2lados,
+       depois que os DOIS lados ja foram definidos (foto ou "sem foto"),
+       pra mostrar um do lado do outro antes de ir pro carrinho. -->
+  <section id="view-preview-duas-faces" class="preview-personalizada" hidden>
+    <p class="instrucao">Confira os dois lados antes de adicionar ao carrinho.</p>
+    <div class="duas-faces-preview">
+      <div class="duas-faces-lado">
+        <span class="duas-faces-rotulo">Lado 1</span>
+        <img id="preview-imagem-lado1" alt="Simulação do lado 1">
+      </div>
+      <div class="duas-faces-lado">
+        <span class="duas-faces-rotulo">Lado 2</span>
+        <img id="preview-imagem-lado2" alt="Simulação do lado 2">
+      </div>
+    </div>
+
+    <p class="aviso-info" id="aviso-reenvio-2f"></p>
+
+    <div class="quantidade">
+      <label for="sel-quantidade-2f">Quantidade</label>
+      <div class="stepper">
+        <button type="button" id="qtd-menos-2f" aria-label="Diminuir quantidade">−</button>
+        <input type="number" id="sel-quantidade-2f" value="10" min="1" inputmode="numeric">
+        <button type="button" id="qtd-mais-2f" aria-label="Aumentar quantidade">+</button>
+      </div>
+    </div>
+
+    <button type="button" class="botao-carrinho" id="btn-adicionar-2f">
+      Adicionar ao carrinho
+    </button>
+
+    <a class="voltar" href="{{ url_for('personalizada') }}">&larr; Gerar outra</a>
+  </section>
+
   <section class="conteudo-institucional personalizada-info">
     <h2>Por que a personalizada existe</h2>
     <p>A Nove de Julho começou de uma busca pessoal: medalhas de devoções
@@ -178,6 +222,8 @@
   <script>
     window.PRECO_VAREJO_PADRAO = {{ preco_varejo | tojson }};
     window.PRECO_VAREJO_CHAVEIRO = {{ preco_varejo_chaveiro | tojson }};
+    window.PRECO_VAREJO_2LADOS = {{ preco_varejo_2lados | tojson }};
+    window.FORMATO_INICIAL = {{ formato_inicial | tojson }};
   </script>
   <script src="{{ url_for('static', filename='js/personalizada.js') }}"></script>
 {% endblock %}

@@ -163,6 +163,15 @@
         const numero = i + 1;
         const detalhe = detalheFormato(item);
         if (item.tipo === 'personalizada') {
+          if (item.duasFaces) {
+            const notaLado1 = item.lado1.origem === 'sem_foto'
+              ? 'Lado 1: foto ainda não enviada -- enviar nesta conversa'
+              : 'Lado 1: foto já anexada ao pedido, disponível no painel';
+            const notaLado2 = item.lado2.origem === 'sem_foto'
+              ? 'Lado 2: foto ainda não enviada -- enviar nesta conversa'
+              : 'Lado 2: foto já anexada ao pedido, disponível no painel';
+            return `${numero}. Personalizada (2 lados)\n${detalhe}\nQuantidade: ${item.quantidade}\n${notaLado1}\n${notaLado2}`;
+          }
           const notaFoto = item.semImagem
             ? 'Foto: ainda não enviada -- enviar nesta conversa'
             : 'Foto: já anexada ao pedido, disponível no painel';
@@ -245,12 +254,21 @@
       : `${item.modeloNome} &middot; ${detalheFormato(item)}`;
     let avisoFoto = '';
     if (item.tipo === 'personalizada') {
-      avisoFoto = item.semImagem
+      const semFoto = item.duasFaces
+        ? (item.lado1.origem === 'sem_foto' || item.lado2.origem === 'sem_foto')
+        : item.semImagem;
+      avisoFoto = semFoto
         ? '<p class="item-aviso-foto">📷 Foto pendente -- enviar pelo WhatsApp</p>'
         : '<p class="item-aviso-foto">✅ Foto salva junto com o pedido</p>';
     }
+    const imagemHtml = item.duasFaces
+      ? `<div class="item-imagem-duas-faces">
+           <img src="${item.lado1.imagem}" alt="${item.produtoNome} — lado 1">
+           <img src="${item.lado2.imagem}" alt="${item.produtoNome} — lado 2">
+         </div>`
+      : `<img src="${item.imagem}" alt="${item.produtoNome}">`;
     linha.innerHTML = `
-      <img src="${item.imagem}" alt="${item.produtoNome}">
+      ${imagemHtml}
       <div class="item-info">
         <h2>${item.produtoNome}</h2>
         <p>${subtitulo}</p>

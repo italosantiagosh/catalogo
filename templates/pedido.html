@@ -142,7 +142,14 @@
     <ul class="pedido-itens">
       {% for item in pedido.itens %}
         <li class="pedido-item">
-          {% if item.imagem %}<img src="{{ item.imagem }}" alt="" loading="lazy">{% endif %}
+          {% if item.duasFaces %}
+            <div class="pedido-item-imagens">
+              {% if item.imagemLado1 %}<img src="{{ item.imagemLado1 }}" alt="Lado 1" loading="lazy">{% endif %}
+              {% if item.imagemLado2 %}<img src="{{ item.imagemLado2 }}" alt="Lado 2" loading="lazy">{% endif %}
+            </div>
+          {% elif item.imagem %}
+            <img src="{{ item.imagem }}" alt="" loading="lazy">
+          {% endif %}
           <div>
             <strong>{{ item.produtoNome or item.descricao }}</strong>
             {% if item.modeloNome %}<span>{{ item.modeloNome }}</span>{% endif %}

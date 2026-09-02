@@ -79,7 +79,14 @@
       {% for item in pedido.itens %}
         <li>
           {{ item.produtoNome }} — {{ item.modeloNome }} — {{ item.detalhe }} — {{ item.quantidade }}x
-          {% if item.imagemRecorte %}
+          {% if item.duasFaces %}
+            {% if item.imagemRecorteLado1 %}
+              <br><a href="{{ item.imagemRecorteLado1 }}" download="recorte-{{ loop.index }}-lado1.png">⬇ Baixar lado 1 (imagem 1:1)</a>
+            {% endif %}
+            {% if item.imagemRecorteLado2 %}
+              <br><a href="{{ item.imagemRecorteLado2 }}" download="recorte-{{ loop.index }}-lado2.png">⬇ Baixar lado 2 (imagem 1:1)</a>
+            {% endif %}
+          {% elif item.imagemRecorte %}
             <br><a href="{{ item.imagemRecorte }}" download="recorte-{{ loop.index }}.png">⬇ Baixar imagem 1:1</a>
           {% endif %}
         </li>

@@ -1095,6 +1095,24 @@ button.botao-carrinho:disabled {
   object-fit: cover;
 }
 
+/* item de 2 lados -- mesma coluna de 72px do .item-carrinho img normal,
+   so que empilha as duas fotos (lado 1 em cima, lado 2 embaixo) em vez
+   de uma unica imagem. */
+.item-imagem-duas-faces {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  width: 72px;
+}
+
+.item-imagem-duas-faces img {
+  width: 72px;
+  height: 34.5px;
+  border-radius: 8px;
+  object-fit: cover;
+  display: block;
+}
+
 .item-info h2 {
   font-size: 0.95rem;
   margin: 0 0 2px;
@@ -1971,6 +1989,56 @@ input[type="file"] {
   display: block;
 }
 
+.indicador-lado {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin-bottom: 14px;
+}
+
+.indicador-lado a {
+  font-weight: 600;
+  color: var(--accent);
+  margin-left: 8px;
+}
+
+.duas-faces-preview {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.duas-faces-lado {
+  text-align: center;
+}
+
+.duas-faces-rotulo {
+  display: block;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  margin-bottom: 6px;
+}
+
+.duas-faces-lado img {
+  width: 100%;
+  border-radius: 12px;
+  display: block;
+  border: 1px solid var(--border);
+}
+
+@media (max-width: 480px) {
+  .duas-faces-preview {
+    grid-template-columns: 1fr;
+  }
+}
+
 .erro {
   background: #fdecea;
   color: #7a2118;
@@ -2713,6 +2781,20 @@ input[type="file"] {
   border-radius: 8px;
   object-fit: cover;
   flex-shrink: 0;
+  background: var(--bg);
+}
+
+.pedido-item-imagens {
+  display: flex;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.pedido-item-imagens img {
+  width: 52px;
+  height: 52px;
+  border-radius: 8px;
+  object-fit: cover;
   background: var(--bg);
 }
 

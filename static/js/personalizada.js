@@ -9,6 +9,7 @@
   const opcaoSemFoto = document.getElementById('opcao-sem-foto');
   const viewCropper = document.getElementById('view-cropper');
   const viewPreview = document.getElementById('view-preview');
+  const viewPreviewDuasFaces = document.getElementById('view-preview-duas-faces');
   const bannerErro = document.getElementById('banner-erro');
   const avisoPreco = document.getElementById('aviso-preco-atacado');
 
@@ -18,13 +19,23 @@
   const dropzoneImagem = document.getElementById('dropzone-imagem');
   const inputImagem = document.getElementById('input-imagem');
   const nomeArquivoDiv = document.getElementById('nome-arquivo');
+  const quantidadeUploadDiv = document.getElementById('quantidade-upload');
   const qtdFormInput = document.getElementById('qtd-form');
   const qtdMenosForm = document.getElementById('qtd-menos-form');
   const qtdMaisForm = document.getElementById('qtd-mais-form');
   const botaoEnviar = document.getElementById('botao-enviar');
   const btnSemFoto = document.getElementById('btn-sem-foto');
+  const indicadorLado = document.getElementById('indicador-lado');
 
   if (!viewUpload) return;
+
+  // ---- 2 lados (medalha_2lados / entremeio_2lados): o MESMO fluxo de
+  // upload+recorte+previa de baixo e reaproveitado duas vezes seguidas
+  // (uma por lado) em vez de duplicar toda a mecanica do cropper -- ver
+  // avancarLado()/resetarFluxoDuasFaces() mais abaixo. ----
+  let ladoAtual = 1;
+  let resultadoLado1 = null;
+  let resultadoLado2 = null;
 
   function formatarPrecoLocal(valor) {
     return 'R$ ' + valor.toFixed(2).replace('.', ',');
@@ -45,6 +56,7 @@
     opcaoSemFoto.hidden = nome !== 'upload';
     viewCropper.hidden = nome !== 'cropper';
     viewPreview.hidden = nome !== 'preview';
+    viewPreviewDuasFaces.hidden = nome !== 'preview-2f';
     window.scrollTo(0, 0);
   }
 
@@ -53,6 +65,11 @@
   function formatoAtual() {
     const input = formatosFieldset.querySelector('input[name="formato"]:checked');
     return input ? input.value : 'medalha';
+  }
+
+  function duasFacesAtual() {
+    const formato = formatoAtual();
+    return formato === 'medalha_2lados' || formato === 'entremeio_2lados';
   }
 
   function tamanhoAtual() {
@@ -68,7 +85,9 @@
   function subSelecaoCompleta() {
     const formato = formatoAtual();
     if (formato === 'medalha') return !!tamanhoAtual();
-    if (formato === 'entremeio') return !!corAtual();
+    if (formato === 'entremeio' || formato === 'entremeio_2lados' || formato === 'medalha_2lados') {
+      return !!corAtual();
+    }
     return true;
   }
 
@@ -80,17 +99,48 @@
 
   function atualizarAvisoPreco() {
     if (!avisoPreco) return;
-    const preco = formatoAtual() === 'chaveiro' ? window.PRECO_VAREJO_CHAVEIRO : window.PRECO_VAREJO_PADRAO;
+    let preco = window.PRECO_VAREJO_PADRAO;
+    if (formatoAtual() === 'chaveiro') preco = window.PRECO_VAREJO_CHAVEIRO;
+    else if (duasFacesAtual()) preco = window.PRECO_VAREJO_2LADOS;
     avisoPreco.innerHTML =
       `Preço unitário a partir de <strong>${formatarPrecoLocal(preco)}</strong>. ` +
       'O desconto de atacado é calculado automaticamente pela quantidade total ' +
       'do seu carrinho, assim que você adicionar os itens.';
   }
 
+  // ---- 2 lados: reseta o estado do "assistente" (lado 1/lado 2) toda
+  // vez que o formato muda -- trocar de formato no meio do fluxo
+  // invalidaria o lado ja escolhido (base fisica diferente). ----
+  function resetarFluxoDuasFaces() {
+    ladoAtual = 1;
+    resultadoLado1 = null;
+    resultadoLado2 = null;
+    atualizarIndicadorLado();
+  }
+
+  function atualizarIndicadorLado() {
+    if (!indicadorLado) return;
+    if (!duasFacesAtual()) {
+      indicadorLado.hidden = true;
+      return;
+    }
+    indicadorLado.hidden = false;
+    if (ladoAtual === 1) {
+      indicadorLado.textContent = 'Lado 1 de 2 — escolha a foto (ou envie depois) desse lado.';
+    } else {
+      indicadorLado.textContent = '✅ Lado 1 pronto! Agora o Lado 2 — escolha a foto (ou envie depois) desse lado.';
+    }
+  }
+
   function atualizarSubSelecao() {
     const formato = formatoAtual();
     tamanhosFieldset.hidden = formato !== 'medalha';
-    coresFieldset.hidden = formato !== 'entremeio';
+    coresFieldset.hidden = !(formato === 'entremeio' || formato === 'entremeio_2lados' || formato === 'medalha_2lados');
+    // quantidade so e´ perguntada UMA vez, na tela final -- em item de 2
+    // lados isso e´ depois dos dois lados prontos (view-preview-duas-faces),
+    // nao aqui em cada lado.
+    if (quantidadeUploadDiv) quantidadeUploadDiv.hidden = duasFacesAtual();
+    resetarFluxoDuasFaces();
     atualizarAvisoPreco();
     atualizarBotoesUpload();
   }
@@ -108,6 +158,9 @@
     }
     botaoEnviar.disabled = !(completo && temArquivo);
     btnSemFoto.disabled = !completo;
+    btnSemFoto.textContent = duasFacesAtual()
+      ? `Lado ${ladoAtual}: enviar depois pelo WhatsApp`
+      : 'Adicionar ao carrinho sem foto (envio depois pelo WhatsApp)';
   }
 
   formatosFieldset.addEventListener('change', (evento) => {
@@ -390,6 +443,7 @@
   const qtdMenos = document.getElementById('qtd-menos');
   const qtdMais = document.getElementById('qtd-mais');
   const quantidadeInput = document.getElementById('sel-quantidade');
+  const quantidadePreviewDiv = document.querySelector('#view-preview .quantidade');
   const btnAdicionar = document.getElementById('btn-adicionar');
   const botaoReposicionar = document.getElementById('botao-reposicionar');
 
@@ -399,9 +453,21 @@
     linkBaixarRecorte.href = ultimoResultado.urlCrop;
     quantidadeInput.value = qtdFormInput.value;
 
-    avisoReenvio.innerHTML =
-      '✅ Sua foto no recorte exato desta simulação já fica salva junto com o pedido — ' +
-      'não precisa reenviar nada pelo WhatsApp.';
+    if (duasFacesAtual()) {
+      // quantidade e´ perguntada so uma vez, na tela combinada final
+      // (view-preview-duas-faces) -- aqui e´ so a confirmacao do recorte
+      // DESSE lado, no meio do assistente.
+      quantidadePreviewDiv.hidden = true;
+      avisoReenvio.innerHTML =
+        '✅ A foto desse lado, no recorte exato desta simulação, já fica salva junto com o pedido.';
+      btnAdicionar.textContent = ladoAtual === 1 ? 'Confirmar lado 1 e continuar →' : 'Confirmar lado 2 →';
+    } else {
+      quantidadePreviewDiv.hidden = false;
+      avisoReenvio.innerHTML =
+        '✅ Sua foto no recorte exato desta simulação já fica salva junto com o pedido — ' +
+        'não precisa reenviar nada pelo WhatsApp.';
+      btnAdicionar.textContent = 'Adicionar ao carrinho';
+    }
   }
 
   function ajustarQuantidade(delta) {
@@ -418,11 +484,40 @@
     mostrarView('cropper');
   });
 
+  // ---- 2 lados: prepara a view-upload de novo pro proximo lado
+  // (limpa o arquivo escolhido, mantem formato/cor travados -- ver
+  // atualizarSubSelecao, que so reseta isso quando o FORMATO muda). ----
+  function prepararProximoLado() {
+    inputImagem.value = '';
+    nomeArquivoDiv.textContent = '';
+    arquivoAtual = null;
+    boxAnterior = null;
+    atualizarIndicadorLado();
+    atualizarBotoesUpload();
+    mostrarView('upload');
+  }
+
+  function avancarLado(resultadoDesseLado) {
+    if (ladoAtual === 1) {
+      resultadoLado1 = resultadoDesseLado;
+      ladoAtual = 2;
+      prepararProximoLado();
+    } else {
+      resultadoLado2 = resultadoDesseLado;
+      mostrarPreviewDuasFaces();
+    }
+  }
+
   btnAdicionar.addEventListener('click', () => {
     if (!ultimoResultado) return;
-    const quantidade = Math.max(1, parseInt(quantidadeInput.value, 10) || 1);
     const r = ultimoResultado;
 
+    if (duasFacesAtual()) {
+      avancarLado({ origem: 'upload', imagem: r.previewSrc, imagemRecorte: r.cropSrc });
+      return;
+    }
+
+    const quantidade = Math.max(1, parseInt(quantidadeInput.value, 10) || 1);
     carrinhoAdicionarItem({
       chave: `personalizada-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
       tipo: 'personalizada',
@@ -450,8 +545,14 @@
 
   btnSemFoto.addEventListener('click', () => {
     if (btnSemFoto.disabled) return;
-    const quantidade = Math.max(1, parseInt(qtdFormInput.value, 10) || 1);
 
+    if (duasFacesAtual()) {
+      rastrearEventoGA4('add_custom_to_cart_lado_sem_foto', { formato: formatoAtual(), lado: ladoAtual });
+      avancarLado({ origem: 'sem_foto', imagem: '/static/img/sem-foto.svg' });
+      return;
+    }
+
+    const quantidade = Math.max(1, parseInt(qtdFormInput.value, 10) || 1);
     carrinhoAdicionarItem({
       chave: `personalizada-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
       tipo: 'personalizada',
@@ -473,6 +574,75 @@
       btnSemFoto.textContent = textoOriginal;
     }, 2200);
   });
+
+  // ---- 2 lados: tela final combinada (ve os dois lados antes de ir
+  // pro carrinho -- so aqui a quantidade e´ perguntada de verdade). ----
+
+  const previewImgLado1 = document.getElementById('preview-imagem-lado1');
+  const previewImgLado2 = document.getElementById('preview-imagem-lado2');
+  const avisoReenvio2f = document.getElementById('aviso-reenvio-2f');
+  const quantidadeInput2f = document.getElementById('sel-quantidade-2f');
+  const qtdMenos2f = document.getElementById('qtd-menos-2f');
+  const qtdMais2f = document.getElementById('qtd-mais-2f');
+  const btnAdicionar2f = document.getElementById('btn-adicionar-2f');
+
+  function mostrarPreviewDuasFaces() {
+    previewImgLado1.src = resultadoLado1.imagem;
+    previewImgLado2.src = resultadoLado2.imagem;
+    quantidadeInput2f.value = qtdFormInput.value;
+
+    const algumSemFoto = resultadoLado1.origem === 'sem_foto' || resultadoLado2.origem === 'sem_foto';
+    avisoReenvio2f.innerHTML = algumSemFoto
+      ? '📷 Pelo menos um lado ainda não tem foto — não esqueça de enviar pelo WhatsApp depois de fechar o pedido.'
+      : '✅ As fotos dos dois lados, no recorte exato desta simulação, já ficam salvas junto com o pedido — ' +
+        'não precisa reenviar nada pelo WhatsApp.';
+    mostrarView('preview-2f');
+  }
+
+  function ajustarQuantidade2f(delta) {
+    const atual = parseInt(quantidadeInput2f.value, 10) || 1;
+    quantidadeInput2f.value = Math.max(1, atual + delta);
+  }
+  qtdMenos2f.addEventListener('click', () => ajustarQuantidade2f(-1));
+  qtdMais2f.addEventListener('click', () => ajustarQuantidade2f(1));
+
+  btnAdicionar2f.addEventListener('click', () => {
+    if (!resultadoLado1 || !resultadoLado2) return;
+    const quantidade = Math.max(1, parseInt(quantidadeInput2f.value, 10) || 1);
+    const semFoto1 = resultadoLado1.origem === 'sem_foto';
+    const semFoto2 = resultadoLado2.origem === 'sem_foto';
+
+    carrinhoAdicionarItem({
+      chave: `personalizada-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+      tipo: 'personalizada',
+      duasFaces: true,
+      produtoNome: 'Personalizada',
+      modeloNome: null,
+      formato: formatoAtual(),
+      chave_preco: chavePrecoAtual(),
+      cor: corAtual(),
+      quantidade,
+      semImagem: semFoto1 && semFoto2,
+      lado1: resultadoLado1,
+      lado2: resultadoLado2,
+    });
+    rastrearEventoGA4('add_custom_to_cart', {
+      formato: formatoAtual(), quantity: quantidade, com_foto: !semFoto1 && !semFoto2,
+    });
+
+    const textoOriginal = 'Adicionar ao carrinho';
+    btnAdicionar2f.textContent = 'Adicionado ✓';
+    setTimeout(() => {
+      btnAdicionar2f.textContent = textoOriginal;
+    }, 1200);
+  });
+
+  // Pre-seleciona o formato vindo do card "produto" da personalizada no
+  // catalogo/busca (?formato=..., ver app.py:personalizada).
+  if (window.FORMATO_INICIAL) {
+    const inputFormato = formatosFieldset.querySelector(`input[name="formato"][value="${window.FORMATO_INICIAL}"]`);
+    if (inputFormato) inputFormato.checked = true;
+  }
 
   atualizarSubSelecao();
 })();
