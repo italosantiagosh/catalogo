@@ -252,6 +252,52 @@ MEDAL_SPECS: dict[str, MedalSpec] = {
         inner_radius=266.1,
         overlap_px=8,
     ),
+
+    # ------------------------------------------------------------------
+    # Medalha de 2 lados (prata / ouro velho) -- pedido em 2026-09-02,
+    # arquivos recebidos em data/"base 2 lados prata.png" e "... ouro
+    # velho.png" (1254x1254px cada), copiados pra assets/ com nome
+    # padronizado. Base BEM diferente da "prata_16mm" acima (aro fino,
+    # sem embutir a foto atras de um disco solido) -- NAO mexer na
+    # prata_16mm, ela e outro produto (1 lado) e continua perfeita como
+    # esta (ver conversa).
+    #
+    # Calibrado por deteccao de pixel (script descartavel, mesmo metodo
+    # dos entremeios): cavidade = maior componente conexo de branco que
+    # nao toca a borda da imagem (floodfill a partir do centro), centro
+    # e raio pela area; raio EXTERNO do aro metalico por varredura radial
+    # (360/2 angulos, pulando uma fatia de 40 graus perto da argola no
+    # topo), exigindo 10px brancos seguidos pra confirmar que saiu do
+    # metal (evita falso-positivo em brilho/reflexo na prata polida):
+    #   prata:       centro (621.9, 666.4)  raio_interno 423.8  raio_externo 478.8  (espessura 55.0px)
+    #   ouro_velho:  centro (628.0, 670.8)  raio_interno 421.9  raio_externo 481.9  (espessura 60.0px)
+    #
+    # resina_radius = raio_interno + espessura/2 (pedido explicito do
+    # usuario: "o efeito resina é um pouco maior, na metade da espessura
+    # dessa borda" -- a foto encosta so no espaco branco, mas o vidro/
+    # resina precisa avancar visivelmente por cima do aro metalico).
+    "medalha_2lados_prata": MedalSpec(
+        id="medalha_2lados_prata",
+        nome="Medalha 2 lados Prata",
+        base_path=ASSETS_DIR / "base_medalha_2lados_prata.png",
+        resina_path=ASSETS_DIR / "efeito_resina.png",
+        center_x=621.9,
+        center_y=666.4,
+        inner_radius=423.8,
+        resina_radius=423.8 + 55.0 / 2,
+        overlap_px=2,
+    ),
+    "medalha_2lados_ouro_velho": MedalSpec(
+        id="medalha_2lados_ouro_velho",
+        nome="Medalha 2 lados Ouro velho",
+        base_path=ASSETS_DIR / "base_medalha_2lados_ouro_velho.png",
+        resina_path=ASSETS_DIR / "efeito_resina.png",
+        center_x=628.0,
+        center_y=670.8,
+        inner_radius=421.9,
+        resina_radius=421.9 + 60.0 / 2,
+        overlap_px=2,
+    ),
 }
 
 ACTIVE_MEDAL_ID = "prata_16mm"

@@ -20,7 +20,7 @@ from pathlib import Path
 from PIL import Image, ImageDraw
 
 from services.gerador.compositor import compose_medal, fit_cover_circle
-from services.gerador.config import MedalSpec
+from services.gerador.config import MEDAL_SPECS, MedalSpec, get_medal_spec
 
 
 def _make_synthetic_base(path: Path, size=(800, 900), center=(400, 490), radius=310, thickness=45):
@@ -112,6 +112,37 @@ class TestCompositor(unittest.TestCase):
         # estar transparentes (fora do circulo, mascara aplicada)
         self.assertEqual(out.getpixel((125, 125))[3], 255)
         self.assertEqual(out.getpixel((2, 2))[3], 0)
+
+
+class TestMedalSpecsCadastradas(unittest.TestCase):
+    """Roda o pipeline REAL (assets de verdade em services/gerador/assets/)
+    pra cada base cadastrada em MEDAL_SPECS -- pega cedo se um asset for
+    renomeado/removido ou se a geometria calibrada ficar fora dos limites
+    da propria base (nao substitui conferencia visual, so evita quebra
+    silenciosa)."""
+
+    def test_todas_as_bases_cadastradas_compoem_sem_erro(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            foto_path = Path(tmp) / "foto.jpg"
+            _make_test_photo(foto_path, size=(600, 600))
+            for medal_id in MEDAL_SPECS:
+                spec = get_medal_spec(medal_id)
+                resultado = compose_medal(spec, foto_path)
+                with Image.open(spec.base_path) as base_img:
+                    self.assertEqual(resultado.size, base_img.size, msg=medal_id)
+                geo = spec.resolve(resultado.size)
+                cx, cy = int(geo.center_x), int(geo.center_y)
+                r, g, b, a = resultado.getpixel((cx, cy))
+                self.assertEqual(a, 255, msg=f"{medal_id}: centro deveria estar opaco (foto)")
+
+    def test_medalha_2lados_resina_maior_que_foto_meia_espessura_da_borda(self):
+        """Pedido explicito do usuario: a foto encosta so no espaco branco,
+        mas a resina avanca ate a metade da espessura da borda metalica --
+        ver comentario de calibracao em services/gerador/config.py."""
+        for medal_id in ("medalha_2lados_prata", "medalha_2lados_ouro_velho"):
+            spec = get_medal_spec(medal_id)
+            self.assertIsNotNone(spec.resina_radius)
+            self.assertGreater(spec.resina_radius, spec.inner_radius)
 
 
 if __name__ == "__main__":
