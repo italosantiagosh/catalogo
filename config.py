@@ -397,11 +397,11 @@ DESTAQUES_HOME = [
         # app.py:_montar_destaques, que mescla os 2 catalogos de id antes
         # de resolver essa lista).
         "produtos": [
+            "combo-teresinha-sagrada-face",
+            "combo-faustina-misericordioso",
             "sao-pier-giorgio-frassati",
             "beata-sandra-sabatine",
             "filho-prodigo-acamps",
-            "combo-teresinha-sagrada-face",
-            "combo-faustina-misericordioso",
         ],
     },
 ]
