@@ -65,8 +65,11 @@
 
   const TAMANHO_LABEL = { '12mm': '1,2 cm', '16mm': '1,6 cm' };
   const COR_LABEL = { prata: 'Prata', ouro_velho: 'Ouro velho' };
-  const FORMATO_LABEL = { medalha: 'Medalha', entremeio: 'Entremeio', chaveiro: 'Chaveiro' };
-  const GRUPO_LABEL = { padrao: 'medalhas/entremeios', chaveiro: 'chaveiros' };
+  const FORMATO_LABEL = {
+    medalha: 'Medalha', entremeio: 'Entremeio', chaveiro: 'Chaveiro',
+    medalha_2lados: 'Medalha 2 lados', entremeio_2lados: 'Entremeio 2 lados',
+  };
+  const GRUPO_LABEL = { padrao: 'medalhas/entremeios', chaveiro: 'chaveiros', duas_faces: 'medalhas/entremeios de 2 lados' };
   // mesmo texto usado em app.py (FRETE_RETIRADA_DESCRICAO) pra detectar
   // esse tipo de frete e trocar os rotulos da timeline ("enviado" nao
   // faz sentido pra quem vai retirar -- ver conversa).
@@ -148,6 +151,9 @@
     const formato = item.formato || 'medalha';
     if (formato === 'entremeio') return `${FORMATO_LABEL.entremeio} · ${COR_LABEL[item.cor] || item.cor}`;
     if (formato === 'chaveiro') return FORMATO_LABEL.chaveiro;
+    if (formato === 'medalha_2lados' || formato === 'entremeio_2lados') {
+      return `${FORMATO_LABEL[formato]} · ${COR_LABEL[item.cor] || item.cor}`;
+    }
     return `${FORMATO_LABEL.medalha} · ${TAMANHO_LABEL[item.tamanho] || item.tamanho}`;
   }
 

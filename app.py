@@ -1037,7 +1037,10 @@ def _itens_validos_do_corpo(dados: dict) -> list[dict]:
 # aparecia no pedido persistido (so produto + modelo).
 _TAMANHO_LABEL = {"12mm": "1,2 cm", "16mm": "1,6 cm"}
 _COR_LABEL = {"prata": "Prata", "ouro_velho": "Ouro velho"}
-_FORMATO_LABEL = {"medalha": "Medalha", "entremeio": "Entremeio", "chaveiro": "Chaveiro"}
+_FORMATO_LABEL = {
+    "medalha": "Medalha", "entremeio": "Entremeio", "chaveiro": "Chaveiro",
+    "medalha_2lados": "Medalha 2 lados", "entremeio_2lados": "Entremeio 2 lados",
+}
 
 
 def _detalhe_formato_do_item(item: dict) -> str:
@@ -1047,6 +1050,9 @@ def _detalhe_formato_do_item(item: dict) -> str:
         return f"{_FORMATO_LABEL['entremeio']} · {_COR_LABEL.get(cor, cor)}"
     if formato == "chaveiro":
         return _FORMATO_LABEL["chaveiro"]
+    if formato in ("medalha_2lados", "entremeio_2lados"):
+        cor = str(item.get("cor", ""))
+        return f"{_FORMATO_LABEL[formato]} · {_COR_LABEL.get(cor, cor)}"
     tamanho = str(item.get("tamanho", ""))
     return f"{_FORMATO_LABEL['medalha']} · {_TAMANHO_LABEL.get(tamanho, tamanho)}"
 

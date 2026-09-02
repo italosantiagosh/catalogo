@@ -1,20 +1,28 @@
 """
 Motor de preco por atacado.
 
-Duas "familias" de produto, cada uma com seu proprio GRUPO de atacado --
+Tres "familias" de produto, cada uma com seu proprio GRUPO de atacado --
 a quantidade que conta pra faixa de desconto NAO se mistura entre grupos:
 
-    "padrao"   -- medalhas (12mm/16mm) e entremeios. Mesma regra de
-                  sempre (secao 25 do briefing original): a faixa depende
-                  da quantidade TOTAL desse grupo no carrinho, somando
-                  todos os santos/tamanhos/cores livremente.
-    "chaveiro" -- tabela de precos propria (varejo R$15, atacado proprio).
-                  Conta pra faixa dele isoladamente; nao soma com
-                  medalhas/entremeios nem eles somam com ele.
+    "padrao"      -- medalhas (12mm/16mm) e entremeios de 1 lado. Mesma
+                     regra de sempre (secao 25 do briefing original): a
+                     faixa depende da quantidade TOTAL desse grupo no
+                     carrinho, somando todos os santos/tamanhos/cores
+                     livremente.
+    "chaveiro"    -- tabela de precos propria (varejo R$15, atacado
+                     proprio). Conta pra faixa dele isoladamente; nao
+                     soma com os outros grupos nem eles somam com ele.
+    "duas_faces"  -- medalha_2lados e entremeio_2lados (pedido em
+                     2026-09-02: "Medalhas ou Entremeios de 2 lados"
+                     compartilham UMA tabela so, varejo R$7 -- mesmo
+                     padrao de 12mm/16mm/entremeio compartilharem a
+                     tabela "padrao"). Conta pra faixa isoladamente,
+                     igual chaveiro.
 
 Cada item do carrinho manda uma "chave_preco" (12mm | 16mm | entremeio |
-chaveiro) que serve dois propositos: indexa a tabela certa em
-data/precos.json E diz a qual grupo o item pertence (GRUPO_DE_CHAVE).
+chaveiro | medalha_2lados | entremeio_2lados) que serve dois propositos:
+indexa a tabela certa em data/precos.json E diz a qual grupo o item
+pertence (GRUPO_DE_CHAVE).
 
 pedido_minimo_reais / frete_gratis_reais continuam avaliados sobre o
 SUBTOTAL COMBINADO (todos os grupos juntos) -- sao sobre o pedido
@@ -34,9 +42,11 @@ GRUPO_DE_CHAVE = {
     "16mm": "padrao",
     "entremeio": "padrao",
     "chaveiro": "chaveiro",
+    "medalha_2lados": "duas_faces",
+    "entremeio_2lados": "duas_faces",
 }
 CHAVES_PRECO = tuple(GRUPO_DE_CHAVE)
-GRUPOS = ("padrao", "chaveiro")
+GRUPOS = ("padrao", "chaveiro", "duas_faces")
 
 # Desconto no FRETE (nao no preco do produto) quando um grupo atinge a
 # primeira faixa de atacado (ver conversa: "antes do frete gratis...
@@ -173,9 +183,11 @@ def calcular_carrinho(itens: list[dict]) -> dict:
         chave_referencia_por_grupo.setdefault(grupo, item["chave_preco"])
     # "padrao" tem 3 chaves possiveis com a mesma tabela hoje -- qualquer
     # uma serve de referencia pro rotulo/proxima faixa do grupo. "chaveiro"
-    # so tem a propria chave.
+    # so tem a propria chave. "duas_faces" tem 2 chaves com a mesma
+    # tabela (medalha_2lados/entremeio_2lados), mesmo padrao do "padrao".
     chave_referencia_por_grupo.setdefault("padrao", "16mm")
     chave_referencia_por_grupo.setdefault("chaveiro", "chaveiro")
+    chave_referencia_por_grupo.setdefault("duas_faces", "medalha_2lados")
 
     itens_calculados = []
     subtotal_total = 0.0

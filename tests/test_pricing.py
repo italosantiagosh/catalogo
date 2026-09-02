@@ -97,6 +97,48 @@ def test_calcular_carrinho_chaveiro_em_quantidade_isoladamente_bate_faixa_propri
     assert resultado["subtotal_total"] == round(200 * 8.00, 2)
 
 
+def test_calcular_preco_igual_para_medalha_2lados_e_entremeio_2lados():
+    for chave in ("medalha_2lados", "entremeio_2lados"):
+        assert calcular_preco(chave, 1) == 7.00
+        assert calcular_preco(chave, 20) == 6.00
+        assert calcular_preco(chave, 30) == 5.00
+        assert calcular_preco(chave, 50) == 4.50
+        assert calcular_preco(chave, 100) == 4.00
+        assert calcular_preco(chave, 130) == 3.75
+        assert calcular_preco(chave, 160) == 3.50
+        assert calcular_preco(chave, 300) == 3.25
+        assert calcular_preco(chave, 500) == 3.00
+        assert calcular_preco(chave, 1000) == 2.75
+        assert calcular_preco(chave, 2000) == 2.25
+
+
+def test_calcular_carrinho_medalha_2lados_e_entremeio_2lados_somam_no_mesmo_grupo():
+    itens = [
+        {"chave_preco": "medalha_2lados", "quantidade": 15},
+        {"chave_preco": "entremeio_2lados", "quantidade": 15},
+    ]
+    resultado = calcular_carrinho(itens)
+    assert resultado["grupos"]["duas_faces"]["quantidade_total"] == 30
+    # 30 juntos -> faixa dos 30 (R$5,00), mesmo cada um tendo so 15 isolado
+    for item in resultado["itens"]:
+        assert item["preco_unitario"] == 5.00
+
+
+def test_calcular_carrinho_duas_faces_nao_se_mistura_com_padrao_nem_chaveiro():
+    itens = [
+        {"chave_preco": "16mm", "quantidade": 90},
+        {"chave_preco": "chaveiro", "quantidade": 10},
+        {"chave_preco": "medalha_2lados", "quantidade": 20},
+    ]
+    resultado = calcular_carrinho(itens)
+    assert resultado["quantidade_total"] == 120
+    assert resultado["grupos"]["padrao"]["quantidade_total"] == 90
+    assert resultado["grupos"]["chaveiro"]["quantidade_total"] == 10
+    assert resultado["grupos"]["duas_faces"]["quantidade_total"] == 20
+    duas_faces_item = next(i for i in resultado["itens"] if i["chave_preco"] == "medalha_2lados")
+    assert duas_faces_item["preco_unitario"] == 6.00  # faixa 20, isolada das outras
+
+
 def test_calcular_carrinho_mudanca_de_faixa_ao_cruzar_o_limite():
     quase = calcular_carrinho([{"chave_preco": "16mm", "quantidade": 98}])
     assert quase["grupos"]["padrao"]["proxima_faixa"] == {
@@ -190,6 +232,18 @@ def test_desconto_frete_atacado_por_grupo_independente():
     assert resultado["grupos"]["chaveiro"]["quantidade_total"] == 20
     # 20 chaveiros x R$12,00 = R$240,00 -> 8% = R$19,20
     assert resultado["desconto_frete_atacado"] == 19.20
+
+
+def test_desconto_frete_atacado_duas_faces_grupo_independente():
+    # 20 medalhas_2lados x R$6,00 = R$120,00 -> 8% = R$9,60; nao mistura
+    # com a faixa varejo das 16mm que continuam abaixo do atacado
+    resultado = calcular_carrinho([
+        {"chave_preco": "16mm", "quantidade": 5},
+        {"chave_preco": "medalha_2lados", "quantidade": 20},
+    ])
+    assert resultado["grupos"]["padrao"]["quantidade_total"] == 5
+    assert resultado["grupos"]["duas_faces"]["quantidade_total"] == 20
+    assert resultado["desconto_frete_atacado"] == 9.60
 
 
 def test_desconto_frete_atacado_soma_os_dois_grupos_quando_ambos_atingem():

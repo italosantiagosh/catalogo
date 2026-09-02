@@ -143,11 +143,14 @@ const GRUPO_DE_CHAVE = {
   '16mm': 'padrao',
   entremeio: 'padrao',
   chaveiro: 'chaveiro',
+  medalha_2lados: 'duas_faces',
+  entremeio_2lados: 'duas_faces',
 };
 
 const GRUPO_LABEL = {
   padrao: 'medalhas/entremeios',
   chaveiro: 'chaveiros',
+  duas_faces: 'medalhas/entremeios de 2 lados',
 };
 
 function _blocoBarraGrupo(nomeGrupo, grupo, itensDoGrupo) {

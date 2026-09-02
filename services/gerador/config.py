@@ -222,6 +222,14 @@ MEDAL_SPECS: dict[str, MedalSpec] = {
     # Reaproveitando assets/efeito_resina.png pros tres por enquanto --
     # cliente disse que decide depois se manda um efeito de resina
     # diferente especificamente pra essas pecas.
+    # resina_radius = raio_interno + metade da espessura da borda -- pedido
+    # do usuario em 2026-09-02 (mesma ideia calibrada primeiro na medalha
+    # de 2 lados): a foto encosta so no espaco branco, mas a resina avanca
+    # visivelmente por cima do aro metalico. Espessura medida por
+    # varredura radial nos assets reais (script descartavel, mesmo metodo
+    # da medalha de 2 lados, filtrando as 3 argolas por desvio):
+    #   entremeio_prata:       raio_externo 401.2  (espessura 48.0px)
+    #   entremeio_ouro_velho:  raio_externo 446.6  (espessura 44.0px)
     "entremeio_prata": MedalSpec(
         id="entremeio_prata",
         nome="Entremeio prata (para terço)",
@@ -230,6 +238,7 @@ MEDAL_SPECS: dict[str, MedalSpec] = {
         center_x=624.4,
         center_y=538.4,
         inner_radius=353.2,
+        resina_radius=353.2 + 48.0 / 2,
         overlap_px=8,
     ),
     "entremeio_ouro_velho": MedalSpec(
@@ -240,6 +249,7 @@ MEDAL_SPECS: dict[str, MedalSpec] = {
         center_x=622.8,
         center_y=515.8,
         inner_radius=402.6,
+        resina_radius=402.6 + 44.0 / 2,
         overlap_px=8,
     ),
     "chaveiro": MedalSpec(

@@ -1,5 +1,5 @@
 {
-  "_comentario": "Tabela de atacado. Cada 'chave de preco' (12mm, 16mm, entremeio, chaveiro) tem sua propria tabela de faixas, onde a chave interna e o INICIO da faixa (quantidade). 12mm/16mm/entremeio pertencem ao mesmo GRUPO de atacado ('padrao') -- a quantidade que conta pra faixa deles e a soma de medalhas+entremeios do carrinho inteiro, misturando santos e tamanhos livremente (secao 25 do briefing original). chaveiro e um GRUPO separado ('chaveiro'): tem sua propria tabela de precos e a quantidade que conta pra faixa dele NAO se mistura com medalhas/entremeios -- ve GRUPO_DE_CHAVE em services/pricing.py. pedido_minimo_reais/frete_gratis_reais sao avaliados sobre o subtotal COMBINADO (todos os grupos juntos).",
+  "_comentario": "Tabela de atacado. Cada 'chave de preco' (12mm, 16mm, entremeio, chaveiro, medalha_2lados, entremeio_2lados) tem sua propria tabela de faixas, onde a chave interna e o INICIO da faixa (quantidade). 12mm/16mm/entremeio pertencem ao mesmo GRUPO de atacado ('padrao') -- a quantidade que conta pra faixa deles e a soma de medalhas+entremeios do carrinho inteiro, misturando santos e tamanhos livremente (secao 25 do briefing original). chaveiro e um GRUPO separado ('chaveiro'). medalha_2lados/entremeio_2lados formam o GRUPO 'duas_faces' (pedido em 2026-09-02: 'Medalhas ou Entremeios de 2 lados' tem UMA tabela so, compartilhada pelos dois -- mesmo padrao de 12mm/16mm/entremeio compartilharem a tabela 'padrao'). Cada GRUPO tem sua propria tabela de precos e a quantidade que conta pra faixa dele NAO se mistura com os outros grupos -- ve GRUPO_DE_CHAVE em services/pricing.py. pedido_minimo_reais/frete_gratis_reais sao avaliados sobre o subtotal COMBINADO (todos os grupos juntos).",
   "pedido_minimo_reais": 30.00,
   "frete_gratis_reais": 300.00,
   "12mm": {
@@ -46,5 +46,31 @@
     "100": 9.00,
     "200": 8.00,
     "300": 7.00
+  },
+  "medalha_2lados": {
+    "1": 7.00,
+    "20": 6.00,
+    "30": 5.00,
+    "50": 4.50,
+    "100": 4.00,
+    "130": 3.75,
+    "160": 3.50,
+    "300": 3.25,
+    "500": 3.00,
+    "1000": 2.75,
+    "2000": 2.25
+  },
+  "entremeio_2lados": {
+    "1": 7.00,
+    "20": 6.00,
+    "30": 5.00,
+    "50": 4.50,
+    "100": 4.00,
+    "130": 3.75,
+    "160": 3.50,
+    "300": 3.25,
+    "500": 3.00,
+    "1000": 2.75,
+    "2000": 2.25
   }
 }
