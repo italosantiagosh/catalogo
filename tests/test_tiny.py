@@ -157,6 +157,54 @@ def test_item_do_catalogo_entremeio_e_chaveiro_tambem_usam_codigo_agregado(monke
     assert pedido_json["itens"][1]["item"]["descricao"] == "Chaveiro Personalizado"
 
 
+def test_medalha_2lados_usa_codigo_por_tamanho_e_cor(monkeypatch):
+    """SKUs reais das variacoes "Medalha Personalizada de 2 lados"
+    (Tamanho x Cor) mandados pela usuaria, ver services/tiny.py:
+    _CODIGO_MATERIAL_TINY."""
+    monkeypatch.setattr(tiny, "TINY_API_TOKEN", "segredo123")
+    itens = [
+        {"chave_preco": "medalha_2lados", "quantidade": 20, "descricao": "Medalha 2 lados · Prata · 1,8 cm",
+         "valor_unitario": 6.0, "cor": "prata", "tamanho": "18mm"},
+        {"chave_preco": "medalha_2lados", "quantidade": 10, "descricao": "Medalha 2 lados · Prata · 1,4 cm",
+         "valor_unitario": 6.0, "cor": "prata", "tamanho": "14mm"},
+        {"chave_preco": "medalha_2lados", "quantidade": 5, "descricao": "Medalha 2 lados · Ouro velho · 1,8 cm",
+         "valor_unitario": 6.0, "cor": "ouro_velho", "tamanho": "18mm"},
+        {"chave_preco": "medalha_2lados", "quantidade": 5, "descricao": "Medalha 2 lados · Ouro velho · 1,4 cm",
+         "valor_unitario": 6.0, "cor": "ouro_velho", "tamanho": "14mm"},
+    ]
+    with patch("services.tiny.requests.post", return_value=_resposta_ok()) as post_mock:
+        tiny.criar_pedido_tiny(_pedido_exemplo(itens=itens))
+    pedido_json = json.loads(post_mock.call_args.kwargs["data"]["pedido"])["pedido"]
+    codigos = [i["item"]["codigo"] for i in pedido_json["itens"]]
+    descricoes = [i["item"]["descricao"] for i in pedido_json["itens"]]
+    assert codigos == ["2A6RZ54SH", "SLEK863TR", "8SSCLZ3UK", "8CDKFLKH2"]
+    assert descricoes == [
+        "Medalha Personalizada de 2 lados - 1,8cm - Prata",
+        "Medalha Personalizada de 2 lados - 1,4cm - Prata",
+        "Medalha Personalizada de 2 lados - 1,8cm - Ouro velho",
+        "Medalha Personalizada de 2 lados - 1,4cm - Ouro velho",
+    ]
+
+
+def test_entremeio_2lados_usa_codigo_por_cor(monkeypatch):
+    """SKUs reais das variacoes "Entremeio Personalizado de 2 lados"
+    (so Cor, sem tamanho -- mesma base do entremeio de 1 lado)."""
+    monkeypatch.setattr(tiny, "TINY_API_TOKEN", "segredo123")
+    itens = [
+        {"chave_preco": "entremeio_2lados", "quantidade": 8, "descricao": "Entremeio 2 lados · Prata",
+         "valor_unitario": 6.0, "cor": "prata"},
+        {"chave_preco": "entremeio_2lados", "quantidade": 4, "descricao": "Entremeio 2 lados · Ouro velho",
+         "valor_unitario": 6.0, "cor": "ouro_velho"},
+    ]
+    with patch("services.tiny.requests.post", return_value=_resposta_ok()) as post_mock:
+        tiny.criar_pedido_tiny(_pedido_exemplo(itens=itens))
+    pedido_json = json.loads(post_mock.call_args.kwargs["data"]["pedido"])["pedido"]
+    assert pedido_json["itens"][0]["item"]["codigo"] == "62LWPVMNR"
+    assert pedido_json["itens"][0]["item"]["descricao"] == "Entremeio Personalizado de 2 lados - Prata"
+    assert pedido_json["itens"][1]["item"]["codigo"] == "5TQHLBKE2"
+    assert pedido_json["itens"][1]["item"]["descricao"] == "Entremeio Personalizado de 2 lados - Ouro velho"
+
+
 def test_sem_endereco_de_entrega_diferente_nao_manda_bloco(monkeypatch):
     monkeypatch.setattr(tiny, "TINY_API_TOKEN", "segredo123")
     with patch("services.tiny.requests.post", return_value=_resposta_ok()) as post_mock:

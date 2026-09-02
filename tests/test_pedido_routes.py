@@ -236,7 +236,7 @@ def test_item_duas_faces_guarda_as_duas_fotos_separadas(client, monkeypatch):
     _preparar_admin_env(monkeypatch)
     corpo = _corpo_valido(itens=[{
         "chave_preco": "medalha_2lados", "quantidade": 20, "produtoNome": "Personalizada",
-        "formato": "medalha_2lados", "cor": "prata",
+        "formato": "medalha_2lados", "cor": "prata", "tamanho": "18mm",
         "duasFaces": True,
         "lado1": {"origem": "upload", "imagem": "data:image/png;base64,LADO1PREVIA", "imagemRecorte": "data:image/png;base64,LADO1RECORTE"},
         "lado2": {"origem": "sem_foto", "imagem": "/static/img/sem-foto.svg"},
@@ -253,7 +253,7 @@ def test_item_duas_faces_guarda_as_duas_fotos_separadas(client, monkeypatch):
     assert item["imagemRecorteLado2"] == ""
     # fallback pra qualquer lugar que so saiba mostrar "imagem" (unica)
     assert item["imagem"] == "data:image/png;base64,LADO1PREVIA"
-    assert item["detalhe"] == "Medalha 2 lados · Prata"
+    assert item["detalhe"] == "Medalha 2 lados · Prata · 1,8 cm"
 
     detalhe = client.get(f"/admin/pedidos/{criado['token']}", auth=("admin", "segredo123")).get_data(as_text=True)
     assert "Baixar lado 1 (imagem 1:1)" in detalhe

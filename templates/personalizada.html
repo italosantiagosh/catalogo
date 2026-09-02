@@ -51,11 +51,20 @@
 
     <fieldset class="tamanhos" id="sel-tamanhos">
       <legend>Tamanho *</legend>
-      <label class="opcao-tamanho">
+      <label class="opcao-tamanho opcao-tamanho-1lado">
         <input type="radio" name="tamanho" value="12mm" checked> 12 mm
       </label>
-      <label class="opcao-tamanho">
+      <label class="opcao-tamanho opcao-tamanho-1lado">
         <input type="radio" name="tamanho" value="16mm"> 16 mm
+      </label>
+      <!-- medalha_2lados usa 14/18mm em vez de 12/16mm -- mesmo preco,
+           so o tamanho fisico muda (ver conversa). Alternadas via JS
+           (atualizarSubSelecao) conforme o formato escolhido. -->
+      <label class="opcao-tamanho opcao-tamanho-2lados" hidden>
+        <input type="radio" name="tamanho" value="14mm" disabled> 14 mm
+      </label>
+      <label class="opcao-tamanho opcao-tamanho-2lados" hidden>
+        <input type="radio" name="tamanho" value="18mm" disabled> 18 mm
       </label>
     </fieldset>
 

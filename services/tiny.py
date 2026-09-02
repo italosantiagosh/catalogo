@@ -117,19 +117,35 @@ def _cliente_para_tiny(pedido: dict) -> dict:
 # estoque/relatorio de vendas por santo, so por formato+tamanho.
 #
 # IMPORTANTE: os codigos abaixo NAO sao inventados aqui -- sao os SKUs
-# reais das VARIACOES de dois produtos "pai" que a usuaria ja usa ha
-# anos na Tiny ("Medalha Personalizada", variacao Tamanho; "Entremeio
+# reais das VARIACOES dos produtos "pai" que a usuaria ja usa ha anos
+# na Tiny ("Medalha Personalizada", variacao Tamanho; "Entremeio
 # Personalizado de 1 lado", variacao Cor; ver conversa, print de
 # erp.olist.com/produtos#edit/.../variacoes). Nao precisa importar
 # nada nem cadastrar produto novo -- so mandar o codigo certo. Chaveiro
 # ja e´ um produto simples (sem variacao), codigo "Chaveiro" mesmo,
 # confirmado num pedido real que sincronizou certo.
+#
+# "Medalha Personalizada de 2 lados" (produto proprio, variacao
+# Tamanho x Cor -- 1,8cm/1,4cm × Prata/Ouro velho) e "Entremeio
+# Personalizado de 2 lados" (produto proprio, variacao so Cor) --
+# SKUs mandados pela usuaria em 2026-09-02 (print da tela de variacoes
+# do Tiny). O Tiny tambem tem um SKU cadastrado pra "Dourado" no
+# entremeio de 2 lados (V9SBJB3M3), mas o SITE ainda so oferece
+# prata/ouro velho pra esse formato -- guardado aqui mesmo assim
+# (nao atrapalha, so fica sem uso ate o site ganhar essa cor).
 _CODIGO_MATERIAL_TINY = {
     "12mm": "WSL5RSRKA",
     "16mm": "LCEHXXXNP",
     "entremeio_prata": "XQWBRR2FK",
     "entremeio_ouro_velho": "KY5EZHCF5",
     "chaveiro": "Chaveiro",
+    "medalha_2lados_18mm_prata": "2A6RZ54SH",
+    "medalha_2lados_14mm_prata": "SLEK863TR",
+    "medalha_2lados_18mm_ouro_velho": "8SSCLZ3UK",
+    "medalha_2lados_14mm_ouro_velho": "8CDKFLKH2",
+    "entremeio_2lados_prata": "62LWPVMNR",
+    "entremeio_2lados_ouro_velho": "5TQHLBKE2",
+    "entremeio_2lados_dourado": "V9SBJB3M3",
 }
 
 _DESCRICAO_MATERIAL_TINY = {
@@ -138,14 +154,26 @@ _DESCRICAO_MATERIAL_TINY = {
     "entremeio_prata": "Entremeio Personalizado de 1 lado - Prata",
     "entremeio_ouro_velho": "Entremeio Personalizado de 1 lado - Ouro velho",
     "chaveiro": "Chaveiro Personalizado",
+    "medalha_2lados_18mm_prata": "Medalha Personalizada de 2 lados - 1,8cm - Prata",
+    "medalha_2lados_14mm_prata": "Medalha Personalizada de 2 lados - 1,4cm - Prata",
+    "medalha_2lados_18mm_ouro_velho": "Medalha Personalizada de 2 lados - 1,8cm - Ouro velho",
+    "medalha_2lados_14mm_ouro_velho": "Medalha Personalizada de 2 lados - 1,4cm - Ouro velho",
+    "entremeio_2lados_prata": "Entremeio Personalizado de 2 lados - Prata",
+    "entremeio_2lados_ouro_velho": "Entremeio Personalizado de 2 lados - Ouro velho",
+    "entremeio_2lados_dourado": "Entremeio Personalizado de 2 lados - Dourado",
 }
 
 
 def _chave_material(item: dict) -> str:
     chave_preco = item.get("chave_preco", "")
+    cor = str(item.get("cor", ""))
     if chave_preco == "entremeio":
-        cor = str(item.get("cor", ""))
         return f"entremeio_{cor}" if cor else chave_preco
+    if chave_preco == "entremeio_2lados":
+        return f"entremeio_2lados_{cor}" if cor else chave_preco
+    if chave_preco == "medalha_2lados":
+        tamanho = str(item.get("tamanho", ""))
+        return f"medalha_2lados_{tamanho}_{cor}" if tamanho and cor else chave_preco
     return chave_preco
 
 

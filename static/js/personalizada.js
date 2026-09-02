@@ -85,9 +85,11 @@
   function subSelecaoCompleta() {
     const formato = formatoAtual();
     if (formato === 'medalha') return !!tamanhoAtual();
-    if (formato === 'entremeio' || formato === 'entremeio_2lados' || formato === 'medalha_2lados') {
-      return !!corAtual();
-    }
+    // medalha_2lados tem tamanho (14/18mm, mesmo preco -- so fisico) E
+    // cor (prata/ouro velho); entremeio_2lados so cor (mesma base do
+    // entremeio de 1 lado, sem opcao de tamanho).
+    if (formato === 'medalha_2lados') return !!tamanhoAtual() && !!corAtual();
+    if (formato === 'entremeio' || formato === 'entremeio_2lados') return !!corAtual();
     return true;
   }
 
@@ -132,10 +134,32 @@
     }
   }
 
+  // medalha 1 lado usa 12/16mm; medalha_2lados usa 14/18mm (mesmo preco,
+  // so o tamanho fisico muda -- ver conversa) -- alterna qual par de
+  // radios fica visivel/habilitado dentro do MESMO fieldset #sel-tamanhos.
+  const opcoesTamanho1Lado = tamanhosFieldset.querySelectorAll('.opcao-tamanho-1lado');
+  const opcoesTamanho2Lados = tamanhosFieldset.querySelectorAll('.opcao-tamanho-2lados');
+
   function atualizarSubSelecao() {
     const formato = formatoAtual();
-    tamanhosFieldset.hidden = formato !== 'medalha';
+    const usar2ladosTamanho = formato === 'medalha_2lados';
+    tamanhosFieldset.hidden = formato !== 'medalha' && formato !== 'medalha_2lados';
     coresFieldset.hidden = !(formato === 'entremeio' || formato === 'entremeio_2lados' || formato === 'medalha_2lados');
+
+    opcoesTamanho1Lado.forEach((label) => {
+      label.hidden = usar2ladosTamanho;
+      label.querySelector('input').disabled = usar2ladosTamanho;
+    });
+    opcoesTamanho2Lados.forEach((label) => {
+      label.hidden = !usar2ladosTamanho;
+      label.querySelector('input').disabled = !usar2ladosTamanho;
+    });
+    if (!tamanhosFieldset.hidden) {
+      const parAtivo = usar2ladosTamanho ? opcoesTamanho2Lados : opcoesTamanho1Lado;
+      const jaTemMarcado = Array.from(parAtivo).some((label) => label.querySelector('input').checked);
+      if (!jaTemMarcado) parAtivo[0].querySelector('input').checked = true;
+    }
+
     // quantidade so e´ perguntada UMA vez, na tela final -- em item de 2
     // lados isso e´ depois dos dois lados prontos (view-preview-duas-faces),
     // nao aqui em cada lado.
@@ -150,7 +174,14 @@
     const temArquivo = inputImagem.files.length > 0;
 
     if (!completo) {
-      botaoEnviar.textContent = formatoAtual() === 'medalha' ? 'Selecione um tamanho' : 'Selecione uma cor';
+      const formato = formatoAtual();
+      if (formato === 'medalha') {
+        botaoEnviar.textContent = 'Selecione um tamanho';
+      } else if (formato === 'medalha_2lados' && !tamanhoAtual()) {
+        botaoEnviar.textContent = 'Selecione um tamanho';
+      } else {
+        botaoEnviar.textContent = 'Selecione uma cor';
+      }
     } else if (!temArquivo) {
       botaoEnviar.textContent = 'Selecione uma imagem';
     } else {
@@ -621,6 +652,7 @@
       formato: formatoAtual(),
       chave_preco: chavePrecoAtual(),
       cor: corAtual(),
+      tamanho: tamanhoAtual(),
       quantidade,
       semImagem: semFoto1 && semFoto2,
       lado1: resultadoLado1,

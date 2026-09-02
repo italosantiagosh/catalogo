@@ -63,7 +63,7 @@
   const boletoAviso2DiasEl = document.getElementById('boleto-aviso-2dias');
   if (!listaEl) return;
 
-  const TAMANHO_LABEL = { '12mm': '1,2 cm', '16mm': '1,6 cm' };
+  const TAMANHO_LABEL = { '12mm': '1,2 cm', '16mm': '1,6 cm', '14mm': '1,4 cm', '18mm': '1,8 cm' };
   const COR_LABEL = { prata: 'Prata', ouro_velho: 'Ouro velho' };
   const FORMATO_LABEL = {
     medalha: 'Medalha', entremeio: 'Entremeio', chaveiro: 'Chaveiro',
@@ -151,8 +151,11 @@
     const formato = item.formato || 'medalha';
     if (formato === 'entremeio') return `${FORMATO_LABEL.entremeio} · ${COR_LABEL[item.cor] || item.cor}`;
     if (formato === 'chaveiro') return FORMATO_LABEL.chaveiro;
-    if (formato === 'medalha_2lados' || formato === 'entremeio_2lados') {
+    if (formato === 'entremeio_2lados') {
       return `${FORMATO_LABEL[formato]} · ${COR_LABEL[item.cor] || item.cor}`;
+    }
+    if (formato === 'medalha_2lados') {
+      return `${FORMATO_LABEL[formato]} · ${COR_LABEL[item.cor] || item.cor} · ${TAMANHO_LABEL[item.tamanho] || item.tamanho}`;
     }
     return `${FORMATO_LABEL.medalha} · ${TAMANHO_LABEL[item.tamanho] || item.tamanho}`;
   }
