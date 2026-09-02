@@ -142,6 +142,12 @@
 
     a.ver, a.editar { color: var(--azul-escuro); font-weight: 700; text-decoration: none; margin-right: 12px; font-size: 0.82rem; }
     a.ver:hover, a.editar:hover { text-decoration: underline; }
+    .form-arquivar { display: inline; }
+    .link-acao {
+      background: none; border: none; padding: 0; margin: 0; font: inherit; cursor: pointer;
+      color: var(--azul-escuro); font-weight: 700; font-size: 0.82rem;
+    }
+    .link-acao:hover { text-decoration: underline; }
     .vazio { padding: 40px 24px; text-align: center; color: var(--texto-suave); background: var(--cartao); border-radius: 14px; }
     .cliente-email { color: var(--texto-suave); font-size: 0.76rem; }
     .tiny-erro { color: #a1332a; }
@@ -188,7 +194,7 @@
       }
       td.linha-cabecalho { padding-top: 12px; }
       td.linha-acoes { padding-bottom: 12px; }
-      td.linha-acoes a { display: inline-block; margin-top: 2px; }
+      td.linha-acoes a, td.linha-acoes .form-arquivar { display: inline-block; margin-top: 2px; }
     }
   </style>
 </head>
@@ -239,27 +245,34 @@
       <a href="{{ url_for('admin_pedidos', status='entregue') }}" class="{{ 'ativo' if status_filtro == 'entregue' else '' }}">Entregues</a>
       <a href="{{ url_for('admin_pedidos', status='cancelado') }}" class="{{ 'ativo' if status_filtro == 'cancelado' else '' }}">Cancelados</a>
       <a href="{{ url_for('admin_pedidos', status='excluido') }}" class="{{ 'ativo' if status_filtro == 'excluido' else '' }}">Excluídos</a>
+      <a href="{{ url_for('admin_pedidos', arquivados='1') }}" class="{{ 'ativo' if mostrar_arquivados else '' }}">📦 Arquivados</a>
     </div>
 
     {% if pedidos %}
       <form method="post" action="{{ url_for('admin_pedidos_acao_em_massa') }}" id="form-massa">
         <input type="hidden" name="status_filtro" value="{{ status_filtro or '' }}">
+        <input type="hidden" name="arquivados" value="{{ '1' if mostrar_arquivados else '' }}">
         <div class="barra-massa" id="barra-massa">
           <span id="contagem-selecionados">0 selecionados</span>
-          <button type="submit" name="acao" value="tiny">Sincronizar com Tiny</button>
-          <button type="submit" name="acao" value="email">Reenviar e-mail</button>
-          <select name="novo_status">
-            <option value="pago">Pago</option>
-            <option value="faturado">Faturado</option>
-            <option value="enviado">Enviado</option>
-            <option value="entregue">Entregue</option>
-          </select>
-          <button type="submit" name="acao" value="status">Mudar status</button>
-          <input type="text" name="motivo" placeholder="Motivo da exclusão">
-          <button type="submit" name="acao" value="excluir" class="perigo"
-                  onclick="return confirm('Excluir os pedidos selecionados? Cada cliente recebe um e-mail avisando.');">
-            🗑️ Excluir selecionados
-          </button>
+          {% if not mostrar_arquivados %}
+            <button type="submit" name="acao" value="tiny">Sincronizar com Tiny</button>
+            <button type="submit" name="acao" value="email">Reenviar e-mail</button>
+            <select name="novo_status">
+              <option value="pago">Pago</option>
+              <option value="faturado">Faturado</option>
+              <option value="enviado">Enviado</option>
+              <option value="entregue">Entregue</option>
+            </select>
+            <button type="submit" name="acao" value="status">Mudar status</button>
+            <input type="text" name="motivo" placeholder="Motivo da exclusão">
+            <button type="submit" name="acao" value="excluir" class="perigo"
+                    onclick="return confirm('Excluir os pedidos selecionados? Cada cliente recebe um e-mail avisando.');">
+              🗑️ Excluir selecionados
+            </button>
+            <button type="submit" name="acao" value="arquivar">📦 Arquivar selecionados</button>
+          {% else %}
+            <button type="submit" name="acao" value="desarquivar">↩️ Desarquivar selecionados</button>
+          {% endif %}
         </div>
         <div class="tabela-wrap">
           <table>
@@ -323,6 +336,12 @@
                 <td class="linha-acoes">
                   <a class="editar" href="{{ url_for('admin_pedido_detalhe', token=pedido.token) }}">editar</a>
                   <a class="ver" href="{{ url_for('ver_pedido', token=pedido.token) }}" target="_blank" rel="noopener">ver →</a>
+                  <form method="post" class="form-arquivar"
+                        action="{{ url_for('admin_pedido_desarquivar' if mostrar_arquivados else 'admin_pedido_arquivar', token=pedido.token) }}">
+                    <input type="hidden" name="status_filtro" value="{{ status_filtro or '' }}">
+                    <input type="hidden" name="arquivados" value="{{ '1' if mostrar_arquivados else '' }}">
+                    <button type="submit" class="link-acao">{{ '↩️ desarquivar' if mostrar_arquivados else '📦 arquivar' }}</button>
+                  </form>
                 </td>
               </tr>
             {% endfor %}
@@ -331,7 +350,7 @@
         </div>
       </form>
     {% else %}
-      <p class="vazio">Nenhum pedido ainda.</p>
+      <p class="vazio">{{ 'Nenhum pedido arquivado.' if mostrar_arquivados else 'Nenhum pedido ainda.' }}</p>
     {% endif %}
   </div>
 

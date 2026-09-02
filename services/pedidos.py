@@ -179,6 +179,12 @@ _COLUNAS_ADICIONAIS: list[tuple[str, str]] = [
     # -- disparado na primeira vez que link_nota_fiscal e´ preenchido.
     ("email_nota_fiscal_enviado", "INTEGER NOT NULL DEFAULT 0"),
     ("email_nota_fiscal_erro", "TEXT"),
+    # Arquivamento pelo painel admin (ver conversa) -- so tira o pedido
+    # da lista principal pra desafogar o painel, SEM mudar o status nem
+    # avisar o cliente (diferente de excluir_pedido acima, que muda
+    # status e manda e-mail). Reversivel a qualquer momento.
+    ("arquivado", "INTEGER NOT NULL DEFAULT 0"),
+    ("arquivado_em", "TEXT"),
 ]
 
 # Fluxo de status depois de "pago" -- alteravel manualmente pelo painel
@@ -311,17 +317,22 @@ def criar_pedido(
     return obter_pedido(token)
 
 
-def listar_pedidos(*, status: str | None = None, limite: int = 200) -> list[dict]:
+def listar_pedidos(*, status: str | None = None, arquivados: bool = False, limite: int = 200) -> list[dict]:
     """Usado pelo painel interno (/admin/pedidos, ver app.py) -- mais
-    recentes primeiro."""
+    recentes primeiro. `arquivado` e´ independente do `status` (ver
+    arquivar_pedido abaixo): por padrao (arquivados=False) a lista
+    principal e os filtros por status NUNCA mostram pedido arquivado,
+    pra realmente desafogar o painel; arquivados=True inverte e mostra
+    so os arquivados (opcionalmente ainda filtrados por status)."""
     inicializar_db()
-    consulta = "SELECT * FROM pedidos"
-    parametros: tuple = ()
+    condicoes = ["arquivado = ?"]
+    parametros: list = [1 if arquivados else 0]
     if status:
-        consulta += " WHERE status = ?"
-        parametros = (status,)
+        condicoes.append("status = ?")
+        parametros.append(status)
+    consulta = "SELECT * FROM pedidos WHERE " + " AND ".join(condicoes)
     consulta += " ORDER BY criado_em DESC LIMIT ?"
-    parametros = parametros + (limite,)
+    parametros.append(limite)
     with _conexao() as conexao:
         linhas = conexao.execute(consulta, parametros).fetchall()
     pedidos = []
@@ -1012,6 +1023,36 @@ def excluir_pedido(token: str, *, motivo: str) -> dict | None:
         conexao.execute(
             "UPDATE pedidos SET status = 'excluido', excluido_em = ?, excluido_motivo = ? WHERE token = ?",
             (agora, motivo, token),
+        )
+    return obter_pedido(token)
+
+
+def arquivar_pedido(token: str) -> dict | None:
+    """Tira o pedido da lista principal do painel (ver
+    app.py:admin_pedido_arquivar) -- NAO muda o status nem avisa o
+    cliente, so marca arquivado=1 pra sumir da visao do dia a dia
+    (pedidos antigos/resolvidos que so ocupam espaco na lista). De
+    QUALQUER status, inclusive excluido/cancelado. Reversivel a
+    qualquer momento via desarquivar_pedido."""
+    if obter_pedido(token) is None:
+        return None
+    agora = datetime.now(timezone.utc).isoformat()
+    with _conexao() as conexao:
+        conexao.execute(
+            "UPDATE pedidos SET arquivado = 1, arquivado_em = ? WHERE token = ?",
+            (agora, token),
+        )
+    return obter_pedido(token)
+
+
+def desarquivar_pedido(token: str) -> dict | None:
+    """Desfaz arquivar_pedido -- volta o pedido pra lista principal."""
+    if obter_pedido(token) is None:
+        return None
+    with _conexao() as conexao:
+        conexao.execute(
+            "UPDATE pedidos SET arquivado = 0, arquivado_em = NULL WHERE token = ?",
+            (token,),
         )
     return obter_pedido(token)
 

@@ -126,11 +126,13 @@ from services.documentos import documento_valido, numero_whatsapp, telefone_vali
 from services.frete import calcular_frete
 from services.infinitepay import criar_link_pagamento
 from services.pedidos import (
+    arquivar_pedido,
     atualizar_status,
     cancelar_pedido,
     confirmar_venda_manual,
     contagem_pedidos_por_status,
     criar_pedido,
+    desarquivar_pedido,
     editar_valor,
     estatisticas_hoje,
     excluir_pedido,
@@ -1049,6 +1051,26 @@ def _detalhe_formato_do_item(item: dict) -> str:
     return f"{_FORMATO_LABEL['medalha']} · {_TAMANHO_LABEL.get(tamanho, tamanho)}"
 
 
+# So pro CSV de producao (ver admin_pedido_csv) -- pedido do usuario:
+# a coluna "Modelo" ("Modelo 1", "Modelo 2"...) so precisa do numero, e
+# a coluna "Variação" so precisa do tamanho da medalha (12/16) ou
+# "(chaveiro)", em vez do texto por extenso usado no resto do site.
+_VARIACAO_CSV_LABEL = {"12mm": "12", "16mm": "16", "chaveiro": "(chaveiro)"}
+
+
+def _modelo_csv_do_item(item: dict) -> str:
+    nome = str(item.get("modeloNome", ""))
+    prefixo = "Modelo "
+    return nome[len(prefixo):] if nome.startswith(prefixo) else nome
+
+
+def _variacao_csv_do_item(item: dict) -> str:
+    """Entremeio mantem o detalhe por extenso (ex: "Entremeio · Prata")
+    -- e´ o unico formato que carrega a cor, que a producao precisa e
+    nao esta em nenhum outro campo curto."""
+    return _VARIACAO_CSV_LABEL.get(str(item.get("chave_preco", "")), str(item.get("detalhe", "")))
+
+
 _PREFIXO_IMAGEM_PERSONALIZADA = "/imagem-personalizada/"
 
 
@@ -1867,11 +1889,13 @@ def admin_pedidos():
             "Autenticação necessária.", 401, {"WWW-Authenticate": 'Basic realm="Painel de pedidos"'}
         )
     status_filtro = request.args.get("status") or None
-    pedidos = listar_pedidos(status=status_filtro)
+    mostrar_arquivados = request.args.get("arquivados") == "1"
+    pedidos = listar_pedidos(status=status_filtro, arquivados=mostrar_arquivados)
     return render_template(
         "admin_pedidos.html",
         pedidos=pedidos,
         status_filtro=status_filtro,
+        mostrar_arquivados=mostrar_arquivados,
         vapid_chave_publica=obter_application_server_key(),
         estatisticas=estatisticas_hoje(),
     )
@@ -1909,7 +1933,7 @@ def admin_pedido_csv(token: str):
     escritor.writerow(["Produto", "Modelo", "Variação", "Quantidade"])
     for item in pedido["itens"]:
         escritor.writerow(
-            [item.get("produtoNome", ""), item.get("modeloNome", ""), item.get("detalhe", ""), item["quantidade"]]
+            [item.get("produtoNome", ""), _modelo_csv_do_item(item), _variacao_csv_do_item(item), item["quantidade"]]
         )
 
     # utf-8-sig (BOM no inicio) -- Excel no Windows so reconhece acento
@@ -2218,6 +2242,45 @@ def admin_pedido_excluir(token: str):
     return redirect(url_for("admin_pedidos"))
 
 
+def _redirecionar_pos_arquivamento():
+    """Volta pro mesmo filtro/aba de onde a acao de arquivar/desarquivar
+    veio (ver botao individual na lista e o form da tela de detalhe) --
+    mesmo padrao ja usado em admin_pedidos_acao_em_massa, pra nao jogar
+    o admin de volta pra lista sem filtro nenhum."""
+    status_filtro = str(request.form.get("status_filtro", "")).strip() or None
+    arquivados = request.form.get("arquivados") == "1"
+    if status_filtro or arquivados:
+        return redirect(url_for("admin_pedidos", status=status_filtro, arquivados="1" if arquivados else None))
+    return redirect(url_for("admin_pedidos"))
+
+
+@app.route("/admin/pedidos/<token>/arquivar", methods=["POST"])
+def admin_pedido_arquivar(token: str):
+    """Tira o pedido da lista principal do painel, sem mudar status nem
+    avisar o cliente (ver conversa: desafogar o painel de pedidos
+    antigos/resolvidos, diferente de excluir). Reversivel a qualquer
+    momento pelo filtro "Arquivados" (ver admin_pedido_desarquivar)."""
+    if not _autenticacao_admin_valida(request.authorization):
+        return Response(
+            "Autenticação necessária.", 401, {"WWW-Authenticate": 'Basic realm="Painel de pedidos"'}
+        )
+    if arquivar_pedido(token) is None:
+        abort(404)
+    return _redirecionar_pos_arquivamento()
+
+
+@app.route("/admin/pedidos/<token>/desarquivar", methods=["POST"])
+def admin_pedido_desarquivar(token: str):
+    """Desfaz admin_pedido_arquivar -- volta o pedido pra lista principal."""
+    if not _autenticacao_admin_valida(request.authorization):
+        return Response(
+            "Autenticação necessária.", 401, {"WWW-Authenticate": 'Basic realm="Painel de pedidos"'}
+        )
+    if desarquivar_pedido(token) is None:
+        abort(404)
+    return _redirecionar_pos_arquivamento()
+
+
 def _sincronizar_pedido_tiny(token: str) -> str | None:
     """Sincroniza (ou tenta de novo) com a Tiny na mao -- usado pelo
     botao individual (admin_pedido_reenviar_tiny) e pela acao em massa
@@ -2446,9 +2509,16 @@ def admin_pedidos_acao_em_massa():
                 pedido_excluido = excluir_pedido(token, motivo=motivo)
                 if pedido_excluido:
                     enviar_pedido_excluido(pedido_excluido, motivo, url_for("catalogo_completo", _external=True))
+    elif tokens and acao == "arquivar":
+        for token in tokens:
+            arquivar_pedido(token)
+    elif tokens and acao == "desarquivar":
+        for token in tokens:
+            desarquivar_pedido(token)
 
-    if status_filtro:
-        return redirect(url_for("admin_pedidos", status=status_filtro))
+    arquivados = request.form.get("arquivados") == "1"
+    if status_filtro or arquivados:
+        return redirect(url_for("admin_pedidos", status=status_filtro, arquivados="1" if arquivados else None))
     return redirect(url_for("admin_pedidos"))
 
 

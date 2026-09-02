@@ -823,6 +823,105 @@ def test_excluir_pedido_inexistente_404(client, monkeypatch):
     assert resposta.status_code == 404
 
 
+def test_arquivar_pedido_some_da_lista_padrao_mas_continua_no_status(client, monkeypatch):
+    """Ver conversa: arquivar so tira o pedido da lista principal do
+    painel, sem mudar status nem mandar e-mail nenhum -- diferente de
+    excluir."""
+    _preparar_admin(monkeypatch)
+    with patch("app.criar_link_pagamento", return_value={"url": "https://checkout.infinitepay.io/abc"}):
+        criado = client.post("/api/pedido/criar", json=_corpo_valido()).get_json()
+
+    with patch("app.enviar_pedido_excluido") as mock_email:
+        resposta = client.post(
+            f"/admin/pedidos/{criado['token']}/arquivar", auth=("admin", "segredo123")
+        )
+    assert resposta.status_code == 302
+    mock_email.assert_not_called()
+
+    pedido = pedidos.obter_pedido(criado["token"])
+    assert pedido["arquivado"] == 1
+    assert pedido["arquivado_em"] is not None
+    assert pedido["status"] == "pendente"
+
+    painel = client.get("/admin/pedidos", auth=("admin", "segredo123")).get_data(as_text=True)
+    assert criado["codigo"] not in painel
+
+    painel_arquivados = client.get(
+        "/admin/pedidos?arquivados=1", auth=("admin", "segredo123")
+    ).get_data(as_text=True)
+    assert criado["codigo"] in painel_arquivados
+
+
+def test_desarquivar_pedido_volta_pra_lista_padrao(client, monkeypatch):
+    _preparar_admin(monkeypatch)
+    with patch("app.criar_link_pagamento", return_value={"url": "https://checkout.infinitepay.io/abc"}):
+        criado = client.post("/api/pedido/criar", json=_corpo_valido()).get_json()
+    client.post(f"/admin/pedidos/{criado['token']}/arquivar", auth=("admin", "segredo123"))
+
+    resposta = client.post(
+        f"/admin/pedidos/{criado['token']}/desarquivar", auth=("admin", "segredo123")
+    )
+    assert resposta.status_code == 302
+
+    pedido = pedidos.obter_pedido(criado["token"])
+    assert pedido["arquivado"] == 0
+    assert pedido["arquivado_em"] is None
+
+    painel = client.get("/admin/pedidos", auth=("admin", "segredo123")).get_data(as_text=True)
+    assert criado["codigo"] in painel
+
+
+def test_arquivar_pedido_exige_autenticacao(client, monkeypatch):
+    _preparar_admin(monkeypatch)
+    with patch("app.criar_link_pagamento", return_value={"url": "https://checkout.infinitepay.io/abc"}):
+        criado = client.post("/api/pedido/criar", json=_corpo_valido()).get_json()
+    resposta = client.post(f"/admin/pedidos/{criado['token']}/arquivar")
+    assert resposta.status_code == 401
+
+
+def test_arquivar_pedido_inexistente_404(client, monkeypatch):
+    _preparar_admin(monkeypatch)
+    resposta = client.post("/admin/pedidos/nao-existe/arquivar", auth=("admin", "segredo123"))
+    assert resposta.status_code == 404
+
+
+def test_arquivar_pedido_preserva_filtro_de_status_no_redirect(client, monkeypatch):
+    _preparar_admin(monkeypatch)
+    with patch("app.criar_link_pagamento", return_value={"url": "https://checkout.infinitepay.io/abc"}):
+        criado = client.post("/api/pedido/criar", json=_corpo_valido()).get_json()
+
+    resposta = client.post(
+        f"/admin/pedidos/{criado['token']}/arquivar",
+        data={"status_filtro": "pendente"},
+        auth=("admin", "segredo123"),
+    )
+    assert resposta.headers["Location"].endswith("status=pendente")
+
+
+def test_acao_em_massa_arquiva_e_desarquiva_varios(client, monkeypatch):
+    _preparar_admin(monkeypatch)
+    with patch("app.criar_link_pagamento", return_value={"url": "https://checkout.infinitepay.io/abc"}):
+        p1 = client.post("/api/pedido/criar", json=_corpo_valido()).get_json()
+        p2 = client.post("/api/pedido/criar", json=_corpo_valido()).get_json()
+
+    resposta = client.post(
+        "/admin/pedidos/acao-em-massa",
+        data={"tokens": [p1["token"], p2["token"]], "acao": "arquivar"},
+        auth=("admin", "segredo123"),
+    )
+    assert resposta.status_code == 302
+    assert pedidos.obter_pedido(p1["token"])["arquivado"] == 1
+    assert pedidos.obter_pedido(p2["token"])["arquivado"] == 1
+
+    client.post(
+        "/admin/pedidos/acao-em-massa",
+        data={"tokens": [p1["token"]], "acao": "desarquivar", "arquivados": "1"},
+        auth=("admin", "segredo123"),
+    )
+    assert pedidos.obter_pedido(p1["token"])["arquivado"] == 0
+    assert pedidos.obter_pedido(p2["token"])["arquivado"] == 1
+
+
 def _pagar_pedido(client, token):
     client.post(
         "/webhook/infinitepay",

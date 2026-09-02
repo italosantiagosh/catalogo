@@ -290,7 +290,36 @@ def test_admin_csv_conteudo(client, monkeypatch):
     assert resposta.mimetype == "text/csv"
     corpo_csv = resposta.get_data().decode("utf-8-sig")
     assert "Produto;Modelo;Variação;Quantidade" in corpo_csv
-    assert "São José;Modelo 1;Medalha · 1,6 cm;10" in corpo_csv
+    # Ver conversa: "Modelo 1" vira so "1" e o tamanho da medalha vira
+    # so "16" (em vez do texto por extenso "Medalha · 1,6 cm"), pra
+    # bater com como o usuario le a planilha de producao.
+    assert "São José;1;16;10" in corpo_csv
+
+
+def test_admin_csv_chaveiro_e_entremeio(client, monkeypatch):
+    """Chaveiro vira "(chaveiro)" no CSV; entremeio mantem o detalhe por
+    extenso (unico jeito de a producao ver a cor -- ver conversa)."""
+    import app as app_module
+
+    monkeypatch.setattr(app_module, "ADMIN_USER", "admin")
+    monkeypatch.setattr(app_module, "ADMIN_PASSWORD", "segredo123")
+    corpo = _corpo_valido(itens=[
+        {
+            "chave_preco": "chaveiro", "quantidade": 5, "produtoNome": "São José", "modeloNome": "Modelo 2",
+            "formato": "chaveiro",
+        },
+        {
+            "chave_preco": "entremeio", "quantidade": 8, "produtoNome": "São José", "modeloNome": "Modelo 3",
+            "formato": "entremeio", "cor": "ouro_velho",
+        },
+    ])
+    with patch("app.criar_link_pagamento", return_value={"url": "https://checkout.infinitepay.io/abc"}):
+        criado = client.post("/api/pedido/criar", json=corpo).get_json()
+
+    resposta = client.get(f"/admin/pedidos/{criado['token']}/csv", auth=("admin", "segredo123"))
+    corpo_csv = resposta.get_data().decode("utf-8-sig")
+    assert "São José;2;(chaveiro);5" in corpo_csv
+    assert "São José;3;Entremeio · Ouro velho;8" in corpo_csv
 
 
 def test_criar_pedido_envia_email_com_link_uma_vez(client):

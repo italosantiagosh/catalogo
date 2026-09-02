@@ -18,6 +18,7 @@
     .status-cancelado { background: #fbe3e0; color: #a13a2a; }
     .status-whatsapp { background: #dcf4e3; color: #1c7d3f; }
     .status-excluido { background: #f0f0f0; color: #5b6b82; }
+    .status-arquivado { background: #ece5d8; color: #7a5c1f; margin-left: 6px; }
     .bloco { background: #fff; border-radius: 10px; padding: 16px; margin: 0 0 16px; }
     .bloco h2 { font-size: 0.95rem; margin: 0 0 8px; }
     .bloco p { font-size: 0.88rem; margin: 0 0 4px; }
@@ -60,6 +61,7 @@
   <a class="voltar" href="{{ url_for('admin_pedidos') }}">← Todos os pedidos</a>
   <h1>Pedido #{{ pedido.codigo }}</h1>
   <span class="status status-{{ pedido.status }}">{{ pedido.status }}</span>
+  {% if pedido.arquivado %}<span class="status status-arquivado">📦 arquivado</span>{% endif %}
 
   {% if pedido.status == 'whatsapp' %}
     <div class="bloco">
@@ -819,6 +821,23 @@
       atualizarCamposRastreio();
     </script>
   {% endif %}
+
+  <div class="bloco">
+    <h2>{{ 'Pedido arquivado' if pedido.arquivado else 'Arquivar pedido' }}</h2>
+    {% if pedido.arquivado %}
+      <p>Arquivado em {{ pedido.arquivado_em | data_br }} -- some da lista principal do painel, mas continua
+      igual em tudo mais.</p>
+      <form method="post" action="{{ url_for('admin_pedido_desarquivar', token=pedido.token) }}">
+        <button type="submit">↩️ Desarquivar</button>
+      </form>
+    {% else %}
+      <p>Tira esse pedido da lista principal do painel pra desafogar a visão do dia a dia -- não muda o
+      status nem avisa o cliente, e pode desfazer quando quiser.</p>
+      <form method="post" action="{{ url_for('admin_pedido_arquivar', token=pedido.token) }}">
+        <button type="submit">📦 Arquivar</button>
+      </form>
+    {% endif %}
+  </div>
 
   {% if pedido.status == 'excluido' %}
     <div class="bloco">

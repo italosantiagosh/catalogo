@@ -184,6 +184,47 @@ def test_atualizar_status_pedido_inexistente_devolve_none(monkeypatch, tmp_path)
     assert pedidos.atualizar_status("token-que-nao-existe", "faturado") is None
 
 
+def test_arquivar_pedido_marca_arquivado_e_nao_muda_status(monkeypatch, tmp_path):
+    _reapontar_db(monkeypatch, tmp_path)
+    pedido = pedidos.criar_pedido(**_pedido_exemplo())
+    pedidos.marcar_pago(pedido["token"], forma_pagamento="pix", parcelas=None, valor_pago=140.0, transaction_nsu="123")
+
+    atualizado = pedidos.arquivar_pedido(pedido["token"])
+    assert atualizado["arquivado"] == 1
+    assert atualizado["arquivado_em"] is not None
+    assert atualizado["status"] == "pago"
+
+
+def test_desarquivar_pedido_reverte(monkeypatch, tmp_path):
+    _reapontar_db(monkeypatch, tmp_path)
+    pedido = pedidos.criar_pedido(**_pedido_exemplo())
+    pedidos.arquivar_pedido(pedido["token"])
+
+    atualizado = pedidos.desarquivar_pedido(pedido["token"])
+    assert atualizado["arquivado"] == 0
+    assert atualizado["arquivado_em"] is None
+
+
+def test_arquivar_pedido_inexistente_devolve_none(monkeypatch, tmp_path):
+    _reapontar_db(monkeypatch, tmp_path)
+    assert pedidos.arquivar_pedido("token-que-nao-existe") is None
+    assert pedidos.desarquivar_pedido("token-que-nao-existe") is None
+
+
+def test_listar_pedidos_por_padrao_esconde_arquivados(monkeypatch, tmp_path):
+    _reapontar_db(monkeypatch, tmp_path)
+    visivel = pedidos.criar_pedido(**_pedido_exemplo())
+    arquivado = pedidos.criar_pedido(**_pedido_exemplo())
+    pedidos.arquivar_pedido(arquivado["token"])
+
+    tokens = {p["token"] for p in pedidos.listar_pedidos()}
+    assert visivel["token"] in tokens
+    assert arquivado["token"] not in tokens
+
+    tokens_arquivados = {p["token"] for p in pedidos.listar_pedidos(arquivados=True)}
+    assert tokens_arquivados == {arquivado["token"]}
+
+
 def test_marcar_email_lembrete_enviado(monkeypatch, tmp_path):
     _reapontar_db(monkeypatch, tmp_path)
     pedido = pedidos.criar_pedido(**_pedido_exemplo())
