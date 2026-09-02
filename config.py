@@ -298,15 +298,47 @@ PROCURADOS_HOME = ["sao-miguel", "sao-bento", "nossa-senhora-aparecida", "nossa-
 # ver app.py:_itens_personalizados_do_grid, que monta o card reaproveitando
 # o mesmo layout dos produtos normais, so que o link vai pra /personalizada
 # com o formato certo pre-selecionado (?formato=...) em vez de /produto/<id>.
-# thumbnail e sempre static/img/imagem-personalizada.png (arquivo enviado
-# pelo usuario). "cor" so entra na URL pros formatos que exigem escolher
-# prata/ouro velho antes de simular (entremeio e os dois "2 lados").
+# "cor" so entra na URL pros formatos que exigem escolher prata/ouro velho
+# antes de simular (entremeio e os dois "2 lados").
+#
+# thumbnail: mockup real (gerado com services/gerador/compose_medal, mesma
+# pipeline usada na simulacao) da peca com a imagem-placeholder "Imagem
+# Personalizada" dentro, pra dar uma previa de verdade no card em vez do
+# retangulo plano da imagem original (pedido 2026-09-02: "Nos cards e pra
+# aparecer a previa com essa 'Imagem Personalizada' dentro"). Os formatos
+# "2 lados" usam uma imagem com os 2 mockups lado a lado (mesmo placeholder
+# nos dois lados, ja que ainda nao foi enviada foto de verdade).
 PRODUTOS_PERSONALIZADOS = [
-    {"id": "personalizada-medalha-1lado", "nome": "Medalha de 1 lado Personalizada", "formato": "medalha"},
-    {"id": "personalizada-medalha-2lados", "nome": "Medalha de 2 lados Personalizada", "formato": "medalha_2lados"},
-    {"id": "personalizada-entremeio-1lado", "nome": "Entremeio de 1 lado Personalizado", "formato": "entremeio"},
-    {"id": "personalizada-entremeio-2lados", "nome": "Entremeio de 2 lados Personalizado", "formato": "entremeio_2lados"},
-    {"id": "personalizada-chaveiro", "nome": "Chaveiro Personalizado", "formato": "chaveiro"},
+    {
+        "id": "personalizada-medalha-1lado",
+        "nome": "Medalha de 1 lado Personalizada",
+        "formato": "medalha",
+        "thumbnail": "img/personalizada-medalha-1lado.jpg",
+    },
+    {
+        "id": "personalizada-medalha-2lados",
+        "nome": "Medalha de 2 lados Personalizada",
+        "formato": "medalha_2lados",
+        "thumbnail": "img/personalizada-medalha-2lados.jpg",
+    },
+    {
+        "id": "personalizada-entremeio-1lado",
+        "nome": "Entremeio de 1 lado Personalizado",
+        "formato": "entremeio",
+        "thumbnail": "img/personalizada-entremeio-1lado.jpg",
+    },
+    {
+        "id": "personalizada-entremeio-2lados",
+        "nome": "Entremeio de 2 lados Personalizado",
+        "formato": "entremeio_2lados",
+        "thumbnail": "img/personalizada-entremeio-2lados.jpg",
+    },
+    {
+        "id": "personalizada-chaveiro",
+        "nome": "Chaveiro Personalizado",
+        "formato": "chaveiro",
+        "thumbnail": "img/personalizada-chaveiro.jpg",
+    },
 ]
 CATEGORIA_PERSONALIZADOS = "Personalizada"
 

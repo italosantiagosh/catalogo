@@ -747,24 +747,23 @@ def _itens_do_grid(produtos: list[dict]) -> list[dict]:
     ]
 
 
-_THUMBNAIL_PERSONALIZADOS = "img/imagem-personalizada.png"
-
-
 def _itens_personalizados_do_grid() -> list[dict]:
     """"Produtos" da personalizada (config.py:PRODUTOS_PERSONALIZADOS) no
     MESMO formato de _itens_do_grid, pra entrar direto na grade/busca do
-    catalogo -- so que "thumbnail" e´ sempre a imagem placeholder e o
-    card, em vez de ir pra /produto/<id>, manda pra /personalizada com o
-    formato certo pre-selecionado (ver templates/catalogo.html e
-    api_busca, que usam "personalizada_url" quando presente em vez de
-    montar url_for('produto', ...))."""
+    catalogo -- so que "thumbnail" e´ o mockup real de cada peca (ver
+    PRODUTOS_PERSONALIZADOS) e o card, em vez de ir pra /produto/<id>,
+    manda pra /personalizada com o formato certo pre-selecionado (ver
+    templates/catalogo.html e api_busca, que usam "personalizada_url"
+    quando presente em vez de montar url_for('produto', ...)).
+    thumbnail_chaveiro = thumbnail (sem "alt" de verdade pra esses cards --
+    cada item ja e´ um formato especifico, nao um santo com varias fotos)."""
     return [
         {
             "id": p["id"],
             "nome": p["nome"],
             "categoria": CATEGORIA_PERSONALIZADOS,
-            "thumbnail": _THUMBNAIL_PERSONALIZADOS,
-            "thumbnail_chaveiro": _THUMBNAIL_PERSONALIZADOS,
+            "thumbnail": p["thumbnail"],
+            "thumbnail_chaveiro": p["thumbnail"],
             "personalizada_url": url_for("personalizada", formato=p["formato"]),
         }
         for p in PRODUTOS_PERSONALIZADOS
