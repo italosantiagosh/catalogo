@@ -133,6 +133,20 @@ def _cliente_para_tiny(pedido: dict) -> dict:
 # entremeio de 2 lados (V9SBJB3M3), mas o SITE ainda so oferece
 # prata/ouro velho pra esse formato -- guardado aqui mesmo assim
 # (nao atrapalha, so fica sem uso ate o site ganhar essa cor).
+#
+# "chaveiro_2lados": ate 2026-09-04 a usuaria usava o MESMO material
+# "Chaveiro" da Tiny pros dois (1 e 2 lados) -- pediu explicitamente pra
+# separar em material proprio pra contar estoque certo, e que EU
+# gerasse o codigo (nao veio de print da tela do Tiny, diferente dos
+# outros acima -- unica excecao a regra de "nunca inventar codigo",
+# autorizada pelo pedido direto: "crie SKU parecido"). Gerado no mesmo
+# formato dos outros codigos auto-gerados pela Tiny (9 caracteres
+# alfanumericos maiusculos, aleatorio, sem colisao com os ja usados
+# aqui). A usuaria ainda precisa CRIAR esse material na Tiny com esse
+# codigo (mesmo NCM/config do "Chaveiro" de 1 lado, pedido dela) antes
+# do primeiro pedido sincronizar certo -- sem isso cadastrado la, a
+# sincronizacao pode falhar ou cair num material errado, dependendo de
+# como a Tiny trata codigo desconhecido.
 _CODIGO_MATERIAL_TINY = {
     "12mm": "WSL5RSRKA",
     "16mm": "LCEHXXXNP",
@@ -146,6 +160,7 @@ _CODIGO_MATERIAL_TINY = {
     "entremeio_2lados_prata": "62LWPVMNR",
     "entremeio_2lados_ouro_velho": "5TQHLBKE2",
     "entremeio_2lados_dourado": "V9SBJB3M3",
+    "chaveiro_2lados": "WLVU4VAUI",
 }
 
 _DESCRICAO_MATERIAL_TINY = {
@@ -161,17 +176,11 @@ _DESCRICAO_MATERIAL_TINY = {
     "entremeio_2lados_prata": "Entremeio Personalizado de 2 lados - Prata",
     "entremeio_2lados_ouro_velho": "Entremeio Personalizado de 2 lados - Ouro velho",
     "entremeio_2lados_dourado": "Entremeio Personalizado de 2 lados - Dourado",
+    "chaveiro_2lados": "Chaveiro Personalizado de 2 lados",
 }
 
 
 def _chave_material(item: dict) -> str:
-    # chaveiro_2lados (pedido 2026-09-03) ainda NAO tem SKU real da Tiny
-    # cadastrado aqui -- ninguem mandou print da tela de variacoes pra
-    # esse formato ainda (mesmo criterio dos outros: nunca inventar
-    # codigo). Ate la, cai no fallback de _codigo_estoque_tiny/
-    # _descricao_estoque_tiny (usa a propria chave "chaveiro_2lados"
-    # como codigo/descricao) -- sincroniza mesmo assim, so sem o SKU
-    # bonito.
     chave_preco = item.get("chave_preco", "")
     cor = str(item.get("cor", ""))
     if chave_preco == "entremeio":

@@ -205,6 +205,26 @@ def test_entremeio_2lados_usa_codigo_por_cor(monkeypatch):
     assert pedido_json["itens"][1]["item"]["descricao"] == "Entremeio Personalizado de 2 lados - Ouro velho"
 
 
+def test_chaveiro_2lados_usa_codigo_proprio_separado_do_chaveiro_1_lado(monkeypatch):
+    """Ver conversa 2026-09-04: a usuaria usava o MESMO material da Tiny
+    pros chaveiros de 1 e 2 lados -- pediu SKU proprio pra separar e
+    contar estoque certo, gerado por aqui mesmo (unica excecao a regra
+    de "nunca inventar codigo", autorizada pelo pedido direto)."""
+    monkeypatch.setattr(tiny, "TINY_API_TOKEN", "segredo123")
+    itens = [
+        {"chave_preco": "chaveiro", "quantidade": 3, "descricao": "Chaveiro · São José", "valor_unitario": 15.0},
+        {"chave_preco": "chaveiro_2lados", "quantidade": 2, "descricao": "Chaveiro 2 lados · Personalizado", "valor_unitario": 15.0},
+    ]
+    with patch("services.tiny.requests.post", return_value=_resposta_ok()) as post_mock:
+        tiny.criar_pedido_tiny(_pedido_exemplo(itens=itens))
+    pedido_json = json.loads(post_mock.call_args.kwargs["data"]["pedido"])["pedido"]
+    codigos = [i["item"]["codigo"] for i in pedido_json["itens"]]
+    descricoes = [i["item"]["descricao"] for i in pedido_json["itens"]]
+    assert codigos == ["Chaveiro", "WLVU4VAUI"]
+    assert codigos[0] != codigos[1]  # materiais diferentes, nao mais o mesmo dos dois
+    assert descricoes == ["Chaveiro Personalizado", "Chaveiro Personalizado de 2 lados"]
+
+
 def test_sem_endereco_de_entrega_diferente_nao_manda_bloco(monkeypatch):
     monkeypatch.setattr(tiny, "TINY_API_TOKEN", "segredo123")
     with patch("services.tiny.requests.post", return_value=_resposta_ok()) as post_mock:
