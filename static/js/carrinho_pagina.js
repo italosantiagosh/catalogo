@@ -68,6 +68,7 @@
   const FORMATO_LABEL = {
     medalha: 'Medalha', entremeio: 'Entremeio', chaveiro: 'Chaveiro',
     medalha_2lados: 'Medalha 2 lados', entremeio_2lados: 'Entremeio 2 lados',
+    chaveiro_2lados: 'Chaveiro 2 lados',
   };
   const GRUPO_LABEL = { padrao: 'medalhas/entremeios', chaveiro: 'chaveiros', duas_faces: 'medalhas/entremeios de 2 lados' };
   // mesmo texto usado em app.py (FRETE_RETIRADA_DESCRICAO) pra detectar
@@ -151,6 +152,7 @@
     const formato = item.formato || 'medalha';
     if (formato === 'entremeio') return `${FORMATO_LABEL.entremeio} · ${COR_LABEL[item.cor] || item.cor}`;
     if (formato === 'chaveiro') return FORMATO_LABEL.chaveiro;
+    if (formato === 'chaveiro_2lados') return FORMATO_LABEL.chaveiro_2lados;
     if (formato === 'entremeio_2lados') {
       return `${FORMATO_LABEL[formato]} · ${COR_LABEL[item.cor] || item.cor}`;
     }

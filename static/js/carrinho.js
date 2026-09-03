@@ -163,6 +163,7 @@ const GRUPO_DE_CHAVE = {
   '16mm': 'padrao',
   entremeio: 'padrao',
   chaveiro: 'chaveiro',
+  chaveiro_2lados: 'chaveiro',
   medalha_2lados: 'duas_faces',
   entremeio_2lados: 'duas_faces',
 };

@@ -339,6 +339,12 @@ PRODUTOS_PERSONALIZADOS = [
         "formato": "chaveiro",
         "thumbnail": "img/personalizada-chaveiro.jpg",
     },
+    {
+        "id": "personalizada-chaveiro-2lados",
+        "nome": "Chaveiro de 2 lados Personalizado",
+        "formato": "chaveiro_2lados",
+        "thumbnail": "img/personalizada-chaveiro-2lados.jpg",
+    },
 ]
 CATEGORIA_PERSONALIZADOS = "Personalizada"
 

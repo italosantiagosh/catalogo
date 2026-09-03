@@ -165,6 +165,13 @@ _DESCRICAO_MATERIAL_TINY = {
 
 
 def _chave_material(item: dict) -> str:
+    # chaveiro_2lados (pedido 2026-09-03) ainda NAO tem SKU real da Tiny
+    # cadastrado aqui -- ninguem mandou print da tela de variacoes pra
+    # esse formato ainda (mesmo criterio dos outros: nunca inventar
+    # codigo). Ate la, cai no fallback de _codigo_estoque_tiny/
+    # _descricao_estoque_tiny (usa a propria chave "chaveiro_2lados"
+    # como codigo/descricao) -- sincroniza mesmo assim, so sem o SKU
+    # bonito.
     chave_preco = item.get("chave_preco", "")
     cor = str(item.get("cor", ""))
     if chave_preco == "entremeio":

@@ -169,6 +169,21 @@ def test_catalogo_completo_lista_produtos_personalizados_com_categoria_propria(c
     assert "Personalizada</a>" in resposta  # chip de categoria
 
 
+def test_catalogo_completo_lista_chaveiro_2lados_personalizado(client):
+    """Ver conversa 2026-09-03: novo "produto" personalizada, mesmo
+    padrao dos outros 5 ja existentes."""
+    resposta = client.get("/catalogo").get_data(as_text=True)
+    assert "Chaveiro de 2 lados Personalizado" in resposta
+    assert 'href="/personalizada?formato=chaveiro_2lados"' in resposta
+    assert "img/personalizada-chaveiro-2lados.jpg" in resposta
+
+
+def test_personalizada_tem_opcao_chaveiro_2lados(client):
+    resposta = client.get("/personalizada").get_data(as_text=True)
+    assert 'value="chaveiro_2lados"' in resposta
+    assert "Chaveiro 2 lados" in resposta
+
+
 def test_personalizada_preseleciona_formato_da_query_string(client):
     resposta = client.get("/personalizada?formato=medalha_2lados").get_data(as_text=True)
     assert "window.FORMATO_INICIAL" in resposta
@@ -234,6 +249,10 @@ def test_api_produto_modelos_devolve_imagens_por_formato(client):
     assert chaves_esperadas <= modelo["imagens"].keys()
     assert modelo["imagens"]["entremeio_prata"].startswith("/static/")
     assert modelo["imagens"]["medalha_2lados_prata"].startswith("/static/")
+    # chaveiro_2lados (pedido 2026-09-03) tambem regenerado pro
+    # catalogo inteiro -- so uma cor (prata/inox), sem sufixo.
+    assert "chaveiro_2lados" in modelo["imagens"]
+    assert modelo["imagens"]["chaveiro_2lados"].startswith("/static/")
 
 
 def test_api_produto_modelos_produto_inexistente_404(client):

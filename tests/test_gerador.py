@@ -139,7 +139,7 @@ class TestMedalSpecsCadastradas(unittest.TestCase):
         """Pedido explicito do usuario: a foto encosta so no espaco branco,
         mas a resina avanca ate a metade da espessura da borda metalica --
         ver comentario de calibracao em services/gerador/config.py."""
-        for medal_id in ("medalha_2lados_prata", "medalha_2lados_ouro_velho"):
+        for medal_id in ("medalha_2lados_prata", "medalha_2lados_ouro_velho", "chaveiro_2lados"):
             spec = get_medal_spec(medal_id)
             self.assertIsNotNone(spec.resina_radius)
             self.assertGreater(spec.resina_radius, spec.inner_radius)

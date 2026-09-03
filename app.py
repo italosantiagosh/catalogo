@@ -421,6 +421,7 @@ FORMATO_PARA_SPEC = {
     ("entremeio", "prata"): "entremeio_prata",
     ("entremeio", "ouro_velho"): "entremeio_ouro_velho",
     ("chaveiro", None): "chaveiro",
+    ("chaveiro_2lados", None): "chaveiro_2lados",
     ("medalha_2lados", "prata"): "medalha_2lados_prata",
     ("medalha_2lados", "ouro_velho"): "medalha_2lados_ouro_velho",
     ("entremeio_2lados", "prata"): "entremeio_prata",
@@ -1105,6 +1106,7 @@ _COR_LABEL = {"prata": "Prata", "ouro_velho": "Ouro velho"}
 _FORMATO_LABEL = {
     "medalha": "Medalha", "entremeio": "Entremeio", "chaveiro": "Chaveiro",
     "medalha_2lados": "Medalha 2 lados", "entremeio_2lados": "Entremeio 2 lados",
+    "chaveiro_2lados": "Chaveiro 2 lados",
 }
 
 
@@ -1115,6 +1117,10 @@ def _detalhe_formato_do_item(item: dict) -> str:
         return f"{_FORMATO_LABEL['entremeio']} · {_COR_LABEL.get(cor, cor)}"
     if formato == "chaveiro":
         return _FORMATO_LABEL["chaveiro"]
+    if formato == "chaveiro_2lados":
+        # sem cor/tamanho (so uma versao, prata/inox -- ver conversa
+        # 2026-09-03), mesmo criterio do chaveiro de 1 lado acima.
+        return _FORMATO_LABEL["chaveiro_2lados"]
     if formato == "entremeio_2lados":
         cor = str(item.get("cor", ""))
         return f"{_FORMATO_LABEL[formato]} · {_COR_LABEL.get(cor, cor)}"
@@ -2686,7 +2692,7 @@ _FAQ_PERSONALIZADA = [
 
 
 _FORMATOS_PERSONALIZADA_VALIDOS = {
-    "medalha", "entremeio", "chaveiro", "medalha_2lados", "entremeio_2lados",
+    "medalha", "entremeio", "chaveiro", "medalha_2lados", "entremeio_2lados", "chaveiro_2lados",
 }
 
 
@@ -2778,6 +2784,7 @@ def api_produto_modelos(produto_id: str):
                     "chaveiro": url_for("static", filename=modelo["imagem_chaveiro"]),
                     "medalha_2lados_prata": _url_opcional(modelo, "imagem_medalha_2lados_prata"),
                     "medalha_2lados_ouro_velho": _url_opcional(modelo, "imagem_medalha_2lados_ouro_velho"),
+                    "chaveiro_2lados": _url_opcional(modelo, "imagem_chaveiro_2lados"),
                 },
             }
             for modelo in produto["modelos"]

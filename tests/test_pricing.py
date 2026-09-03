@@ -97,6 +97,32 @@ def test_calcular_carrinho_chaveiro_em_quantidade_isoladamente_bate_faixa_propri
     assert resultado["subtotal_total"] == round(200 * 8.00, 2)
 
 
+def test_calcular_preco_chaveiro_2lados_igual_ao_chaveiro_de_1_lado():
+    """Ver conversa 2026-09-03: chaveiro de 2 lados usa a MESMA tabela do
+    chaveiro de 1 lado (diferente de medalha/entremeio 2lados, que tem
+    tabela propria)."""
+    for chave in ("chaveiro", "chaveiro_2lados"):
+        assert calcular_preco(chave, 1) == 15.00
+        assert calcular_preco(chave, 20) == 12.00
+        assert calcular_preco(chave, 30) == 11.00
+        assert calcular_preco(chave, 50) == 10.00
+        assert calcular_preco(chave, 100) == 9.00
+        assert calcular_preco(chave, 200) == 8.00
+        assert calcular_preco(chave, 300) == 7.00
+
+
+def test_calcular_carrinho_chaveiro_e_chaveiro_2lados_somam_no_mesmo_grupo():
+    itens = [
+        {"chave_preco": "chaveiro", "quantidade": 15},
+        {"chave_preco": "chaveiro_2lados", "quantidade": 15},
+    ]
+    resultado = calcular_carrinho(itens)
+    assert resultado["grupos"]["chaveiro"]["quantidade_total"] == 30
+    # 30 juntos -> faixa dos 30 (R$11,00), mesmo cada um tendo so 15 isolado
+    for item in resultado["itens"]:
+        assert item["preco_unitario"] == 11.00
+
+
 def test_calcular_preco_igual_para_medalha_2lados_e_entremeio_2lados():
     for chave in ("medalha_2lados", "entremeio_2lados"):
         assert calcular_preco(chave, 1) == 7.00

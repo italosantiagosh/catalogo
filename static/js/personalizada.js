@@ -71,7 +71,7 @@
 
   function duasFacesAtual() {
     const formato = formatoAtual();
-    return formato === 'medalha_2lados' || formato === 'entremeio_2lados';
+    return formato === 'medalha_2lados' || formato === 'entremeio_2lados' || formato === 'chaveiro_2lados';
   }
 
   function tamanhoAtual() {
@@ -104,7 +104,11 @@
   function atualizarAvisoPreco() {
     if (!avisoPreco) return;
     let preco = window.PRECO_VAREJO_PADRAO;
-    if (formatoAtual() === 'chaveiro') preco = window.PRECO_VAREJO_CHAVEIRO;
+    // chaveiro_2lados usa o MESMO preco do chaveiro de 1 lado (pedido do
+    // usuario: "preço de atacado é igual ao chaveiro de um lado") --
+    // precisa vir ANTES do duasFacesAtual() abaixo, senao cairia no
+    // preco de medalha/entremeio de 2 lados por engano.
+    if (formatoAtual() === 'chaveiro' || formatoAtual() === 'chaveiro_2lados') preco = window.PRECO_VAREJO_CHAVEIRO;
     else if (duasFacesAtual()) preco = window.PRECO_VAREJO_2LADOS;
     avisoPreco.innerHTML =
       `Preço unitário a partir de <strong>${formatarPrecoLocal(preco)}</strong>. ` +
@@ -183,14 +187,14 @@
     // nao aqui em cada lado.
     if (quantidadeUploadDiv) quantidadeUploadDiv.hidden = duasFacesAtual();
     // "escolher do catalogo" -- entremeio_2lados reaproveita a mesma
-    // foto composta do entremeio de 1 lado; medalha_2lados tem seu
-    // proprio gabarito novo, com todos os santos do catalogo ja
-    // regenerados nele (ver conversa 2026-09-02) -- so os santos
-    // adicionados DEPOIS dessa regeneracao (nenhum, hoje) ficariam sem
-    // essa opcao, por isso renderizarModelosCatalogo filtra quem nao
-    // tiver a imagem.
+    // foto composta do entremeio de 1 lado; medalha_2lados e
+    // chaveiro_2lados tem gabarito proprio novo, com o catalogo
+    // regenerado nele (ver conversa 2026-09-02 e 2026-09-03) -- so os
+    // santos adicionados DEPOIS dessa regeneracao ficariam sem essa
+    // opcao, por isso renderizarModelosCatalogo filtra quem nao tiver a
+    // imagem.
     if (escolherCatalogoDiv) {
-      escolherCatalogoDiv.hidden = formato !== 'entremeio_2lados' && formato !== 'medalha_2lados';
+      escolherCatalogoDiv.hidden = formato !== 'entremeio_2lados' && formato !== 'medalha_2lados' && formato !== 'chaveiro_2lados';
       resetarEscolherCatalogo();
     }
     resetarFluxoDuasFaces();
@@ -266,8 +270,12 @@
   }
 
   function chaveImagemCatalogoAtual() {
+    const formato = formatoAtual();
+    // chaveiro_2lados so tem uma cor (prata/inox, ver conversa
+    // 2026-09-03) -- chave fixa, sem depender de corAtual().
+    if (formato === 'chaveiro_2lados') return 'chaveiro_2lados';
     const ouroVelho = corAtual() === 'ouro_velho';
-    if (formatoAtual() === 'medalha_2lados') {
+    if (formato === 'medalha_2lados') {
       return ouroVelho ? 'medalha_2lados_ouro_velho' : 'medalha_2lados_prata';
     }
     return ouroVelho ? 'entremeio_ouro_velho' : 'entremeio_prata';

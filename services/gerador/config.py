@@ -308,6 +308,36 @@ MEDAL_SPECS: dict[str, MedalSpec] = {
         resina_radius=421.9 + 60.0 / 2,
         overlap_px=2,
     ),
+
+    # ------------------------------------------------------------------
+    # Chaveiro de 2 lados -- pedido em 2026-09-03, arquivo recebido em
+    # data/Photoroom_20260903_143131.jpeg (1255x1255px), copiado pra
+    # assets/ com nome padronizado. So uma cor (prata/inox), sem variacao
+    # ouro velho -- ver conversa. Preco de atacado reaproveita a MESMA
+    # tabela do chaveiro de 1 lado (nao "duas_faces") -- ver
+    # services/pricing.py:GRUPO_DE_CHAVE.
+    #
+    # Calibrado por deteccao de pixel (mesmo metodo dos medalha_2lados
+    # acima): cavidade = maior componente conexo de branco que nao toca
+    # a borda; raio EXTERNO por varredura radial exigindo 10px brancos
+    # seguidos (a maioria dos angulos fica inflada por sombra da propria
+    # foto -- usada so a faixa de angulos com deteccao "limpa", <=40px,
+    # mediana de 56 amostras):
+    #   centro (769.8, 704.7)  raio_interno 274.3  espessura 33.0px
+    #
+    # resina_radius = raio_interno + espessura/2, mesma formula/pedido ja
+    # usado nos outros "2 lados" ("resina avanca ate a metade do aro").
+    "chaveiro_2lados": MedalSpec(
+        id="chaveiro_2lados",
+        nome="Chaveiro 2 lados",
+        base_path=ASSETS_DIR / "base_chaveiro_2lados.png",
+        resina_path=ASSETS_DIR / "efeito_resina.png",
+        center_x=769.8,
+        center_y=704.7,
+        inner_radius=274.3,
+        resina_radius=274.3 + 33.0 / 2,
+        overlap_px=2,
+    ),
 }
 
 ACTIVE_MEDAL_ID = "prata_16mm"

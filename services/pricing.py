@@ -12,6 +12,11 @@ a quantidade que conta pra faixa de desconto NAO se mistura entre grupos:
     "chaveiro"    -- tabela de precos propria (varejo R$15, atacado
                      proprio). Conta pra faixa dele isoladamente; nao
                      soma com os outros grupos nem eles somam com ele.
+                     chaveiro_2lados (pedido em 2026-09-03) tambem
+                     pertence a esse grupo -- MESMA tabela/faixas do
+                     chaveiro de 1 lado, contando junto na mesma faixa
+                     (diferente de medalha/entremeio de 2 lados, que tem
+                     tabela PROPRIA -- ver "duas_faces" abaixo).
     "duas_faces"  -- medalha_2lados e entremeio_2lados (pedido em
                      2026-09-02: "Medalhas ou Entremeios de 2 lados"
                      compartilham UMA tabela so, varejo R$7 -- mesmo
@@ -20,9 +25,12 @@ a quantidade que conta pra faixa de desconto NAO se mistura entre grupos:
                      igual chaveiro.
 
 Cada item do carrinho manda uma "chave_preco" (12mm | 16mm | entremeio |
-chaveiro | medalha_2lados | entremeio_2lados) que serve dois propositos:
-indexa a tabela certa em data/precos.json E diz a qual grupo o item
-pertence (GRUPO_DE_CHAVE).
+chaveiro | chaveiro_2lados | medalha_2lados | entremeio_2lados) que
+serve dois propositos: indexa a tabela certa em data/precos.json E diz a
+qual grupo o item pertence (GRUPO_DE_CHAVE). chaveiro_2lados tem sua
+PROPRIA entrada em precos.json (exigido pelo formato do arquivo -- cada
+chave_preco precisa de uma tabela), mas com os MESMOS valores do
+chaveiro de 1 lado -- copia proposital, nao duplicacao acidental.
 
 pedido_minimo_reais / frete_gratis_reais continuam avaliados sobre o
 SUBTOTAL COMBINADO (todos os grupos juntos) -- sao sobre o pedido
@@ -42,6 +50,7 @@ GRUPO_DE_CHAVE = {
     "16mm": "padrao",
     "entremeio": "padrao",
     "chaveiro": "chaveiro",
+    "chaveiro_2lados": "chaveiro",
     "medalha_2lados": "duas_faces",
     "entremeio_2lados": "duas_faces",
 }
