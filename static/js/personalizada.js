@@ -26,6 +26,7 @@
   const botaoEnviar = document.getElementById('botao-enviar');
   const btnSemFoto = document.getElementById('btn-sem-foto');
   const indicadorLado = document.getElementById('indicador-lado');
+  const btnLadoIgual = document.getElementById('btn-lado-igual');
   const escolherCatalogoDiv = document.getElementById('escolher-catalogo');
 
   if (!viewUpload) return;
@@ -122,6 +123,9 @@
   }
 
   function atualizarIndicadorLado() {
+    // botao "lado 2 e´ igual ao lado 1" so faz sentido depois do lado 1
+    // ja escolhido, num item de 2 lados -- ver clique dele mais abaixo.
+    if (btnLadoIgual) btnLadoIgual.hidden = !(duasFacesAtual() && ladoAtual === 2);
     if (!indicadorLado) return;
     if (!duasFacesAtual()) {
       indicadorLado.hidden = true;
@@ -133,6 +137,19 @@
     } else {
       indicadorLado.textContent = '✅ Lado 1 pronto! Agora o Lado 2 — escolha a foto (ou envie depois) desse lado.';
     }
+  }
+
+  // Atalho pra quando o lado 2 e´ literalmente a mesma imagem do lado 1
+  // (pedido do usuario) -- copia o resultado ja pronto em vez de repetir
+  // upload/recorte ou escolha do catalogo, e pula direto pra previa
+  // combinada final.
+  if (btnLadoIgual) {
+    btnLadoIgual.addEventListener('click', () => {
+      if (!resultadoLado1) return;
+      resultadoLado2 = { ...resultadoLado1 };
+      rastrearEventoGA4('lado2_igual_lado1', { formato: formatoAtual() });
+      mostrarPreviewDuasFaces();
+    });
   }
 
   // medalha 1 lado usa 12/16mm; medalha_2lados usa 14/18mm (mesmo preco,

@@ -25,6 +25,14 @@
   <section id="view-upload" class="card-upload">
     <p class="indicador-lado" id="indicador-lado" hidden></p>
 
+    <!-- so aparece no lado 2 de um item de 2 lados (ver
+         static/js/personalizada.js:atualizarIndicadorLado) -- atalho
+         pra quando os 2 lados sao a mesma imagem, sem repetir upload/
+         recorte/escolha do catalogo pro lado 2 (pedido do usuario). -->
+    <button type="button" class="botao-secundario" id="btn-lado-igual" hidden>
+      ✅ Lado 2 é igual ao lado 1 → ir direto pra prévia
+    </button>
+
     <fieldset class="formatos" id="sel-formatos">
       <legend>Formato *</legend>
       <label class="opcao-formato">

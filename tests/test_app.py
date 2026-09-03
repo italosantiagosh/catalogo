@@ -175,6 +175,16 @@ def test_personalizada_preseleciona_formato_da_query_string(client):
     assert "medalha_2lados" in resposta
 
 
+def test_personalizada_tem_atalho_lado2_igual_ao_lado1(client):
+    """Ver conversa: no lado 2 de um item de 2 lados, botao pra dizer
+    "e´ igual ao lado 1" e ir direto pra previa combinada, sem repetir
+    upload/recorte/escolha do catalogo (ver static/js/personalizada.js:
+    btnLadoIgual)."""
+    resposta = client.get("/personalizada").get_data(as_text=True)
+    assert 'id="btn-lado-igual"' in resposta
+    assert "Lado 2 é igual ao lado 1" in resposta
+
+
 def test_personalizada_ignora_formato_invalido_na_query_string(client):
     resposta = client.get("/personalizada?formato=algo-invalido")
     assert resposta.status_code == 200
