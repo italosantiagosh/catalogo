@@ -634,6 +634,38 @@
     });
   }
 
+  // ---- prazo de entrega estimado (producao + transportadora), mostrado
+  // junto do prazo de cada opcao de frete -- pedido do usuario: "junto ao
+  // prazo da transportadora... com a producao, prazo de entrega dia X".
+  // somarDiasUteis espelha services/pedidos.py:somar_dias_uteis (pula
+  // sabado/domingo, sem considerar feriado -- mesma aproximacao ja usada
+  // na promessa de texto "5 dias uteis" em varias paginas). Ponto de
+  // partida e´ HOJE (nao ha´ pagamento ainda nesse momento do carrinho) --
+  // uma estimativa "se eu pagar agora", nao uma promessa fechada (a
+  // promessa de verdade, baseada no pagamento real, aparece depois na
+  // pagina do pedido -- ver services/pedidos.py:previsoes_do_pedido).
+  function somarDiasUteis(dataInicio, dias) {
+    const data = new Date(dataInicio);
+    let restantes = dias;
+    while (restantes > 0) {
+      data.setDate(data.getDate() + 1);
+      const diaSemana = data.getDay(); // 0=domingo ... 6=sabado
+      if (diaSemana !== 0 && diaSemana !== 6) restantes -= 1;
+    }
+    return data;
+  }
+
+  function formatarDataCurta(data) {
+    return data.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
+  }
+
+  function textoPrazoComProducao(prazoDiasTransportadora) {
+    if (!prazoDiasTransportadora || !window.PRODUCAO_DIAS_UTEIS) return '';
+    const dataProducaoPronta = somarDiasUteis(new Date(), window.PRODUCAO_DIAS_UTEIS);
+    const dataEntrega = somarDiasUteis(dataProducaoPronta, prazoDiasTransportadora);
+    return ` — com a produção, prazo de entrega dia ${formatarDataCurta(dataEntrega)}`;
+  }
+
   // marca visualmente qual opcao esta selecionada e atualiza freteEscolhido
   // -- compartilhado pelos dois formatos (frete gratis com opcoes / frete
   // pago), pra clicar em qualquer uma trocar a escolha, nao so a primeira.
@@ -692,7 +724,7 @@
         botao.type = 'button';
         botao.className = 'frete-opcao';
         botao.setAttribute('aria-pressed', 'false');
-        const prazo = opcao.prazo_dias ? `${opcao.prazo_dias} dia(s) úteis` : '';
+        const prazo = opcao.prazo_dias ? `${opcao.prazo_dias} dia(s) úteis${textoPrazoComProducao(opcao.prazo_dias)}` : '';
         const rotulo = opcao.gratis
           ? '<span class="frete-opcao-gratis">Grátis</span>'
           : `<span class="frete-opcao-por">Por ${formatarPreco(opcao.preco_final)}</span>`;
@@ -735,7 +767,7 @@
         botao.type = 'button';
         botao.className = 'frete-opcao';
         botao.setAttribute('aria-pressed', 'false');
-        const prazo = opcao.prazo_dias ? `${opcao.prazo_dias} dia(s) úteis` : '';
+        const prazo = opcao.prazo_dias ? `${opcao.prazo_dias} dia(s) úteis${textoPrazoComProducao(opcao.prazo_dias)}` : '';
         const rotulo = opcao.gratis
           ? '<span class="frete-opcao-gratis">Grátis</span>'
           : `<span class="frete-opcao-por">Por ${formatarPreco(opcao.preco_final)}</span>`;
@@ -768,7 +800,7 @@
       botao.type = 'button';
       botao.className = 'frete-opcao';
       botao.setAttribute('aria-pressed', 'false');
-      const prazo = opcao.prazo_dias ? `${opcao.prazo_dias} dia(s) úteis` : '';
+      const prazo = opcao.prazo_dias ? `${opcao.prazo_dias} dia(s) úteis${textoPrazoComProducao(opcao.prazo_dias)}` : '';
       botao.innerHTML = `
         <div>
           <div class="frete-opcao-nome">${opcao.transportadora} — ${opcao.servico}</div>

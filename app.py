@@ -80,6 +80,7 @@ from config import (
     LEMBRETE_MINUTOS,
     META_PIXEL_ID,
     PROCURADOS_HOME,
+    PRODUCAO_DIAS_UTEIS,
     PRODUTOS_PERSONALIZADOS,
     PRODUTOS_TITULO_ANTIGO,
     PROVA_SOCIAL,
@@ -1042,7 +1043,7 @@ def avaliar_produto(produto_id: str):
 
 @app.route("/carrinho", methods=["GET"])
 def carrinho():
-    return render_template("carrinho.html")
+    return render_template("carrinho.html", producao_dias_uteis=PRODUCAO_DIAS_UTEIS)
 
 
 @app.route("/atendimento/<slug>", methods=["GET"])

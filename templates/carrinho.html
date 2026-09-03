@@ -234,5 +234,6 @@
 
 {% block script %}
   <script>window.WHATSAPP_NUMBER = {{ whatsapp_number | tojson }};</script>
+  <script>window.PRODUCAO_DIAS_UTEIS = {{ producao_dias_uteis | tojson }};</script>
   <script src="{{ url_for('static', filename='js/carrinho_pagina.js') }}"></script>
 {% endblock %}

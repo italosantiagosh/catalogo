@@ -448,6 +448,17 @@ def test_rodape_nao_aparece_duplicado_no_carrinho(client):
     assert "39.390.354/0001-25".encode() in resposta.data
 
 
+def test_carrinho_expoe_producao_dias_uteis_pro_js(client):
+    """Ver conversa: prazo de entrega estimado (producao + transportadora)
+    mostrado junto de cada opcao de frete (static/js/carrinho_pagina.js:
+    textoPrazoComProducao) precisa saber PRODUCAO_DIAS_UTEIS do lado do
+    cliente."""
+    from config import PRODUCAO_DIAS_UTEIS
+
+    resposta = client.get("/carrinho").get_data(as_text=True)
+    assert f"window.PRODUCAO_DIAS_UTEIS = {PRODUCAO_DIAS_UTEIS};" in resposta
+
+
 def test_schema_org_organizacao_em_toda_pagina(client):
     for rota in ["/", "/carrinho", "/produto/sao-jose"]:
         html = client.get(rota).get_data(as_text=True)
