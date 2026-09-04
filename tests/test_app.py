@@ -510,6 +510,19 @@ def test_schema_org_product_na_pagina_de_produto(client):
     assert produto["offers"]["availability"] == "https://schema.org/InStock"
     assert produto["image"].startswith("http")
 
+    # Search Console (Listagens do comerciante) reportava validFrom,
+    # hasMerchantReturnPolicy e shippingDetails ausentes em "offers".
+    assert produto["offers"]["validFrom"]
+    devolucao = produto["offers"]["hasMerchantReturnPolicy"]
+    assert devolucao["@type"] == "MerchantReturnPolicy"
+    assert devolucao["applicableCountry"] == "BR"
+    assert devolucao["merchandiseReturnDays"] == 7
+    envio = produto["offers"]["shippingDetails"]
+    assert envio["@type"] == "OfferShippingDetails"
+    assert envio["shippingDestination"]["addressCountry"] == "BR"
+    assert envio["deliveryTime"]["handlingTime"]["minValue"] > 0
+    assert envio["deliveryTime"]["transitTime"]["maxValue"] == 20
+
 
 def test_open_graph_presente_em_toda_pagina(client):
     for rota in ["/", "/carrinho", "/produto/sao-jose", "/categoria/nossa-senhora"]:

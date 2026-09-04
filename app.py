@@ -974,6 +974,50 @@ def produto(produto_id: str):
             "priceCurrency": "BRL",
             "price": f"{preco:.2f}",
             "availability": "https://schema.org/InStock",
+            # Search Console (Listagens do comerciante) tambem reportava
+            # "validFrom nao foi encontrado (em offers)" -- preco eh valido
+            # desde ja´ (renderizado por requisicao, sempre a data atual).
+            "validFrom": datetime.now(timezone.utc).date().isoformat(),
+            # Politica real de troca/devolucao (7 dias corridos, arrependimento
+            # sem justificativa, frete de volta por nossa conta) -- ver
+            # services/paginas_institucionais.py:"trocas-e-devolucao". Faltando
+            # esse campo o Search Console reporta "hasMerchantReturnPolicy nao
+            # foi encontrado (em offers)" nas Listagens do comerciante.
+            "hasMerchantReturnPolicy": {
+                "@type": "MerchantReturnPolicy",
+                "applicableCountry": "BR",
+                "returnPolicyCategory": "https://schema.org/MerchantReturnFiniteReturnWindow",
+                "merchandiseReturnDays": 7,
+                "returnMethod": "https://schema.org/ReturnByMail",
+                "returnFees": "https://schema.org/FreeReturn",
+            },
+            # Frete gratis Brasil todo (config.py: frete_gratis acima de
+            # R$300) declarado aqui como padrao -- prazo de manuseio segue
+            # PRODUCAO_DIAS_UTEIS/FAIXAS_PRODUCAO_DIAS_UTEIS (services/
+            # pedidos.py) e o prazo de transporte 2 a 20 dias uteis ja usado
+            # em services/paginas_institucionais.py. Faltando esse campo o
+            # Search Console reporta "shippingDetails nao foi encontrado
+            # (em offers)".
+            "shippingDetails": {
+                "@type": "OfferShippingDetails",
+                "shippingRate": {"@type": "MonetaryAmount", "value": "0", "currency": "BRL"},
+                "shippingDestination": {"@type": "DefinedRegion", "addressCountry": "BR"},
+                "deliveryTime": {
+                    "@type": "ShippingDeliveryTime",
+                    "handlingTime": {
+                        "@type": "QuantitativeValue",
+                        "minValue": PRODUCAO_DIAS_UTEIS,
+                        "maxValue": max(FAIXAS_PRODUCAO_DIAS_UTEIS.values(), default=PRODUCAO_DIAS_UTEIS),
+                        "unitCode": "d",
+                    },
+                    "transitTime": {
+                        "@type": "QuantitativeValue",
+                        "minValue": 2,
+                        "maxValue": 20,
+                        "unitCode": "d",
+                    },
+                },
+            },
         },
     }
     # AggregateRating/Review so entram com dado REAL (avaliacao aprovada
