@@ -1,10 +1,12 @@
 from __future__ import annotations
 
-from unittest.mock import patch
+import json
+from unittest.mock import Mock, patch
 
 import pytest
 
 import services.pedidos as pedidos
+import services.tiny as tiny
 from app import app
 
 
@@ -254,6 +256,12 @@ def test_item_duas_faces_guarda_as_duas_fotos_separadas(client, monkeypatch):
     # fallback pra qualquer lugar que so saiba mostrar "imagem" (unica)
     assert item["imagem"] == "data:image/png;base64,LADO1PREVIA"
     assert item["detalhe"] == "Medalha 2 lados · Prata · 1,8 cm"
+    # regressao: "tamanho" tem que sobreviver a criacao do pedido igual
+    # "cor" ja sobrevivia -- sem isso, services/tiny.py:_chave_material
+    # nunca resolve o SKU especifico de medalha_2lados (ver conversa,
+    # pedido real no Tiny caindo sempre no codigo generico "medalha_2lados").
+    assert item["tamanho"] == "18mm"
+    assert item["cor"] == "prata"
 
     detalhe = client.get(f"/admin/pedidos/{criado['token']}", auth=("admin", "segredo123")).get_data(as_text=True)
     assert "Baixar lado 1 (imagem 1:1)" in detalhe
@@ -264,6 +272,43 @@ def test_item_duas_faces_guarda_as_duas_fotos_separadas(client, monkeypatch):
     pagina_cliente = client.get(f"/pedido/{criado['token']}").get_data(as_text=True)
     assert "data:image/png;base64,LADO1PREVIA" in pagina_cliente
     assert "sem-foto.svg" in pagina_cliente
+
+
+def test_medalha_2lados_do_checkout_ate_a_tiny_resolve_sku_por_tamanho_e_cor(client, monkeypatch):
+    """Regressao de ponta a ponta (ver conversa: print real do Tiny
+    mostrando SKU "medalha_2lados" generico em vez do codigo por
+    tamanho/cor) -- simula o corpo de verdade que static/js/
+    personalizada.js manda no checkout, passa pelo /api/pedido/criar,
+    recupera o pedido persistido e manda pra
+    services/tiny.py:criar_pedido_tiny, conferindo que o codigo que
+    chega na Tiny e´ o especifico da variacao, nunca o generico."""
+    corpo = _corpo_valido(itens=[{
+        "chave_preco": "medalha_2lados", "quantidade": 20, "produtoNome": "Personalizada",
+        "formato": "medalha_2lados", "cor": "ouro_velho", "tamanho": "14mm",
+        "duasFaces": True,
+        "lado1": {"origem": "upload", "imagem": "data:image/png;base64,LADO1", "imagemRecorte": "data:image/png;base64,LADO1R"},
+        "lado2": {"origem": "upload", "imagem": "data:image/png;base64,LADO2", "imagemRecorte": "data:image/png;base64,LADO2R"},
+    }], frete={"texto": "Correios PAC — R$ 10,00", "preco": 10.0})
+    with patch("app.criar_link_pagamento", return_value={"url": "https://checkout.infinitepay.io/abc"}):
+        criado = client.post("/api/pedido/criar", json=corpo).get_json()
+
+    pedido = pedidos.obter_pedido(criado["token"])
+
+    monkeypatch.setattr(tiny, "TINY_API_TOKEN", "segredo123")
+    resposta_ok = Mock()
+    resposta_ok.raise_for_status = Mock()
+    resposta_ok.json.return_value = {
+        "retorno": {
+            "status_processamento": 3,
+            "status": "OK",
+            "registros": [{"registro": {"status": "OK", "id": 1, "numero": 1001}}],
+        }
+    }
+    with patch("services.tiny.requests.post", return_value=resposta_ok) as post_mock:
+        tiny.criar_pedido_tiny(pedido)
+    pedido_json = json.loads(post_mock.call_args.kwargs["data"]["pedido"])["pedido"]
+    assert pedido_json["itens"][0]["item"]["codigo"] == "8CDKFLKH2"  # medalha_2lados_14mm_ouro_velho
+    assert pedido_json["itens"][0]["item"]["codigo"] != "medalha_2lados"
 
 
 def test_item_duas_faces_lado_escolhido_do_catalogo_guarda_produto_e_modelo(client, monkeypatch):

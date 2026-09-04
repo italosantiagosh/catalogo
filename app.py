@@ -1298,12 +1298,20 @@ def _itens_com_descricao_do_corpo(dados: dict) -> list[dict]:
                 "modeloId": str(item.get("modeloId", "")).strip(),
                 "modeloNome": modelo_nome,
                 "detalhe": detalhe,
-                # so tem sentido pra formato="entremeio" -- prata e ouro
-                # velho sao materia-prima comprada separada (ver conversa),
-                # entao precisa sobreviver ate a sincronizacao com a Tiny
-                # (services.tiny._codigo_estoque_tiny), que roda so depois
+                # cor tem sentido pra entremeio/entremeio_2lados/
+                # medalha_2lados (prata/ouro velho sao materia-prima
+                # comprada separada, ver conversa) e tamanho pra
+                # medalha_2lados (14mm/18mm) -- os dois precisam sobreviver
+                # ate a sincronizacao com a Tiny (services.tiny.
+                # _chave_material/_codigo_estoque_tiny), que roda so depois
                 # do pagamento confirmado, bem depois da criacao do pedido.
+                # BUG corrigido: "tamanho" nunca era guardado aqui (so
+                # "cor"), entao _chave_material nunca resolvia o SKU
+                # especifico de medalha_2lados e toda venda ia pra Tiny com
+                # o codigo generico "medalha_2lados" em vez do material
+                # certo por tamanho+cor (ver conversa, print real do Tiny).
                 "cor": str(item.get("cor", "")).strip(),
+                "tamanho": str(item.get("tamanho", "") or "").strip(),
                 # imagem NUNCA truncada -- URL duravel pra medalha
                 # personalizada (ver services/imagens_personalizadas.py),
                 # ou ainda um data URI inteiro num carrinho antigo (de
