@@ -964,6 +964,7 @@ def produto(produto_id: str):
         "@type": "Product",
         "name": produto["nome"],
         "image": url_for("static", filename=produto["modelos"][0]["imagem"], _external=True),
+        "brand": {"@type": "Brand", "name": "Nove de Julho"},
         "description": (
             f"Medalha, entremeio e chaveiro de {produto['nome']} a partir de "
             f"R$ {preco:.2f} -- desconto de atacado automático conforme a quantidade."

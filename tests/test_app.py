@@ -506,6 +506,7 @@ def test_schema_org_product_na_pagina_de_produto(client):
     assert len(produtos) == 1
     produto = produtos[0]
     assert produto["name"] == "São José"
+    assert produto["brand"] == {"@type": "Brand", "name": "Nove de Julho"}
     assert produto["offers"]["priceCurrency"] == "BRL"
     assert produto["offers"]["availability"] == "https://schema.org/InStock"
     assert produto["image"].startswith("http")
