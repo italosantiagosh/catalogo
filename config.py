@@ -151,6 +151,16 @@ ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "")
 # de antes) -- configure em producao assim que possivel.
 WEBHOOK_INFINITEPAY_SECRET = os.environ.get("WEBHOOK_INFINITEPAY_SECRET", "")
 
+# Assina o cookie de sessao usado em /meus-pedidos (login por CPF + codigo
+# por e-mail, ver app.py e services/pedidos.py) -- sem isso o Flask nao
+# consegue assinar o cookie de quem ja verificou o codigo, entao a pagina
+# fica travada sempre pedindo o CPF de novo. NUNCA gravar o valor aqui --
+# variavel de ambiente SECRET_KEY no servidor (gere algo aleatorio longo,
+# ex: `python3 -c "import secrets; print(secrets.token_urlsafe(32))"`). Em
+# dev/teste sem configurar, cai numa chave aleatoria gerada na hora (o
+# login funciona, mas invalida sozinho a cada restart do processo).
+SECRET_KEY = os.environ.get("SECRET_KEY", "")
+
 # Lembrete automatico pra pedido criado (pendente) que nao foi pago
 # depois de um tempo -- job agendado com APScheduler (ver app.py).
 # Desligado por padrao -- so liga em producao, setando

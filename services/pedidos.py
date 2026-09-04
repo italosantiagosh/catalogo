@@ -23,8 +23,11 @@ pessoais do cliente: um codigo curto seria adivinhavel por forca bruta.
 
 from __future__ import annotations
 
+import hashlib
+import hmac
 import json
 import os
+import re
 import secrets
 import sqlite3
 from contextlib import contextmanager
@@ -235,6 +238,27 @@ def inicializar_db() -> None:
         for nome, tipo_sql in _COLUNAS_ADICIONAIS:
             if nome not in colunas_existentes:
                 conexao.execute(f"ALTER TABLE pedidos ADD COLUMN {nome} {tipo_sql}")
+
+        # Codigo de verificacao do login por CPF em /meus-pedidos (ver
+        # app.py e gerar_codigo_verificacao_documento/verificar_codigo_documento
+        # abaixo) -- tabela separada e PEQUENA de proposito: uma linha por
+        # documento, sobrescrita a cada pedido de codigo novo (REPLACE INTO),
+        # nunca acumula historico. So guarda o HASH do codigo (nunca o
+        # codigo em si) e expira em minutos -- limpar_codigos_verificacao_expirados
+        # (job agendado, ver app.py) apaga as linhas vencidas periodicamente,
+        # entao o tamanho dessa tabela fica limitado ao numero de logins
+        # em andamento no momento, nunca cresce sem limite.
+        conexao.execute(
+            """
+            CREATE TABLE IF NOT EXISTS codigos_verificacao_documento (
+                documento TEXT PRIMARY KEY,
+                codigo_hash TEXT NOT NULL,
+                expira_em TEXT NOT NULL,
+                tentativas INTEGER NOT NULL DEFAULT 0,
+                criado_em TEXT NOT NULL
+            )
+            """
+        )
 
 
 def criar_pedido(
@@ -1152,3 +1176,134 @@ def previsoes_do_pedido(pedido: dict) -> dict:
     elif prazo_frete:
         resultado["previsao_entrega"] = somar_dias_uteis(previsao_envio, int(prazo_frete))
     return resultado
+
+
+# ---- login por CPF em /meus-pedidos (ver app.py) -- extra pra quem quer
+# ver de novo como estao os proprios pedidos, sem precisar guardar cada
+# link de acompanhamento avulso. Baixar a foto personalizada continua so
+# por fora (WhatsApp), nao muda nada aqui -- essa tela so mostra status.
+
+_CODIGO_VERIFICACAO_VALIDADE_MINUTOS = 10
+_CODIGO_VERIFICACAO_MAX_TENTATIVAS = 5
+
+
+def _somente_digitos(valor: str) -> str:
+    return re.sub(r"\D", "", valor or "")
+
+
+def _hash_codigo_verificacao(documento: str, codigo: str) -> str:
+    return hashlib.sha256(f"{documento}:{codigo}".encode()).hexdigest()
+
+
+def gerar_codigo_verificacao_documento(documento: str) -> str:
+    """Gera um codigo numerico de 6 digitos pro login em /meus-pedidos e
+    grava so o HASH dele (nunca o codigo em texto puro), com validade de
+    _CODIGO_VERIFICACAO_VALIDADE_MINUTOS -- REPLACE (via ON CONFLICT)
+    sobrescreve qualquer codigo anterior desse mesmo documento, entao a
+    tabela nunca acumula mais de uma linha por documento em andamento.
+    Chamado sempre que alguem pede o codigo, mesmo pra um documento sem
+    nenhum pedido -- quem decide se manda e-mail de verdade e´ o
+    chamador (app.py), pra essa funcao nunca revelar se o CPF existe ou
+    nao na base so pelo tempo de resposta."""
+    inicializar_db()
+    documento = _somente_digitos(documento)
+    codigo = f"{secrets.randbelow(1_000_000):06d}"
+    agora = datetime.now(timezone.utc)
+    expira_em = (agora + timedelta(minutes=_CODIGO_VERIFICACAO_VALIDADE_MINUTOS)).isoformat()
+    with _conexao() as conexao:
+        conexao.execute(
+            """
+            INSERT INTO codigos_verificacao_documento (documento, codigo_hash, expira_em, tentativas, criado_em)
+            VALUES (?, ?, ?, 0, ?)
+            ON CONFLICT(documento) DO UPDATE SET
+                codigo_hash = excluded.codigo_hash,
+                expira_em = excluded.expira_em,
+                tentativas = 0,
+                criado_em = excluded.criado_em
+            """,
+            (documento, _hash_codigo_verificacao(documento, codigo), expira_em, agora.isoformat()),
+        )
+    return codigo
+
+
+def verificar_codigo_documento(documento: str, codigo: str) -> bool:
+    """True so quando o codigo bate, ainda nao expirou e nao passou do
+    limite de tentativas (protege contra forca bruta nos 6 digitos --
+    ver _CODIGO_VERIFICACAO_MAX_TENTATIVAS). Codigo certo OU numero de
+    tentativas esgotado apagam a linha -- um codigo so serve uma vez;
+    certo ou errado demais vezes forca pedir um novo."""
+    inicializar_db()
+    documento = _somente_digitos(documento)
+    codigo = _somente_digitos(codigo)
+    with _conexao() as conexao:
+        linha = conexao.execute(
+            "SELECT * FROM codigos_verificacao_documento WHERE documento = ?", (documento,)
+        ).fetchone()
+        if linha is None:
+            return False
+        if linha["tentativas"] >= _CODIGO_VERIFICACAO_MAX_TENTATIVAS:
+            conexao.execute("DELETE FROM codigos_verificacao_documento WHERE documento = ?", (documento,))
+            return False
+        if datetime.fromisoformat(linha["expira_em"]) < datetime.now(timezone.utc):
+            conexao.execute("DELETE FROM codigos_verificacao_documento WHERE documento = ?", (documento,))
+            return False
+        bate = hmac.compare_digest(linha["codigo_hash"], _hash_codigo_verificacao(documento, codigo))
+        if bate:
+            conexao.execute("DELETE FROM codigos_verificacao_documento WHERE documento = ?", (documento,))
+            return True
+        conexao.execute(
+            "UPDATE codigos_verificacao_documento SET tentativas = tentativas + 1 WHERE documento = ?",
+            (documento,),
+        )
+        return False
+
+
+def limpar_codigos_verificacao_expirados() -> int:
+    """Job agendado (ver app.py:_iniciar_scheduler_jobs) -- apaga codigos
+    vencidos que ninguem verificou, pra tabela nunca crescer sem limite
+    (ela so guarda um login em andamento por documento, mas sem essa
+    limpeza um codigo pedido e nunca usado ficaria pra sempre)."""
+    inicializar_db()
+    agora = datetime.now(timezone.utc).isoformat()
+    with _conexao() as conexao:
+        cursor = conexao.execute("DELETE FROM codigos_verificacao_documento WHERE expira_em < ?", (agora,))
+        return cursor.rowcount
+
+
+def listar_pedidos_por_documento(documento: str) -> list[dict]:
+    """Pedidos de um CPF/CNPJ pra pagina /meus-pedidos -- mais recentes
+    primeiro. Compara so os DIGITOS (cliente_documento fica gravado
+    formatado, ex: "123.456.789-00") -- REPLACE encadeado tira pontuacao
+    de CPF (.  -) e CNPJ (.  /  -) direto no SQL. Nunca mostra lead de
+    whatsapp (sem checkout de verdade, ver criar_pedido) nem pedido
+    excluido pelo admin (ver excluir_pedido)."""
+    inicializar_db()
+    documento = _somente_digitos(documento)
+    if not documento:
+        return []
+    with _conexao() as conexao:
+        linhas = conexao.execute(
+            """
+            SELECT * FROM pedidos
+            WHERE REPLACE(REPLACE(REPLACE(cliente_documento, '.', ''), '-', ''), '/', '') = ?
+              AND status NOT IN ('whatsapp', 'excluido')
+            ORDER BY criado_em DESC
+            """,
+            (documento,),
+        ).fetchall()
+    pedidos = []
+    for linha in linhas:
+        pedido = dict(linha)
+        pedido["itens"] = json.loads(pedido["itens"])
+        pedidos.append(pedido)
+    return pedidos
+
+
+def email_para_documento(documento: str) -> str | None:
+    """E-mail do pedido mais recente desse documento -- pra onde manda o
+    codigo de verificacao (ver app.py). None se o documento nunca fez
+    nenhum pedido de verdade (mesmo filtro de listar_pedidos_por_documento)."""
+    for pedido in listar_pedidos_por_documento(documento):
+        if pedido.get("cliente_email"):
+            return pedido["cliente_email"]
+    return None

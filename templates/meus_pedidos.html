@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Meus pedidos — Nove de Julho</title>
+  <link rel="icon" href="{{ url_for('static', filename='img/favicon.ico') }}" sizes="any">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;1,9..144,500&family=Public+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <style>
+    body { background: var(--bg); }
+    .meus-pedidos-pagina { max-width: 480px; margin: 0 auto; padding: 28px 18px 60px; }
+    .meus-pedidos-cabecalho { text-align: center; margin-bottom: 20px; }
+    .meus-pedidos-cabecalho img.marca-logo { width: 34px; height: 40px; margin-bottom: 10px; }
+    .meus-pedidos-cabecalho h1 { font-size: 1.15rem; margin: 4px 0 2px; }
+    .meus-pedidos-cabecalho p { color: var(--muted); font-size: 0.88rem; margin: 0; }
+    .meus-pedidos-caixa { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 16px; }
+    .meus-pedidos-caixa label { display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 6px; }
+    .meus-pedidos-caixa input[type="text"] { width: 100%; box-sizing: border-box; padding: 10px 12px; border: 1px solid var(--border); border-radius: 8px; font-size: 1rem; margin-bottom: 14px; }
+    .meus-pedidos-ajuda { color: var(--muted); font-size: 0.82rem; margin: -8px 0 14px; }
+    .meus-pedidos-erro { background: #fbe3e0; color: #a13a2a; border-radius: 8px; padding: 10px 12px; font-size: 0.85rem; margin-bottom: 14px; }
+    .meus-pedidos-trocar { display: block; text-align: center; margin-top: 12px; font-size: 0.85rem; color: var(--accent); background: none; border: none; cursor: pointer; }
+    .meus-pedidos-lista-vazia { text-align: center; color: var(--muted); padding: 24px 0; }
+    .pedido-card { display: block; background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; margin-bottom: 12px; text-decoration: none; color: inherit; }
+    .pedido-card:hover { border-color: var(--accent); }
+    .pedido-card-topo { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 4px; }
+    .pedido-card-codigo { font-weight: 700; }
+    .pedido-card-status { font-size: 0.78rem; font-weight: 600; color: var(--accent); }
+    .pedido-card-data { color: var(--muted); font-size: 0.82rem; margin: 0 0 4px; }
+    .pedido-card-total { font-weight: 600; }
+    .meus-pedidos-sair { text-align: center; margin-top: 18px; }
+    .meus-pedidos-sair button { background: none; border: none; color: var(--muted); font-size: 0.82rem; cursor: pointer; text-decoration: underline; }
+  </style>
+</head>
+<body>
+  <div class="meus-pedidos-pagina">
+    <div class="meus-pedidos-cabecalho">
+      <img class="marca-logo" src="{{ url_for('static', filename='img/logo-icone.png') }}" alt="">
+      <h1>Meus pedidos</h1>
+      <p>Veja de novo o status dos seus pedidos, sem precisar do link de acompanhamento.</p>
+    </div>
+
+    {% if etapa == "documento" %}
+      <div class="meus-pedidos-caixa">
+        {% if erro == "documento" %}
+          <div class="meus-pedidos-erro">CPF inválido -- confira os números e tente de novo.</div>
+        {% endif %}
+        <form method="post" action="{{ url_for('meus_pedidos_enviar_codigo') }}">
+          <label for="mp-documento">Seu CPF</label>
+          <input type="text" id="mp-documento" name="documento" inputmode="numeric" placeholder="000.000.000-00" required maxlength="14">
+          <p class="meus-pedidos-ajuda">Vamos mandar um código de acesso pro e-mail que você usou na compra.</p>
+          <button type="submit" class="botao-carrinho">Enviar código por e-mail</button>
+        </form>
+      </div>
+    {% elif etapa == "codigo" %}
+      <div class="meus-pedidos-caixa">
+        {% if erro == "codigo" %}
+          <div class="meus-pedidos-erro">Código incorreto ou vencido -- confira seu e-mail ou peça um novo.</div>
+        {% endif %}
+        <form method="post" action="{{ url_for('meus_pedidos_verificar') }}">
+          <label for="mp-codigo">Código de 6 dígitos</label>
+          <input type="text" id="mp-codigo" name="codigo" inputmode="numeric" placeholder="000000" required maxlength="6" autofocus>
+          <p class="meus-pedidos-ajuda">Enviamos pro e-mail cadastrado no seu pedido. Vale por 10 minutos.</p>
+          <button type="submit" class="botao-carrinho">Entrar</button>
+        </form>
+        <form method="post" action="{{ url_for('meus_pedidos_trocar_cpf') }}">
+          <button type="submit" class="meus-pedidos-trocar">Usar outro CPF</button>
+        </form>
+      </div>
+    {% else %}
+      {% if pedidos %}
+        {% for pedido in pedidos %}
+          <a class="pedido-card" href="{{ url_for('ver_pedido', token=pedido.token) }}">
+            <div class="pedido-card-topo">
+              <span class="pedido-card-codigo">Pedido #{{ pedido.codigo }}</span>
+              <span class="pedido-card-status">{{ pedido.status_label }}</span>
+            </div>
+            <p class="pedido-card-data">{{ pedido.criado_em | data_br }}</p>
+            <p class="pedido-card-total">{{ pedido.total | preco }}</p>
+          </a>
+        {% endfor %}
+      {% else %}
+        <div class="meus-pedidos-lista-vazia">
+          <p>Nenhum pedido encontrado pra esse CPF.</p>
+        </div>
+      {% endif %}
+      <div class="meus-pedidos-sair">
+        <form method="post" action="{{ url_for('meus_pedidos_sair') }}">
+          <button type="submit">Sair</button>
+        </form>
+      </div>
+    {% endif %}
+  </div>
+</body>
+</html>

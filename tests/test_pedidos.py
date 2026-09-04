@@ -380,6 +380,77 @@ def test_previsoes_dias_producao_none_quando_pedido_ainda_nao_pago(monkeypatch, 
     assert previsoes["previsao_envio"] is None
 
 
+def test_gerar_e_verificar_codigo_documento_ok(monkeypatch, tmp_path):
+    _reapontar_db(monkeypatch, tmp_path)
+    monkeypatch.setattr(pedidos.secrets, "randbelow", lambda n: 123456)
+    codigo = pedidos.gerar_codigo_verificacao_documento("111.444.777-35")
+    assert codigo == "123456"
+    # aceita documento formatado OU so digitos, e codigo com espacos
+    assert pedidos.verificar_codigo_documento("11144477735", " 123456 ") is True
+    # codigo so serve uma vez -- segunda tentativa (mesmo certo) falha
+    assert pedidos.verificar_codigo_documento("11144477735", "123456") is False
+
+
+def test_verificar_codigo_documento_errado_nao_consome_o_codigo_certo(monkeypatch, tmp_path):
+    _reapontar_db(monkeypatch, tmp_path)
+    monkeypatch.setattr(pedidos.secrets, "randbelow", lambda n: 123456)
+    pedidos.gerar_codigo_verificacao_documento("11144477735")
+    assert pedidos.verificar_codigo_documento("11144477735", "000000") is False
+    assert pedidos.verificar_codigo_documento("11144477735", "123456") is True
+
+
+def test_verificar_codigo_documento_bloqueia_apos_maximo_de_tentativas(monkeypatch, tmp_path):
+    _reapontar_db(monkeypatch, tmp_path)
+    monkeypatch.setattr(pedidos.secrets, "randbelow", lambda n: 123456)
+    pedidos.gerar_codigo_verificacao_documento("11144477735")
+    for _ in range(pedidos._CODIGO_VERIFICACAO_MAX_TENTATIVAS):
+        assert pedidos.verificar_codigo_documento("11144477735", "000000") is False
+    # mesmo o codigo certo nao serve mais depois de esgotar as tentativas
+    assert pedidos.verificar_codigo_documento("11144477735", "123456") is False
+
+
+def test_verificar_codigo_documento_expirado_falha(monkeypatch, tmp_path):
+    _reapontar_db(monkeypatch, tmp_path)
+    monkeypatch.setattr(pedidos.secrets, "randbelow", lambda n: 123456)
+    pedidos.gerar_codigo_verificacao_documento("11144477735")
+    passado = (datetime.now(timezone.utc) - timedelta(minutes=1)).isoformat()
+    with pedidos._conexao() as conexao:
+        conexao.execute(
+            "UPDATE codigos_verificacao_documento SET expira_em = ? WHERE documento = ?",
+            (passado, "11144477735"),
+        )
+    assert pedidos.verificar_codigo_documento("11144477735", "123456") is False
+
+
+def test_verificar_codigo_documento_sem_codigo_pendente_falha(monkeypatch, tmp_path):
+    _reapontar_db(monkeypatch, tmp_path)
+    assert pedidos.verificar_codigo_documento("11144477735", "123456") is False
+
+
+def test_listar_pedidos_por_documento_ignora_pontuacao_e_filtra_status(monkeypatch, tmp_path):
+    _reapontar_db(monkeypatch, tmp_path)
+    pedido = pedidos.criar_pedido(**_pedido_exemplo(
+        cliente={"nome": "Maria Teste", "tipo_pessoa": "fisica", "documento": "111.444.777-35",
+                 "telefone": "84999999999", "email": "maria@example.com"},
+    ))
+    lead_whatsapp = pedidos.criar_pedido(
+        **_pedido_exemplo(
+            cliente={"nome": "Maria Teste", "tipo_pessoa": "fisica", "documento": "111.444.777-35",
+                     "telefone": "84999999999", "email": "maria@example.com"},
+            status_inicial="whatsapp",
+        )
+    )
+    # busca so com digitos deve achar o pedido gravado formatado
+    encontrados = pedidos.listar_pedidos_por_documento("11144477735")
+    tokens = {p["token"] for p in encontrados}
+    assert pedido["token"] in tokens
+    assert lead_whatsapp["token"] not in tokens  # lead de whatsapp fica de fora
+
+    assert pedidos.listar_pedidos_por_documento("00000000000") == []
+    assert pedidos.email_para_documento("111.444.777-35") == "maria@example.com"
+    assert pedidos.email_para_documento("00000000000") is None
+
+
 def test_estatisticas_hoje_conta_pedidos_criados_hoje(monkeypatch, tmp_path):
     _reapontar_db(monkeypatch, tmp_path)
     pedidos.criar_pedido(**_pedido_exemplo())

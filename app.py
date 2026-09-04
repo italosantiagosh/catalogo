@@ -40,13 +40,14 @@ import csv
 import hmac
 import io
 import os
+import secrets
 import tempfile
 from datetime import datetime, timezone
 from pathlib import Path
 from urllib.parse import urlsplit
 from xml.sax.saxutils import escape as escapar_xml
 
-from flask import Flask, Response, abort, jsonify, redirect, render_template, request, send_file, url_for
+from flask import Flask, Response, abort, jsonify, redirect, render_template, request, send_file, session, url_for
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from PIL import Image
@@ -85,6 +86,7 @@ from config import (
     PRODUTOS_PERSONALIZADOS,
     PRODUTOS_TITULO_ANTIGO,
     PROVA_SOCIAL,
+    SECRET_KEY,
     UPSELL_HORAS_APOS_PAGAMENTO,
     VIDEO_APRESENTACAO_URL,
     WEBHOOK_INFINITEPAY_SECRET,
@@ -116,6 +118,7 @@ from services.push import (
 )
 from services.email import (
     enviar_boleto_gerado,
+    enviar_codigo_verificacao,
     enviar_confirmacao_pedido,
     enviar_lembrete_pedido_pendente,
     enviar_link_pagamento,
@@ -127,7 +130,7 @@ from services.email import (
     enviar_pedido_enviado,
     enviar_pedido_excluido,
 )
-from services.documentos import documento_valido, numero_whatsapp, telefone_valido
+from services.documentos import cpf_valido, documento_valido, numero_whatsapp, telefone_valido
 from services.frete import calcular_frete
 from services.infinitepay import criar_link_pagamento
 from services.pedidos import (
@@ -139,14 +142,18 @@ from services.pedidos import (
     criar_pedido,
     desarquivar_pedido,
     editar_valor,
+    email_para_documento,
     estatisticas_hoje,
     excluir_pedido,
+    gerar_codigo_verificacao_documento,
+    limpar_codigos_verificacao_expirados,
     listar_pedidos,
     listar_pedidos_boleto_pendentes,
     listar_pedidos_pagos_para_avaliacao,
     listar_pedidos_pagos_para_upsell,
     listar_pedidos_pendentes_para_cancelar,
     listar_pedidos_pendentes_para_lembrete,
+    listar_pedidos_por_documento,
     marcar_boleto_erro,
     marcar_email_avaliacao_enviado,
     marcar_email_cancelado_enviado,
@@ -169,6 +176,7 @@ from services.pedidos import (
     taxa_clientes_recorrentes,
     formas_pagamento_periodo,
     vendas_por_dia,
+    verificar_codigo_documento,
 )
 from services.imagens_personalizadas import (
     marcar_imagem_usada,
@@ -185,6 +193,11 @@ from services.pricing import CHAVES_PRECO, calcular_carrinho, preco_varejo
 
 app = Flask(__name__)
 app.config["MAX_CONTENT_LENGTH"] = 60 * 1024 * 1024  # 60MB no total do upload
+# Assina o cookie de sessao de /meus-pedidos (ver config.py:SECRET_KEY) --
+# sem SECRET_KEY configurado (dev/teste), cai numa chave aleatoria gerada
+# na subida do processo: login funciona, mas invalida sozinho a cada
+# restart (aceitavel fora de producao).
+app.secret_key = SECRET_KEY or secrets.token_urlsafe(32)
 
 # Limite de requisicoes por IP nos endpoints publicos que custam algo
 # de verdade (chamam API externa paga/com limite, mandam e-mail, geram
@@ -2018,6 +2031,86 @@ def ver_pedido(token: str):
     )
 
 
+# "Meus pedidos" -- atalho OPCIONAL pra quem quer ver de novo todos os
+# proprios pedidos sem ter guardado cada link de acompanhamento avulso
+# (/pedido/<token>, sempre continua funcionando sozinho). Login so por
+# CPF + codigo de 6 digitos por e-mail (ver services/pedidos.py e
+# services/email.py:enviar_codigo_verificacao), sem senha pra cadastrar
+# nem guardar. Baixar a foto personalizada continua so por fora
+# (WhatsApp) -- essa tela so mostra status, nunca expõe a imagem.
+_MEUS_PEDIDOS_SESSAO_DOCUMENTO = "meus_pedidos_documento"
+_MEUS_PEDIDOS_SESSAO_PENDENTE = "meus_pedidos_documento_pendente"
+
+_STATUS_LABEL_CLIENTE = {
+    "pendente": "Aguardando pagamento",
+    "pago": "Pagamento confirmado",
+    "faturado": "Faturado",
+    "enviado": "Enviado",
+    "entregue": "Entregue",
+    "cancelado": "Cancelado",
+}
+
+
+@app.route("/meus-pedidos", methods=["GET"])
+def meus_pedidos():
+    documento = session.get(_MEUS_PEDIDOS_SESSAO_DOCUMENTO)
+    if documento:
+        pedidos = listar_pedidos_por_documento(documento)
+        for pedido in pedidos:
+            pedido["status_label"] = _STATUS_LABEL_CLIENTE.get(pedido["status"], pedido["status"])
+        return render_template("meus_pedidos.html", etapa="lista", pedidos=pedidos)
+    if session.get(_MEUS_PEDIDOS_SESSAO_PENDENTE):
+        return render_template("meus_pedidos.html", etapa="codigo", erro=request.args.get("erro"))
+    return render_template("meus_pedidos.html", etapa="documento", erro=request.args.get("erro"))
+
+
+@app.route("/meus-pedidos/enviar-codigo", methods=["POST"])
+@limiter.limit("5 per minute")
+def meus_pedidos_enviar_codigo():
+    documento = (request.form.get("documento") or "").strip()
+    if not cpf_valido(documento):
+        return redirect(url_for("meus_pedidos", erro="documento"))
+    codigo = gerar_codigo_verificacao_documento(documento)
+    email = email_para_documento(documento)
+    if email:
+        enviar_codigo_verificacao(email, codigo)
+    # Sempre segue pro passo do codigo, mesmo quando esse CPF nunca fez
+    # pedido nenhum (email None acima) -- se a resposta fosse diferente
+    # nesse caso, daria pra usar esse formulario pra descobrir se um CPF
+    # de outra pessoa ja comprou aqui ou nao (ver services/pedidos.py:
+    # gerar_codigo_verificacao_documento).
+    session[_MEUS_PEDIDOS_SESSAO_PENDENTE] = documento
+    session.pop(_MEUS_PEDIDOS_SESSAO_DOCUMENTO, None)
+    return redirect(url_for("meus_pedidos"))
+
+
+@app.route("/meus-pedidos/verificar", methods=["POST"])
+@limiter.limit("10 per minute")
+def meus_pedidos_verificar():
+    documento = session.get(_MEUS_PEDIDOS_SESSAO_PENDENTE)
+    if not documento:
+        return redirect(url_for("meus_pedidos"))
+    codigo = (request.form.get("codigo") or "").strip()
+    if verificar_codigo_documento(documento, codigo):
+        session[_MEUS_PEDIDOS_SESSAO_DOCUMENTO] = documento
+        session.pop(_MEUS_PEDIDOS_SESSAO_PENDENTE, None)
+        return redirect(url_for("meus_pedidos"))
+    return redirect(url_for("meus_pedidos", erro="codigo"))
+
+
+@app.route("/meus-pedidos/trocar-cpf", methods=["POST"])
+def meus_pedidos_trocar_cpf():
+    session.pop(_MEUS_PEDIDOS_SESSAO_PENDENTE, None)
+    return redirect(url_for("meus_pedidos"))
+
+
+@app.route("/meus-pedidos/sair", methods=["POST"])
+def meus_pedidos_sair():
+    session.pop(_MEUS_PEDIDOS_SESSAO_DOCUMENTO, None)
+    session.pop(_MEUS_PEDIDOS_SESSAO_PENDENTE, None)
+    return redirect(url_for("meus_pedidos"))
+
+
 @app.route("/pedido/<token>/boleto.pdf", methods=["GET"])
 @limiter.limit("20 per minute")
 def ver_boleto_pdf(token: str):
@@ -3358,6 +3451,12 @@ def _iniciar_scheduler_jobs() -> None:
     scheduler.add_job(_verificar_boletos_inter_pendentes, "interval", minutes=10, id="verificar_boletos_inter")
     scheduler.add_job(
         _limpar_imagens_personalizadas_antigas, "interval", hours=24, id="limpar_imagens_personalizadas"
+    )
+    # Codigos de /meus-pedidos vencem em 10 minutos (ver services/pedidos.py:
+    # _CODIGO_VERIFICACAO_VALIDADE_MINUTOS) -- limpa a cada hora pra tabela
+    # nunca acumular codigo vencido que ninguem verificou.
+    scheduler.add_job(
+        limpar_codigos_verificacao_expirados, "interval", hours=1, id="limpar_codigos_verificacao"
     )
     scheduler.start()
 

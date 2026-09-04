@@ -4,11 +4,14 @@ app.py:webhook_infinitepay, disparado uma unica vez por pedido quando
 o pagamento e´ confirmado (services.pedidos.marcar_email_enviado evita
 reenvio em webhook duplicado).
 
-O site nao tem login de cliente (ver conversa que definiu essa
+O site nao tem cadastro de cliente (ver conversa que definiu essa
 escolha) -- o link de acompanhamento do pedido (/pedido/<token>) so
 chega pro cliente no redirecionamento pos-pagamento. Sem esse e-mail,
 se ele fechar a aba ou perder o link, nao tem como achar o pedido de
-novo sozinho.
+novo sozinho. /meus-pedidos (ver app.py e enviar_codigo_verificacao
+abaixo) e´ um atalho OPCIONAL em cima disso -- login por CPF + codigo
+de 6 digitos mandado por aqui, sem senha pra guardar -- pra quem quer
+ver de nova todos os proprios pedidos sem ter salvo cada link avulso.
 
 API da Brevo: https://developers.brevo.com/docs/send-a-transactional-email
 """
@@ -172,6 +175,28 @@ def _enviar(*, email_cliente: str, nome_cliente: str, assunto: str, corpo_html: 
     except requests.RequestException as exc:
         return {"erro": f"Não foi possível enviar o e-mail agora ({exc})."}
     return {"ok": True}
+
+
+def _corpo_html_codigo_verificacao(codigo: str) -> str:
+    return (
+        f"<p>Use o código abaixo pra entrar em <strong>Meus Pedidos</strong> no site da "
+        f"Nove de Julho:</p>"
+        f'<p style="font-size:28px;font-weight:bold;letter-spacing:4px;color:#14335c;">{_esc(codigo)}</p>'
+        f"<p>Válido por 10 minutos. Se você não pediu esse código, pode ignorar este e-mail.</p>"
+    )
+
+
+def enviar_codigo_verificacao(email_cliente: str, codigo: str) -> dict:
+    """Codigo de login de /meus-pedidos (ver app.py e
+    services/pedidos.py:gerar_codigo_verificacao_documento). Sem nome do
+    cliente aqui de proposito -- quem chama so tem o e-mail associado ao
+    documento, nao um pedido inteiro."""
+    return _enviar(
+        email_cliente=email_cliente,
+        nome_cliente="",
+        assunto="Seu código de acesso — Nove de Julho",
+        corpo_html=_corpo_html_codigo_verificacao(codigo),
+    )
 
 
 def enviar_confirmacao_pedido(pedido: dict, url_pedido: str) -> dict:
