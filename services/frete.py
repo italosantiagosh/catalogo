@@ -331,6 +331,14 @@ def _resultado_frete_gratis(opcoes: list[dict]) -> dict:
     return {"frete_gratis": True, "opcoes": opcoes_com_credito, "aviso": AVISO_FRETE_GRATIS}
 
 
+def _preco_final_desconto_atacado(preco_original: float, desconto: float) -> float:
+    """Abate o desconto fixo em R$ do preco original -- se sobrar menos
+    de R$1 (mas mais que zero), arredonda logo pra gratis (pedido do
+    usuario: nao faz sentido cobrar centavos de frete)."""
+    valor = round(max(preco_original - desconto, 0.0), 2)
+    return 0.0 if 0 < valor < 1.0 else valor
+
+
 def _resultado_desconto_atacado(opcoes: list[dict], desconto: float) -> dict:
     """Aplica o desconto de frete por atacado (8% do subtotal do grupo
     que ja atingiu a primeira faixa de atacado, ver
@@ -339,7 +347,9 @@ def _resultado_desconto_atacado(opcoes: list[dict], desconto: float) -> dict:
     cotacoes reais: mesmo layout visual do credito de frete gratis
     (preco original riscado + preco final), so que aqui o credito e um
     valor FIXO em R$ (o desconto calculado), nao o preco da opcao mais
-    barata -- entao raramente zera o frete inteiro, so abate uma parte."""
+    barata -- entao raramente zera o frete inteiro, so abate uma parte
+    (ver _preco_final_desconto_atacado pro arredondamento pra gratis
+    quando sobra menos de R$1)."""
     return {
         "frete_gratis": False,
         "desconto_atacado_reais": desconto,
@@ -349,7 +359,7 @@ def _resultado_desconto_atacado(opcoes: list[dict], desconto: float) -> dict:
                 "servico": opcao["servico"],
                 "prazo_dias": opcao["prazo_dias"],
                 "preco_original": opcao["preco"],
-                "preco_final": (preco_final := round(max(opcao["preco"] - desconto, 0.0), 2)),
+                "preco_final": (preco_final := _preco_final_desconto_atacado(opcao["preco"], desconto)),
                 "gratis": preco_final == 0.0,
             }
             for opcao in opcoes
