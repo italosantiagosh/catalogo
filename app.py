@@ -73,6 +73,7 @@ from config import (
     DESCRICOES_FORMATO,
     DESTAQUES_HOME,
     ENABLE_SCHEDULER,
+    FAIXAS_PRODUCAO_DIAS_UTEIS,
     GA4_MEASUREMENT_ID,
     GOOGLE_SITE_VERIFICATION,
     INSTAGRAM_URL,
@@ -620,7 +621,9 @@ Site institucional/loja da Nove de Julho, empresa brasileira. Preços em Real
 (R$), pagamento via Pix (padrão), cartão em até 12x ou boleto, com nota fiscal
 para CPF ou CNPJ. Pedido mínimo de R$ 30 em produtos (frete calculado à parte);
 frete grátis para o Brasil todo acima de R$ 300 em compras. Produção sob
-encomenda em até 5 dias úteis após confirmação do pagamento.
+encomenda: de 5 a 10 dias úteis após confirmação do pagamento, prazo que cresce
+com a quantidade total do pedido (500+ peças: 7 dias úteis; 1000+: 8 dias
+úteis; 2000+: 10 dias úteis).
 
 ## Páginas principais
 
@@ -1044,7 +1047,11 @@ def avaliar_produto(produto_id: str):
 
 @app.route("/carrinho", methods=["GET"])
 def carrinho():
-    return render_template("carrinho.html", producao_dias_uteis=PRODUCAO_DIAS_UTEIS)
+    return render_template(
+        "carrinho.html",
+        producao_dias_uteis=PRODUCAO_DIAS_UTEIS,
+        faixas_producao_dias_uteis=FAIXAS_PRODUCAO_DIAS_UTEIS,
+    )
 
 
 @app.route("/atendimento/<slug>", methods=["GET"])
@@ -2686,7 +2693,9 @@ _FAQ_PERSONALIZADA = [
     (
         "Quanto tempo demora?",
         "O mesmo prazo do catálogo: produção em até 5 dias úteis após a confirmação "
-        "do pagamento, mais o prazo de transporte.",
+        "do pagamento (prazo que cresce com a quantidade total do pedido -- 500+ "
+        "peças: 7 dias úteis; 1000+: 8 dias úteis; 2000+: 10 dias úteis), mais o "
+        "prazo de transporte.",
     ),
 ]
 

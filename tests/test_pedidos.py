@@ -343,6 +343,43 @@ def test_previsoes_sem_envio_ainda_nao_marca_antecipado(monkeypatch, tmp_path):
     assert previsoes["previsao_entrega"] is not None
 
 
+def test_producao_dias_uteis_para_quantidade_por_faixa():
+    # pedido do usuario 2026-09-04: 500 -> 7, 1000 -> 8, 2000 -> 10,
+    # abaixo de 500 continua na promessa base (PRODUCAO_DIAS_UTEIS = 5)
+    assert pedidos.producao_dias_uteis_para_quantidade(0) == pedidos.PRODUCAO_DIAS_UTEIS
+    assert pedidos.producao_dias_uteis_para_quantidade(499) == pedidos.PRODUCAO_DIAS_UTEIS
+    assert pedidos.producao_dias_uteis_para_quantidade(500) == 7
+    assert pedidos.producao_dias_uteis_para_quantidade(999) == 7
+    assert pedidos.producao_dias_uteis_para_quantidade(1000) == 8
+    assert pedidos.producao_dias_uteis_para_quantidade(1999) == 8
+    assert pedidos.producao_dias_uteis_para_quantidade(2000) == 10
+    assert pedidos.producao_dias_uteis_para_quantidade(5000) == 10
+
+
+def test_previsoes_usa_prazo_de_producao_maior_para_pedido_grande(monkeypatch, tmp_path):
+    _reapontar_db(monkeypatch, tmp_path)
+    pedido = pedidos.criar_pedido(**_pedido_exemplo(
+        itens=[{"chave_preco": "16mm", "quantidade": 1000, "descricao": "São José — Modelo 1"}],
+        frete_prazo_dias=7,
+    ))
+    # segunda-feira 04/11/2024 -- previsao de envio (+8 dias uteis, faixa
+    # de 1000 pecas) cai em 14/11 (quinta), nao 11/11 (que seria +5 dias)
+    pago_em = datetime(2024, 11, 4, tzinfo=timezone.utc)
+    _marcar_pago_em(pedido["token"], pago_em)
+
+    previsoes = pedidos.previsoes_do_pedido(pedidos.obter_pedido(pedido["token"]))
+    assert previsoes["dias_producao"] == 8
+    assert previsoes["previsao_envio"].date().isoformat() == "2024-11-14"
+
+
+def test_previsoes_dias_producao_none_quando_pedido_ainda_nao_pago(monkeypatch, tmp_path):
+    _reapontar_db(monkeypatch, tmp_path)
+    pedido = pedidos.criar_pedido(**_pedido_exemplo())
+    previsoes = pedidos.previsoes_do_pedido(pedidos.obter_pedido(pedido["token"]))
+    assert previsoes["dias_producao"] is None
+    assert previsoes["previsao_envio"] is None
+
+
 def test_estatisticas_hoje_conta_pedidos_criados_hoje(monkeypatch, tmp_path):
     _reapontar_db(monkeypatch, tmp_path)
     pedidos.criar_pedido(**_pedido_exemplo())

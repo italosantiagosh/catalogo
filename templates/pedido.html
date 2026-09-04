@@ -71,7 +71,7 @@
         <p>Seu pedido já está na fila de produção.</p>
         <div class="pedido-obrigado-prazo">
           <strong>Prazo de produção</strong>
-          <span>De 1 a 5 dias úteis, com todo cuidado e atenção aos detalhes.</span>
+          <span>De 1 a {{ previsoes.dias_producao or 5 }} dias úteis, com todo cuidado e atenção aos detalhes.</span>
         </div>
         <p>Desde 2020, já produzimos e enviamos milhares de medalhas pelo Brasil.</p>
         {% if oportunidades_upsell %}

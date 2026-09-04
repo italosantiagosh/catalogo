@@ -31,7 +31,7 @@ from contextlib import contextmanager
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
-from config import PRODUCAO_DIAS_UTEIS
+from config import FAIXAS_PRODUCAO_DIAS_UTEIS, PRODUCAO_DIAS_UTEIS
 
 DB_PATH = os.environ.get(
     "PEDIDOS_DB_PATH", str(Path(__file__).resolve().parent.parent / "data" / "pedidos.db")
@@ -1099,9 +1099,22 @@ def somar_dias_uteis(data_inicio: datetime, dias: int) -> datetime:
     return data
 
 
+def producao_dias_uteis_para_quantidade(quantidade_total: int) -> int:
+    """Prazo de producao (dias uteis) pra um pedido com essa quantidade
+    TOTAL de pecas (todos os formatos somados) -- ver config.py:
+    FAIXAS_PRODUCAO_DIAS_UTEIS. Abaixo da primeira faixa cadastrada,
+    vale PRODUCAO_DIAS_UTEIS (a promessa base de sempre)."""
+    dias = PRODUCAO_DIAS_UTEIS
+    for inicio, valor in sorted(FAIXAS_PRODUCAO_DIAS_UTEIS.items()):
+        if quantidade_total >= inicio:
+            dias = valor
+    return dias
+
+
 def previsoes_do_pedido(pedido: dict) -> dict:
-    """Previsao de envio (pago_em + PRODUCAO_DIAS_UTEIS dias uteis) e de
-    entrega (frete_prazo_dias dias uteis a partir do envio, quando
+    """Previsao de envio (pago_em + dias de producao, que cresce com a
+    quantidade do pedido -- ver producao_dias_uteis_para_quantidade) e
+    de entrega (frete_prazo_dias dias uteis a partir do envio, quando
     conhecido) -- mostrado no painel admin, na timeline do cliente
     (app.py:ver_pedido) e no e-mail de confirmacao (services/email.py)
     (ver conversa: "pago dia X, enviar ate dia X+5 dias uteis").
@@ -1118,12 +1131,15 @@ def previsoes_do_pedido(pedido: dict) -> dict:
     o prazo de entrega... e colocar nova data"). `enviado_antecipado`
     fica True quando isso aconteceu, pra` templates/pedido.html mostrar
     uma mensagem alegre nesse caso."""
-    resultado = {"previsao_envio": None, "previsao_entrega": None, "enviado_antecipado": False}
+    resultado = {"previsao_envio": None, "previsao_entrega": None, "enviado_antecipado": False, "dias_producao": None}
     pago_em = pedido.get("pago_em")
     if not pago_em:
         return resultado
+    quantidade_total = sum(int(item.get("quantidade", 0)) for item in pedido.get("itens", []))
+    dias_producao = producao_dias_uteis_para_quantidade(quantidade_total)
+    resultado["dias_producao"] = dias_producao
     data_pago = datetime.fromisoformat(pago_em)
-    previsao_envio = somar_dias_uteis(data_pago, PRODUCAO_DIAS_UTEIS)
+    previsao_envio = somar_dias_uteis(data_pago, dias_producao)
     resultado["previsao_envio"] = previsao_envio
 
     prazo_frete = pedido.get("frete_prazo_dias")

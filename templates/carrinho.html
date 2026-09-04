@@ -46,7 +46,7 @@
     </p>
 
     <p class="aviso-producao">
-      🛠️ Produção: até <strong>5 dias úteis</strong> após o pagamento confirmado, antes do envio.
+      🛠️ Produção: até <strong id="avisoProducaoDias">{{ producao_dias_uteis }} dias úteis</strong> após o pagamento confirmado, antes do envio.
     </p>
 
     <div id="nudge-desconto"></div>
@@ -235,5 +235,6 @@
 {% block script %}
   <script>window.WHATSAPP_NUMBER = {{ whatsapp_number | tojson }};</script>
   <script>window.PRODUCAO_DIAS_UTEIS = {{ producao_dias_uteis | tojson }};</script>
+  <script>window.FAIXAS_PRODUCAO_DIAS_UTEIS = {{ faixas_producao_dias_uteis | tojson }};</script>
   <script src="{{ url_for('static', filename='js/carrinho_pagina.js') }}"></script>
 {% endblock %}

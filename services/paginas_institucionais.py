@@ -38,18 +38,20 @@ PAGINAS_ATENDIMENTO = {
     "envio-e-prazo-de-entrega": {
         "titulo": "Envio e Prazo de Entrega",
         "resumo": (
-            "Produção em até 5 dias úteis e entrega de 2 a 20 dias úteis após o envio, "
-            "com código de rastreamento enviado em até 7 dias úteis."
+            "Produção de 5 a 10 dias úteis (conforme a quantidade do pedido) e entrega "
+            "de 2 a 20 dias úteis após o envio, com código de rastreamento enviado em "
+            "até 2 dias úteis após a produção ficar pronta."
         ),
         "corpo_html": """
             <p>São três etapas, nessa ordem:</p>
             <ol>
-                <li><strong>Produção:</strong> até 5 dias úteis a partir da confirmação
-                    do pagamento;</li>
+                <li><strong>Produção:</strong> de 5 a 10 dias úteis a partir da
+                    confirmação do pagamento, conforme a quantidade total do pedido
+                    (500+ peças: 7 dias úteis; 1000+ peças: 8 dias úteis; 2000+ peças:
+                    10 dias úteis; abaixo disso, 5 dias úteis);</li>
                 <li><strong>Postagem e rastreio:</strong> você recebe o código de
-                    rastreamento no contato cadastrado no pedido em até 7 dias úteis
-                    contados da confirmação do pedido (esse prazo já inclui os dias de
-                    produção);</li>
+                    rastreamento no contato cadastrado no pedido em até 2 dias úteis
+                    depois que a produção fica pronta;</li>
                 <li><strong>Entrega:</strong> de 2 a 20 dias úteis a partir da postagem,
                     conforme o destino e a transportadora.</li>
             </ol>
@@ -281,8 +283,9 @@ PAGINAS_ATENDIMENTO = {
             ),
             (
                 "Qual o prazo de entrega?",
-                "Produção em até 5 dias úteis após a confirmação do pagamento, mais o "
-                "prazo de transporte (2 a 20 dias úteis conforme o destino).",
+                "Produção de 5 a 10 dias úteis após a confirmação do pagamento "
+                "(conforme a quantidade do pedido), mais o prazo de transporte (2 a "
+                "20 dias úteis conforme o destino).",
             ),
             (
                 "Quais as formas de pagamento?",
@@ -335,8 +338,9 @@ PAGINAS_ATENDIMENTO = {
 
             <details class="acordeao">
                 <summary>Qual o prazo de entrega?</summary>
-                <p>Produção em até 5 dias úteis após a confirmação do pagamento, mais o
-                prazo de transporte. Detalhes completos em
+                <p>Produção de 5 a 10 dias úteis após a confirmação do pagamento
+                (conforme a quantidade do pedido), mais o prazo de transporte. Detalhes
+                completos em
                 <a href="/atendimento/envio-e-prazo-de-entrega">Envio e Prazo de
                 Entrega</a>.</p>
             </details>

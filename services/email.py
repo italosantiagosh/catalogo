@@ -79,7 +79,7 @@ def _corpo_html_confirmacao(pedido: dict, url_pedido: str) -> str:
                 "nosso controle e podem alterar essa data.</p>"
             )
     else:
-        previsao_html = "<p>🛠️ Seu pedido já está em produção -- prazo de até <strong>5 dias úteis</strong> antes do envio.</p>"
+        previsao_html = "<p>🛠️ Seu pedido já está em produção -- prazo de <strong>5 a 10 dias úteis</strong> (conforme a quantidade) antes do envio.</p>"
     return (
         f"<p>Olá, {_esc(pedido.get('cliente_nome', ''))}! Recebemos seu pagamento. 🎉</p>"
         f"<p><strong>Pedido #{pedido['codigo']}</strong></p>"

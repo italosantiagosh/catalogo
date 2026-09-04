@@ -184,8 +184,25 @@ AVALIACAO_DIAS_APOS_PAGAMENTO = int(os.environ.get("AVALIACAO_DIAS_APOS_PAGAMENT
 # do pedido ser enviado -- mesma promessa ja usada como texto fixo em
 # varias paginas ("prazo de ate 5 dias uteis antes do envio"). Usado
 # pra calcular a previsao de envio/entrega mostrada no painel admin e
-# na timeline do cliente (ver app.py:_previsoes_do_pedido).
+# na timeline do cliente (ver app.py:_previsoes_do_pedido). E´ a
+# promessa BASE -- pedidos grandes tem prazo maior, ver
+# FAIXAS_PRODUCAO_DIAS_UTEIS logo abaixo.
 PRODUCAO_DIAS_UTEIS = int(os.environ.get("PRODUCAO_DIAS_UTEIS", "5"))
+
+# Prazo de producao cresce com a quantidade TOTAL de pecas do pedido
+# (pedido do usuario 2026-09-04: "a partir de 500 unidades ser 7 dias
+# uteis, 1000 unidades 8 dias uteis e 2 mil unidades 10 dias uteis") --
+# chave = quantidade MINIMA de pecas do pedido inteiro (todos os
+# formatos somados) pra entrar nessa faixa, valor = dias uteis de
+# producao. Abaixo da primeira faixa aqui, vale PRODUCAO_DIAS_UTEIS (a
+# promessa base de sempre). Mesmo espirito de "faixa" ja usado nos
+# precos (data/precos.json), so que aqui e´ prazo, nao preco -- ver
+# services/pedidos.py:producao_dias_uteis_para_quantidade.
+FAIXAS_PRODUCAO_DIAS_UTEIS = {
+    500: 7,
+    1000: 8,
+    2000: 10,
+}
 
 GA4_MEASUREMENT_ID = os.environ.get("GA4_MEASUREMENT_ID", "G-RXVM530CM6")
 META_PIXEL_ID = os.environ.get("META_PIXEL_ID", "28592446083693889")

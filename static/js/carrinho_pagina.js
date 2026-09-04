@@ -8,6 +8,7 @@
   const progressoFreteTexto = document.getElementById('progresso-frete-texto');
   const progressoFretePreenchimento = document.getElementById('progresso-frete-preenchimento');
   const avisoMinimoEl = document.getElementById('aviso-minimo');
+  const avisoProducaoDiasEl = document.getElementById('avisoProducaoDias');
   const pedidoIdTexto = document.getElementById('pedido-id-texto');
   const btnWhatsappFinalizar = document.getElementById('btn-whatsapp-finalizar');
   const btnWhatsappDuvida = document.getElementById('btn-whatsapp-duvida');
@@ -379,6 +380,14 @@
     resumoQtdEl.textContent = String(dados.quantidade_total);
     resumoSubtotalEl.textContent = formatarPreco(dados.subtotal_total);
 
+    // prazo de producao varia por faixa de quantidade total do pedido
+    // (ver config.py:FAIXAS_PRODUCAO_DIAS_UTEIS) -- atualiza o aviso fixo
+    // do topo do carrinho conforme o carrinho muda.
+    if (avisoProducaoDiasEl) {
+      const diasProducao = producaoDiasUteisParaQuantidade(dados.quantidade_total);
+      avisoProducaoDiasEl.textContent = `${diasProducao} dias úteis`;
+    }
+
     // barra de progresso: proxima faixa de desconto, uma por grupo ativo
     // (medalhas/entremeios e chaveiros nao se misturam -- services/pricing.py)
     progressoGruposEl.innerHTML = '';
@@ -641,7 +650,7 @@
   // prazo da transportadora... com a producao, prazo de entrega dia X".
   // somarDiasUteis espelha services/pedidos.py:somar_dias_uteis (pula
   // sabado/domingo, sem considerar feriado -- mesma aproximacao ja usada
-  // na promessa de texto "5 dias uteis" em varias paginas). Ponto de
+  // na promessa de texto "X dias uteis" em varias paginas). Ponto de
   // partida e´ HOJE (nao ha´ pagamento ainda nesse momento do carrinho) --
   // uma estimativa "se eu pagar agora", nao uma promessa fechada (a
   // promessa de verdade, baseada no pagamento real, aparece depois na
@@ -661,9 +670,26 @@
     return data.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
   }
 
+  // espelha services/pedidos.py:producao_dias_uteis_para_quantidade -- o
+  // prazo de producao cresce por faixa de quantidade TOTAL do pedido (ver
+  // config.py:FAIXAS_PRODUCAO_DIAS_UTEIS, injetado em window pelo carrinho.html).
+  function producaoDiasUteisParaQuantidade(quantidadeTotal) {
+    let dias = window.PRODUCAO_DIAS_UTEIS;
+    const faixas = window.FAIXAS_PRODUCAO_DIAS_UTEIS || {};
+    Object.keys(faixas)
+      .map(Number)
+      .sort((a, b) => a - b)
+      .forEach((inicio) => {
+        if (quantidadeTotal >= inicio) dias = faixas[inicio];
+      });
+    return dias;
+  }
+
   function textoPrazoComProducao(prazoDiasTransportadora) {
     if (!prazoDiasTransportadora || !window.PRODUCAO_DIAS_UTEIS) return '';
-    const dataProducaoPronta = somarDiasUteis(new Date(), window.PRODUCAO_DIAS_UTEIS);
+    const quantidadeTotal = (ultimoCalculo && ultimoCalculo.quantidade_total) || 0;
+    const diasProducao = producaoDiasUteisParaQuantidade(quantidadeTotal);
+    const dataProducaoPronta = somarDiasUteis(new Date(), diasProducao);
     const dataEntrega = somarDiasUteis(dataProducaoPronta, prazoDiasTransportadora);
     return ` — com a produção, prazo de entrega dia ${formatarDataCurta(dataEntrega)}`;
   }
