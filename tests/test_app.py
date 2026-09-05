@@ -512,12 +512,14 @@ def test_schema_org_product_na_pagina_de_produto(client):
     assert produto["image"].startswith("http")
 
     # Search Console (Listagens do comerciante) reportava validFrom,
-    # hasMerchantReturnPolicy e shippingDetails ausentes em "offers".
+    # hasMerchantReturnPolicy e shippingDetails ausentes em "offers", e
+    # depois validThrough/priceValidUntil + merchantReturnDays.
     assert produto["offers"]["validFrom"]
+    assert produto["offers"]["priceValidUntil"]
     devolucao = produto["offers"]["hasMerchantReturnPolicy"]
     assert devolucao["@type"] == "MerchantReturnPolicy"
     assert devolucao["applicableCountry"] == "BR"
-    assert devolucao["merchandiseReturnDays"] == 7
+    assert devolucao["merchantReturnDays"] == 7
     envio = produto["offers"]["shippingDetails"]
     assert envio["@type"] == "OfferShippingDetails"
     assert envio["shippingDestination"]["addressCountry"] == "BR"

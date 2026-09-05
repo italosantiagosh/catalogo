@@ -42,7 +42,7 @@ import io
 import os
 import secrets
 import tempfile
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from urllib.parse import urlsplit
 from xml.sax.saxutils import escape as escapar_xml
@@ -992,6 +992,13 @@ def produto(produto_id: str):
             # "validFrom nao foi encontrado (em offers)" -- preco eh valido
             # desde ja´ (renderizado por requisicao, sempre a data atual).
             "validFrom": datetime.now(timezone.utc).date().isoformat(),
+            # "E preciso especificar validThrough ou priceValidUntil (em
+            # offers)" -- preco pode mudar a qualquer momento (admin edita
+            # data/precos.json), entao em vez de uma data fixa/distante,
+            # declara uma janela curta que rola sozinha a cada requisicao
+            # (hoje + 90 dias) -- nunca fica "vencida" pro Google enquanto a
+            # pagina continuar sendo recrawleada dentro desse prazo.
+            "priceValidUntil": (datetime.now(timezone.utc) + timedelta(days=90)).date().isoformat(),
             # Politica real de troca/devolucao (7 dias corridos, arrependimento
             # sem justificativa, frete de volta por nossa conta) -- ver
             # services/paginas_institucionais.py:"trocas-e-devolucao". Faltando
@@ -1001,7 +1008,12 @@ def produto(produto_id: str):
                 "@type": "MerchantReturnPolicy",
                 "applicableCountry": "BR",
                 "returnPolicyCategory": "https://schema.org/MerchantReturnFiniteReturnWindow",
-                "merchandiseReturnDays": 7,
+                # nome certo confirmado -- "merchandiseReturnDays" (o que
+                # tinha antes) NAO existe no vocabulario do Google, so
+                # "merchantReturnDays" (ver conversa: Search Console
+                # reportando "merchantReturnDays" nao encontrado mesmo com
+                # merchandiseReturnDays presente).
+                "merchantReturnDays": 7,
                 "returnMethod": "https://schema.org/ReturnByMail",
                 "returnFees": "https://schema.org/FreeReturn",
             },
