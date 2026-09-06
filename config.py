@@ -190,16 +190,6 @@ UPSELL_HORAS_APOS_PAGAMENTO = int(os.environ.get("UPSELL_HORAS_APOS_PAGAMENTO", 
 # app.py:_enviar_pedidos_para_avaliacao.
 AVALIACAO_DIAS_APOS_PAGAMENTO = int(os.environ.get("AVALIACAO_DIAS_APOS_PAGAMENTO", "30"))
 
-# Quanto tempo guardar o RECORTE (1:1, resolucao real de producao -- o
-# pesado dos dois, ver services/imagens_personalizadas.py) de uma
-# medalha personalizada com foto depois do pedido pago, antes de apagar
-# pra economizar disco (pedido do usuario: "deixar temporario... depois
-# excluidas, deixa so a miniatura"). A PREVIEW (menor, com moldura, que
-# aparece na pagina de acompanhamento do pedido) nunca e´ apagada por
-# esse prazo -- so o recorte de producao, que depois de fabricada a
-# peca ninguem mais precisa baixar de novo.
-RETENCAO_RECORTE_PERSONALIZADA_DIAS = int(os.environ.get("RETENCAO_RECORTE_PERSONALIZADA_DIAS", "30"))
-
 # Prazo de producao em DIAS UTEIS depois do pagamento confirmado, antes
 # do pedido ser enviado -- mesma promessa ja usada como texto fixo em
 # varias paginas ("prazo de ate 5 dias uteis antes do envio"). Usado

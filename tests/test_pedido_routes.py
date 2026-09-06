@@ -441,49 +441,6 @@ def test_item_duas_faces_lado_escolhido_do_catalogo_guarda_produto_e_modelo(clie
     assert "Baixar lado 2 (imagem 1:1)" in detalhe
 
 
-def test_recorte_personalizada_some_do_admin_apos_retencao(client, monkeypatch):
-    """Depois de RETENCAO_RECORTE_PERSONALIZADA_DIAS (config.py) o link
-    de download do recorte 1:1 deixa de aparecer no admin -- a imagem em
-    si pode ja ter sido apagada pelo job (services/imagens_personalizadas.
-    py:purgar_recortes_usados_antigos), entao mostramos um aviso em vez
-    de um link quebrado. Usa a idade do PEDIDO (criado_em) como
-    aproximacao da idade da imagem, ja que as duas nascem juntas no
-    checkout (ver conversa)."""
-    from datetime import datetime, timedelta, timezone
-
-    _preparar_admin_env(monkeypatch)
-    corpo = _corpo_valido(itens=[{
-        "chave_preco": "16mm", "quantidade": 10, "produtoNome": "Personalizada",
-        "formato": "medalha", "tamanho": "16mm",
-        "imagem": "data:image/png;base64,AAAA", "imagemRecorte": "data:image/png;base64,BBBB",
-    }])
-    with patch("app.criar_link_pagamento", return_value={"url": "https://checkout.infinitepay.io/abc"}):
-        criado = client.post("/api/pedido/criar", json=corpo).get_json()
-
-    antigo = (datetime.now(timezone.utc) - timedelta(days=31)).isoformat()
-    with pedidos._conexao() as conexao:
-        conexao.execute("UPDATE pedidos SET criado_em = ? WHERE token = ?", (antigo, criado["token"]))
-
-    detalhe = client.get(f"/admin/pedidos/{criado['token']}", auth=("admin", "segredo123")).get_data(as_text=True)
-    assert "Baixar imagem 1:1" not in detalhe
-    assert "imagem 1:1 excluída após 30 dias" in detalhe
-
-
-def test_recorte_personalizada_disponivel_dentro_da_retencao(client, monkeypatch):
-    _preparar_admin_env(monkeypatch)
-    corpo = _corpo_valido(itens=[{
-        "chave_preco": "16mm", "quantidade": 10, "produtoNome": "Personalizada",
-        "formato": "medalha", "tamanho": "16mm",
-        "imagem": "data:image/png;base64,AAAA", "imagemRecorte": "data:image/png;base64,BBBB",
-    }])
-    with patch("app.criar_link_pagamento", return_value={"url": "https://checkout.infinitepay.io/abc"}):
-        criado = client.post("/api/pedido/criar", json=corpo).get_json()
-
-    detalhe = client.get(f"/admin/pedidos/{criado['token']}", auth=("admin", "segredo123")).get_data(as_text=True)
-    assert "Baixar imagem 1:1" in detalhe
-    assert "excluída após" not in detalhe
-
-
 def _preparar_admin_env(monkeypatch):
     import app as app_module
 
