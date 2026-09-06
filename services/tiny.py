@@ -223,17 +223,39 @@ def _primeiro_registro(registros_bruto) -> dict:
 
 
 def _itens_para_tiny(itens: list[dict]) -> list[dict]:
+    """Agrupa numa unica linha os itens que resolvem pro MESMO material
+    da Tiny (mesmo codigo+descricao+valor_unitario), somando a
+    quantidade -- sem isso, produtos diferentes do site (santos
+    diferentes) que usam a mesma materia-prima (ver _chave_material: o
+    SKU e´ por MATERIAL, nao por santo -- a Tiny nao rastreia qual santo
+    esta em cada peca) apareciam repetidos, uma linha de quantidade 1
+    pra cada santo, mesmo sendo o mesmo estoque consumido (ver conversa,
+    pedido real com 4 linhas identicas "Entremeio Personalizado de 1
+    lado - Ouro velho" em vez de uma linha so com quantidade 4).
+    valor_unitario entra na chave de agrupamento (nao so codigo+
+    descricao) por seguranca -- na pratica sempre bate entre itens do
+    mesmo material (calcular_preco usa so chave_preco+quantidade do
+    GRUPO, ver services/pricing.py), mas se um dia divergir, mantem
+    linhas separadas em vez de arriscar perder informacao de preco."""
+    quantidade_por_linha: dict[tuple[str, str, str], int] = {}
+    for item in itens:
+        chave = (
+            _codigo_estoque_tiny(item),
+            _descricao_estoque_tiny(item),
+            f"{item.get('valor_unitario', 0):.2f}",
+        )
+        quantidade_por_linha[chave] = quantidade_por_linha.get(chave, 0) + int(item.get("quantidade", 1))
     return [
         {
             "item": {
-                "codigo": _codigo_estoque_tiny(item),
-                "descricao": _descricao_estoque_tiny(item),
+                "codigo": codigo,
+                "descricao": descricao,
                 "unidade": "UN",
-                "quantidade": str(item.get("quantidade", 1)),
-                "valor_unitario": f"{item.get('valor_unitario', 0):.2f}",
+                "quantidade": str(quantidade),
+                "valor_unitario": valor_unitario,
             }
         }
-        for item in itens
+        for (codigo, descricao, valor_unitario), quantidade in quantidade_por_linha.items()
     ]
 
 

@@ -157,6 +157,56 @@ def test_item_do_catalogo_entremeio_e_chaveiro_tambem_usam_codigo_agregado(monke
     assert pedido_json["itens"][1]["item"]["descricao"] == "Chaveiro Personalizado"
 
 
+def test_santos_diferentes_com_mesmo_material_juntam_numa_linha_so(monkeypatch):
+    """Ver conversa: pedido real com 4 santos diferentes, todos em
+    entremeio ouro velho -- a Tiny nao rastreia qual santo esta em cada
+    peca (SKU e´ por MATERIAL, ver _chave_material), entao apareciam 4
+    linhas identicas de quantidade 1 em vez de uma linha so com
+    quantidade 4 ("itens repetidos" no pedido real da Tiny)."""
+    monkeypatch.setattr(tiny, "TINY_API_TOKEN", "segredo123")
+    itens = [
+        {"chave_preco": "entremeio", "quantidade": 1, "descricao": "Santo A — Entremeio · Ouro velho",
+         "valor_unitario": 3.0, "cor": "ouro_velho", "produtoId": "santo-a", "modeloId": "1"},
+        {"chave_preco": "entremeio", "quantidade": 1, "descricao": "Santo B — Entremeio · Ouro velho",
+         "valor_unitario": 3.0, "cor": "ouro_velho", "produtoId": "santo-b", "modeloId": "1"},
+        {"chave_preco": "entremeio", "quantidade": 1, "descricao": "Santo C — Entremeio · Ouro velho",
+         "valor_unitario": 3.0, "cor": "ouro_velho", "produtoId": "santo-c", "modeloId": "1"},
+        {"chave_preco": "entremeio", "quantidade": 1, "descricao": "Santo D — Entremeio · Ouro velho",
+         "valor_unitario": 3.0, "cor": "ouro_velho", "produtoId": "santo-d", "modeloId": "1"},
+        # material diferente (medalha 16mm) -- continua em linha separada
+        {"chave_preco": "16mm", "quantidade": 1, "descricao": "Santo A — Medalha", "valor_unitario": 5.0,
+         "produtoId": "santo-a", "modeloId": "1"},
+    ]
+    with patch("services.tiny.requests.post", return_value=_resposta_ok()) as post_mock:
+        tiny.criar_pedido_tiny(_pedido_exemplo(itens=itens))
+    pedido_json = json.loads(post_mock.call_args.kwargs["data"]["pedido"])["pedido"]
+    assert len(pedido_json["itens"]) == 2
+    entremeio, medalha = pedido_json["itens"]
+    assert entremeio["item"]["codigo"] == "KY5EZHCF5"
+    assert entremeio["item"]["quantidade"] == "4"
+    assert medalha["item"]["codigo"] == "LCEHXXXNP"
+    assert medalha["item"]["quantidade"] == "1"
+
+
+def test_mesmo_material_com_valor_unitario_diferente_nao_junta(monkeypatch):
+    """Protecao contra perder informacao de preco -- na pratica
+    valor_unitario sempre bate entre itens do mesmo material (mesma
+    faixa de atacado, ver services/pricing.py), mas se algum dia
+    divergir, mantem linhas separadas em vez de arriscar juntar valores
+    diferentes numa unica quantidade."""
+    monkeypatch.setattr(tiny, "TINY_API_TOKEN", "segredo123")
+    itens = [
+        {"chave_preco": "16mm", "quantidade": 1, "descricao": "Santo A", "valor_unitario": 5.0,
+         "produtoId": "santo-a", "modeloId": "1"},
+        {"chave_preco": "16mm", "quantidade": 1, "descricao": "Santo B", "valor_unitario": 4.5,
+         "produtoId": "santo-b", "modeloId": "1"},
+    ]
+    with patch("services.tiny.requests.post", return_value=_resposta_ok()) as post_mock:
+        tiny.criar_pedido_tiny(_pedido_exemplo(itens=itens))
+    pedido_json = json.loads(post_mock.call_args.kwargs["data"]["pedido"])["pedido"]
+    assert len(pedido_json["itens"]) == 2
+
+
 def test_medalha_2lados_usa_codigo_por_tamanho_e_cor(monkeypatch):
     """SKUs reais das variacoes "Medalha Personalizada de 2 lados"
     (Tamanho x Cor) mandados pela usuaria, ver services/tiny.py:
