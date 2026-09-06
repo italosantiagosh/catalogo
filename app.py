@@ -2022,7 +2022,9 @@ def pedido_reativar_pix(token: str):
     cliente, endereco = _cliente_e_endereco_do_pedido(pedido)
     resultado = _gerar_link_pagamento_para_pedido(pedido, cliente, endereco)
     if "erro" in resultado:
-        return redirect(url_for("ver_pedido", token=token))
+        return redirect(
+            url_for("ver_pedido", token=token, reativar_erro="Não conseguimos gerar o link de pagamento agora.")
+        )
     return redirect(resultado["url"])
 
 
@@ -2048,7 +2050,7 @@ def pedido_reativar_boleto(token: str):
     cliente, endereco = _cliente_e_endereco_do_pedido(pedido)
     resultado = emitir_boleto(seu_numero=pedido["codigo"], valor=pedido["total"], cliente=cliente, endereco=endereco)
     if "erro" in resultado:
-        return redirect(url_for("ver_pedido", token=token))
+        return redirect(url_for("ver_pedido", token=token, reativar_erro="Não conseguimos gerar o boleto agora."))
 
     dados_cobranca = consultar_cobranca(resultado["codigo_solicitacao"])
     boleto = dados_cobranca.get("boleto") or {}

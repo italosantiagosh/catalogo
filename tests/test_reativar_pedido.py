@@ -132,3 +132,41 @@ def test_reativar_boleto_ja_emitido_nao_emite_de_novo(client):
 
     assert resposta.status_code == 302
     mock_boleto2.assert_not_called()
+
+
+# ---- falha da integracao (Inter/InfinitePay fora do ar, credencial
+# errada etc.) -- nunca deve travar/quebrar, so avisa o cliente na
+# pagina de acompanhamento em vez de deixar ele "boiando" ----
+
+def test_reativar_pix_com_erro_mostra_aviso_na_pagina_do_pedido(client):
+    token = _criar_e_cancelar(client)
+
+    with patch("app.criar_link_pagamento", return_value={"erro": "InfinitePay fora do ar"}):
+        resposta = client.get(f"/pedido/{token}/reativar-pix")
+
+    assert resposta.status_code == 302
+    assert f"/pedido/{token}" in resposta.headers["Location"]
+    assert "reativar_erro=" in resposta.headers["Location"]
+
+    pagina = client.get(resposta.headers["Location"]).get_data(as_text=True)
+    assert "Não conseguimos gerar o link de pagamento agora" in pagina
+    assert "WhatsApp" in pagina
+
+
+def test_reativar_boleto_com_erro_mostra_aviso_na_pagina_do_pedido(client):
+    token = _criar_e_cancelar(client)
+
+    with patch("app.emitir_boleto", return_value={"erro": "Inter fora do ar"}):
+        resposta = client.get(f"/pedido/{token}/reativar-boleto")
+
+    assert resposta.status_code == 302
+    assert "reativar_erro=" in resposta.headers["Location"]
+
+    pagina = client.get(resposta.headers["Location"]).get_data(as_text=True)
+    assert "Não conseguimos gerar o boleto agora" in pagina
+
+
+def test_pagina_do_pedido_sem_reativar_erro_nao_mostra_aviso(client):
+    token = _criar_e_cancelar(client)
+    pagina = client.get(f"/pedido/{token}").get_data(as_text=True)
+    assert "Não conseguimos gerar" not in pagina

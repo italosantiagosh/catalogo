@@ -5,6 +5,13 @@
 {% block conteudo %}
   <h1>Pedido #{{ pedido.codigo }}</h1>
 
+  {% if request.args.get('reativar_erro') %}
+    <div class="erro">
+      ⚠️ {{ request.args.get('reativar_erro') }} Tente de novo em alguns minutos, ou fale no
+      <a href="https://wa.me/{{ whatsapp_number }}" target="_blank" rel="noopener">WhatsApp</a>.
+    </div>
+  {% endif %}
+
   {% if timeline %}
     <ol class="pedido-timeline">
       {% for etapa in timeline %}
