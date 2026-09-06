@@ -50,7 +50,7 @@ from xml.sax.saxutils import escape as escapar_xml
 from flask import Flask, Response, abort, jsonify, redirect, render_template, request, send_file, session, url_for
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
-from PIL import Image
+from PIL import Image, ImageOps
 from pillow_heif import register_heif_opener
 from werkzeug.datastructures import FileStorage
 
@@ -533,6 +533,47 @@ def _salvar_temp(arquivo: FileStorage) -> tempfile._TemporaryFileWrapper:
     tmp = tempfile.NamedTemporaryFile(suffix=sufixo)
     arquivo.save(tmp.name)
     return tmp
+
+
+# Fotos de celular moderno passam facil de 12-48MP -- processar em
+# resolucao total (compose_medal/_crop_quadrada, que carregam a imagem
+# inteira em memoria varias vezes com PIL/numpy pra compor a medalha)
+# pode estourar a memoria do processo, pra uma peca que sai impressa
+# com 1,2 a 3cm de diametro (ver conversa: alerta real do Render
+# "exceeded its memory limit", log mostrando POST
+# /api/personalizada/preview bem no pico). Bem mais resolucao do que a
+# peca final jamais vai precisar.
+_FOTO_PERSONALIZADA_LADO_MAXIMO = 2400
+
+
+def _reduzir_temp_se_grande_demais(caminho: Path, box: "CropBox | None") -> "CropBox | None":
+    """Reduz o arquivo temporario ANTES do processamento pesado, se
+    algum lado passar de _FOTO_PERSONALIZADA_LADO_MAXIMO. `box` (se
+    informado) vem em pixels da imagem ORIGINAL (ver
+    services/gerador/compositor.py:crop_to_box) -- precisa escalar na
+    MESMA proporcao, senao o recorte manual do cliente sai deslocado
+    depois que a imagem encolhe."""
+    with Image.open(caminho) as arquivo_original:
+        imagem = ImageOps.exif_transpose(arquivo_original)
+        largura, altura = imagem.size
+        maior_lado = max(largura, altura)
+        if maior_lado <= _FOTO_PERSONALIZADA_LADO_MAXIMO:
+            return box
+        fator = _FOTO_PERSONALIZADA_LADO_MAXIMO / maior_lado
+        # resize() ja devolve uma imagem nova com os pixels prontos,
+        # independente do arquivo original -- da pra salvar por cima do
+        # mesmo caminho com seguranca so depois que esse "with" fechar.
+        imagem = imagem.resize(
+            (max(1, round(largura * fator)), max(1, round(altura * fator))), Image.LANCZOS
+        )
+
+    parametros_save = {"quality": 90} if caminho.suffix.lower() in (".jpg", ".jpeg") else {}
+    imagem.save(caminho, **parametros_save)
+
+    if box is None:
+        return None
+    x1, y1, x2, y2 = box
+    return (x1 * fator, y1 * fator, x2 * fator, y2 * fator)
 
 
 def _montar_destaques(produtos: list[dict], itens_por_id: dict) -> list[dict]:
@@ -3421,6 +3462,7 @@ def api_personalizada_preview():
     with _salvar_temp(arquivo) as tmp:
         caminho = Path(tmp.name)
         try:
+            box = _reduzir_temp_se_grande_demais(caminho, box)
             resultado = compose_medal(spec, caminho, crop_box=box)
             recorte = _crop_quadrada(caminho, box)
         except Exception as exc:
