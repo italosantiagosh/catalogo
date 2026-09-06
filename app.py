@@ -2458,13 +2458,30 @@ def _mensagem_whatsapp_cliente(pedido: dict) -> str:
     link_pedido = url_for("ver_pedido", token=pedido["token"], _external=True)
 
     if pedido["status"] == "pendente":
+        if pedido.get("inter_codigo_solicitacao"):
+            # boleto ja emitido -- linha digitavel/codigo de barras ja
+            # ficaram salvos na hora (ver salvar_dados_boleto_inter),
+            # nao precisa gerar nada novo pra mandar direto na mensagem.
+            pagamento_texto = (
+                f"Boleto -- código de barras: {pedido.get('inter_codigo_barras', '')}\n"
+                f"Baixar o boleto: {url_for('ver_boleto_pdf', token=pedido['token'], _external=True)}\n"
+            )
+        else:
+            # Pix/cartao: o link de pagamento original expira sem prazo
+            # documentado pela InfinitePay (ver api_pedido_novo_link) --
+            # gerar um aqui de novo a cada carregamento da pagina do
+            # admin seria uma chamada de API a toa toda vez que o
+            # admin so abre o pedido. O link do pedido ja tem o botao
+            # "gerar novo link de pagamento" pronto (ver pedido.html).
+            pagamento_texto = ""
         return (
             f"Olá {nome}, o seu pedido #{codigo} no site Nove de Julho foi criado com os itens:\n"
             f"{itens_texto}\n"
             f"Frete: {frete}\n"
             f"Total: {total}\n\n"
-            f"Estamos aguardando seu pagamento -- pra pagar ou acompanhar, o link do seu pedido é "
-            f"esse: {link_pedido}"
+            f"Estamos aguardando seu pagamento.\n"
+            f"{pagamento_texto}"
+            f"Pra acompanhar o pedido, o link é esse: {link_pedido}"
             f"{_ASSINATURA_WHATSAPP_CLIENTE}"
         )
 

@@ -50,6 +50,20 @@ def test_pendente_menciona_itens_frete_total_e_link_do_pedido(client):
     assert "aguardando seu pagamento" in mensagem
 
 
+def test_pendente_com_boleto_manda_codigo_de_barras_e_link_do_boleto(client):
+    token = _criar(client)
+    pedidos.salvar_dados_boleto_inter(
+        token, codigo_solicitacao="abc-uuid", linha_digitavel="123.456", codigo_barras="789456123",
+        pix_copia_cola="",
+    )
+    with app.test_request_context():
+        mensagem = app_module._mensagem_whatsapp_cliente(pedidos.obter_pedido(token))
+
+    assert "789456123" in mensagem
+    assert f"/pedido/{token}/boleto.pdf" in mensagem
+    assert f"/pedido/{token}" in mensagem  # link de acompanhamento continua junto
+
+
 def test_cancelado_oferece_reativar_pix_e_boleto(client):
     token = _criar(client)
     pedidos.cancelar_pedido(token)
