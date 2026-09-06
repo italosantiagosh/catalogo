@@ -1999,6 +1999,70 @@ def api_pedido_novo_link(token: str):
     return jsonify(url=resultado["url"])
 
 
+@app.route("/pedido/<token>/reativar-pix", methods=["GET"])
+def pedido_reativar_pix(token: str):
+    """Link direto no e-mail de recuperacao de pedido cancelado (ver
+    services/email.py:enviar_pedido_cancelado) -- reativa o MESMO
+    pedido (mesmos itens, mesma foto personalizada se tiver, ver
+    services/pedidos.py:reativar_pedido_cancelado) e ja manda direto
+    pro checkout Pix/cartao da InfinitePay, sem o cliente precisar
+    preencher nada de novo. GET (nao POST) de proposito -- e´ um link
+    clicado direto de dentro do e-mail, sem JS/formulario no meio."""
+    pedido = obter_pedido(token)
+    if pedido is None:
+        abort(404)
+    if pedido["status"] == "cancelado":
+        pedido = reativar_pedido_cancelado(token)
+    if pedido["status"] != "pendente":
+        # ja foi reativado por outro clique/aba, ja foi pago, ou nunca
+        # esteve cancelado -- nunca gera link a toa, so leva pra pagina
+        # de acompanhamento de sempre.
+        return redirect(url_for("ver_pedido", token=token))
+
+    cliente, endereco = _cliente_e_endereco_do_pedido(pedido)
+    resultado = _gerar_link_pagamento_para_pedido(pedido, cliente, endereco)
+    if "erro" in resultado:
+        return redirect(url_for("ver_pedido", token=token))
+    return redirect(resultado["url"])
+
+
+@app.route("/pedido/<token>/reativar-boleto", methods=["GET"])
+def pedido_reativar_boleto(token: str):
+    """Mesma ideia de pedido_reativar_pix acima, so que emite um boleto
+    via Banco Inter (ver api_pedido_criar_boleto) pro pedido reativado,
+    em vez de link da InfinitePay -- depois manda pra pagina de
+    acompanhamento, que ja mostra os dados do boleto quando
+    preenchidos (ver templates/pedido.html)."""
+    pedido = obter_pedido(token)
+    if pedido is None:
+        abort(404)
+    if pedido["status"] == "cancelado":
+        pedido = reativar_pedido_cancelado(token)
+    if pedido["status"] != "pendente":
+        return redirect(url_for("ver_pedido", token=token))
+    if pedido.get("inter_codigo_solicitacao"):
+        # ja tem um boleto emitido pra esse pedido (ex: clique duplicado
+        # no mesmo link) -- nao emite outro, so mostra o que ja existe.
+        return redirect(url_for("ver_pedido", token=token))
+
+    cliente, endereco = _cliente_e_endereco_do_pedido(pedido)
+    resultado = emitir_boleto(seu_numero=pedido["codigo"], valor=pedido["total"], cliente=cliente, endereco=endereco)
+    if "erro" in resultado:
+        return redirect(url_for("ver_pedido", token=token))
+
+    dados_cobranca = consultar_cobranca(resultado["codigo_solicitacao"])
+    boleto = dados_cobranca.get("boleto") or {}
+    pix = dados_cobranca.get("pix") or {}
+    salvar_dados_boleto_inter(
+        token,
+        codigo_solicitacao=resultado["codigo_solicitacao"],
+        linha_digitavel=boleto.get("linhaDigitavel", ""),
+        codigo_barras=boleto.get("codigoBarras", ""),
+        pix_copia_cola=pix.get("pixCopiaECola", ""),
+    )
+    return redirect(url_for("ver_pedido", token=token))
+
+
 @app.route("/webhook/infinitepay", methods=["POST"])
 def webhook_infinitepay():
     """Recebido pela InfinitePay quando um pagamento e´ confirmado (ver
