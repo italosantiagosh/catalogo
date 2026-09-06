@@ -274,6 +274,70 @@ def test_item_duas_faces_guarda_as_duas_fotos_separadas(client, monkeypatch):
     assert "sem-foto.svg" in pagina_cliente
 
 
+def test_numero_modelo_personalizada_e_global_estavel_e_aparece_no_download_e_no_csv(client, monkeypatch):
+    """Pedido do usuario: nome do arquivo baixado e a coluna "Modelo" do
+    CSV de producao usam um numero sequencial e GLOBAL (nunca reinicia
+    por pedido) pra cada item personalizado com foto -- comeca em 1,
+    continua em pedidos diferentes, e nunca muda numa mesma peca mesmo
+    revisitando a pagina depois."""
+    _preparar_admin_env(monkeypatch)
+
+    corpo_1 = _corpo_valido(itens=[{
+        "chave_preco": "16mm", "quantidade": 20, "produtoNome": "Personalizada",
+        "formato": "medalha", "tamanho": "16mm",
+        "imagem": "data:image/png;base64,PREVIA1", "imagemRecorte": "data:image/png;base64,RECORTE1",
+    }])
+    with patch("app.criar_link_pagamento", return_value={"url": "https://checkout.infinitepay.io/abc"}):
+        pedido_1 = client.post("/api/pedido/criar", json=corpo_1).get_json()
+
+    corpo_2 = _corpo_valido(itens=[{
+        "chave_preco": "12mm", "quantidade": 20, "produtoNome": "Personalizada",
+        "formato": "medalha", "tamanho": "12mm",
+        "imagem": "data:image/png;base64,PREVIA2", "imagemRecorte": "data:image/png;base64,RECORTE2",
+    }])
+    with patch("app.criar_link_pagamento", return_value={"url": "https://checkout.infinitepay.io/abc"}):
+        pedido_2 = client.post("/api/pedido/criar", json=corpo_2).get_json()
+
+    detalhe_1 = client.get(
+        f"/admin/pedidos/{pedido_1['token']}", auth=("admin", "segredo123")
+    ).get_data(as_text=True)
+    assert 'download="personalizada_modelo_1.png"' in detalhe_1
+
+    detalhe_2 = client.get(
+        f"/admin/pedidos/{pedido_2['token']}", auth=("admin", "segredo123")
+    ).get_data(as_text=True)
+    assert 'download="personalizada_modelo_2.png"' in detalhe_2
+
+    csv_1 = client.get(f"/admin/pedidos/{pedido_1['token']}/csv", auth=("admin", "segredo123")).get_data(as_text=True)
+    assert "Personalizada;1;16;20" in csv_1
+
+    # revisitar o pedido 1 depois de ja ter visto o 2 -- numero continua o mesmo (1), nunca muda
+    detalhe_1_de_novo = client.get(
+        f"/admin/pedidos/{pedido_1['token']}", auth=("admin", "segredo123")
+    ).get_data(as_text=True)
+    assert 'download="personalizada_modelo_1.png"' in detalhe_1_de_novo
+
+
+def test_item_duas_faces_personalizada_usa_um_numero_so_pros_dois_lados(client, monkeypatch):
+    """Uma peca de 2 lados e´ UMA peca so na producao -- os dois lados
+    compartilham o MESMO numero de modelo, cada um no proprio arquivo
+    (_lado1/_lado2)."""
+    _preparar_admin_env(monkeypatch)
+    corpo = _corpo_valido(itens=[{
+        "chave_preco": "medalha_2lados", "quantidade": 20, "produtoNome": "Personalizada",
+        "formato": "medalha_2lados", "cor": "prata", "tamanho": "18mm",
+        "duasFaces": True,
+        "lado1": {"origem": "upload", "imagem": "data:image/png;base64,L1", "imagemRecorte": "data:image/png;base64,L1R"},
+        "lado2": {"origem": "upload", "imagem": "data:image/png;base64,L2", "imagemRecorte": "data:image/png;base64,L2R"},
+    }])
+    with patch("app.criar_link_pagamento", return_value={"url": "https://checkout.infinitepay.io/abc"}):
+        criado = client.post("/api/pedido/criar", json=corpo).get_json()
+
+    detalhe = client.get(f"/admin/pedidos/{criado['token']}", auth=("admin", "segredo123")).get_data(as_text=True)
+    assert 'download="personalizada_modelo_1_lado1.png"' in detalhe
+    assert 'download="personalizada_modelo_1_lado2.png"' in detalhe
+
+
 def test_medalha_2lados_do_checkout_ate_a_tiny_resolve_sku_por_tamanho_e_cor(client, monkeypatch):
     """Regressao de ponta a ponta (ver conversa: print real do Tiny
     mostrando SKU "medalha_2lados" generico em vez do codigo por

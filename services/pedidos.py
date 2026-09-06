@@ -260,6 +260,28 @@ def inicializar_db() -> None:
             """
         )
 
+        # Numeracao sequencial e GLOBAL (nunca reinicia por pedido, so
+        # quando a usuaria pedir -- ver resetar_numeracao_modelo_personalizada
+        # abaixo) de cada item personalizado COM FOTO -- pedido do
+        # usuario: nome do arquivo baixado e a coluna "Modelo" do CSV de
+        # producao (ver app.py:_atribuir_numeros_modelo_personalizada)
+        # precisam de um numero estavel pra identificar a peca, ja que
+        # ela nao tem nome de santo. Chave e´ (pedido_token, item_index)
+        # -- o indice do item dentro de pedido["itens"], que nunca muda
+        # depois de criado -- pra dar sempre o MESMO numero pra mesma
+        # peca em toda visita futura (painel ou CSV).
+        conexao.execute(
+            """
+            CREATE TABLE IF NOT EXISTS numeros_modelo_personalizada (
+                pedido_token TEXT NOT NULL,
+                item_index INTEGER NOT NULL,
+                numero INTEGER NOT NULL,
+                atribuido_em TEXT NOT NULL,
+                PRIMARY KEY (pedido_token, item_index)
+            )
+            """
+        )
+
 
 def criar_pedido(
     *,
@@ -1362,3 +1384,37 @@ def email_para_documento(documento: str) -> str | None:
         if pedido.get("cliente_email"):
             return pedido["cliente_email"]
     return None
+
+
+def numero_modelo_personalizada(pedido_token: str, item_index: int) -> int:
+    """Numero sequencial (1, 2, 3...) desse item personalizado com foto
+    -- ver app.py:_atribuir_numeros_modelo_personalizada. Primeira vez
+    que essa (pedido_token, item_index) e´ pedida, atribui o PROXIMO
+    numero da fila (MAX atual + 1) e grava; nas proximas vezes so
+    devolve o mesmo numero ja gravado -- nunca muda depois de
+    atribuido, mesmo que o pedido seja visto de novo dias depois."""
+    inicializar_db()
+    with _conexao() as conexao:
+        linha = conexao.execute(
+            "SELECT numero FROM numeros_modelo_personalizada WHERE pedido_token = ? AND item_index = ?",
+            (pedido_token, item_index),
+        ).fetchone()
+        if linha is not None:
+            return linha["numero"]
+        proximo = conexao.execute("SELECT COALESCE(MAX(numero), 0) + 1 FROM numeros_modelo_personalizada").fetchone()[0]
+        conexao.execute(
+            "INSERT INTO numeros_modelo_personalizada (pedido_token, item_index, numero, atribuido_em) "
+            "VALUES (?, ?, ?, ?)",
+            (pedido_token, item_index, proximo, datetime.now(timezone.utc).isoformat()),
+        )
+        return proximo
+
+
+def resetar_numeracao_modelo_personalizada() -> None:
+    """Zera a numeracao de numero_modelo_personalizada -- o PROXIMO item
+    personalizado visto (painel ou CSV) volta a comecar do 1. So chamar
+    quando a usuaria pedir explicitamente (ver conversa: "a contagem nao
+    reseta, so quando eu falar") -- sem uso nenhum automatico/agendado."""
+    inicializar_db()
+    with _conexao() as conexao:
+        conexao.execute("DELETE FROM numeros_modelo_personalizada")

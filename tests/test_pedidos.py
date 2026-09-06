@@ -657,3 +657,24 @@ def test_taxa_clientes_recorrentes_conta_so_quem_ja_comprou_antes(monkeypatch, t
     assert resultado["total"] == 2
     assert resultado["recorrentes"] == 1
     assert resultado["taxa_pct"] == 50.0
+
+
+def test_numero_modelo_personalizada_sequencial_global_e_estavel(monkeypatch, tmp_path):
+    _reapontar_db(monkeypatch, tmp_path)
+    # dois itens diferentes (indices 0 e 1) do MESMO pedido
+    n1 = pedidos.numero_modelo_personalizada("tokenA", 0)
+    n2 = pedidos.numero_modelo_personalizada("tokenA", 1)
+    # item de OUTRO pedido -- continua a mesma fila, nao reinicia
+    n3 = pedidos.numero_modelo_personalizada("tokenB", 0)
+    assert (n1, n2, n3) == (1, 2, 3)
+    # pedir de novo o mesmo (token, indice) -- devolve o MESMO numero, nunca muda
+    assert pedidos.numero_modelo_personalizada("tokenA", 0) == n1
+    assert pedidos.numero_modelo_personalizada("tokenB", 0) == n3
+
+
+def test_resetar_numeracao_modelo_personalizada_volta_a_comecar_do_1(monkeypatch, tmp_path):
+    _reapontar_db(monkeypatch, tmp_path)
+    pedidos.numero_modelo_personalizada("tokenA", 0)
+    pedidos.numero_modelo_personalizada("tokenA", 1)
+    pedidos.resetar_numeracao_modelo_personalizada()
+    assert pedidos.numero_modelo_personalizada("tokenC", 0) == 1

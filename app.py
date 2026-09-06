@@ -166,6 +166,7 @@ from services.pedidos import (
     marcar_notificacao_venda_enviada,
     marcar_pago,
     marcar_tiny_sincronizado,
+    numero_modelo_personalizada,
     obter_pedido,
     pedidos_por_uf,
     previsoes_do_pedido,
@@ -2188,6 +2189,36 @@ def admin_pedidos():
     )
 
 
+def _atribuir_numeros_modelo_personalizada(pedido: dict) -> None:
+    """Numera cada item personalizado COM FOTO do pedido (ver
+    services/pedidos.py:numero_modelo_personalizada) -- contador GLOBAL
+    e sequencial (nunca reinicia por pedido, so quando a usuaria pedir
+    -- ver conversa), pra identificar cada peca na producao sem depender
+    de nome de santo (essa peca nao tem, e´ uma foto do cliente).
+
+    Muda modeloNome pra "Modelo N" -- MESMO formato ja usado nos
+    produtos do catalogo (ver _modelo_csv_do_item logo abaixo, que ja
+    sabe tirar o prefixo "Modelo " sozinho), entao o CSV de producao e a
+    linha "Produto — Modelo — Detalhe" da tela de detalhe ja mostram o
+    numero certo sem precisar de nenhuma logica nova nos dois lugares.
+    Tambem guarda o numero cru em numeroModeloPersonalizada, usado so
+    pro nome do arquivo baixado (ver templates/admin_pedido_detalhe.html).
+
+    Tudo isso e´ feito no dict do pedido em MEMORIA (nunca grava de
+    volta no banco) -- so o numero em si e´ persistido, numa tabela
+    separada por (pedido_token, item_index), pra sempre devolver o
+    MESMO numero em toda visita futura a essa peca."""
+    for indice, item in enumerate(pedido["itens"]):
+        tem_foto_personalizada = bool(
+            item.get("imagemRecorte") or item.get("imagemRecorteLado1") or item.get("imagemRecorteLado2")
+        )
+        if not tem_foto_personalizada:
+            continue
+        numero = numero_modelo_personalizada(pedido["token"], indice)
+        item["modeloNome"] = f"Modelo {numero}"
+        item["numeroModeloPersonalizada"] = numero
+
+
 @app.route("/admin/pedidos/<token>", methods=["GET"])
 def admin_pedido_detalhe(token: str):
     """Tela de um pedido so, com formulario pra avancar o status na mao
@@ -2199,6 +2230,7 @@ def admin_pedido_detalhe(token: str):
     pedido = obter_pedido(token)
     if pedido is None:
         abort(404)
+    _atribuir_numeros_modelo_personalizada(pedido)
     return render_template("admin_pedido_detalhe.html", pedido=pedido)
 
 
@@ -2214,6 +2246,7 @@ def admin_pedido_csv(token: str):
     pedido = obter_pedido(token)
     if pedido is None:
         abort(404)
+    _atribuir_numeros_modelo_personalizada(pedido)
 
     buffer = io.StringIO()
     escritor = csv.writer(buffer, delimiter=";")
