@@ -262,25 +262,51 @@ def inicializar_db() -> None:
 
         # Numeracao sequencial e GLOBAL (nunca reinicia por pedido, so
         # quando a usuaria pedir -- ver resetar_numeracao_modelo_personalizada
-        # abaixo) de cada item personalizado COM FOTO -- pedido do
-        # usuario: nome do arquivo baixado e a coluna "Modelo" do CSV de
-        # producao (ver app.py:_atribuir_numeros_modelo_personalizada)
-        # precisam de um numero estavel pra identificar a peca, ja que
-        # ela nao tem nome de santo. Chave e´ (pedido_token, item_index)
-        # -- o indice do item dentro de pedido["itens"], que nunca muda
-        # depois de criado -- pra dar sempre o MESMO numero pra mesma
-        # peca em toda visita futura (painel ou CSV).
+        # abaixo) de cada LADO com foto de verdade -- pedido do usuario:
+        # nome do arquivo baixado e a coluna "Modelo" do CSV de producao
+        # (ver app.py:_atribuir_numeros_modelo_personalizada) precisam
+        # de um numero estavel pra identificar a peca, ja que ela nao
+        # tem nome de santo. Item de 1 lado so usa lado="" (um numero so
+        # pra peca inteira); item de 2 lados numera lado1/lado2
+        # SEPARADO -- cada foto e´ um design distinto que a produção
+        # imprime por conta propria, mesmo as duas fazendo parte da
+        # MESMA peca fisica no fim (ver conversa). Chave e´ (pedido_token,
+        # item_index, lado) -- o indice do item dentro de pedido["itens"]
+        # nunca muda depois de criado -- pra dar sempre o MESMO numero
+        # pra mesma foto em toda visita futura (painel ou CSV).
         conexao.execute(
             """
             CREATE TABLE IF NOT EXISTS numeros_modelo_personalizada (
                 pedido_token TEXT NOT NULL,
                 item_index INTEGER NOT NULL,
+                lado TEXT NOT NULL DEFAULT '',
                 numero INTEGER NOT NULL,
                 atribuido_em TEXT NOT NULL,
-                PRIMARY KEY (pedido_token, item_index)
+                PRIMARY KEY (pedido_token, item_index, lado)
             )
             """
         )
+        colunas_numeracao = {
+            linha[1] for linha in conexao.execute("PRAGMA table_info(numeros_modelo_personalizada)").fetchall()
+        }
+        if "lado" not in colunas_numeracao:
+            # Formato anterior (numero por ITEM inteiro, sem separar por
+            # lado -- ver conversa) -- so guarda sequencia regeneravel,
+            # nunca dado de pedido de verdade, entao e´ seguro recriar do
+            # zero com o esquema novo em vez de migrar linha a linha.
+            conexao.execute("DROP TABLE numeros_modelo_personalizada")
+            conexao.execute(
+                """
+                CREATE TABLE numeros_modelo_personalizada (
+                    pedido_token TEXT NOT NULL,
+                    item_index INTEGER NOT NULL,
+                    lado TEXT NOT NULL DEFAULT '',
+                    numero INTEGER NOT NULL,
+                    atribuido_em TEXT NOT NULL,
+                    PRIMARY KEY (pedido_token, item_index, lado)
+                )
+                """
+            )
 
 
 def criar_pedido(
@@ -1386,26 +1412,29 @@ def email_para_documento(documento: str) -> str | None:
     return None
 
 
-def numero_modelo_personalizada(pedido_token: str, item_index: int) -> int:
-    """Numero sequencial (1, 2, 3...) desse item personalizado com foto
-    -- ver app.py:_atribuir_numeros_modelo_personalizada. Primeira vez
-    que essa (pedido_token, item_index) e´ pedida, atribui o PROXIMO
-    numero da fila (MAX atual + 1) e grava; nas proximas vezes so
-    devolve o mesmo numero ja gravado -- nunca muda depois de
+def numero_modelo_personalizada(pedido_token: str, item_index: int, lado: str = "") -> int:
+    """Numero sequencial (1, 2, 3...) dessa foto personalizada -- ver
+    app.py:_atribuir_numeros_modelo_personalizada. `lado` e´ "" pra item
+    de 1 lado (um numero so pra peca inteira) ou "lado1"/"lado2" pra
+    item de 2 lados (cada foto numerada separado, mesmo as duas
+    fazendo parte da mesma peca fisica -- ver conversa). Primeira vez
+    que essa (pedido_token, item_index, lado) e´ pedida, atribui o
+    PROXIMO numero da fila (MAX atual + 1) e grava; nas proximas vezes
+    so devolve o mesmo numero ja gravado -- nunca muda depois de
     atribuido, mesmo que o pedido seja visto de novo dias depois."""
     inicializar_db()
     with _conexao() as conexao:
         linha = conexao.execute(
-            "SELECT numero FROM numeros_modelo_personalizada WHERE pedido_token = ? AND item_index = ?",
-            (pedido_token, item_index),
+            "SELECT numero FROM numeros_modelo_personalizada WHERE pedido_token = ? AND item_index = ? AND lado = ?",
+            (pedido_token, item_index, lado),
         ).fetchone()
         if linha is not None:
             return linha["numero"]
         proximo = conexao.execute("SELECT COALESCE(MAX(numero), 0) + 1 FROM numeros_modelo_personalizada").fetchone()[0]
         conexao.execute(
-            "INSERT INTO numeros_modelo_personalizada (pedido_token, item_index, numero, atribuido_em) "
-            "VALUES (?, ?, ?, ?)",
-            (pedido_token, item_index, proximo, datetime.now(timezone.utc).isoformat()),
+            "INSERT INTO numeros_modelo_personalizada (pedido_token, item_index, lado, numero, atribuido_em) "
+            "VALUES (?, ?, ?, ?, ?)",
+            (pedido_token, item_index, lado, proximo, datetime.now(timezone.utc).isoformat()),
         )
         return proximo
 

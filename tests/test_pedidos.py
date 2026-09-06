@@ -678,3 +678,14 @@ def test_resetar_numeracao_modelo_personalizada_volta_a_comecar_do_1(monkeypatch
     pedidos.numero_modelo_personalizada("tokenA", 1)
     pedidos.resetar_numeracao_modelo_personalizada()
     assert pedidos.numero_modelo_personalizada("tokenC", 0) == 1
+
+
+def test_numero_modelo_personalizada_lados_diferentes_ganham_numeros_separados(monkeypatch, tmp_path):
+    _reapontar_db(monkeypatch, tmp_path)
+    n_lado1 = pedidos.numero_modelo_personalizada("tokenA", 0, lado="lado1")
+    n_lado2 = pedidos.numero_modelo_personalizada("tokenA", 0, lado="lado2")
+    assert n_lado1 != n_lado2
+    assert (n_lado1, n_lado2) == (1, 2)
+    # pedir de novo o mesmo lado -- devolve o MESMO numero
+    assert pedidos.numero_modelo_personalizada("tokenA", 0, lado="lado1") == n_lado1
+    assert pedidos.numero_modelo_personalizada("tokenA", 0, lado="lado2") == n_lado2

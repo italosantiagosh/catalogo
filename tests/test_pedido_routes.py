@@ -318,10 +318,11 @@ def test_numero_modelo_personalizada_e_global_estavel_e_aparece_no_download_e_no
     assert 'download="personalizada_modelo_1.png"' in detalhe_1_de_novo
 
 
-def test_item_duas_faces_personalizada_usa_um_numero_so_pros_dois_lados(client, monkeypatch):
-    """Uma peca de 2 lados e´ UMA peca so na producao -- os dois lados
-    compartilham o MESMO numero de modelo, cada um no proprio arquivo
-    (_lado1/_lado2)."""
+def test_item_duas_faces_personalizada_numera_cada_lado_separado(client, monkeypatch):
+    """Cada FOTO de uma peca de 2 lados e´ um design distinto (producao
+    imprime cada uma por conta propria) -- os dois lados ganham numeros
+    SEPARADOS e sequenciais, mesmo fazendo parte da mesma peca fisica no
+    fim (ver conversa)."""
     _preparar_admin_env(monkeypatch)
     corpo = _corpo_valido(itens=[{
         "chave_preco": "medalha_2lados", "quantidade": 20, "produtoNome": "Personalizada",
@@ -334,8 +335,40 @@ def test_item_duas_faces_personalizada_usa_um_numero_so_pros_dois_lados(client, 
         criado = client.post("/api/pedido/criar", json=corpo).get_json()
 
     detalhe = client.get(f"/admin/pedidos/{criado['token']}", auth=("admin", "segredo123")).get_data(as_text=True)
-    assert 'download="personalizada_modelo_1_lado1.png"' in detalhe
-    assert 'download="personalizada_modelo_1_lado2.png"' in detalhe
+    assert 'download="personalizada_modelo_1.png"' in detalhe
+    assert 'download="personalizada_modelo_2.png"' in detalhe
+    assert "Lado 1: Personalizada — Modelo 1" in detalhe
+    assert "Lado 2: Personalizada — Modelo 2" in detalhe
+
+    csv = client.get(f"/admin/pedidos/{criado['token']}/csv", auth=("admin", "segredo123")).get_data(as_text=True)
+    # 20 unidades -> 40 linhas (2 por unidade, sem rotulo "lado 1"/"lado 2"),
+    # tamanho 18mm de 2 lados vira "16" so no CSV (pedido do usuario)
+    linhas_esperadas = "\r\n".join(["Personalizada;1;16;1\r\nPersonalizada;2;16;1"] * 20)
+    assert linhas_esperadas in csv
+
+
+def test_item_duas_faces_medalha_2lados_14mm_vira_12_no_csv(client, monkeypatch):
+    """Molde de 14mm de 2 lados imprime menor (a borda/resina faz o
+    acabamento parecer maior) -- SO no CSV vira "12", nunca no resto do
+    site (preco/Tiny/simulacao continuam usando 14mm normalmente)."""
+    _preparar_admin_env(monkeypatch)
+    corpo = _corpo_valido(itens=[{
+        "chave_preco": "medalha_2lados", "quantidade": 20, "produtoNome": "Personalizada",
+        "formato": "medalha_2lados", "cor": "ouro_velho", "tamanho": "14mm",
+        "duasFaces": True,
+        "lado1": {
+            "origem": "catalogo", "produtoId": "carlo-acutis", "produtoNome": "Carlo Acutis",
+            "modeloId": 1, "modeloNome": "Modelo 1",
+            "imagem": "/static/img/produtos/carlo-acutis_modelo_1_medalha_2lados_ouro_velho.jpg",
+        },
+        "lado2": {"origem": "upload", "imagem": "data:image/png;base64,L2", "imagemRecorte": "data:image/png;base64,L2R"},
+    }])
+    with patch("app.criar_link_pagamento", return_value={"url": "https://checkout.infinitepay.io/abc"}):
+        criado = client.post("/api/pedido/criar", json=corpo).get_json()
+
+    csv = client.get(f"/admin/pedidos/{criado['token']}/csv", auth=("admin", "segredo123")).get_data(as_text=True)
+    assert "Carlo Acutis;1;12;1" in csv
+    assert "Personalizada;1;12;1" in csv
 
 
 def test_medalha_2lados_do_checkout_ate_a_tiny_resolve_sku_por_tamanho_e_cor(client, monkeypatch):
@@ -477,8 +510,9 @@ def test_admin_csv_conteudo(client, monkeypatch):
 
 
 def test_admin_csv_chaveiro_e_entremeio(client, monkeypatch):
-    """Chaveiro vira "(chaveiro)" no CSV; entremeio mantem o detalhe por
-    extenso (unico jeito de a producao ver a cor -- ver conversa)."""
+    """Chaveiro vira "(chaveiro)" no CSV; entremeio vira "16" fixo, sem
+    cor (pedido do usuario: "o entremeio é 16" -- vale pro de 1 lado
+    tambem, nao so 2 lados)."""
     import app as app_module
 
     monkeypatch.setattr(app_module, "ADMIN_USER", "admin")
@@ -499,7 +533,7 @@ def test_admin_csv_chaveiro_e_entremeio(client, monkeypatch):
     resposta = client.get(f"/admin/pedidos/{criado['token']}/csv", auth=("admin", "segredo123"))
     corpo_csv = resposta.get_data().decode("utf-8-sig")
     assert "São José;2;(chaveiro);5" in corpo_csv
-    assert "São José;3;Entremeio · Ouro velho;8" in corpo_csv
+    assert "São José;3;16;8" in corpo_csv
 
 
 def test_criar_pedido_envia_email_com_link_uma_vez(client):

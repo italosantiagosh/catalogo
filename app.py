@@ -1217,9 +1217,21 @@ def _detalhe_formato_do_item(item: dict) -> str:
 
 # So pro CSV de producao (ver admin_pedido_csv) -- pedido do usuario:
 # a coluna "Modelo" ("Modelo 1", "Modelo 2"...) so precisa do numero, e
-# a coluna "Variação" so precisa do tamanho da medalha (12/16) ou
+# a coluna "Variação" so precisa do tamanho da medalha (12/16), "16"
+# fixo pro entremeio (1 ou 2 lados, sem cor -- pedido do usuario) ou
 # "(chaveiro)", em vez do texto por extenso usado no resto do site.
-_VARIACAO_CSV_LABEL = {"12mm": "12", "16mm": "16", "chaveiro": "(chaveiro)"}
+_VARIACAO_CSV_LABEL = {
+    "12mm": "12", "16mm": "16", "chaveiro": "(chaveiro)",
+    "entremeio": "16", "entremeio_2lados": "16",
+}
+
+# Medalha de 2 lados imprime num molde MENOR que o tamanho nominal (a
+# borda/resina faz o acabamento final parecer maior -- pedido do
+# usuario) -- SO no CSV de producao o molde de 14mm sai como "12" e o
+# de 18mm como "16". O tamanho nominal usado em todo o resto do site
+# (preco, SKU da Tiny, simulacao visual) continua 14mm/18mm sem
+# nenhuma mudanca -- essa troca e´ so na hora de escrever o CSV.
+_VARIACAO_CSV_TAMANHO_MEDALHA_2LADOS = {"14mm": "12", "18mm": "16"}
 
 
 def _modelo_csv_do_item(item: dict) -> str:
@@ -1229,10 +1241,51 @@ def _modelo_csv_do_item(item: dict) -> str:
 
 
 def _variacao_csv_do_item(item: dict) -> str:
-    """Entremeio mantem o detalhe por extenso (ex: "Entremeio · Prata")
-    -- e´ o unico formato que carrega a cor, que a producao precisa e
-    nao esta em nenhum outro campo curto."""
-    return _VARIACAO_CSV_LABEL.get(str(item.get("chave_preco", "")), str(item.get("detalhe", "")))
+    """Chaveiro de 2 lados (unico formato duasFaces sem entrada em
+    _VARIACAO_CSV_LABEL) mantem o detalhe por extenso -- nenhum pedido
+    especifico do usuario mudando esse aqui."""
+    chave_preco = str(item.get("chave_preco", ""))
+    if chave_preco == "medalha_2lados":
+        tamanho = str(item.get("tamanho", ""))
+        return _VARIACAO_CSV_TAMANHO_MEDALHA_2LADOS.get(tamanho, tamanho)
+    return _VARIACAO_CSV_LABEL.get(chave_preco, str(item.get("detalhe", "")))
+
+
+def _produto_e_modelo_csv_do_lado(item: dict, sufixo_lado: str) -> tuple[str, str]:
+    """Produto/Modelo de UM lado de um item de 2 lados -- lado escolhido
+    do catalogo usa o proprio santo/modelo (mesmo formato de sempre);
+    lado com foto usa "Personalizada" + o numero SEPARADO desse lado
+    (ver services/pedidos.py:numero_modelo_personalizada -- cada foto e´
+    numerada por conta propria, mesmo as duas fazendo parte da mesma
+    peca fisica no fim). Lado sem nada ainda (foto "enviar depois" via
+    WhatsApp) devolve numero vazio -- so preenche quando a foto chegar."""
+    produto_nome_lado = str(item.get(f"produtoNome{sufixo_lado}", ""))
+    if produto_nome_lado:
+        return produto_nome_lado, _modelo_csv_do_item({"modeloNome": item.get(f"modeloNome{sufixo_lado}", "")})
+    numero = item.get(f"numeroModeloPersonalizada{sufixo_lado}")
+    return "Personalizada", str(numero) if numero is not None else ""
+
+
+def _linhas_csv_do_item(item: dict) -> list[list]:
+    """Linhas do CSV de producao pra um item -- item de 1 lado vira UMA
+    linha (como sempre); item de 2 lados vira DUAS linhas POR UNIDADE de
+    quantidade (lado1 e depois lado2, nessa ordem -- pedido do usuario:
+    "entra na contagem normal... apenas bastam estar na ordem", sem
+    rotulo "lado 1"/"lado 2" na planilha, cada linha ja se identifica
+    sozinha pelo proprio produto/numero), repetidas pra cada peca fisica
+    (producao monta lado a lado, entao ve os dois lados de cada unidade
+    em sequencia, com quantidade 1 em cada linha)."""
+    variacao = _variacao_csv_do_item(item)
+    if not item.get("duasFaces"):
+        return [[item.get("produtoNome", ""), _modelo_csv_do_item(item), variacao, item["quantidade"]]]
+
+    produto1, modelo1 = _produto_e_modelo_csv_do_lado(item, "Lado1")
+    produto2, modelo2 = _produto_e_modelo_csv_do_lado(item, "Lado2")
+    linhas = []
+    for _ in range(int(item.get("quantidade", 0))):
+        linhas.append([produto1, modelo1, variacao, 1])
+        linhas.append([produto2, modelo2, variacao, 1])
+    return linhas
 
 
 _PREFIXO_IMAGEM_PERSONALIZADA = "/imagem-personalizada/"
@@ -2190,33 +2243,43 @@ def admin_pedidos():
 
 
 def _atribuir_numeros_modelo_personalizada(pedido: dict) -> None:
-    """Numera cada item personalizado COM FOTO do pedido (ver
-    services/pedidos.py:numero_modelo_personalizada) -- contador GLOBAL
-    e sequencial (nunca reinicia por pedido, so quando a usuaria pedir
-    -- ver conversa), pra identificar cada peca na producao sem depender
-    de nome de santo (essa peca nao tem, e´ uma foto do cliente).
+    """Numera cada FOTO personalizada do pedido (ver services/pedidos.py:
+    numero_modelo_personalizada) -- contador GLOBAL e sequencial (nunca
+    reinicia por pedido, so quando a usuaria pedir -- ver conversa), pra
+    identificar cada foto na producao sem depender de nome de santo
+    (ela nao tem, e´ uma foto do cliente).
 
-    Muda modeloNome pra "Modelo N" -- MESMO formato ja usado nos
-    produtos do catalogo (ver _modelo_csv_do_item logo abaixo, que ja
-    sabe tirar o prefixo "Modelo " sozinho), entao o CSV de producao e a
-    linha "Produto — Modelo — Detalhe" da tela de detalhe ja mostram o
-    numero certo sem precisar de nenhuma logica nova nos dois lugares.
-    Tambem guarda o numero cru em numeroModeloPersonalizada, usado so
-    pro nome do arquivo baixado (ver templates/admin_pedido_detalhe.html).
+    Item de 1 lado ganha UM numero pra peca inteira -- muda modeloNome
+    pra "Modelo N" (MESMO formato ja usado nos produtos do catalogo, ver
+    _modelo_csv_do_item, que ja sabe tirar o prefixo "Modelo " sozinho)
+    e guarda o numero cru em numeroModeloPersonalizada pro nome do
+    arquivo baixado (ver templates/admin_pedido_detalhe.html).
+
+    Item de 2 lados numera lado1/lado2 SEPARADO (ver conversa: cada
+    foto e´ um design distinto que a producao imprime por conta
+    propria, mesmo as duas fazendo parte da MESMA peca fisica no fim) --
+    guarda em numeroModeloPersonalizadaLado1/2, usados tanto no nome do
+    arquivo quanto nas linhas do CSV (ver _linhas_csv_do_item acima).
 
     Tudo isso e´ feito no dict do pedido em MEMORIA (nunca grava de
     volta no banco) -- so o numero em si e´ persistido, numa tabela
-    separada por (pedido_token, item_index), pra sempre devolver o
-    MESMO numero em toda visita futura a essa peca."""
+    separada por (pedido_token, item_index, lado), pra sempre devolver o
+    MESMO numero em toda visita futura a essa foto."""
     for indice, item in enumerate(pedido["itens"]):
-        tem_foto_personalizada = bool(
-            item.get("imagemRecorte") or item.get("imagemRecorteLado1") or item.get("imagemRecorteLado2")
-        )
-        if not tem_foto_personalizada:
+        if item.get("duasFaces"):
+            if item.get("imagemRecorteLado1"):
+                item["numeroModeloPersonalizadaLado1"] = numero_modelo_personalizada(
+                    pedido["token"], indice, lado="lado1"
+                )
+            if item.get("imagemRecorteLado2"):
+                item["numeroModeloPersonalizadaLado2"] = numero_modelo_personalizada(
+                    pedido["token"], indice, lado="lado2"
+                )
             continue
-        numero = numero_modelo_personalizada(pedido["token"], indice)
-        item["modeloNome"] = f"Modelo {numero}"
-        item["numeroModeloPersonalizada"] = numero
+        if item.get("imagemRecorte"):
+            numero = numero_modelo_personalizada(pedido["token"], indice)
+            item["modeloNome"] = f"Modelo {numero}"
+            item["numeroModeloPersonalizada"] = numero
 
 
 @app.route("/admin/pedidos/<token>", methods=["GET"])
@@ -2252,9 +2315,8 @@ def admin_pedido_csv(token: str):
     escritor = csv.writer(buffer, delimiter=";")
     escritor.writerow(["Produto", "Modelo", "Variação", "Quantidade"])
     for item in pedido["itens"]:
-        escritor.writerow(
-            [item.get("produtoNome", ""), _modelo_csv_do_item(item), _variacao_csv_do_item(item), item["quantidade"]]
-        )
+        for linha in _linhas_csv_do_item(item):
+            escritor.writerow(linha)
 
     # utf-8-sig (BOM no inicio) -- Excel no Windows so reconhece acento
     # certo em CSV com esse prefixo, senao mostra "Variacao" quebrado.
