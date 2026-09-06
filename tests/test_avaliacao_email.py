@@ -63,11 +63,8 @@ def test_marcar_entregue_dispara_email_de_avaliacao_na_hora(client, monkeypatch)
         )
     assert resposta.status_code == 302
     assert mock_email.call_count == 1
-    produto_nome = mock_email.call_args.args[1]
-    url_produto = mock_email.call_args.args[2]
-    assert produto_nome == "Anunciação"
-    assert "/produto/anunciacao" in url_produto
-    assert url_produto.endswith("#avaliacoes")
+    url_avaliar = mock_email.call_args.args[1]
+    assert "/avaliar" in url_avaliar
 
     pedido = pedidos.obter_pedido(criado["token"])
     assert pedido["email_avaliacao_enviado"] == 1
@@ -94,7 +91,10 @@ def test_marcar_entregue_de_novo_nao_reenvia(client, monkeypatch):
     mock_email2.assert_not_called()
 
 
-def test_pedido_sem_produto_valido_marca_processado_sem_email(client, monkeypatch):
+def test_pedido_sem_produto_no_catalogo_ainda_recebe_email_do_link_geral(client, monkeypatch):
+    """O link de avaliacao agora e´ a pagina geral /avaliar (o cliente
+    escolhe o produto na hora), entao mesmo um pedido so´ de peca
+    personalizada (sem produtoId) recebe o e-mail normalmente."""
     _preparar_admin(monkeypatch)
     with patch("app.criar_link_pagamento", return_value={"url": "https://checkout.infinitepay.io/abc"}):
         criado = client.post(
@@ -105,12 +105,13 @@ def test_pedido_sem_produto_valido_marca_processado_sem_email(client, monkeypatc
         ).get_json()
     pedidos.marcar_pago(criado["token"], forma_pagamento="pix", parcelas=None, valor_pago=1.0, transaction_nsu="tx")
 
-    with patch("app.enviar_pedido_avaliacao") as mock_email:
+    with patch("app.enviar_pedido_avaliacao", return_value={"ok": True}) as mock_email:
         client.post(
             f"/admin/pedidos/{criado['token']}/status", data={"status": "entregue"},
             auth=("admin", "segredo123"),
         )
-    mock_email.assert_not_called()
+    assert mock_email.call_count == 1
+    assert "/avaliar" in mock_email.call_args.args[1]
 
     pedido = pedidos.obter_pedido(criado["token"])
     assert pedido["email_avaliacao_enviado"] == 1

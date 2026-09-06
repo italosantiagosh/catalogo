@@ -374,14 +374,14 @@ def enviar_oportunidade_upsell(pedido: dict, oportunidades: list[dict], url_cata
     )
 
 
-def _corpo_html_pedido_avaliacao(pedido: dict, produto_nome: str, url_produto: str) -> str:
+def _corpo_html_pedido_avaliacao(pedido: dict, url_avaliar: str) -> str:
     return (
         f"<p>Olá, {_esc(pedido.get('cliente_nome', ''))}! Esperamos que as peças do seu pedido "
         f"#{pedido['codigo']} estejam alegrando o dia a dia de quem recebeu. 🙏</p>"
-        f"<p>Poderia contar pra gente como foi sua experiência com a <strong>{produto_nome}</strong>? "
-        f"Leva menos de 1 minuto -- nome, uma nota de 1 a 5 estrelas, uma foto (se quiser) e um "
-        f"comentário (opcional).</p>"
-        f"{_botao(url_produto, f'👉 Avaliar {produto_nome}')}"
+        f"<p>Poderia contar pra gente como foi sua experiência? Leva menos de 1 minuto -- escolha o "
+        f"produto, dê uma nota de 1 a 5 estrelas, e deixe uma foto (se quiser) e um comentário "
+        f"(opcional).</p>"
+        f"{_botao(url_avaliar, '👉 Avaliar minha compra')}"
         f"<p>Sua avaliação ajuda outras pessoas a comprar com mais confiança. Muito obrigado!</p>"
         f"<p>E se tiver uma foto da peça, adoraríamos ver -- poste no Instagram marcando "
         f"<strong>@novedjulho</strong>! 📸</p>"
@@ -389,21 +389,22 @@ def _corpo_html_pedido_avaliacao(pedido: dict, produto_nome: str, url_produto: s
     )
 
 
-def enviar_pedido_avaliacao(pedido: dict, produto_nome: str, url_produto: str) -> dict:
-    """Pede avaliacao de um dos produtos do pedido (ver
-    app.py:_produto_para_avaliacao_do_pedido), linkando direto pra
-    secao de avaliacoes desse produto (templates/produto.html#avaliacoes)
-    -- e convida a marcar @novedjulho no Instagram. Disparado NA HORA
-    que o pedido vira "entregue" (ver app.py:admin_pedido_status), e de
-    novo AVALIACAO_SEGUIMENTO_DIAS_APOS_ENTREGA dias depois pra quem
-    ainda nao avaliou (ver app.py:_enviar_seguimento_avaliacao_entregues)
-    -- so esses 2 e-mails de avaliacao no total por pedido. Devolve
+def enviar_pedido_avaliacao(pedido: dict, url_avaliar: str) -> dict:
+    """Pede avaliacao da compra, linkando pra pagina geral de avaliacao
+    (/avaliar, ver app.py:avaliar_geral) -- o cliente escolhe o produto
+    na hora, em vez de a gente adivinhar qual dos itens do pedido
+    avaliar. Convida tambem a marcar @novedjulho no Instagram.
+    Disparado NA HORA que o pedido vira "entregue" (ver
+    app.py:admin_pedido_status), e de novo
+    AVALIACAO_SEGUIMENTO_DIAS_APOS_ENTREGA dias depois pra quem ainda
+    nao avaliou (ver app.py:_enviar_seguimento_avaliacao_entregues) --
+    so esses 2 e-mails de avaliacao no total por pedido. Devolve
     {"ok": True} ou {"erro": "..."}."""
     return _enviar(
         email_cliente=pedido.get("cliente_email", ""),
         nome_cliente=pedido.get("cliente_nome", ""),
-        assunto=f"O que você achou da sua {produto_nome}?",
-        corpo_html=_corpo_html_pedido_avaliacao(pedido, produto_nome, url_produto),
+        assunto="O que você achou da sua compra?",
+        corpo_html=_corpo_html_pedido_avaliacao(pedido, url_avaliar),
     )
 
 

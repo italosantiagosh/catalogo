@@ -2541,15 +2541,12 @@ def _mensagem_whatsapp_cliente(pedido: dict) -> str:
         )
 
     if pedido["status"] == "entregue":
-        produto = _produto_para_avaliacao_do_pedido(pedido)
-        if produto is not None:
-            url_avaliar = url_for("produto", produto_id=produto["id"], _external=True) + "#avaliacoes"
-            return (
-                f"Olá {nome}! Que alegria saber que seu pedido #{codigo} já chegou! 🙏\n"
-                f"Poderia avaliar sua {produto['nome']}? Leva menos de 1 minuto: {url_avaliar}"
-                f"{_ASSINATURA_WHATSAPP_CLIENTE}"
-            )
-        return f"Olá {nome}! Que alegria saber que seu pedido #{codigo} já chegou! 🙏{_ASSINATURA_WHATSAPP_CLIENTE}"
+        url_avaliar = url_for("avaliar_geral", _external=True)
+        return (
+            f"Olá {nome}! Que alegria saber que seu pedido #{codigo} já chegou! 🙏\n"
+            f"Poderia avaliar sua compra? Leva menos de 1 minuto: {url_avaliar}"
+            f"{_ASSINATURA_WHATSAPP_CLIENTE}"
+        )
 
     return ""
 
@@ -3798,44 +3795,21 @@ def _enviar_upsell_pedidos_pagos() -> None:
             marcar_email_upsell_enviado(pedido["token"], erro=resultado_email.get("erro"))
 
 
-def _produto_para_avaliacao_do_pedido(pedido: dict) -> dict | None:
-    """Escolhe um santo do pedido pra pedir avaliacao (ver
-    _enviar_email_avaliacao abaixo) -- o primeiro item com um produtoId
-    valido no catalogo atual (itens de medalha personalizada nao tem
-    produtoId, e um produto pode ter sido removido do catalogo desde a
-    compra). Devolve None se nenhum item do pedido tiver um produto
-    valido hoje."""
-    for item in pedido["itens"]:
-        produto_id = item.get("produtoId")
-        if not produto_id:
-            continue
-        produto = buscar_produto(produto_id)
-        if produto is not None:
-            return {"id": produto_id, "nome": produto["nome"]}
-    return None
-
-
 def _enviar_email_avaliacao(token: str) -> str | None:
     """Manda o e-mail pedindo avaliacao (ver services/email.py:
     enviar_pedido_avaliacao, ja convida a seguir/marcar @novedjulho no
-    Instagram tambem) pra um dos santos do pedido (ver
-    _produto_para_avaliacao_do_pedido) -- chamado NA HORA que o pedido
-    vira "entregue" (ver admin_pedido_status abaixo), sem prazo de
-    espera (pedido do usuario: faz mais sentido pedir depois que o
-    cliente RECEBEU a peca do que so depois que pagou). Sem produto
-    valido pra linkar, so marca como processado sem mandar e-mail
-    vazio. Devolve None se deu certo (ou nao havia produto pra linkar),
-    ou uma mensagem de erro."""
+    Instagram tambem), linkando pra pagina GERAL de avaliacao (/avaliar
+    -- o cliente escolhe o produto na hora, ver conversa) -- chamado NA
+    HORA que o pedido vira "entregue" (ver admin_pedido_status abaixo),
+    sem prazo de espera (pedido do usuario: faz mais sentido pedir
+    depois que o cliente RECEBEU a peca do que so depois que pagou).
+    Devolve None se deu certo, ou uma mensagem de erro."""
     pedido = obter_pedido(token)
     if pedido is None:
         return "Pedido não encontrado."
-    produto = _produto_para_avaliacao_do_pedido(pedido)
-    if produto is None:
-        marcar_email_avaliacao_enviado(token, erro=None)
-        return None
     try:
-        url_produto = url_for("produto", produto_id=produto["id"], _external=True) + "#avaliacoes"
-        resultado_email = enviar_pedido_avaliacao(pedido, produto["nome"], url_produto)
+        url_avaliar = url_for("avaliar_geral", _external=True)
+        resultado_email = enviar_pedido_avaliacao(pedido, url_avaliar)
     except Exception as exc:  # nunca deixa a mudanca de status numa tela de erro generica
         resultado_email = {"erro": f"Erro inesperado ao enviar: {exc}"}
     marcar_email_avaliacao_enviado(token, erro=resultado_email.get("erro"))
@@ -3855,13 +3829,9 @@ def _enviar_seguimento_avaliacao_entregues() -> None:
     if not candidatos:
         return
     with app.test_request_context(base_url=f"https://{CANONICAL_DOMAIN}"):
+        url_avaliar = url_for("avaliar_geral", _external=True)
         for pedido in candidatos:
-            produto = _produto_para_avaliacao_do_pedido(pedido)
-            if produto is None:
-                marcar_email_avaliacao_seguimento_enviado(pedido["token"], erro=None)
-                continue
-            url_produto = url_for("produto", produto_id=produto["id"], _external=True) + "#avaliacoes"
-            resultado_email = enviar_pedido_avaliacao(pedido, produto["nome"], url_produto)
+            resultado_email = enviar_pedido_avaliacao(pedido, url_avaliar)
             marcar_email_avaliacao_seguimento_enviado(pedido["token"], erro=resultado_email.get("erro"))
 
 

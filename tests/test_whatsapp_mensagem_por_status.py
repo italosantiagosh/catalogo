@@ -120,8 +120,7 @@ def test_entregue_convida_a_avaliar_o_produto(client):
 
     assert "chegou" in mensagem
     assert "avaliar" in mensagem.lower()
-    assert "/produto/sao-jose" in mensagem
-    assert "#avaliacoes" in mensagem
+    assert "/avaliar" in mensagem
 
 
 def test_status_sem_mensagem_especial_devolve_vazio(client):
