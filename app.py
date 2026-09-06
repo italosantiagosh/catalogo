@@ -1213,6 +1213,7 @@ def pagina_atendimento(slug: str):
 _REDIRECT_PRODUTO_LEGADO_PREFIXOS = (
     "medalha-de-", "medalha-do-", "medalha-da-", "medalha-das-", "medalha-dos-",
     "chaveiro-de-", "chaveiro-do-", "chaveiro-da-", "pingente-de-", "entremeio-de-",
+    "cadeia-de-consagracao-inox-de-", "cadeia-de-consagracao-de-",
 )
 
 _REDIRECT_PRODUTO_LEGADO_ALIASES = {

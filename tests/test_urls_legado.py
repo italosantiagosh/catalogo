@@ -34,6 +34,12 @@ def test_produto_legado_pingente_folheado_a_ouro_redireciona(client):
     assert resposta.headers["Location"] == "/produto/santa-rita-de-cassia"
 
 
+def test_produto_legado_cadeia_de_consagracao_inox_redireciona(client):
+    resposta = client.get("/cadeia-de-consagracao-inox-de-nossa-senhora-aparecida-modelo-1/p")
+    assert resposta.status_code == 301
+    assert resposta.headers["Location"] == "/produto/nossa-senhora-aparecida"
+
+
 @pytest.mark.parametrize(
     ("slug_legado", "produto_id_atual"),
     [
