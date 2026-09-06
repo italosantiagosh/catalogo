@@ -1210,10 +1210,34 @@ def pagina_atendimento(slug: str):
     )
 
 
+@app.route("/busca", methods=["GET"])
+def busca_legado_redirect():
+    """URL de busca da plataforma anterior (ver auditoria Search
+    Console/conversa) -- a busca de hoje e´ direto em /catalogo?q=...
+    (ver services/catalogo.py e o SearchAction do schema.org em
+    _dados_website_schema). 301 preservando o termo buscado, se houver."""
+    termo = request.args.get("q", "")
+    if termo:
+        return redirect(url_for("catalogo_completo", q=termo), code=301)
+    return redirect(url_for("catalogo_completo"), code=301)
+
+
+@app.route("/chaveiros", methods=["GET"])
+@app.route("/medalhas", methods=["GET"])
+def colecao_legado_redirect():
+    """"/chaveiros" e "/medalhas" eram paginas de colecao por FORMATO na
+    plataforma anterior (todos os chaveiros/medalhas de todos os
+    santos numa grade so´, ver auditoria Search Console/conversa) --
+    hoje o formato e´ escolhido dentro da pagina de cada produto, sem
+    uma colecao equivalente, entao 301 pro catalogo completo."""
+    return redirect(url_for("catalogo_completo"), code=301)
+
+
 _REDIRECT_PRODUTO_LEGADO_PREFIXOS = (
     "medalha-de-", "medalha-do-", "medalha-da-", "medalha-das-", "medalha-dos-",
     "chaveiro-de-", "chaveiro-do-", "chaveiro-da-", "pingente-de-", "entremeio-de-",
     "cadeia-de-consagracao-inox-de-", "cadeia-de-consagracao-de-",
+    "cadeia-de-consagracao-inox-com-medalha-de-", "cadeia-de-consagracao-com-medalha-de-",
 )
 
 _REDIRECT_PRODUTO_LEGADO_ALIASES = {

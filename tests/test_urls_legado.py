@@ -55,6 +55,7 @@ def test_produto_legado_cadeia_de_consagracao_inox_redireciona(client):
         ("medalha-de-sao-luiz-e-santa-zelia-pais-de-teresinha-modelo-1", "pais-de-teresinha"),
         ("medalha-de-sao-miguel-arcanjo-modelo-1", "sao-miguel"),
         ("medalha-do-divino-semeador", "jesus-semeador"),
+        ("cadeia-de-consagracao-inox-com-medalha-de-sao-bento", "sao-bento"),
     ],
 )
 def test_produto_legado_com_alias_manual_redireciona(client, slug_legado, produto_id_atual):
@@ -67,6 +68,13 @@ def test_produto_legado_descontinuado_devolve_404(client):
     """Sem produto correspondente hoje (peca saiu do catalogo) -- melhor
     404 do que arriscar redirecionar pro produto errado."""
     resposta = client.get("/medalha-de-nossa-senhora-das-lagrimas/p")
+    assert resposta.status_code == 404
+
+
+def test_produto_legado_chaveiro_descontinuado_devolve_404(client):
+    """"Chaveiro de turibulo" nao tem produto correspondente no catalogo
+    atual (nao e´ nem um santo) -- 404 de proposito."""
+    resposta = client.get("/chaveiro-de-turibulo/p")
     assert resposta.status_code == 404
 
 
@@ -119,3 +127,24 @@ def test_atendimento_quem_somos_continua_funcionando_direto(client):
     redirecionar."""
     resposta = client.get("/atendimento/quem-somos")
     assert resposta.status_code == 200
+
+
+# ---- busca e colecoes por formato (paginas da plataforma antiga) ----
+
+def test_busca_legado_sem_termo_redireciona_pro_catalogo(client):
+    resposta = client.get("/busca")
+    assert resposta.status_code == 301
+    assert resposta.headers["Location"] == "/catalogo"
+
+
+def test_busca_legado_com_termo_preserva_o_termo_buscado(client):
+    resposta = client.get("/busca?q=sao+jose")
+    assert resposta.status_code == 301
+    assert resposta.headers["Location"] == "/catalogo?q=sao+jose"
+
+
+@pytest.mark.parametrize("slug_legado", ["chaveiros", "medalhas"])
+def test_colecao_por_formato_legado_redireciona_pro_catalogo(client, slug_legado):
+    resposta = client.get(f"/{slug_legado}")
+    assert resposta.status_code == 301
+    assert resposta.headers["Location"] == "/catalogo"
