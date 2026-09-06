@@ -314,10 +314,10 @@
                 <td data-rotulo="Tiny">
                   {% if not pedido.tiny_sincronizado %}
                     —
-                  {% elif pedido.tiny_erro %}
-                    <span class="tiny-erro">⚠️ {{ pedido.tiny_erro }}</span>
-                  {% else %}
+                  {% elif pedido.tiny_numero_pedido %}
                     ✅ #{{ pedido.tiny_numero_pedido }}
+                  {% else %}
+                    <span class="tiny-erro">⚠️ falhou</span>
                   {% endif %}
                 </td>
                 <td data-rotulo="E-mail">
@@ -388,5 +388,20 @@
       });
     }
   </script>
+
+  {% if request.args.get('tiny_erro') %}
+    <script>
+      {# Erro da Tiny (ex: acao em massa "Reenviar Tiny") vira so uma janela
+         de alerta pontual, em vez de ficar escrito na tabela pra sempre
+         (ver conversa: "no painel geral, mostre apenas o numero do pedido
+         no Tiny"). Some da URL depois de mostrado, pra um F5 nao repetir. #}
+      alert({{ request.args.get('tiny_erro') | tojson }});
+      if (window.history.replaceState) {
+        const url = new URL(window.location);
+        url.searchParams.delete('tiny_erro');
+        window.history.replaceState({}, '', url);
+      }
+    </script>
+  {% endif %}
 </body>
 </html>

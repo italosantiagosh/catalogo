@@ -2806,7 +2806,7 @@ def admin_pedido_reenviar_tiny(token: str):
     erro = _sincronizar_pedido_tiny(token)
     if erro == "Só dá pra sincronizar com a Tiny um pedido já pago.":
         abort(400, description=erro)
-    return redirect(url_for("admin_pedido_detalhe", token=token))
+    return redirect(url_for("admin_pedido_detalhe", token=token, tiny_erro=erro))
 
 
 @app.route("/admin/pedidos/<token>/reenviar-email", methods=["POST"])
@@ -2895,10 +2895,20 @@ def admin_pedidos_acao_em_massa():
     tokens = request.form.getlist("tokens")
     acao = str(request.form.get("acao", "")).strip()
     status_filtro = str(request.form.get("status_filtro", "")).strip() or None
+    tiny_erro = None
 
     if tokens and acao == "tiny":
+        # Erros ficam so pra mostrar como alerta pontual na volta (ver
+        # template admin_pedidos.html) -- nunca escritos na tabela, so o
+        # numero do pedido fica ali (ver conversa). Sem duplicar mensagem
+        # repetida quando varios pedidos selecionados dao o MESMO erro.
+        erros_encontrados = []
         for token in tokens:
-            _sincronizar_pedido_tiny(token)
+            erro = _sincronizar_pedido_tiny(token)
+            if erro and erro not in erros_encontrados:
+                erros_encontrados.append(erro)
+        if erros_encontrados:
+            tiny_erro = "; ".join(erros_encontrados)
     elif tokens and acao == "email":
         for token in tokens:
             _reenviar_email_confirmacao(token)
@@ -2922,8 +2932,15 @@ def admin_pedidos_acao_em_massa():
 
     arquivados = request.form.get("arquivados") == "1"
     if status_filtro or arquivados:
-        return redirect(url_for("admin_pedidos", status=status_filtro, arquivados="1" if arquivados else None))
-    return redirect(url_for("admin_pedidos"))
+        return redirect(
+            url_for(
+                "admin_pedidos",
+                status=status_filtro,
+                arquivados="1" if arquivados else None,
+                tiny_erro=tiny_erro,
+            )
+        )
+    return redirect(url_for("admin_pedidos", tiny_erro=tiny_erro))
 
 
 @app.route("/api/pix/gerar", methods=["POST"])

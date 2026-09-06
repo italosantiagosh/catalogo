@@ -872,5 +872,19 @@
       </form>
     </div>
   {% endif %}
+
+  {% if request.args.get('tiny_erro') %}
+    <script>
+      {# So aparece logo depois de apertar "Reenviar"/"Sincronizar" da
+         Tiny -- uma janela pontual (fecha no OK), nao fica escrito na
+         tela pra sempre (ver conversa). #}
+      alert({{ request.args.get('tiny_erro') | tojson }});
+      if (window.history.replaceState) {
+        const url = new URL(window.location);
+        url.searchParams.delete('tiny_erro');
+        window.history.replaceState({}, '', url);
+      }
+    </script>
+  {% endif %}
 </body>
 </html>

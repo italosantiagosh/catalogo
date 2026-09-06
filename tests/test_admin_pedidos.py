@@ -1016,7 +1016,10 @@ def test_acao_em_massa_preserva_filtro_de_status_no_redirect(client, monkeypatch
         data={"tokens": [criado["token"]], "acao": "tiny", "status_filtro": "pendente"},
         auth=("admin", "segredo123"),
     )
-    assert resposta.headers["Location"].endswith("status=pendente")
+    # sem TINY_API_TOKEN configurado nesse teste, a tentativa de sincronizar
+    # falha e o erro vai junto na URL (ver admin_pedidos_acao_em_massa) --
+    # "status=pendente" continua presente, so nao necessariamente no final.
+    assert "status=pendente" in resposta.headers["Location"]
 
 
 def test_reenviar_tiny_manualmente(client, monkeypatch):
@@ -1075,6 +1078,43 @@ def test_reenviar_tiny_duplicidade_mantem_numero_ja_conhecido(client, monkeypatc
     pedido = pedidos.obter_pedido(criado["token"])
     assert pedido["tiny_erro"] is None
     assert pedido["tiny_numero_pedido"] == "1139"
+    # duplicidade nao e´ falha de verdade -- sem alerta nenhum na volta
+    assert "tiny_erro" not in resposta.headers["Location"]
+
+
+def test_reenviar_tiny_falha_de_verdade_manda_erro_na_url_pra_virar_alerta(client, monkeypatch):
+    """Falha de verdade (nao duplicidade) continua indo pro operador --
+    so que agora como parametro na URL de volta, pra virar uma janela de
+    alerta pontual (ver template), nao mais escrito na tabela pra
+    sempre (ver conversa: "no painel geral, mostre apenas o numero")."""
+    _preparar_admin(monkeypatch)
+    with patch("app.criar_link_pagamento", return_value={"url": "https://checkout.infinitepay.io/abc"}):
+        criado = client.post("/api/pedido/criar", json=_corpo_valido()).get_json()
+    with patch("app.criar_pedido_tiny", return_value={"erro": "Tiny fora do ar"}), \
+         patch("app.enviar_confirmacao_pedido", return_value={"ok": True}):
+        client.post(
+            "/webhook/infinitepay",
+            json={"order_nsu": criado["token"], "paid_amount": 6000, "capture_method": "pix"},
+        )
+
+    with patch("app.criar_pedido_tiny", return_value={"erro": "Tiny fora do ar"}):
+        resposta = client.post(
+            f"/admin/pedidos/{criado['token']}/reenviar-tiny", auth=("admin", "segredo123")
+        )
+    assert resposta.status_code == 302
+    assert "tiny_erro=Tiny+fora+do+ar" in resposta.headers["Location"]
+
+    pedido = pedidos.obter_pedido(criado["token"])
+    assert pedido["tiny_erro"] == "Tiny fora do ar"
+
+    # painel geral so mostra "falhou", nunca a mensagem crua da Tiny --
+    # a mensagem em si vira alerta (window.alert) via tiny_erro na URL
+    lista = client.get("/admin/pedidos?tiny_erro=Tiny+fora+do+ar", auth=("admin", "segredo123")).get_data(
+        as_text=True
+    )
+    assert "Tiny fora do ar" not in lista.split("<script>")[0]  # nao escrito na tabela
+    assert "⚠️ falhou" in lista
+    assert "alert(" in lista
 
 
 def test_reenviar_tiny_com_excecao_inesperada_nao_500(client, monkeypatch):
