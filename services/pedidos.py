@@ -533,23 +533,78 @@ def formas_pagamento_periodo(dias: int) -> list[dict]:
     return resultado
 
 
-def produtos_mais_vendidos(dias: int, limite_itens: int = 6) -> list[dict]:
+def _itens_pagos_no_periodo(desde: datetime | None, ate: datetime | None) -> list[list[dict]]:
+    """Lista de "itens" (ja decodificados de JSON) de cada pedido PAGO
+    dentro da janela -- usada por produtos_mais_vendidos e
+    quantidade_por_material abaixo, pra nao duplicar a mesma query com
+    janela flexivel (desde/ate None = sem limite naquela ponta; os dois
+    None == "total", desde sempre)."""
+    inicializar_db()
+    condicoes = []
+    parametros: list = []
+    if desde is not None:
+        condicoes.append("pago_em >= ?")
+        parametros.append(desde.isoformat())
+    if ate is not None:
+        condicoes.append("pago_em <= ?")
+        parametros.append(ate.isoformat())
+    consulta = "SELECT itens FROM pedidos WHERE pago_em IS NOT NULL"
+    if condicoes:
+        consulta += " AND " + " AND ".join(condicoes)
+    with _conexao() as conexao:
+        linhas = conexao.execute(consulta, parametros).fetchall()
+    return [json.loads(linha["itens"]) for linha in linhas]
+
+
+def produtos_mais_vendidos(
+    *, desde: datetime | None = None, ate: datetime | None = None, limite_itens: int = 6
+) -> list[dict]:
     """[{"produto": nome, "quantidade": int}, ...] a partir dos ITENS
-    (json) dos pedidos PAGOS no periodo, somando quantidade por nome de
+    dos pedidos PAGOS no periodo, somando quantidade por nome de
     produto -- item personalizado (sem produtoNome, ver
     app.py:_itens_com_descricao_do_corpo) vira "Personalizada"."""
-    inicializar_db()
-    limite = (datetime.now(timezone.utc) - timedelta(days=dias)).isoformat()
-    with _conexao() as conexao:
-        linhas = conexao.execute("SELECT itens FROM pedidos WHERE pago_em >= ?", (limite,)).fetchall()
     contagem: dict[str, int] = {}
-    for linha in linhas:
-        for item in json.loads(linha["itens"]):
+    for itens in _itens_pagos_no_periodo(desde, ate):
+        for item in itens:
             nome = item.get("produtoNome") or "Personalizada"
             contagem[nome] = contagem.get(nome, 0) + int(item.get("quantidade", 0))
     resultado = [{"produto": nome, "quantidade": quantidade} for nome, quantidade in contagem.items()]
     resultado.sort(key=lambda r: r["quantidade"], reverse=True)
     return resultado[:limite_itens]
+
+
+# Rotulo de MATERIAL (nao de produto/santo) por chave_preco -- 12mm/16mm
+# viram uma unica categoria "Medalha 1 lado" (mesmo material fisico, so
+# tamanho diferente, ver conversa). Usado so pra quantidade_por_material
+# abaixo (ver app.py:admin_analytics).
+_MATERIAL_LABEL_POR_CHAVE = {
+    "12mm": "Medalha 1 lado",
+    "16mm": "Medalha 1 lado",
+    "medalha_2lados": "Medalha 2 lados",
+    "entremeio": "Entremeio 1 lado",
+    "entremeio_2lados": "Entremeio 2 lados",
+    "chaveiro": "Chaveiro 1 lado",
+    "chaveiro_2lados": "Chaveiro 2 lados",
+}
+
+
+def quantidade_por_material(*, desde: datetime | None = None, ate: datetime | None = None) -> list[dict]:
+    """[{"material": rotulo, "quantidade": int}, ...] a partir dos ITENS
+    dos pedidos PAGOS no periodo, somando quantidade por MATERIAL (ver
+    _MATERIAL_LABEL_POR_CHAVE) em vez de por santo/produto (ver
+    produtos_mais_vendidos acima) -- pedido do usuario: "quantidade
+    total de medalhas de 1 lado... e assim por diante de cada
+    material". Sempre devolve as 6 categorias, mesmo com quantidade 0,
+    pra dar visao completa do que mais consome estoque no periodo."""
+    contagem = dict.fromkeys(dict.fromkeys(_MATERIAL_LABEL_POR_CHAVE.values()), 0)
+    for itens in _itens_pagos_no_periodo(desde, ate):
+        for item in itens:
+            rotulo = _MATERIAL_LABEL_POR_CHAVE.get(item.get("chave_preco"))
+            if rotulo:
+                contagem[rotulo] += int(item.get("quantidade", 0))
+    resultado = [{"material": rotulo, "quantidade": quantidade} for rotulo, quantidade in contagem.items()]
+    resultado.sort(key=lambda r: r["quantidade"], reverse=True)
+    return resultado
 
 
 def taxa_clientes_recorrentes(dias: int) -> dict:

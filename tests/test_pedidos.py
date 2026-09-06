@@ -584,9 +584,53 @@ def test_produtos_mais_vendidos_soma_quantidade_por_nome(monkeypatch, tmp_path):
     ))
     pedidos.marcar_pago(p2["token"], forma_pagamento="pix", parcelas=None, valor_pago=40.0, transaction_nsu="tx2")
 
-    resultado = {r["produto"]: r["quantidade"] for r in pedidos.produtos_mais_vendidos(7)}
+    ha_7_dias = datetime.now(timezone.utc) - timedelta(days=7)
+    resultado = {r["produto"]: r["quantidade"] for r in pedidos.produtos_mais_vendidos(desde=ha_7_dias)}
     assert resultado["São José"] == 25
     assert resultado["Personalizada"] == 3
+
+    # "total" (desde=None, ate=None) -- sem limite nenhuma ponta
+    resultado_total = {r["produto"]: r["quantidade"] for r in pedidos.produtos_mais_vendidos()}
+    assert resultado_total["São José"] == 25
+
+
+def test_produtos_mais_vendidos_periodo_personalizado_com_ate(monkeypatch, tmp_path):
+    _reapontar_db(monkeypatch, tmp_path)
+    pedido = pedidos.criar_pedido(**_pedido_exemplo(
+        itens=[{"chave_preco": "16mm", "quantidade": 10, "produtoNome": "São José"}],
+    ))
+    pedidos.marcar_pago(pedido["token"], forma_pagamento="pix", parcelas=None, valor_pago=100.0, transaction_nsu="tx1")
+
+    agora = datetime.now(timezone.utc)
+    # janela que INCLUI a venda (ate no futuro)
+    dentro = pedidos.produtos_mais_vendidos(desde=agora - timedelta(days=1), ate=agora + timedelta(days=1))
+    assert {r["produto"]: r["quantidade"] for r in dentro}["São José"] == 10
+    # janela que termina ONTEM -- venda de hoje fica de fora
+    fora = pedidos.produtos_mais_vendidos(desde=agora - timedelta(days=10), ate=agora - timedelta(days=1))
+    assert fora == []
+
+
+def test_quantidade_por_material_agrupa_12mm_e_16mm_e_devolve_as_6_categorias(monkeypatch, tmp_path):
+    _reapontar_db(monkeypatch, tmp_path)
+    pedido = pedidos.criar_pedido(**_pedido_exemplo(
+        itens=[
+            {"chave_preco": "16mm", "quantidade": 10},
+            {"chave_preco": "12mm", "quantidade": 5},
+            {"chave_preco": "entremeio", "quantidade": 3, "cor": "prata"},
+            {"chave_preco": "medalha_2lados", "quantidade": 2, "cor": "prata", "tamanho": "18mm"},
+        ],
+    ))
+    pedidos.marcar_pago(pedido["token"], forma_pagamento="pix", parcelas=None, valor_pago=100.0, transaction_nsu="tx1")
+
+    resultado = {r["material"]: r["quantidade"] for r in pedidos.quantidade_por_material()}
+    assert resultado["Medalha 1 lado"] == 15  # 16mm + 12mm juntos
+    assert resultado["Entremeio 1 lado"] == 3
+    assert resultado["Medalha 2 lados"] == 2
+    # categorias sem venda continuam aparecendo, com 0
+    assert resultado["Entremeio 2 lados"] == 0
+    assert resultado["Chaveiro 1 lado"] == 0
+    assert resultado["Chaveiro 2 lados"] == 0
+    assert len(resultado) == 6
 
 
 def test_taxa_clientes_recorrentes_conta_so_quem_ja_comprou_antes(monkeypatch, tmp_path):

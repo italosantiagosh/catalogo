@@ -180,6 +180,40 @@ def test_admin_analytics_mostra_secao_de_vendas_com_pedidos_reais(client, monkey
     assert "Pix" in corpo
     assert "Produtos mais vendidos" in corpo
     assert "São José" in corpo
+    assert "Quantidade por material" in corpo
+    assert "Medalha 1 lado" in corpo
+
+
+def test_admin_analytics_periodo_selecionavel_pra_produtos_e_materiais(client, monkeypatch):
+    """Pedido do usuario: "produtos mais vendidos" e "quantidade por
+    material" tem janela propria (30 dias/6 meses/1 ano/total/
+    personalizado), independente dos outros cartoes de vendas (esses
+    continuam fixos em 30 dias)."""
+    _preparar_admin(monkeypatch)
+
+    with patch("app.criar_link_pagamento", return_value={"url": "https://checkout.infinitepay.io/abc"}):
+        pago = client.post("/api/pedido/criar", json=_corpo_pedido_valido()).get_json()
+    with patch("app.criar_pedido_tiny", return_value={"erro": "não configurado"}), \
+         patch("app.enviar_confirmacao_pedido", return_value={"erro": "não configurado"}), \
+         patch("app.enviar_notificacao_venda", return_value={"ok": True}), \
+         patch("app.enviar_notificacao_push", return_value={"ok": True}):
+        client.post(
+            "/webhook/infinitepay",
+            json={"order_nsu": pago["token"], "paid_amount": 6000, "capture_method": "pix"},
+        )
+    # muda o pago_em pra fora da janela de 30 dias, mas dentro de 1 ano
+    with pedidos._conexao() as conexao:
+        ha_6_meses = (pedidos.datetime.now(pedidos.timezone.utc) - pedidos.timedelta(days=180)).isoformat()
+        conexao.execute("UPDATE pedidos SET pago_em = ? WHERE token = ?", (ha_6_meses, pago["token"]))
+
+    with patch("app.analytics.configurado", return_value=False):
+        resposta_30d = client.get("/admin/analytics", auth=("admin", "segredo123"))
+        resposta_1a = client.get("/admin/analytics?periodo=1a", auth=("admin", "segredo123"))
+
+    assert "São José" not in resposta_30d.get_data(as_text=True)
+    corpo_1a = resposta_1a.get_data(as_text=True)
+    assert "São José" in corpo_1a
+    assert 'class="ativo">1 ano</a>' in corpo_1a
 
 
 def test_analytics_service_sem_config_devolve_none():

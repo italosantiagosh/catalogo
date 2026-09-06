@@ -170,6 +170,7 @@ from services.pedidos import (
     pedidos_por_uf,
     previsoes_do_pedido,
     produtos_mais_vendidos,
+    quantidade_por_material,
     resumo_vendas_periodo,
     salvar_dados_boleto_inter,
     taxa_cancelamento,
@@ -3053,6 +3054,32 @@ def _percentual(numerador: float | None, denominador: float | None) -> float | N
     return round(100 * numerador / denominador, 1)
 
 
+_JANELAS_PERIODO_VENDAS = {"30d": 30, "6m": 182, "1a": 365}
+
+
+def _intervalo_periodo_vendas(periodo: str, inicio_str: str, fim_str: str) -> tuple[datetime | None, datetime | None]:
+    """Traduz o seletor de periodo do painel de vendas (ver templates/
+    admin_analytics.html) em (desde, ate) pra produtos_mais_vendidos/
+    quantidade_por_material -- "total" e´ (None, None) (sem limite em
+    nenhuma ponta), "personalizado" usa as datas escolhidas (invalida ou
+    faltando cai no padrao de 30 dias), as demais janelas sao fixas a
+    partir de agora, sem limite superior (mesmo criterio ja usado nos
+    outros cartoes de "vendas" desta pagina)."""
+    if periodo == "total":
+        return None, None
+    if periodo == "personalizado":
+        try:
+            inicio = datetime.fromisoformat(inicio_str).replace(tzinfo=timezone.utc)
+            # fim do dia escolhido -- senao "ate 10/06" nao inclui as
+            # vendas do proprio dia 10/06 (qualquer hora depois de 00:00)
+            fim = datetime.fromisoformat(fim_str).replace(hour=23, minute=59, second=59, tzinfo=timezone.utc)
+            return inicio, fim
+        except (TypeError, ValueError):
+            pass  # datas invalidas/faltando -- cai no padrao de 30 dias abaixo
+    dias = _JANELAS_PERIODO_VENDAS.get(periodo, 30)
+    return datetime.now(timezone.utc) - timedelta(days=dias), None
+
+
 @app.route("/admin/analytics", methods=["GET"])
 def admin_analytics():
     """Dashboard de leitura do GA4 + do proprio banco de pedidos dentro
@@ -3075,14 +3102,27 @@ def admin_analytics():
     # vendidos, clientes recorrentes) -- so entrou aqui o que da pra
     # calcular com dado real do proprio site (sem cupom/order bump, essas
     # duas features do print da Yampi simplesmente nao existem aqui).
+    #
+    # "Produtos mais vendidos" e "quantidade por material" tem janela
+    # PROPRIA e selecionavel (pedido do usuario: 30 dias, 6 meses, 1
+    # ano, total ou periodo personalizado) -- os outros cartoes de
+    # vendas continuam fixos em 30 dias.
+    periodo_vendas = request.args.get("periodo", "30d")
+    inicio_vendas_str = request.args.get("inicio", "")
+    fim_vendas_str = request.args.get("fim", "")
+    desde_vendas, ate_vendas = _intervalo_periodo_vendas(periodo_vendas, inicio_vendas_str, fim_vendas_str)
     contexto_vendas = dict(
         vendas_30d=resumo_vendas_periodo(30),
         vendas_por_dia_30d=vendas_por_dia(30),
         pedidos_por_uf_30d=pedidos_por_uf(30),
         cancelamento_30d=taxa_cancelamento(30),
         formas_pagamento_30d=formas_pagamento_periodo(30),
-        produtos_mais_vendidos_30d=produtos_mais_vendidos(30),
+        produtos_mais_vendidos=produtos_mais_vendidos(desde=desde_vendas, ate=ate_vendas),
+        quantidade_por_material=quantidade_por_material(desde=desde_vendas, ate=ate_vendas),
         recorrencia_30d=taxa_clientes_recorrentes(30),
+        periodo_vendas=periodo_vendas,
+        inicio_vendas=inicio_vendas_str,
+        fim_vendas=fim_vendas_str,
     )
 
     if not analytics.configurado():

@@ -82,6 +82,26 @@
     .barra-lista-trilho { background: #eef2f7; border-radius: 6px; height: 8px; overflow: hidden; }
     .barra-lista-preenchido { height: 100%; background: var(--dourado); border-radius: 6px; }
 
+    .filtros { margin: 0 0 14px; display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+    .filtros a {
+      text-decoration: none; color: var(--azul-escuro); font-weight: 600; font-size: 0.8rem;
+      padding: 6px 13px; border-radius: 999px; background: var(--cartao); border: 1px solid var(--linha);
+      transition: background .12s ease, color .12s ease, border-color .12s ease;
+    }
+    .filtros a:hover { border-color: var(--azul-claro); }
+    .filtros a.ativo { background: var(--azul-escuro); color: #fff; border-color: var(--azul-escuro); }
+    .filtros form { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+    .filtros form input[type="date"] {
+      font-size: 0.8rem; padding: 5px 8px; border-radius: 8px; border: 1px solid var(--linha);
+      font-family: inherit; color: var(--texto);
+    }
+    .filtros form button {
+      font-size: 0.8rem; font-weight: 600; padding: 6px 13px; border-radius: 999px; cursor: pointer;
+      border: 1px solid var(--linha); background: var(--cartao); color: var(--azul-escuro);
+    }
+    .filtros form button:hover { border-color: var(--azul-claro); }
+    .filtros form.ativo button { background: var(--azul-escuro); color: #fff; border-color: var(--azul-escuro); }
+
     table { width: 100%; border-collapse: collapse; }
     th, td { text-align: left; padding: 8px 6px; border-bottom: 1px solid var(--linha); font-size: 0.85rem; }
     .nao-configurado { background: var(--cartao); border-radius: 14px; padding: 20px; font-size: 0.9rem; line-height: 1.6; margin: 0 0 20px; }
@@ -191,24 +211,56 @@
       {% endif %}
     </div>
 
-    <h2 class="secao-titulo">Produtos mais vendidos (30 dias)</h2>
-    <div class="bloco">
-      {% if produtos_mais_vendidos_30d %}
-        {% set maior_produto = produtos_mais_vendidos_30d[0].quantidade %}
-        {% for p in produtos_mais_vendidos_30d %}
+    <h2 class="secao-titulo">Produtos e materiais mais vendidos</h2>
+    <div class="filtros">
+      <a href="{{ url_for('admin_analytics', periodo='30d') }}" class="{{ 'ativo' if periodo_vendas == '30d' else '' }}">30 dias</a>
+      <a href="{{ url_for('admin_analytics', periodo='6m') }}" class="{{ 'ativo' if periodo_vendas == '6m' else '' }}">6 meses</a>
+      <a href="{{ url_for('admin_analytics', periodo='1a') }}" class="{{ 'ativo' if periodo_vendas == '1a' else '' }}">1 ano</a>
+      <a href="{{ url_for('admin_analytics', periodo='total') }}" class="{{ 'ativo' if periodo_vendas == 'total' else '' }}">Total</a>
+      <form method="get" action="{{ url_for('admin_analytics') }}" class="{{ 'ativo' if periodo_vendas == 'personalizado' else '' }}">
+        <input type="hidden" name="periodo" value="personalizado">
+        <input type="date" name="inicio" value="{{ inicio_vendas }}" required>
+        <input type="date" name="fim" value="{{ fim_vendas }}" required>
+        <button type="submit">Aplicar</button>
+      </form>
+    </div>
+
+    <div class="stat-grade" style="margin-bottom: 18px;">
+      <div class="bloco" style="margin-bottom: 0;">
+        <p class="secao-nota" style="margin: 0 0 10px;">Produtos mais vendidos</p>
+        {% if produtos_mais_vendidos %}
+          {% set maior_produto = produtos_mais_vendidos[0].quantidade %}
+          {% for p in produtos_mais_vendidos %}
+            <div class="barra-lista-item">
+              <div class="barra-lista-topo">
+                <span class="barra-lista-pagina">{{ p.produto }}</span>
+                <span class="barra-lista-numero">{{ p.quantidade }}</span>
+              </div>
+              <div class="barra-lista-trilho">
+                <div class="barra-lista-preenchido" style="width: {{ (p.quantidade / maior_produto * 100) if maior_produto else 0 }}%;"></div>
+              </div>
+            </div>
+          {% endfor %}
+        {% else %}
+          <p class="secao-nota" style="margin: 0;">Sem venda paga nesse período.</p>
+        {% endif %}
+      </div>
+
+      <div class="bloco" style="margin-bottom: 0;">
+        <p class="secao-nota" style="margin: 0 0 10px;">Quantidade por material</p>
+        {% set maior_material = quantidade_por_material[0].quantidade if quantidade_por_material else 0 %}
+        {% for m in quantidade_por_material %}
           <div class="barra-lista-item">
             <div class="barra-lista-topo">
-              <span class="barra-lista-pagina">{{ p.produto }}</span>
-              <span class="barra-lista-numero">{{ p.quantidade }}</span>
+              <span class="barra-lista-pagina">{{ m.material }}</span>
+              <span class="barra-lista-numero">{{ m.quantidade }}</span>
             </div>
             <div class="barra-lista-trilho">
-              <div class="barra-lista-preenchido" style="width: {{ (p.quantidade / maior_produto * 100) if maior_produto else 0 }}%;"></div>
+              <div class="barra-lista-preenchido" style="width: {{ (m.quantidade / maior_material * 100) if maior_material else 0 }}%;"></div>
             </div>
           </div>
         {% endfor %}
-      {% else %}
-        <p class="secao-nota" style="margin: 0;">Sem venda paga nos últimos 30 dias.</p>
-      {% endif %}
+      </div>
     </div>
 
     {% if not configurado %}
