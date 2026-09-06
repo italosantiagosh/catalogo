@@ -170,7 +170,10 @@ def test_detalhe_telefone_e_link_clicavel_pro_whatsapp(client, monkeypatch):
     with patch("app.criar_link_pagamento", return_value={"url": "https://checkout.infinitepay.io/abc"}):
         criado = client.post("/api/pedido/criar", json=_corpo_valido()).get_json()
     detalhe = client.get(f"/admin/pedidos/{criado['token']}", auth=("admin", "segredo123")).get_data(as_text=True)
-    assert 'href="https://wa.me/5584999999999"' in detalhe
+    # ?text=... com a mensagem pronta por status (ver
+    # test_whatsapp_mensagem_por_status.py) -- aqui so confirma que o
+    # link continua clicavel com o numero certo.
+    assert 'href="https://wa.me/5584999999999?text=' in detalhe
 
 
 def test_alterar_status_para_faturado(client, monkeypatch):

@@ -108,7 +108,7 @@
       <p>{{ pedido.cliente_nome }} — {{ pedido.cliente_email }}</p>
       <p>
         {% if pedido.cliente_telefone %}
-          <a href="https://wa.me/{{ pedido.cliente_telefone | whatsapp }}" target="_blank" rel="noopener">{{ pedido.cliente_telefone }} 💬</a>
+          <a href="https://wa.me/{{ pedido.cliente_telefone | whatsapp }}{% if mensagem_whatsapp_cliente %}?text={{ mensagem_whatsapp_cliente | urlencode }}{% endif %}" target="_blank" rel="noopener">{{ pedido.cliente_telefone }} 💬</a>
         {% else %}
           {{ pedido.cliente_telefone }}
         {% endif %}

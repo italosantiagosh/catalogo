@@ -2426,6 +2426,115 @@ def _atribuir_numeros_modelo_personalizada(pedido: dict) -> None:
             item["numeroModeloPersonalizada"] = numero
 
 
+_ASSINATURA_WHATSAPP_CLIENTE = (
+    "\n\nQualquer dúvida é só falar. Deus abençoe. Shalom! 🙏\nÍtalo Santiago -- Nove de Julho"
+)
+
+
+def _itens_texto_whatsapp(pedido: dict) -> str:
+    return "\n".join(
+        f"- {item.get('quantidade', 1)}x {item.get('descricao') or item.get('chave_preco', '')}"
+        for item in pedido["itens"]
+    )
+
+
+def _mensagem_whatsapp_cliente(pedido: dict) -> str:
+    """Mensagem pronta pro botao de WhatsApp do cliente no admin (ver
+    templates/admin_pedido_detalhe.html) -- o CONTEUDO muda de acordo
+    com o status do pedido, sempre com os dados/links relevantes
+    daquele momento (pedido do usuario: clicar no wpp do cliente ja
+    abrir com a mensagem certa pro que esta acontecendo com o pedido,
+    em vez de precisar escrever/copiar informacao na mao toda vez).
+    Devolve "" pros status sem mensagem especial definida (whatsapp,
+    excluido) -- nesse caso o botao abre sem texto nenhum, como sempre
+    foi."""
+    nome = pedido.get("cliente_nome", "")
+    codigo = pedido["codigo"]
+    itens_texto = _itens_texto_whatsapp(pedido)
+    frete = pedido.get("frete_descricao") or "a combinar"
+    total = _formatar_preco(pedido["total"])
+    link_pedido = url_for("ver_pedido", token=pedido["token"], _external=True)
+
+    if pedido["status"] == "pendente":
+        return (
+            f"Olá {nome}, o seu pedido #{codigo} no site Nove de Julho foi criado com os itens:\n"
+            f"{itens_texto}\n"
+            f"Frete: {frete}\n"
+            f"Total: {total}\n\n"
+            f"Estamos aguardando seu pagamento -- pra pagar ou acompanhar, o link do seu pedido é "
+            f"esse: {link_pedido}"
+            f"{_ASSINATURA_WHATSAPP_CLIENTE}"
+        )
+
+    if pedido["status"] == "cancelado":
+        url_pix = url_for("pedido_reativar_pix", token=pedido["token"], _external=True)
+        url_boleto = url_for("pedido_reativar_boleto", token=pedido["token"], _external=True)
+        return (
+            f"Olá {nome}! Seu pedido #{codigo} acabou sendo cancelado por falta de pagamento, mas as "
+            f"peças continuam com os valores imperdíveis de quando você montou:\n"
+            f"{itens_texto}\n"
+            f"Frete: {frete}\n"
+            f"Total: {total}\n\n"
+            f"Dá pra fechar sem refazer nada -- é só escolher:\n"
+            f"Pix/cartão: {url_pix}\n"
+            f"Boleto: {url_boleto}"
+            f"{_ASSINATURA_WHATSAPP_CLIENTE}"
+        )
+
+    if pedido["status"] == "pago":
+        previsao_envio = _formatar_data_br(previsoes_do_pedido(pedido).get("previsao_envio"))
+        previsao_texto = f"Previsão de envio: até {previsao_envio}.\n" if previsao_envio else ""
+        return (
+            f"Olá {nome}! Seu pedido #{codigo} está confirmado e já entrou em produção. Em breve "
+            f"emitimos a nota fiscal.\n"
+            f"{previsao_texto}"
+            f"Pra acompanhar tudo: {link_pedido}"
+            f"{_ASSINATURA_WHATSAPP_CLIENTE}"
+        )
+
+    if pedido["status"] == "faturado":
+        previsao_envio = _formatar_data_br(previsoes_do_pedido(pedido).get("previsao_envio"))
+        previsao_texto = f" Previsão de envio: até {previsao_envio}." if previsao_envio else ""
+        link_nf = pedido.get("link_nota_fiscal") or ""
+        nf_texto = f" Aqui está a nota fiscal: {link_nf}" if link_nf else ""
+        return (
+            f"Olá {nome}! Seu pedido #{codigo} foi faturado.{nf_texto}\n"
+            f"Logo mais será enviado.{previsao_texto}\n"
+            f"Pra acompanhar: {link_pedido}"
+            f"{_ASSINATURA_WHATSAPP_CLIENTE}"
+        )
+
+    if pedido["status"] == "enviado":
+        previsao_entrega = _formatar_data_br(previsoes_do_pedido(pedido).get("previsao_entrega"))
+        transportadora = pedido.get("transportadora") or ""
+        codigo_rastreio = pedido.get("codigo_rastreio") or ""
+        link_rastreio = pedido.get("link_rastreio") or ""
+        transportadora_texto = f" pela {transportadora}" if transportadora else ""
+        rastreio_texto = f", código de rastreio {codigo_rastreio}" if codigo_rastreio else ""
+        link_rastreio_texto = f"Rastreio: {link_rastreio}\n" if link_rastreio else ""
+        previsao_texto = f"Previsão de entrega: até {previsao_entrega}.\n" if previsao_entrega else ""
+        return (
+            f"Olá {nome}! Seu pedido #{codigo} já foi enviado{transportadora_texto}{rastreio_texto}.\n"
+            f"{link_rastreio_texto}"
+            f"{previsao_texto}"
+            f"Pra acompanhar: {link_pedido}"
+            f"{_ASSINATURA_WHATSAPP_CLIENTE}"
+        )
+
+    if pedido["status"] == "entregue":
+        produto = _produto_para_avaliacao_do_pedido(pedido)
+        if produto is not None:
+            url_avaliar = url_for("produto", produto_id=produto["id"], _external=True) + "#avaliacoes"
+            return (
+                f"Olá {nome}! Que alegria saber que seu pedido #{codigo} já chegou! 🙏\n"
+                f"Poderia avaliar sua {produto['nome']}? Leva menos de 1 minuto: {url_avaliar}"
+                f"{_ASSINATURA_WHATSAPP_CLIENTE}"
+            )
+        return f"Olá {nome}! Que alegria saber que seu pedido #{codigo} já chegou! 🙏{_ASSINATURA_WHATSAPP_CLIENTE}"
+
+    return ""
+
+
 @app.route("/admin/pedidos/<token>", methods=["GET"])
 def admin_pedido_detalhe(token: str):
     """Tela de um pedido so, com formulario pra avancar o status na mao
@@ -2438,7 +2547,11 @@ def admin_pedido_detalhe(token: str):
     if pedido is None:
         abort(404)
     _atribuir_numeros_modelo_personalizada(pedido)
-    return render_template("admin_pedido_detalhe.html", pedido=pedido)
+    return render_template(
+        "admin_pedido_detalhe.html",
+        pedido=pedido,
+        mensagem_whatsapp_cliente=_mensagem_whatsapp_cliente(pedido),
+    )
 
 
 @app.route("/admin/pedidos/<token>/csv", methods=["GET"])
