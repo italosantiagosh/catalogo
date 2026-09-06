@@ -19,10 +19,18 @@ API da Brevo: https://developers.brevo.com/docs/send-a-transactional-email
 from __future__ import annotations
 
 import html
+from urllib.parse import quote
 
 import requests
 
-from config import BREVO_API_KEY, EMAIL_NOTIFICACAO_VENDA, EMAIL_REMETENTE, EMAIL_REMETENTE_NOME, INSTAGRAM_URL
+from config import (
+    BREVO_API_KEY,
+    EMAIL_NOTIFICACAO_VENDA,
+    EMAIL_REMETENTE,
+    EMAIL_REMETENTE_NOME,
+    INSTAGRAM_URL,
+    WHATSAPP_NUMBER,
+)
 from services.pedidos import previsoes_do_pedido
 
 API_URL = "https://api.brevo.com/v3/smtp/email"
@@ -313,15 +321,21 @@ def enviar_nota_fiscal_disponivel(pedido: dict, url_acompanhamento: str) -> dict
     )
 
 
-def _corpo_html_pedido_cancelado(pedido: dict, url_catalogo: str) -> str:
+def _corpo_html_pedido_cancelado(pedido: dict, url_reativar_pix: str, url_reativar_boleto: str) -> str:
+    mensagem_whatsapp = quote(
+        f"Oi! Meu pedido #{pedido['codigo']} foi cancelado, mas quero fechar mesmo assim. Pode me ajudar?"
+    )
+    url_whatsapp = f"https://wa.me/{WHATSAPP_NUMBER}?text={mensagem_whatsapp}"
     return (
         f"<p>Olá, {_esc(pedido.get('cliente_nome', ''))}! Seu pedido #{pedido['codigo']} não foi pago a "
         f"tempo e acabou sendo cancelado automaticamente.</p>"
-        f"<p>Mas as medalhas continuam esperando por você -- e cada uma carrega uma história de fé "
-        f"que vale a pena levar adiante. 🙏</p>"
-        f"{_botao(url_catalogo, '👉 Voltar ao catálogo e fazer um novo pedido')}"
-        f"<p>Se o pagamento deu algum problema ou você tiver qualquer dúvida, é só chamar no "
-        f"WhatsApp -- a gente ajuda a resolver.</p>"
+        f"<p>Mas as medalhas continuam esperando por você -- e o pedido continua montado do jeitinho que "
+        f"você deixou (mesmas peças, mesma foto personalizada se tiver enviado uma). Escolha como prefere "
+        f"fechar, sem precisar refazer nada:</p>"
+        f"{_botao(url_reativar_pix, '💳 Pagar com Pix ou cartão')}"
+        f"{_botao(url_reativar_boleto, '🧾 Gerar boleto')}"
+        f"{_botao(url_whatsapp, '💬 Fechar pelo WhatsApp')}"
+        f"<p>Qualquer dúvida, é só chamar. Deus abençoe! 🙏</p>"
     )
 
 
@@ -393,16 +407,19 @@ def enviar_pedido_avaliacao(pedido: dict, produto_nome: str, url_produto: str) -
     )
 
 
-def enviar_pedido_cancelado(pedido: dict, url_catalogo: str) -> dict:
+def enviar_pedido_cancelado(pedido: dict, url_reativar_pix: str, url_reativar_boleto: str) -> dict:
     """Disparado pelo job agendado (ver app.py) quando um pedido "pendente"
     e´ cancelado automaticamente por falta de pagamento apos o lembrete
-    -- e-mail motivacional de recuperacao, linkando de volta pro
-    catalogo. Devolve {"ok": True} ou {"erro": "..."}."""
+    -- e-mail de recuperacao com 3 jeitos de reaproveitar o MESMO
+    pedido (mesmos itens, foto personalizada se tiver) sem precisar
+    refazer nada: Pix/cartao, boleto (ver app.py:pedido_reativar_pix/
+    pedido_reativar_boleto) ou fechar pelo WhatsApp. Devolve {"ok": True}
+    ou {"erro": "..."}."""
     return _enviar(
         email_cliente=pedido.get("cliente_email", ""),
         nome_cliente=pedido.get("cliente_nome", ""),
         assunto=f"Seu pedido #{pedido['codigo']} foi cancelado -- mas ainda dá tempo",
-        corpo_html=_corpo_html_pedido_cancelado(pedido, url_catalogo),
+        corpo_html=_corpo_html_pedido_cancelado(pedido, url_reativar_pix, url_reativar_boleto),
     )
 
 

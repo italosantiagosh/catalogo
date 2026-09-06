@@ -61,8 +61,10 @@ def test_cancela_e_manda_email_uma_vez(client, monkeypatch):
         _cancelar_pedidos_abandonados()
 
     assert mock_email.call_count == 1
-    url_catalogo = mock_email.call_args.args[1]
-    assert "/catalogo" in url_catalogo
+    url_reativar_pix = mock_email.call_args.args[1]
+    url_reativar_boleto = mock_email.call_args.args[2]
+    assert f"/pedido/{criado['token']}/reativar-pix" in url_reativar_pix
+    assert f"/pedido/{criado['token']}/reativar-boleto" in url_reativar_boleto
 
     pedido = pedidos.obter_pedido(criado["token"])
     assert pedido["status"] == "cancelado"

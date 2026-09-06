@@ -191,3 +191,25 @@ def test_pedido_enviado_sem_link_de_rastreio(monkeypatch):
         email.enviar_pedido_enviado(_pedido_exemplo(), "BR123456789BR", "", "https://site/pedido/token")
     corpo = post_mock.call_args.kwargs["json"]
     assert "BR123456789BR" in corpo["htmlContent"]
+
+
+def test_pedido_cancelado_oferece_3_jeitos_de_reaproveitar_o_pedido(monkeypatch):
+    """ver conversa: reaproveita o MESMO pedido -- Pix/cartao, boleto ou
+    WhatsApp -- em vez de so linkar de volta pro catalogo."""
+    monkeypatch.setattr(email, "BREVO_API_KEY", "segredo")
+    monkeypatch.setattr(email, "WHATSAPP_NUMBER", "5584999999999")
+    resposta_mock = Mock()
+    resposta_mock.raise_for_status = Mock()
+    with patch("services.email.requests.post", return_value=resposta_mock) as post_mock:
+        resultado = email.enviar_pedido_cancelado(
+            _pedido_exemplo(),
+            "https://site/pedido/token/reativar-pix",
+            "https://site/pedido/token/reativar-boleto",
+        )
+
+    assert resultado == {"ok": True}
+    corpo = post_mock.call_args.kwargs["json"]["htmlContent"]
+    assert "https://site/pedido/token/reativar-pix" in corpo
+    assert "https://site/pedido/token/reativar-boleto" in corpo
+    assert "https://wa.me/5584999999999?text=" in corpo
+    assert "ABC123" in corpo

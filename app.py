@@ -3747,10 +3747,13 @@ def _cancelar_pedidos_abandonados() -> None:
     if not candidatos:
         return
     with app.test_request_context(base_url=f"https://{CANONICAL_DOMAIN}"):
-        url_catalogo = url_for("catalogo_completo", _external=True)
         for pedido in candidatos:
             cancelar_pedido(pedido["token"])
-            resultado_email = enviar_pedido_cancelado(pedido, url_catalogo)
+            resultado_email = enviar_pedido_cancelado(
+                pedido,
+                url_for("pedido_reativar_pix", token=pedido["token"], _external=True),
+                url_for("pedido_reativar_boleto", token=pedido["token"], _external=True),
+            )
             marcar_email_cancelado_enviado(pedido["token"], erro=resultado_email.get("erro"))
 
 
@@ -3778,7 +3781,6 @@ def _verificar_boletos_inter_pendentes() -> None:
     if not candidatos:
         return
     with app.test_request_context(base_url=f"https://{CANONICAL_DOMAIN}"):
-        url_catalogo = url_for("catalogo_completo", _external=True)
         for pedido in candidatos:
             dados = consultar_cobranca(pedido["inter_codigo_solicitacao"])
             if "erro" in dados:
@@ -3798,7 +3800,11 @@ def _verificar_boletos_inter_pendentes() -> None:
                 _pos_pagamento_confirmado(pedido_pago, pedido["token"])
             elif situacao in _SITUACOES_INTER_ENCERRADO_SEM_PAGAR:
                 cancelar_pedido(pedido["token"])
-                resultado_email = enviar_pedido_cancelado(pedido, url_catalogo)
+                resultado_email = enviar_pedido_cancelado(
+                    pedido,
+                    url_for("pedido_reativar_pix", token=pedido["token"], _external=True),
+                    url_for("pedido_reativar_boleto", token=pedido["token"], _external=True),
+                )
                 marcar_email_cancelado_enviado(pedido["token"], erro=resultado_email.get("erro"))
 
 
