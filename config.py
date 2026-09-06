@@ -190,6 +190,28 @@ UPSELL_HORAS_APOS_PAGAMENTO = int(os.environ.get("UPSELL_HORAS_APOS_PAGAMENTO", 
 # app.py:_enviar_pedidos_para_avaliacao.
 AVALIACAO_DIAS_APOS_PAGAMENTO = int(os.environ.get("AVALIACAO_DIAS_APOS_PAGAMENTO", "30"))
 
+# Armazenamento das imagens personalizadas (previa + recorte, ver
+# services/armazenamento_r2.py e services/imagens_personalizadas.py) no
+# Cloudflare R2 em vez de BLOB no SQLite -- o disco do Render e´ fixo em
+# 1GB compartilhado com o banco de pedidos (ver conversa: cliente que
+# manda 20-40 fotos por pedido enchia o disco rapido, e a decisao foi
+# guardar tudo pra sempre em vez de apagar depois de um tempo). O
+# usuario ja tem conta R2 (usada hoje so pro video de apresentacao,
+# VIDEO_APRESENTACAO_URL acima, que e´ so leitura publica) -- esse
+# bucket aqui e´ DIFERENTE, e precisa de um token de API com permissao
+# de LEITURA E ESCRITA (Cloudflare dashboard -> R2 -> Manage API Tokens
+# -> Create API Token -> "Object Read & Write", com escopo no bucket
+# criado pra isso). TODAS as credenciais abaixo SAO segredo -- NUNCA
+# gravar os valores aqui, so variavel de ambiente no servidor. Sem
+# R2_ACCOUNT_ID/ACCESS_KEY/SECRET configurados, o armazenamento cai
+# automaticamente de volta pro SQLite local (comportamento de antes) --
+# assim continua funcionando em dev/teste sem precisar de credencial
+# nenhuma.
+R2_ACCOUNT_ID = os.environ.get("R2_ACCOUNT_ID", "")
+R2_ACCESS_KEY_ID = os.environ.get("R2_ACCESS_KEY_ID", "")
+R2_SECRET_ACCESS_KEY = os.environ.get("R2_SECRET_ACCESS_KEY", "")
+R2_BUCKET_NAME = os.environ.get("R2_BUCKET_NAME", "catalogo-personalizadas")
+
 # Prazo de producao em DIAS UTEIS depois do pagamento confirmado, antes
 # do pedido ser enviado -- mesma promessa ja usada como texto fixo em
 # varias paginas ("prazo de ate 5 dias uteis antes do envio"). Usado

@@ -60,6 +60,78 @@ def test_purgar_imagens_antigas_preserva_imagem_usada(client):
     assert imagens_personalizadas.obter_imagem(token_nao_usado) is None
 
 
+class _R2Fake:
+    """Simula o Cloudflare R2 em memoria -- usado pra testar o caminho
+    "R2 configurado" de services/imagens_personalizadas.py sem precisar
+    de rede/credencial de verdade (o mesmo espirito de _R2Fake.objetos
+    valeria pra qualquer teste que precisasse inspecionar o que foi
+    upado/apagado)."""
+
+    def __init__(self):
+        self.objetos: dict[str, bytes] = {}
+
+    def subir(self, chave, dados, mimetype):
+        self.objetos[chave] = dados
+
+    def baixar(self, chave):
+        return self.objetos[chave]
+
+    def apagar(self, chaves):
+        for chave in chaves:
+            self.objetos.pop(chave, None)
+
+
+@pytest.fixture
+def r2_fake(monkeypatch):
+    fake = _R2Fake()
+    monkeypatch.setattr(imagens_personalizadas.armazenamento_r2, "configurado", lambda: True)
+    monkeypatch.setattr(imagens_personalizadas.armazenamento_r2, "subir", fake.subir)
+    monkeypatch.setattr(imagens_personalizadas.armazenamento_r2, "baixar", fake.baixar)
+    monkeypatch.setattr(imagens_personalizadas.armazenamento_r2, "apagar", fake.apagar)
+    return fake
+
+
+def test_salvar_e_obter_imagem_com_r2_configurado(client, r2_fake):
+    token = imagens_personalizadas.salvar_imagem(b"conteudo-r2", "image/png", "foto.png")
+
+    # nao guarda o byte no SQLite quando R2 esta configurado -- so a
+    # metadata (ver services/imagens_personalizadas.py:salvar_imagem)
+    with imagens_personalizadas._conexao() as conexao:
+        linha = conexao.execute(
+            "SELECT dados FROM imagens_personalizadas WHERE token = ?", (token,)
+        ).fetchone()
+    assert linha["dados"] == b""
+    assert r2_fake.objetos[token] == b"conteudo-r2"
+
+    dados, mimetype, nome_arquivo = imagens_personalizadas.obter_imagem(token)
+    assert dados == b"conteudo-r2"
+    assert mimetype == "image/png"
+    assert nome_arquivo == "foto.png"
+
+
+def test_purgar_imagens_antigas_apaga_do_r2_tambem(client, r2_fake):
+    token = imagens_personalizadas.salvar_imagem(b"a", "image/png", "a.png")
+    assert token in r2_fake.objetos
+
+    removidas = imagens_personalizadas.purgar_imagens_antigas(dias=0)
+
+    assert removidas == 1
+    assert token not in r2_fake.objetos
+
+
+def test_linha_antiga_com_blob_local_continua_funcionando_com_r2_configurado(client, monkeypatch):
+    """Uma linha que ainda tem o byte de verdade no SQLite (nunca
+    migrada pro R2) continua sendo servida direto do banco, mesmo com
+    R2 configurado agora -- so uma linha NOVA (dados vazio) vai buscar
+    no R2 (ver obter_imagem)."""
+    monkeypatch.setattr(imagens_personalizadas.armazenamento_r2, "configurado", lambda: False)
+    token = imagens_personalizadas.salvar_imagem(b"blob-local-antigo", "image/png", "antiga.png")
+
+    monkeypatch.setattr(imagens_personalizadas.armazenamento_r2, "configurado", lambda: True)
+    dados, _mimetype, _nome = imagens_personalizadas.obter_imagem(token)
+    assert dados == b"blob-local-antigo"
+
+
 def _envelhecer_imagem(token: str, dias: int) -> None:
     from datetime import datetime, timedelta, timezone
 

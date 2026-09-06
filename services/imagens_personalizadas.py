@@ -24,6 +24,13 @@ a compra).
 Mesmo banco/mesma variavel de ambiente de services/pedidos.py -- nao
 faz sentido um Persistent Disk separado so pra essa tabela nova (mesmo
 raciocinio ja usado em services/push.py).
+
+Os BYTES da imagem (`dados`) vao pro Cloudflare R2 quando configurado
+(ver services/armazenamento_r2.py) -- so a metadata (token, mimetype,
+nome_arquivo, criado_em, usada_em_pedido, tipo) fica no SQLite. Sem R2
+configurado, cai de volta pro BLOB local de sempre (dev/teste). Uma
+linha migrada pro R2 fica com `dados = b""` no SQLite -- obter_imagem
+busca no R2 quando encontra isso vazio.
 """
 
 from __future__ import annotations
@@ -34,6 +41,8 @@ import sqlite3
 from contextlib import contextmanager
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
+
+import services.armazenamento_r2 as armazenamento_r2
 
 DB_PATH = os.environ.get(
     "PEDIDOS_DB_PATH", str(Path(__file__).resolve().parent.parent / "data" / "pedidos.db")
@@ -88,11 +97,15 @@ def inicializar_db() -> None:
 def salvar_imagem(dados: bytes, mimetype: str, nome_arquivo: str, tipo: str = "preview") -> str:
     inicializar_db()
     token = secrets.token_urlsafe(16)
+    dados_sqlite = dados
+    if armazenamento_r2.configurado():
+        armazenamento_r2.subir(token, dados, mimetype)
+        dados_sqlite = b""
     with _conexao() as conexao:
         conexao.execute(
             "INSERT INTO imagens_personalizadas (token, dados, mimetype, nome_arquivo, criado_em, tipo) "
             "VALUES (?, ?, ?, ?, ?, ?)",
-            (token, dados, mimetype, nome_arquivo, datetime.now(timezone.utc).isoformat(), tipo),
+            (token, dados_sqlite, mimetype, nome_arquivo, datetime.now(timezone.utc).isoformat(), tipo),
         )
     return token
 
@@ -103,7 +116,12 @@ def obter_imagem(token: str) -> tuple[bytes, str, str] | None:
         linha = conexao.execute(
             "SELECT dados, mimetype, nome_arquivo FROM imagens_personalizadas WHERE token = ?", (token,)
         ).fetchone()
-    return (linha["dados"], linha["mimetype"], linha["nome_arquivo"]) if linha else None
+    if not linha:
+        return None
+    dados = linha["dados"]
+    if not dados and armazenamento_r2.configurado():
+        dados = armazenamento_r2.baixar(token)
+    return (dados, linha["mimetype"], linha["nome_arquivo"])
 
 
 def marcar_imagem_usada(token: str) -> None:
@@ -126,6 +144,13 @@ def purgar_imagens_antigas(dias: int = 7) -> int:
     inicializar_db()
     limite = (datetime.now(timezone.utc) - timedelta(days=dias)).isoformat()
     with _conexao() as conexao:
+        tokens = [
+            linha["token"] for linha in conexao.execute(
+                "SELECT token FROM imagens_personalizadas WHERE usada_em_pedido = 0 AND criado_em < ?", (limite,)
+            ).fetchall()
+        ]
+        if tokens and armazenamento_r2.configurado():
+            armazenamento_r2.apagar(tokens)
         cursor = conexao.execute(
             "DELETE FROM imagens_personalizadas WHERE usada_em_pedido = 0 AND criado_em < ?", (limite,)
         )
@@ -146,6 +171,15 @@ def purgar_recortes_usados_antigos(dias: int = 30) -> int:
     inicializar_db()
     limite = (datetime.now(timezone.utc) - timedelta(days=dias)).isoformat()
     with _conexao() as conexao:
+        tokens = [
+            linha["token"] for linha in conexao.execute(
+                "SELECT token FROM imagens_personalizadas "
+                "WHERE tipo = 'recorte' AND usada_em_pedido = 1 AND criado_em < ?",
+                (limite,),
+            ).fetchall()
+        ]
+        if tokens and armazenamento_r2.configurado():
+            armazenamento_r2.apagar(tokens)
         cursor = conexao.execute(
             "DELETE FROM imagens_personalizadas WHERE tipo = 'recorte' AND usada_em_pedido = 1 AND criado_em < ?",
             (limite,),
