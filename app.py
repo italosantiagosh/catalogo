@@ -40,6 +40,7 @@ import csv
 import hmac
 import io
 import os
+import re
 import secrets
 import tempfile
 from datetime import datetime, timedelta, timezone
@@ -1173,10 +1174,25 @@ def carrinho():
     )
 
 
+_REDIRECT_ATENDIMENTO_ALIASES = {
+    # slugs da plataforma antiga (ver auditoria Search Console/conversa)
+    # que viraram outro slug aqui -- 301 pra nao perder o SEO acumulado.
+    "politicas-de-pagamento": "formas-de-pagamento",
+    "politica-de-cookies": "termos-e-privacidade",
+    "termos-de-uso-e-politica-de-privacidade": "termos-e-privacidade",
+    "politica-de-devolucao-e-reembolso": "trocas-e-devolucao",
+}
+
+
 @app.route("/atendimento/<slug>", methods=["GET"])
 def pagina_atendimento(slug: str):
     pagina = PAGINAS_ATENDIMENTO.get(slug)
     if pagina is None:
+        alvo = _REDIRECT_ATENDIMENTO_ALIASES.get(slug)
+        if alvo:
+            return redirect(url_for("pagina_atendimento", slug=alvo), code=301)
+        if slug == "precos-de-atacado":  # sem pagina equivalente hoje
+            return redirect(url_for("catalogo_completo"), code=301)
         abort(404)
     dados_breadcrumb = _dados_breadcrumb(
         [
@@ -1192,6 +1208,81 @@ def pagina_atendimento(slug: str):
         dados_breadcrumb=dados_breadcrumb,
         dados_faq=dados_faq,
     )
+
+
+_REDIRECT_PRODUTO_LEGADO_PREFIXOS = (
+    "medalha-de-", "medalha-do-", "medalha-da-", "medalha-das-", "medalha-dos-",
+    "chaveiro-de-", "chaveiro-do-", "chaveiro-da-", "pingente-de-", "entremeio-de-",
+)
+
+_REDIRECT_PRODUTO_LEGADO_ALIASES = {
+    # slug ja sem prefixo/sufixo (ver _resolver_produto_legado_id abaixo)
+    # -> produto_id atual, pros casos que o nome mudou (canonizacao, ex:
+    # "beato" virou "santo"/"são") ou nao dava pra resolver so tirando
+    # prefixo/sufixo (ver auditoria Search Console/conversa). Verificado
+    # manualmente um por um -- casos ambiguos ficam de fora de proposito
+    # (melhor 404 do que redirecionar pro produto errado).
+    "ressuscitado-que-passou-pela-cruz": "ressuscitado",
+    "serva-de-deus-clare-crocker": "irma-clare",
+    "beato-carlo-acutis": "carlo-acutis",
+    "beato-pier-giorgio-frassati": "sao-pier-giorgio-frassati",
+    "nossa-senhora-da-ternura": "nossa-senhora-mae-da-ternura",
+    "santa-gemma-galgani": "santa-gemma",
+    "santa-gianna-beretta-molla": "santa-gianna",
+    "santa-teresa-benedita-da-cruz-edith-stein": "edith-stein",
+    "sao-josemaria-escriva": "sao-jose-maria-escriva",
+    "sao-luiz-e-santa-zelia-pais-de-teresinha": "pais-de-teresinha",
+    "sao-miguel-arcanjo": "sao-miguel",
+    "divino-semeador": "jesus-semeador",
+    "santa-rita-de-cassia-folheado-a-ouro": "santa-rita-de-cassia",
+}
+
+_REDIRECT_PERSONALIZADA_LEGADO = {
+    # as 3 URLs de personalizada da plataforma antiga -- cada uma vira o
+    # formato correspondente ja pre-selecionado em /personalizada.
+    "medalha-de-santo-personalizada-de-1-lado": "medalha",
+    "medalha-personalizada-de-2-lados": "medalha_2lados",
+    "chaveiro-personalizado-de-2-lados": "chaveiro_2lados",
+}
+
+
+def _resolver_produto_legado_id(slug: str) -> str | None:
+    """Resolve um slug de produto da PLATAFORMA ANTIGA da loja (URLs tipo
+    /<slug>/p, ainda indexadas pelo Google -- ver auditoria Search
+    Console/conversa) pro produto_id atual, tirando o prefixo
+    ("medalha-de-", "chaveiro-do-" etc.) e sufixo ("-modelo-2",
+    "-1-lado" etc.) e conferindo se sobrou um produto_id valido -- ou
+    usando _REDIRECT_PRODUTO_LEGADO_ALIASES pros casos que precisam de
+    mapeamento manual. Devolve None se nao reconhecer (peca
+    descontinuada, ex: "nossa-senhora-das-lagrimas") -- nesse caso e´
+    melhor deixar 404 do que redirecionar errado."""
+    normalizado = slug
+    for prefixo in _REDIRECT_PRODUTO_LEGADO_PREFIXOS:
+        if normalizado.startswith(prefixo):
+            normalizado = normalizado[len(prefixo):]
+            break
+    normalizado = re.sub(r"-modelo-\d+$", "", normalizado)
+    normalizado = re.sub(r"-\d+-lados?$", "", normalizado)
+    normalizado = _REDIRECT_PRODUTO_LEGADO_ALIASES.get(normalizado, normalizado)
+    if buscar_produto(normalizado) is not None:
+        return normalizado
+    return None
+
+
+@app.route("/<path:slug>/p", methods=["GET"])
+def produto_legado_redirect(slug: str):
+    """URLs no formato da plataforma anterior da loja (antes da migracao
+    pro Flask), ainda indexadas pelo Google (ver auditoria Search
+    Console/conversa) -- 301 pro produto atual (ou pra /personalizada no
+    formato certo) quando da pra resolver, senao 404 normal (peca
+    descontinuada)."""
+    formato_personalizada = _REDIRECT_PERSONALIZADA_LEGADO.get(slug)
+    if formato_personalizada:
+        return redirect(url_for("personalizada", formato=formato_personalizada), code=301)
+    produto_id = _resolver_produto_legado_id(slug)
+    if produto_id is None:
+        abort(404)
+    return redirect(url_for("produto", produto_id=produto_id), code=301)
 
 
 @app.route("/catalogo.pdf", methods=["GET"])
