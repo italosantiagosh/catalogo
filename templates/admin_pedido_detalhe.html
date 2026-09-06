@@ -84,16 +84,29 @@
               <br>Lado 1: {{ item.produtoNomeLado1 }} — {{ item.modeloNomeLado1 }} (catálogo)
             {% elif item.imagemRecorteLado1 %}
               <br>Lado 1: Personalizada — Modelo {{ item.numeroModeloPersonalizadaLado1 }}
-              <a href="{{ item.imagemRecorteLado1 }}" download="personalizada_modelo_{{ item.numeroModeloPersonalizadaLado1 }}.png">⬇ Baixar lado 1 (imagem 1:1)</a>
+              {% if recorte_disponivel %}
+                <a href="{{ item.imagemRecorteLado1 }}" download="personalizada_modelo_{{ item.numeroModeloPersonalizadaLado1 }}.png">⬇ Baixar lado 1 (imagem 1:1)</a>
+              {% else %}
+                <span class="aviso-transportadora-admin">(imagem 1:1 excluída após {{ retencao_recorte_dias }} dias)</span>
+              {% endif %}
             {% endif %}
             {% if item.produtoNomeLado2 %}
               <br>Lado 2: {{ item.produtoNomeLado2 }} — {{ item.modeloNomeLado2 }} (catálogo)
             {% elif item.imagemRecorteLado2 %}
               <br>Lado 2: Personalizada — Modelo {{ item.numeroModeloPersonalizadaLado2 }}
-              <a href="{{ item.imagemRecorteLado2 }}" download="personalizada_modelo_{{ item.numeroModeloPersonalizadaLado2 }}.png">⬇ Baixar lado 2 (imagem 1:1)</a>
+              {% if recorte_disponivel %}
+                <a href="{{ item.imagemRecorteLado2 }}" download="personalizada_modelo_{{ item.numeroModeloPersonalizadaLado2 }}.png">⬇ Baixar lado 2 (imagem 1:1)</a>
+              {% else %}
+                <span class="aviso-transportadora-admin">(imagem 1:1 excluída após {{ retencao_recorte_dias }} dias)</span>
+              {% endif %}
             {% endif %}
           {% elif item.imagemRecorte %}
-            <br><a href="{{ item.imagemRecorte }}" download="personalizada_modelo_{{ item.numeroModeloPersonalizada }}.png">⬇ Baixar imagem 1:1</a>
+            <br>
+            {% if recorte_disponivel %}
+              <a href="{{ item.imagemRecorte }}" download="personalizada_modelo_{{ item.numeroModeloPersonalizada }}.png">⬇ Baixar imagem 1:1</a>
+            {% else %}
+              <span class="aviso-transportadora-admin">(imagem 1:1 excluída após {{ retencao_recorte_dias }} dias)</span>
+            {% endif %}
           {% endif %}
         </li>
       {% endfor %}

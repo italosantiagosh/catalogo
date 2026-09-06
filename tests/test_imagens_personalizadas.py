@@ -60,6 +60,78 @@ def test_purgar_imagens_antigas_preserva_imagem_usada(client):
     assert imagens_personalizadas.obter_imagem(token_nao_usado) is None
 
 
+def _envelhecer_imagem(token: str, dias: int) -> None:
+    from datetime import datetime, timedelta, timezone
+
+    passado = (datetime.now(timezone.utc) - timedelta(days=dias)).isoformat()
+    with imagens_personalizadas._conexao() as conexao:
+        conexao.execute("UPDATE imagens_personalizadas SET criado_em = ? WHERE token = ?", (passado, token))
+
+
+def test_purgar_recortes_usados_antigos_apaga_so_recorte_usado_e_velho(client):
+    recorte_velho_usado = imagens_personalizadas.salvar_imagem(b"r1", "image/png", "r1.png", tipo="recorte")
+    recorte_novo_usado = imagens_personalizadas.salvar_imagem(b"r2", "image/png", "r2.png", tipo="recorte")
+    recorte_velho_nao_usado = imagens_personalizadas.salvar_imagem(b"r3", "image/png", "r3.png", tipo="recorte")
+    preview_velha_usada = imagens_personalizadas.salvar_imagem(b"p1", "image/png", "p1.png", tipo="preview")
+
+    for token in (recorte_velho_usado, recorte_novo_usado, preview_velha_usada):
+        imagens_personalizadas.marcar_imagem_usada(token)
+
+    _envelhecer_imagem(recorte_velho_usado, dias=31)
+    _envelhecer_imagem(recorte_velho_nao_usado, dias=31)
+    _envelhecer_imagem(preview_velha_usada, dias=31)
+
+    removidas = imagens_personalizadas.purgar_recortes_usados_antigos(dias=30)
+
+    assert removidas == 1
+    assert imagens_personalizadas.obter_imagem(recorte_velho_usado) is None
+    # nao usado -- fica pra purgar_imagens_antigas(dias=7), nao essa funcao
+    assert imagens_personalizadas.obter_imagem(recorte_velho_nao_usado) is not None
+    # recente -- ainda dentro do prazo de retencao
+    assert imagens_personalizadas.obter_imagem(recorte_novo_usado) is not None
+    # preview nunca e´ apagada por essa funcao, mesmo velha e usada
+    assert imagens_personalizadas.obter_imagem(preview_velha_usada) is not None
+
+
+def test_migracao_adiciona_coluna_tipo_em_banco_antigo(client, tmp_path):
+    """Simula um banco criado antes da coluna `tipo` existir (imagem
+    salva direto via SQL, sem passar por salvar_imagem) -- inicializar_db
+    precisa migrar sem quebrar as linhas ja existentes."""
+    import sqlite3
+    from datetime import datetime, timezone
+
+    with imagens_personalizadas._conexao() as conexao:
+        conexao.execute("DROP TABLE IF EXISTS imagens_personalizadas")
+        conexao.execute(
+            """
+            CREATE TABLE imagens_personalizadas (
+                token TEXT PRIMARY KEY,
+                dados BLOB NOT NULL,
+                mimetype TEXT NOT NULL,
+                nome_arquivo TEXT NOT NULL,
+                criado_em TEXT NOT NULL,
+                usada_em_pedido INTEGER NOT NULL DEFAULT 0
+            )
+            """
+        )
+        conexao.execute(
+            "INSERT INTO imagens_personalizadas (token, dados, mimetype, nome_arquivo, criado_em, usada_em_pedido) "
+            "VALUES (?, ?, ?, ?, ?, 1)",
+            ("token-antigo", b"x", "image/png", "x.png", datetime.now(timezone.utc).isoformat()),
+        )
+
+    imagens_personalizadas.inicializar_db()
+
+    with imagens_personalizadas._conexao() as conexao:
+        linha = conexao.execute(
+            "SELECT tipo FROM imagens_personalizadas WHERE token = ?", ("token-antigo",)
+        ).fetchone()
+    assert linha["tipo"] == "preview"
+    # imagem antiga (sem tipo definido) vira "preview" por padrao -- nunca
+    # e´ apagada por purgar_recortes_usados_antigos, mesmo usada e velha
+    assert imagens_personalizadas.obter_imagem("token-antigo") is not None
+
+
 # ---- rota /api/personalizada/preview + /imagem-personalizada/<token> ----
 
 def _png_bytes() -> bytes:

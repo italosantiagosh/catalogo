@@ -230,6 +230,13 @@ PAGINAS_ATENDIMENTO = {
             navegador, mas algumas funcionalidades do site podem parar de funcionar
             corretamente.</p>
 
+            <h2>Fotos de medalhas personalizadas</h2>
+            <p>Se você personalizar uma medalha com uma foto, guardamos a imagem em
+            resolução de produção por até 30 dias após o pedido — tempo suficiente para
+            fabricarmos a peça — e depois ela é excluída automaticamente. A miniatura da
+            sua foto continua disponível para sempre na página de acompanhamento do seu
+            pedido.</p>
+
             <h2>Compartilhamento de dados</h2>
             <p>Compartilhamos apenas os dados necessários para processar seu pedido com
             transportadoras (envio) e processadores de pagamento (Pix, cartão, boleto).

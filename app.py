@@ -86,6 +86,7 @@ from config import (
     PRODUTOS_PERSONALIZADOS,
     PRODUTOS_TITULO_ANTIGO,
     PROVA_SOCIAL,
+    RETENCAO_RECORTE_PERSONALIZADA_DIAS,
     SECRET_KEY,
     UPSELL_HORAS_APOS_PAGAMENTO,
     VIDEO_APRESENTACAO_URL,
@@ -184,6 +185,7 @@ from services.imagens_personalizadas import (
     marcar_imagem_usada,
     obter_imagem,
     purgar_imagens_antigas,
+    purgar_recortes_usados_antigos,
     salvar_imagem,
 )
 from services.inter import baixar_pdf, consultar_cobranca, emitir_boleto
@@ -2308,7 +2310,21 @@ def admin_pedido_detalhe(token: str):
     if pedido is None:
         abort(404)
     _atribuir_numeros_modelo_personalizada(pedido)
-    return render_template("admin_pedido_detalhe.html", pedido=pedido)
+    # Recorte (1:1, resolucao real de producao) some depois de
+    # RETENCAO_RECORTE_PERSONALIZADA_DIAS (ver services/imagens_
+    # personalizadas.py:purgar_recortes_usados_antigos, job agendado) --
+    # usa a idade do PEDIDO como aproximacao da idade da imagem (as duas
+    # sao criadas juntas, no checkout) pra decidir se ainda mostra o link
+    # de download, em vez de deixar um link quebrado depois que a imagem
+    # ja foi apagada.
+    criado_em = datetime.fromisoformat(pedido["criado_em"])
+    recorte_disponivel = (datetime.now(timezone.utc) - criado_em).days < RETENCAO_RECORTE_PERSONALIZADA_DIAS
+    return render_template(
+        "admin_pedido_detalhe.html",
+        pedido=pedido,
+        recorte_disponivel=recorte_disponivel,
+        retencao_recorte_dias=RETENCAO_RECORTE_PERSONALIZADA_DIAS,
+    )
 
 
 @app.route("/admin/pedidos/<token>/csv", methods=["GET"])
@@ -3397,8 +3413,8 @@ def api_personalizada_preview():
     # um dict global em RAM so pro download, guardando previa+recorte
     # de CADA simulacao gerada -- contribuiu pro servico estourar o
     # limite de memoria do Render num pico de acessos, ver conversa).
-    chave_imagem = salvar_imagem(imagem_bytes, "image/png", f"{nome_base}_{spec_id}.png")
-    chave_recorte = salvar_imagem(recorte_bytes, "image/png", f"{nome_base}_recorte.png")
+    chave_imagem = salvar_imagem(imagem_bytes, "image/png", f"{nome_base}_{spec_id}.png", tipo="preview")
+    chave_recorte = salvar_imagem(recorte_bytes, "image/png", f"{nome_base}_recorte.png", tipo="recorte")
 
     return jsonify(
         preview=url_for("servir_imagem_personalizada", token=chave_imagem),
@@ -3611,6 +3627,19 @@ def _limpar_imagens_personalizadas_antigas() -> None:
     purgar_imagens_antigas(dias=7)
 
 
+def _limpar_recortes_personalizados_antigos() -> None:
+    """Job agendado (ver _iniciar_scheduler_jobs abaixo) -- roda 1x por
+    dia, apaga o RECORTE (1:1, resolucao real -- o pesado dos dois, ver
+    services/imagens_personalizadas.py) de pedidos JA PAGOS depois de
+    RETENCAO_RECORTE_PERSONALIZADA_DIAS (config.py) -- pedido do
+    usuario: "deixar temporario... depois excluidas, deixa so a
+    miniatura". Evita o disco crescer sem limite com clientes que
+    compram muitas medalhas personalizadas de uma vez -- a PREVIEW (o
+    que aparece na pagina de acompanhamento do pedido) nunca e´ apagada
+    por esse job."""
+    purgar_recortes_usados_antigos(dias=RETENCAO_RECORTE_PERSONALIZADA_DIAS)
+
+
 def _iniciar_scheduler_jobs() -> None:
     scheduler = BackgroundScheduler(timezone="UTC")
     scheduler.add_job(_enviar_lembretes_pedidos_pendentes, "interval", minutes=10, id="lembretes_pedidos_pendentes")
@@ -3620,6 +3649,9 @@ def _iniciar_scheduler_jobs() -> None:
     scheduler.add_job(_verificar_boletos_inter_pendentes, "interval", minutes=10, id="verificar_boletos_inter")
     scheduler.add_job(
         _limpar_imagens_personalizadas_antigas, "interval", hours=24, id="limpar_imagens_personalizadas"
+    )
+    scheduler.add_job(
+        _limpar_recortes_personalizados_antigos, "interval", hours=24, id="limpar_recortes_personalizados"
     )
     # Codigos de /meus-pedidos vencem em 10 minutos (ver services/pedidos.py:
     # _CODIGO_VERIFICACAO_VALIDADE_MINUTOS) -- limpa a cada hora pra tabela

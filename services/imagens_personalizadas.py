@@ -69,16 +69,29 @@ def inicializar_db() -> None:
             )
             """
         )
+        colunas_existentes = {
+            linha[1] for linha in conexao.execute("PRAGMA table_info(imagens_personalizadas)").fetchall()
+        }
+        # "recorte" (1:1, resolucao real de producao -- o pesado dos
+        # dois) ou "preview" (com moldura, tamanho fixo -- o que fica
+        # visivel na pagina do pedido). So separa os dois pra dar pra
+        # apagar so o recorte depois de RETENCAO_RECORTE_PERSONALIZADA_DIAS
+        # (ver purgar_recortes_usados_antigos abaixo e conversa: "deixar
+        # temporario... depois excluidas, deixa so a miniatura") sem
+        # mexer na preview, que continua servindo o "imagem"/imagemLado1/
+        # imagemLado2 do pedido pra sempre.
+        if "tipo" not in colunas_existentes:
+            conexao.execute("ALTER TABLE imagens_personalizadas ADD COLUMN tipo TEXT NOT NULL DEFAULT 'preview'")
 
 
-def salvar_imagem(dados: bytes, mimetype: str, nome_arquivo: str) -> str:
+def salvar_imagem(dados: bytes, mimetype: str, nome_arquivo: str, tipo: str = "preview") -> str:
     inicializar_db()
     token = secrets.token_urlsafe(16)
     with _conexao() as conexao:
         conexao.execute(
-            "INSERT INTO imagens_personalizadas (token, dados, mimetype, nome_arquivo, criado_em) "
-            "VALUES (?, ?, ?, ?, ?)",
-            (token, dados, mimetype, nome_arquivo, datetime.now(timezone.utc).isoformat()),
+            "INSERT INTO imagens_personalizadas (token, dados, mimetype, nome_arquivo, criado_em, tipo) "
+            "VALUES (?, ?, ?, ?, ?, ?)",
+            (token, dados, mimetype, nome_arquivo, datetime.now(timezone.utc).isoformat(), tipo),
         )
     return token
 
@@ -114,5 +127,25 @@ def purgar_imagens_antigas(dias: int = 7) -> int:
     with _conexao() as conexao:
         cursor = conexao.execute(
             "DELETE FROM imagens_personalizadas WHERE usada_em_pedido = 0 AND criado_em < ?", (limite,)
+        )
+        return cursor.rowcount
+
+
+def purgar_recortes_usados_antigos(dias: int = 30) -> int:
+    """Apaga o RECORTE (1:1, resolucao real -- o pesado dos dois, ver
+    inicializar_db acima) de pedidos de verdade (usada_em_pedido = 1)
+    depois de `dias` dias -- pedido do usuario: imagem personalizada
+    "temporaria", 30 dias e´ tempo de sobra pra produzir a peca antes de
+    apagar. A PREVIEW (menor, com moldura) NUNCA e´ apagada por essa
+    funcao -- continua pra sempre servindo o "imagem"/imagemLado1/
+    imagemLado2 mostrado na pagina de acompanhamento do pedido (a
+    "miniatura" que fica no link, ver conversa). Devolve quantas linhas
+    foram removidas."""
+    inicializar_db()
+    limite = (datetime.now(timezone.utc) - timedelta(days=dias)).isoformat()
+    with _conexao() as conexao:
+        cursor = conexao.execute(
+            "DELETE FROM imagens_personalizadas WHERE tipo = 'recorte' AND usada_em_pedido = 1 AND criado_em < ?",
+            (limite,),
         )
         return cursor.rowcount
