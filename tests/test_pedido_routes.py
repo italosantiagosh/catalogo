@@ -510,9 +510,9 @@ def test_admin_csv_conteudo(client, monkeypatch):
 
 
 def test_admin_csv_chaveiro_e_entremeio(client, monkeypatch):
-    """Chaveiro vira "(chaveiro)" no CSV; entremeio vira "16" fixo, sem
-    cor (pedido do usuario: "o entremeio é 16" -- vale pro de 1 lado
-    tambem, nao so 2 lados)."""
+    """Chaveiro vira "29" no CSV (pedido do usuario, mesmo molde 1 ou 2
+    lados); entremeio vira "16" fixo, sem cor (pedido do usuario: "o
+    entremeio é 16" -- vale pro de 1 lado tambem, nao so 2 lados)."""
     import app as app_module
 
     monkeypatch.setattr(app_module, "ADMIN_USER", "admin")
@@ -532,8 +532,39 @@ def test_admin_csv_chaveiro_e_entremeio(client, monkeypatch):
 
     resposta = client.get(f"/admin/pedidos/{criado['token']}/csv", auth=("admin", "segredo123"))
     corpo_csv = resposta.get_data().decode("utf-8-sig")
-    assert "São José;2;(chaveiro);5" in corpo_csv
+    assert "São José;2;29;5" in corpo_csv
     assert "São José;3;16;8" in corpo_csv
+
+
+def test_admin_csv_medalha_2lados_sem_tamanho_persistido_usa_fallback_do_detalhe(client, monkeypatch):
+    """Pedido real ANTIGO (de antes do campo "tamanho" comecar a ser
+    guardado no item persistido) -- a coluna Variação nao pode ficar em
+    branco so porque falta esse campo, ja que o texto de "detalhe" ainda
+    tem "1,4 cm"/"1,8 cm" (nunca teve esse bug)."""
+    _preparar_admin_env(monkeypatch)
+
+    pedido = pedidos.criar_pedido(
+        itens=[{
+            "chave_preco": "medalha_2lados", "quantidade": 1, "produtoNome": "Personalizada",
+            "duasFaces": True, "cor": "prata",
+            "detalhe": "Medalha 2 lados · Prata · 1,4 cm",
+            "produtoNomeLado1": "", "modeloNomeLado1": "",
+            "imagemRecorteLado1": "data:image/png;base64,L1R",
+            "produtoNomeLado2": "", "modeloNomeLado2": "",
+            "imagemRecorteLado2": "data:image/png;base64,L2R",
+            # sem "tamanho" -- exatamente o pedido antigo que faltava esse campo
+        }],
+        subtotal=100.0, frete_descricao="Correios PAC — R$ 10,00", frete_preco=10.0,
+        cliente={"nome": "Maria Teste", "tipo_pessoa": "fisica", "documento": "11144477735",
+                 "telefone": "84999999999", "email": "maria@example.com"},
+        endereco={"cep": "59000000", "logradouro": "Rua Teste", "numero": "100", "complemento": "",
+                  "bairro": "Centro", "cidade": "Natal", "uf": "RN"},
+        status_inicial="pago",
+    )
+
+    csv = client.get(f"/admin/pedidos/{pedido['token']}/csv", auth=("admin", "segredo123")).get_data(as_text=True)
+    assert ";12;1" in csv
+    assert ";;1" not in csv
 
 
 def test_criar_pedido_envia_email_com_link_uma_vez(client):

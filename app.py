@@ -1217,11 +1217,13 @@ def _detalhe_formato_do_item(item: dict) -> str:
 
 # So pro CSV de producao (ver admin_pedido_csv) -- pedido do usuario:
 # a coluna "Modelo" ("Modelo 1", "Modelo 2"...) so precisa do numero, e
-# a coluna "Variação" so precisa do tamanho da medalha (12/16), "16"
-# fixo pro entremeio (1 ou 2 lados, sem cor -- pedido do usuario) ou
-# "(chaveiro)", em vez do texto por extenso usado no resto do site.
+# a coluna "Variação" so precisa do numero/tamanho do molde usado na
+# producao (12/16 pra medalha, 29 pro chaveiro -- 1 ou 2 lados, mesmo
+# molde fisico -- e 16 fixo pro entremeio, 1 ou 2 lados, sem cor), em
+# vez do texto por extenso usado no resto do site.
 _VARIACAO_CSV_LABEL = {
-    "12mm": "12", "16mm": "16", "chaveiro": "(chaveiro)",
+    "12mm": "12", "16mm": "16",
+    "chaveiro": "29", "chaveiro_2lados": "29",
     "entremeio": "16", "entremeio_2lados": "16",
 }
 
@@ -1233,6 +1235,15 @@ _VARIACAO_CSV_LABEL = {
 # nenhuma mudanca -- essa troca e´ so na hora de escrever o CSV.
 _VARIACAO_CSV_TAMANHO_MEDALHA_2LADOS = {"14mm": "12", "18mm": "16"}
 
+# Fallback pra pedido ANTIGO, de antes do campo "tamanho" comecar a ser
+# guardado no item persistido (ver conversa: pedido real do site com a
+# coluna Variação saindo em branco pra medalha_2lados 1,4cm, porque
+# esse pedido foi feito antes dessa correcao). Nesses casos o unico
+# lugar que ainda tem o tamanho e´ o texto de "detalhe" (guardado desde
+# sempre, nunca teve esse bug) -- procura o rotulo "1,4 cm"/"1,8 cm"
+# ali dentro em vez de devolver vazio.
+_VARIACAO_CSV_TAMANHO_MEDALHA_2LADOS_POR_DETALHE = {"1,4 cm": "12", "1,8 cm": "16"}
+
 
 def _modelo_csv_do_item(item: dict) -> str:
     nome = str(item.get("modeloNome", ""))
@@ -1241,13 +1252,16 @@ def _modelo_csv_do_item(item: dict) -> str:
 
 
 def _variacao_csv_do_item(item: dict) -> str:
-    """Chaveiro de 2 lados (unico formato duasFaces sem entrada em
-    _VARIACAO_CSV_LABEL) mantem o detalhe por extenso -- nenhum pedido
-    especifico do usuario mudando esse aqui."""
     chave_preco = str(item.get("chave_preco", ""))
     if chave_preco == "medalha_2lados":
         tamanho = str(item.get("tamanho", ""))
-        return _VARIACAO_CSV_TAMANHO_MEDALHA_2LADOS.get(tamanho, tamanho)
+        if tamanho in _VARIACAO_CSV_TAMANHO_MEDALHA_2LADOS:
+            return _VARIACAO_CSV_TAMANHO_MEDALHA_2LADOS[tamanho]
+        detalhe = str(item.get("detalhe", ""))
+        for rotulo, valor in _VARIACAO_CSV_TAMANHO_MEDALHA_2LADOS_POR_DETALHE.items():
+            if rotulo in detalhe:
+                return valor
+        return tamanho
     return _VARIACAO_CSV_LABEL.get(chave_preco, str(item.get("detalhe", "")))
 
 
