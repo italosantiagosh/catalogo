@@ -188,6 +188,20 @@ _COLUNAS_ADICIONAIS: list[tuple[str, str]] = [
     # status e manda e-mail). Reversivel a qualquer momento.
     ("arquivado", "INTEGER NOT NULL DEFAULT 0"),
     ("arquivado_em", "TEXT"),
+    # Marca que a limpeza de imagens personalizadas de pedido CANCELADO
+    # ja rodou pra esse pedido (ver app.py:_limpar_imagens_pedidos_
+    # cancelados) -- sem isso, a query da limpeza reprocessaria TODO
+    # pedido cancelado da historia do site a cada rodada do job, pra
+    # sempre (custo crescendo sem limite).
+    ("imagens_pedido_apagadas", "INTEGER NOT NULL DEFAULT 0"),
+    # 2o e-mail de avaliacao (mesmo conteudo do 1o, ver
+    # services/email.py:enviar_pedido_avaliacao), mandado
+    # AVALIACAO_SEGUIMENTO_DIAS_APOS_ENTREGA dias depois de "entregue"
+    # -- ver app.py:_enviar_seguimento_avaliacao_entregues. O 1o e´
+    # imediato (na hora que o status vira "entregue", reusa
+    # email_avaliacao_enviado/email_avaliacao_erro que ja existiam).
+    ("email_avaliacao_seguimento_enviado", "INTEGER NOT NULL DEFAULT 0"),
+    ("email_avaliacao_seguimento_erro", "TEXT"),
 ]
 
 # Fluxo de status depois de "pago" -- alteravel manualmente pelo painel
@@ -778,22 +792,34 @@ def marcar_email_upsell_enviado(token: str, *, erro: str | None) -> dict | None:
     return obter_pedido(token)
 
 
-def listar_pedidos_pagos_para_avaliacao(dias: int) -> list[dict]:
-    """Pedidos "pago" (ou ja adiante no fluxo -- faturado/enviado/entregue)
-    ha´ pelo menos `dias`, que ainda nao receberam o pedido de avaliacao
-    -- usado pelo job agendado em app.py (ver
-    services/email.py:enviar_pedido_avaliacao). Inclui os 4 status
-    porque o pedido pode ter avancado no fluxo antes dos 30 dias
-    passarem -- nao faz sentido esperar continuar "pago" especificamente."""
+def marcar_email_avaliacao_enviado(token: str, *, erro: str | None) -> dict | None:
+    """1o e-mail pedindo avaliacao, disparado NA HORA que o pedido vira
+    "entregue" (ver app.py:admin_pedido_status ->
+    services/email.py:enviar_pedido_avaliacao) -- garante que so manda
+    uma vez por pedido, mesmo se o formulario de status for reenviado
+    sem querer. O 2o e-mail (mesmo conteudo, alguns dias depois) usa o
+    par email_avaliacao_seguimento_enviado/erro abaixo, separado."""
+    with _conexao() as conexao:
+        conexao.execute(
+            "UPDATE pedidos SET email_avaliacao_enviado = 1, email_avaliacao_erro = ? WHERE token = ?",
+            (erro, token),
+        )
+    return obter_pedido(token)
+
+
+def listar_pedidos_entregues_para_seguimento_avaliacao(dias: int) -> list[dict]:
+    """Pedidos "entregue" ha´ pelo menos `dias` dias que ainda nao
+    receberam o 2o e-mail de avaliacao (mesmo conteudo do 1o, so que de
+    seguimento -- ver app.py:_enviar_seguimento_avaliacao_entregues)."""
     inicializar_db()
     limite = (datetime.now(timezone.utc) - timedelta(days=dias)).isoformat()
     with _conexao() as conexao:
         linhas = conexao.execute(
             """
             SELECT * FROM pedidos
-            WHERE status IN ('pago', 'faturado', 'enviado', 'entregue')
-                AND email_avaliacao_enviado = 0 AND pago_em <= ?
-            ORDER BY pago_em ASC
+            WHERE status = 'entregue' AND email_avaliacao_seguimento_enviado = 0
+                AND entregue_em <= ?
+            ORDER BY entregue_em ASC
             """,
             (limite,),
         ).fetchall()
@@ -805,13 +831,11 @@ def listar_pedidos_pagos_para_avaliacao(dias: int) -> list[dict]:
     return pedidos
 
 
-def marcar_email_avaliacao_enviado(token: str, *, erro: str | None) -> dict | None:
-    """E-mail pedindo avaliacao, disparado dias depois do pagamento (ver
-    listar_pedidos_pagos_para_avaliacao acima) -- garante que o job
-    agendado so manda uma vez por pedido."""
+def marcar_email_avaliacao_seguimento_enviado(token: str, *, erro: str | None) -> dict | None:
     with _conexao() as conexao:
         conexao.execute(
-            "UPDATE pedidos SET email_avaliacao_enviado = 1, email_avaliacao_erro = ? WHERE token = ?",
+            "UPDATE pedidos SET email_avaliacao_seguimento_enviado = 1, "
+            "email_avaliacao_seguimento_erro = ? WHERE token = ?",
             (erro, token),
         )
     return obter_pedido(token)
@@ -1132,6 +1156,69 @@ def cancelar_pedido(token: str) -> dict | None:
             (agora, token),
         )
     return obter_pedido(token)
+
+
+def reativar_pedido_cancelado(token: str) -> dict | None:
+    """Reaproveita um pedido CANCELADO (ver e-mail de recuperacao,
+    services/email.py:enviar_pedido_cancelado) -- volta pra "pendente"
+    com os MESMOS itens/foto personalizada, pronto pra gerar um novo
+    link de pagamento ou boleto (ver app.py:pedido_reativar_pix/
+    pedido_reativar_boleto). So funciona se ainda estiver "cancelado"
+    (idempotente -- se ja foi pago ou reativado por outro clique/aba,
+    nao mexe em nada, devolve como esta´).
+
+    Reseta criado_em e os flags de lembrete/cancelamento pro pedido se
+    comportar como um "pendente" novinho pros jobs agendados (ver
+    listar_pedidos_pendentes_para_lembrete/cancelar) -- sem isso, esses
+    jobs veriam email_lembrete_enviado_em de dias atras e cancelariam
+    de novo no proximo ciclo, quase na hora."""
+    pedido = obter_pedido(token)
+    if pedido is None or pedido["status"] != "cancelado":
+        return pedido
+    agora = datetime.now(timezone.utc).isoformat()
+    with _conexao() as conexao:
+        conexao.execute(
+            """
+            UPDATE pedidos SET
+                status = 'pendente', criado_em = ?, cancelado_em = NULL,
+                email_lembrete_enviado = 0, email_lembrete_enviado_em = NULL,
+                email_cancelado_enviado = 0
+            WHERE token = ?
+            """,
+            (agora, token),
+        )
+    return obter_pedido(token)
+
+
+def listar_pedidos_cancelados_para_limpar_imagens(dias: int) -> list[dict]:
+    """Pedidos "cancelado" ha´ pelo menos `dias` dias, cujas imagens
+    personalizadas (se tiver) ainda nao foram limpas -- usado pelo job
+    agendado (ver app.py:_limpar_imagens_pedidos_cancelados). Um pedido
+    REATIVADO (ver reativar_pedido_cancelado acima) sai do status
+    "cancelado" e some sozinho dessa lista, protegendo a imagem."""
+    inicializar_db()
+    limite = (datetime.now(timezone.utc) - timedelta(days=dias)).isoformat()
+    with _conexao() as conexao:
+        linhas = conexao.execute(
+            """
+            SELECT * FROM pedidos
+            WHERE status = 'cancelado' AND imagens_pedido_apagadas = 0
+                AND cancelado_em IS NOT NULL AND cancelado_em <= ?
+            ORDER BY cancelado_em ASC
+            """,
+            (limite,),
+        ).fetchall()
+    pedidos = []
+    for linha in linhas:
+        pedido = dict(linha)
+        pedido["itens"] = json.loads(pedido["itens"])
+        pedidos.append(pedido)
+    return pedidos
+
+
+def marcar_imagens_pedido_apagadas(token: str) -> None:
+    with _conexao() as conexao:
+        conexao.execute("UPDATE pedidos SET imagens_pedido_apagadas = 1 WHERE token = ?", (token,))
 
 
 def excluir_pedido(token: str, *, motivo: str) -> dict | None:

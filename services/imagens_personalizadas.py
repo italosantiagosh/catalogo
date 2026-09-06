@@ -185,3 +185,24 @@ def purgar_recortes_usados_antigos(dias: int = 30) -> int:
             (limite,),
         )
         return cursor.rowcount
+
+
+def apagar_imagens(tokens: list[str]) -> int:
+    """Apaga tokens especificos (preview e/ou recorte), direto, sem
+    depender de idade/tipo/uso -- usado quando ja se sabe com certeza
+    que a imagem nao serve mais pra nada (ex: pedido CANCELADO ha mais
+    de N dias que ninguem reativou, ver app.py:
+    _limpar_imagens_pedidos_cancelados). Token que ja nao existe (ou
+    nunca existiu) e´ simplesmente ignorado. Devolve quantas linhas
+    foram removidas do SQLite."""
+    if not tokens:
+        return 0
+    inicializar_db()
+    if armazenamento_r2.configurado():
+        armazenamento_r2.apagar(tokens)
+    with _conexao() as conexao:
+        marcadores = ",".join("?" * len(tokens))
+        cursor = conexao.execute(
+            f"DELETE FROM imagens_personalizadas WHERE token IN ({marcadores})", tokens
+        )
+        return cursor.rowcount

@@ -556,6 +556,61 @@ def test_taxa_cancelamento_ignora_lead_whatsapp(monkeypatch, tmp_path):
     assert resultado["taxa_pct"] == 50.0
 
 
+def test_reativar_pedido_cancelado_volta_pra_pendente_resetando_flags(monkeypatch, tmp_path):
+    _reapontar_db(monkeypatch, tmp_path)
+    criado = pedidos.criar_pedido(**_pedido_exemplo())
+    pedidos.marcar_email_lembrete_enviado(criado["token"], erro=None)
+    pedidos.cancelar_pedido(criado["token"])
+    pedidos.marcar_email_cancelado_enviado(criado["token"], erro=None)
+
+    reativado = pedidos.reativar_pedido_cancelado(criado["token"])
+
+    assert reativado["status"] == "pendente"
+    assert reativado["cancelado_em"] is None
+    assert reativado["email_lembrete_enviado"] == 0
+    assert reativado["email_lembrete_enviado_em"] is None
+    assert reativado["email_cancelado_enviado"] == 0
+    # mesmos itens de sempre -- nada se perde na reativacao
+    assert reativado["itens"] == criado["itens"]
+
+
+def test_reativar_pedido_ja_pago_nao_mexe_em_nada(monkeypatch, tmp_path):
+    _reapontar_db(monkeypatch, tmp_path)
+    criado = pedidos.criar_pedido(**_pedido_exemplo())
+    pedidos.marcar_pago(criado["token"], forma_pagamento="pix", parcelas=None, valor_pago=1.0, transaction_nsu="tx")
+
+    resultado = pedidos.reativar_pedido_cancelado(criado["token"])
+    assert resultado["status"] == "pago"
+
+
+def test_listar_pedidos_cancelados_para_limpar_imagens(monkeypatch, tmp_path):
+    _reapontar_db(monkeypatch, tmp_path)
+    recente = pedidos.criar_pedido(**_pedido_exemplo())
+    pedidos.cancelar_pedido(recente["token"])  # cancelado agora -- ainda dentro do prazo
+
+    antigo = pedidos.criar_pedido(**_pedido_exemplo())
+    pedidos.cancelar_pedido(antigo["token"])
+    passado = (datetime.now(timezone.utc) - timedelta(days=10)).isoformat()
+    with pedidos._conexao() as conexao:
+        conexao.execute("UPDATE pedidos SET cancelado_em = ? WHERE token = ?", (passado, antigo["token"]))
+
+    ja_limpo = pedidos.criar_pedido(**_pedido_exemplo())
+    pedidos.cancelar_pedido(ja_limpo["token"])
+    with pedidos._conexao() as conexao:
+        conexao.execute("UPDATE pedidos SET cancelado_em = ? WHERE token = ?", (passado, ja_limpo["token"]))
+    pedidos.marcar_imagens_pedido_apagadas(ja_limpo["token"])
+
+    resultado = {p["token"] for p in pedidos.listar_pedidos_cancelados_para_limpar_imagens(7)}
+    assert resultado == {antigo["token"]}
+
+
+def test_marcar_imagens_pedido_apagadas(monkeypatch, tmp_path):
+    _reapontar_db(monkeypatch, tmp_path)
+    criado = pedidos.criar_pedido(**_pedido_exemplo())
+    pedidos.marcar_imagens_pedido_apagadas(criado["token"])
+    assert pedidos.obter_pedido(criado["token"])["imagens_pedido_apagadas"] == 1
+
+
 def test_formas_pagamento_periodo_normaliza_rotulos(monkeypatch, tmp_path):
     _reapontar_db(monkeypatch, tmp_path)
     pix = pedidos.criar_pedido(**_pedido_exemplo(subtotal=100.0, frete_preco=0.0))

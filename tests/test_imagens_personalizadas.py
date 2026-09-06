@@ -60,6 +60,22 @@ def test_purgar_imagens_antigas_preserva_imagem_usada(client):
     assert imagens_personalizadas.obter_imagem(token_nao_usado) is None
 
 
+def test_apagar_imagens_remove_tokens_especificos(client):
+    token1 = imagens_personalizadas.salvar_imagem(b"a", "image/png", "a.png")
+    token2 = imagens_personalizadas.salvar_imagem(b"b", "image/png", "b.png")
+    imagens_personalizadas.marcar_imagem_usada(token1)  # usada nao protege dessa funcao
+
+    removidas = imagens_personalizadas.apagar_imagens([token1, "token-que-nao-existe"])
+
+    assert removidas == 1
+    assert imagens_personalizadas.obter_imagem(token1) is None
+    assert imagens_personalizadas.obter_imagem(token2) is not None  # nao pedido, nao mexeu
+
+
+def test_apagar_imagens_lista_vazia_nao_faz_nada(client):
+    assert imagens_personalizadas.apagar_imagens([]) == 0
+
+
 class _R2Fake:
     """Simula o Cloudflare R2 em memoria -- usado pra testar o caminho
     "R2 configurado" de services/imagens_personalizadas.py sem precisar
@@ -114,6 +130,16 @@ def test_purgar_imagens_antigas_apaga_do_r2_tambem(client, r2_fake):
     assert token in r2_fake.objetos
 
     removidas = imagens_personalizadas.purgar_imagens_antigas(dias=0)
+
+    assert removidas == 1
+    assert token not in r2_fake.objetos
+
+
+def test_apagar_imagens_apaga_do_r2_tambem(client, r2_fake):
+    token = imagens_personalizadas.salvar_imagem(b"a", "image/png", "a.png")
+    assert token in r2_fake.objetos
+
+    removidas = imagens_personalizadas.apagar_imagens([token])
 
     assert removidas == 1
     assert token not in r2_fake.objetos
@@ -275,6 +301,73 @@ def test_criar_pedido_com_imagem_personalizada_marca_como_usada(client):
     # mesmo com dias=0 (ver test_purgar_imagens_antigas_preserva_imagem_usada)
     imagens_personalizadas.purgar_imagens_antigas(dias=0)
     assert imagens_personalizadas.obter_imagem(token) is not None
+
+
+def test_limpar_imagens_pedidos_cancelados_apaga_so_apos_o_prazo(client):
+    """ver app.py:_limpar_imagens_pedidos_cancelados -- so mexe em
+    pedido CANCELADO ha mais de RETENCAO_IMAGENS_PEDIDO_CANCELADO_DIAS
+    (config.py, default 7), pra dar tempo do e-mail de recuperacao
+    ainda funcionar (ver conversa)."""
+    import app as app_module
+
+    token_preview = imagens_personalizadas.salvar_imagem(b"previa", "image/png", "previa.png")
+    token_recorte = imagens_personalizadas.salvar_imagem(b"recorte", "image/png", "recorte.png")
+    corpo = _corpo_valido(itens=[{
+        "chave_preco": "16mm", "quantidade": 10, "produtoNome": "Personalizada",
+        "formato": "medalha", "tamanho": "16mm",
+        "imagem": f"/imagem-personalizada/{token_preview}",
+        "imagemRecorte": f"/imagem-personalizada/{token_recorte}",
+    }])
+    with patch("app.criar_link_pagamento", return_value={"url": "https://checkout.infinitepay.io/abc"}):
+        criado = client.post("/api/pedido/criar", json=corpo).get_json()
+
+    pedidos.cancelar_pedido(criado["token"])
+
+    # ainda dentro do prazo -- job nao mexe em nada
+    app_module._limpar_imagens_pedidos_cancelados()
+    assert imagens_personalizadas.obter_imagem(token_preview) is not None
+    assert imagens_personalizadas.obter_imagem(token_recorte) is not None
+
+    from datetime import datetime, timedelta, timezone
+    passado = (datetime.now(timezone.utc) - timedelta(days=8)).isoformat()
+    with pedidos._conexao() as conexao:
+        conexao.execute("UPDATE pedidos SET cancelado_em = ? WHERE token = ?", (passado, criado["token"]))
+
+    app_module._limpar_imagens_pedidos_cancelados()
+    assert imagens_personalizadas.obter_imagem(token_preview) is None
+    assert imagens_personalizadas.obter_imagem(token_recorte) is None
+    assert pedidos.obter_pedido(criado["token"])["imagens_pedido_apagadas"] == 1
+
+    # roda de novo -- idempotente, nao quebra com token ja apagado
+    app_module._limpar_imagens_pedidos_cancelados()
+
+
+def test_limpar_imagens_pedidos_cancelados_ignora_pedido_reativado(client):
+    """Reativar (ver services/pedidos.py:reativar_pedido_cancelado) tira
+    o pedido do status "cancelado" -- some sozinho da lista de limpeza,
+    protegendo a imagem mesmo depois do prazo."""
+    import app as app_module
+
+    token_recorte = imagens_personalizadas.salvar_imagem(b"recorte", "image/png", "recorte.png")
+    corpo = _corpo_valido(itens=[{
+        "chave_preco": "16mm", "quantidade": 10, "produtoNome": "Personalizada",
+        "formato": "medalha", "tamanho": "16mm",
+        "imagem": f"/imagem-personalizada/{token_recorte}",
+        "imagemRecorte": f"/imagem-personalizada/{token_recorte}",
+    }])
+    with patch("app.criar_link_pagamento", return_value={"url": "https://checkout.infinitepay.io/abc"}):
+        criado = client.post("/api/pedido/criar", json=corpo).get_json()
+
+    pedidos.cancelar_pedido(criado["token"])
+    from datetime import datetime, timedelta, timezone
+    passado = (datetime.now(timezone.utc) - timedelta(days=8)).isoformat()
+    with pedidos._conexao() as conexao:
+        conexao.execute("UPDATE pedidos SET cancelado_em = ? WHERE token = ?", (passado, criado["token"]))
+
+    pedidos.reativar_pedido_cancelado(criado["token"])
+    app_module._limpar_imagens_pedidos_cancelados()
+
+    assert imagens_personalizadas.obter_imagem(token_recorte) is not None
 
 
 def test_carrinho_antigo_com_data_uri_continua_funcionando(client):

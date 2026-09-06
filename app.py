@@ -65,7 +65,7 @@ from apscheduler.schedulers.background import BackgroundScheduler
 from config import (
     ADMIN_PASSWORD,
     ADMIN_USER,
-    AVALIACAO_DIAS_APOS_PAGAMENTO,
+    AVALIACAO_SEGUIMENTO_DIAS_APOS_ENTREGA,
     CANCELAMENTO_MINUTOS_APOS_LEMBRETE,
     CANONICAL_DOMAIN,
     CATEGORIA_PERSONALIZADOS,
@@ -86,6 +86,7 @@ from config import (
     PRODUTOS_PERSONALIZADOS,
     PRODUTOS_TITULO_ANTIGO,
     PROVA_SOCIAL,
+    RETENCAO_IMAGENS_PEDIDO_CANCELADO_DIAS,
     SECRET_KEY,
     UPSELL_HORAS_APOS_PAGAMENTO,
     VIDEO_APRESENTACAO_URL,
@@ -149,13 +150,15 @@ from services.pedidos import (
     limpar_codigos_verificacao_expirados,
     listar_pedidos,
     listar_pedidos_boleto_pendentes,
-    listar_pedidos_pagos_para_avaliacao,
+    listar_pedidos_cancelados_para_limpar_imagens,
+    listar_pedidos_entregues_para_seguimento_avaliacao,
     listar_pedidos_pagos_para_upsell,
     listar_pedidos_pendentes_para_cancelar,
     listar_pedidos_pendentes_para_lembrete,
     listar_pedidos_por_documento,
     marcar_boleto_erro,
     marcar_email_avaliacao_enviado,
+    marcar_email_avaliacao_seguimento_enviado,
     marcar_email_cancelado_enviado,
     marcar_email_enviado,
     marcar_email_lembrete_enviado,
@@ -163,6 +166,7 @@ from services.pedidos import (
     marcar_email_nota_fiscal_enviado,
     marcar_email_pedido_enviado_enviado,
     marcar_email_upsell_enviado,
+    marcar_imagens_pedido_apagadas,
     marcar_notificacao_venda_enviada,
     marcar_pago,
     marcar_tiny_sincronizado,
@@ -172,6 +176,7 @@ from services.pedidos import (
     previsoes_do_pedido,
     produtos_mais_vendidos,
     quantidade_por_material,
+    reativar_pedido_cancelado,
     resumo_vendas_periodo,
     salvar_dados_boleto_inter,
     taxa_cancelamento,
@@ -181,6 +186,7 @@ from services.pedidos import (
     verificar_codigo_documento,
 )
 from services.imagens_personalizadas import (
+    apagar_imagens,
     marcar_imagem_usada,
     obter_imagem,
     purgar_imagens_antigas,
@@ -1358,6 +1364,25 @@ def _marcar_imagem_personalizada_usada_se_aplicavel(valor: str) -> None:
         marcar_imagem_usada(valor[len(_PREFIXO_IMAGEM_PERSONALIZADA):])
 
 
+_CAMPOS_IMAGEM_PERSONALIZADA_ITEM = (
+    "imagem", "imagemRecorte", "imagemLado1", "imagemRecorteLado1", "imagemLado2", "imagemRecorteLado2",
+)
+
+
+def _tokens_imagens_personalizadas_do_pedido(pedido: dict) -> list[str]:
+    """Junta os tokens de TODAS as imagens personalizadas (previa e
+    recorte, dos 2 lados se for duasFaces) referenciadas pelos itens de
+    um pedido -- usado por _limpar_imagens_pedidos_cancelados abaixo pra
+    saber exatamente o que apagar."""
+    tokens = []
+    for item in pedido["itens"]:
+        for campo in _CAMPOS_IMAGEM_PERSONALIZADA_ITEM:
+            valor = str(item.get(campo) or "")
+            if valor.startswith(_PREFIXO_IMAGEM_PERSONALIZADA):
+                tokens.append(valor[len(_PREFIXO_IMAGEM_PERSONALIZADA):])
+    return tokens
+
+
 def _itens_com_descricao_do_corpo(dados: dict) -> list[dict]:
     """Mesma validacao de _itens_validos_do_corpo, mas guarda tambem
     campos legiveis (nome do produto/modelo/variacao/imagem) pra exibir
@@ -2415,6 +2440,9 @@ def admin_pedido_status(token: str):
 
     if novo_status == "enviado" and pedido_antes["status"] != "enviado":
         _reenviar_email_pedido_enviado(token)
+
+    if novo_status == "entregue" and pedido_antes["status"] != "entregue":
+        _enviar_email_avaliacao(token)
 
     # dispara so na PRIMEIRA vez que o link e´ preenchido (nao dispara
     # de novo se o admin so corrigir o link depois, ver conversa: "se
@@ -3576,11 +3604,11 @@ def _enviar_upsell_pedidos_pagos() -> None:
 
 def _produto_para_avaliacao_do_pedido(pedido: dict) -> dict | None:
     """Escolhe um santo do pedido pra pedir avaliacao (ver
-    _enviar_pedidos_para_avaliacao abaixo) -- o primeiro item com um
-    produtoId valido no catalogo atual (itens de medalha personalizada
-    nao tem produtoId, e um produto pode ter sido removido do catalogo
-    desde a compra). Devolve None se nenhum item do pedido tiver um
-    produto valido hoje."""
+    _enviar_email_avaliacao abaixo) -- o primeiro item com um produtoId
+    valido no catalogo atual (itens de medalha personalizada nao tem
+    produtoId, e um produto pode ter sido removido do catalogo desde a
+    compra). Devolve None se nenhum item do pedido tiver um produto
+    valido hoje."""
     for item in pedido["itens"]:
         produto_id = item.get("produtoId")
         if not produto_id:
@@ -3591,27 +3619,54 @@ def _produto_para_avaliacao_do_pedido(pedido: dict) -> dict | None:
     return None
 
 
-def _enviar_pedidos_para_avaliacao() -> None:
+def _enviar_email_avaliacao(token: str) -> str | None:
+    """Manda o e-mail pedindo avaliacao (ver services/email.py:
+    enviar_pedido_avaliacao, ja convida a seguir/marcar @novedjulho no
+    Instagram tambem) pra um dos santos do pedido (ver
+    _produto_para_avaliacao_do_pedido) -- chamado NA HORA que o pedido
+    vira "entregue" (ver admin_pedido_status abaixo), sem prazo de
+    espera (pedido do usuario: faz mais sentido pedir depois que o
+    cliente RECEBEU a peca do que so depois que pagou). Sem produto
+    valido pra linkar, so marca como processado sem mandar e-mail
+    vazio. Devolve None se deu certo (ou nao havia produto pra linkar),
+    ou uma mensagem de erro."""
+    pedido = obter_pedido(token)
+    if pedido is None:
+        return "Pedido não encontrado."
+    produto = _produto_para_avaliacao_do_pedido(pedido)
+    if produto is None:
+        marcar_email_avaliacao_enviado(token, erro=None)
+        return None
+    try:
+        url_produto = url_for("produto", produto_id=produto["id"], _external=True) + "#avaliacoes"
+        resultado_email = enviar_pedido_avaliacao(pedido, produto["nome"], url_produto)
+    except Exception as exc:  # nunca deixa a mudanca de status numa tela de erro generica
+        resultado_email = {"erro": f"Erro inesperado ao enviar: {exc}"}
+    marcar_email_avaliacao_enviado(token, erro=resultado_email.get("erro"))
+    return resultado_email.get("erro")
+
+
+def _enviar_seguimento_avaliacao_entregues() -> None:
     """Job agendado (ver _iniciar_scheduler_jobs abaixo) -- roda a cada
-    10min, pede avaliacao por e-mail AVALIACAO_DIAS_APOS_PAGAMENTO dias
-    depois do pagamento confirmado, linkando pra secao de avaliacoes de
-    um dos santos do pedido (ver _produto_para_avaliacao_do_pedido).
-    Sem produto valido pra linkar, so marca como processado sem mandar
-    e-mail vazio."""
+    10min, manda de novo o MESMO e-mail de avaliacao (ver
+    _enviar_email_avaliacao acima) AVALIACAO_SEGUIMENTO_DIAS_APOS_ENTREGA
+    dias depois da ENTREGA, pra quem ainda nao avaliou -- reforco unico
+    (ver conversa: so esses 2 e-mails de avaliacao no total por pedido,
+    o imediato e esse)."""
     if not CANONICAL_DOMAIN:
         return
-    candidatos = listar_pedidos_pagos_para_avaliacao(AVALIACAO_DIAS_APOS_PAGAMENTO)
+    candidatos = listar_pedidos_entregues_para_seguimento_avaliacao(AVALIACAO_SEGUIMENTO_DIAS_APOS_ENTREGA)
     if not candidatos:
         return
     with app.test_request_context(base_url=f"https://{CANONICAL_DOMAIN}"):
         for pedido in candidatos:
             produto = _produto_para_avaliacao_do_pedido(pedido)
             if produto is None:
-                marcar_email_avaliacao_enviado(pedido["token"], erro=None)
+                marcar_email_avaliacao_seguimento_enviado(pedido["token"], erro=None)
                 continue
             url_produto = url_for("produto", produto_id=produto["id"], _external=True) + "#avaliacoes"
             resultado_email = enviar_pedido_avaliacao(pedido, produto["nome"], url_produto)
-            marcar_email_avaliacao_enviado(pedido["token"], erro=resultado_email.get("erro"))
+            marcar_email_avaliacao_seguimento_enviado(pedido["token"], erro=resultado_email.get("erro"))
 
 
 def _cancelar_pedidos_abandonados() -> None:
@@ -3693,15 +3748,35 @@ def _limpar_imagens_personalizadas_antigas() -> None:
     purgar_imagens_antigas(dias=7)
 
 
+def _limpar_imagens_pedidos_cancelados() -> None:
+    """Job agendado (ver _iniciar_scheduler_jobs abaixo) -- roda 1x por
+    dia, apaga as imagens personalizadas (previa + recorte) de pedidos
+    CANCELADOS ha´ mais de RETENCAO_IMAGENS_PEDIDO_CANCELADO_DIAS
+    (config.py) que ninguem reativou (ver services/pedidos.py:
+    reativar_pedido_cancelado, usado pelo e-mail de recuperacao) --
+    depois desse prazo a chance de recuperacao e´ baixa e a imagem so
+    ocupa espaco a toa (ver conversa)."""
+    for pedido in listar_pedidos_cancelados_para_limpar_imagens(RETENCAO_IMAGENS_PEDIDO_CANCELADO_DIAS):
+        tokens = _tokens_imagens_personalizadas_do_pedido(pedido)
+        if tokens:
+            apagar_imagens(tokens)
+        marcar_imagens_pedido_apagadas(pedido["token"])
+
+
 def _iniciar_scheduler_jobs() -> None:
     scheduler = BackgroundScheduler(timezone="UTC")
     scheduler.add_job(_enviar_lembretes_pedidos_pendentes, "interval", minutes=10, id="lembretes_pedidos_pendentes")
     scheduler.add_job(_cancelar_pedidos_abandonados, "interval", minutes=10, id="cancelar_pedidos_abandonados")
     scheduler.add_job(_enviar_upsell_pedidos_pagos, "interval", minutes=10, id="upsell_pedidos_pagos")
-    scheduler.add_job(_enviar_pedidos_para_avaliacao, "interval", minutes=10, id="pedidos_para_avaliacao")
+    scheduler.add_job(
+        _enviar_seguimento_avaliacao_entregues, "interval", minutes=10, id="seguimento_avaliacao_entregues"
+    )
     scheduler.add_job(_verificar_boletos_inter_pendentes, "interval", minutes=10, id="verificar_boletos_inter")
     scheduler.add_job(
         _limpar_imagens_personalizadas_antigas, "interval", hours=24, id="limpar_imagens_personalizadas"
+    )
+    scheduler.add_job(
+        _limpar_imagens_pedidos_cancelados, "interval", hours=24, id="limpar_imagens_pedidos_cancelados"
     )
     # Codigos de /meus-pedidos vencem em 10 minutos (ver services/pedidos.py:
     # _CODIGO_VERIFICACAO_VALIDADE_MINUTOS) -- limpa a cada hora pra tabela

@@ -6,7 +6,7 @@ from unittest.mock import patch
 import pytest
 
 import services.pedidos as pedidos
-from app import app, _enviar_pedidos_para_avaliacao
+from app import app, _enviar_seguimento_avaliacao_entregues
 
 
 @pytest.fixture
@@ -32,34 +32,36 @@ def _corpo_valido(**overrides):
     return base
 
 
-def _pagar_e_envelhecer(token: str, dias: int) -> None:
-    pedidos.marcar_pago(token, forma_pagamento="pix", parcelas=None, valor_pago=1.0, transaction_nsu="tx-abc")
+def _preparar_admin(monkeypatch):
+    import app as app_module
+
+    monkeypatch.setattr(app_module, "ADMIN_USER", "admin")
+    monkeypatch.setattr(app_module, "ADMIN_PASSWORD", "segredo123")
+
+
+def _entregar_e_envelhecer(token: str, dias: int) -> None:
+    pedidos.atualizar_status(token, "entregue")
     passado = (datetime.now(timezone.utc) - timedelta(days=dias)).isoformat()
     with pedidos._conexao() as conexao:
-        conexao.execute("UPDATE pedidos SET pago_em = ? WHERE token = ?", (passado, token))
+        conexao.execute("UPDATE pedidos SET entregue_em = ? WHERE token = ?", (passado, token))
 
 
-def test_sem_canonical_domain_nao_faz_nada(client, monkeypatch):
-    import app as app_module
+# ---- 1o e-mail: na hora que o status vira "entregue" ----
 
-    monkeypatch.setattr(app_module, "CANONICAL_DOMAIN", "")
-    with patch("app.enviar_pedido_avaliacao") as mock_email:
-        _enviar_pedidos_para_avaliacao()
-    mock_email.assert_not_called()
-
-
-def test_manda_pedido_de_avaliacao_e_marca_uma_vez(client, monkeypatch):
-    import app as app_module
-
-    monkeypatch.setattr(app_module, "CANONICAL_DOMAIN", "atacado.lojanovedejulho.com.br")
-
+def test_marcar_entregue_dispara_email_de_avaliacao_na_hora(client, monkeypatch):
+    _preparar_admin(monkeypatch)
     with patch("app.criar_link_pagamento", return_value={"url": "https://checkout.infinitepay.io/abc"}):
         criado = client.post("/api/pedido/criar", json=_corpo_valido()).get_json()
-    _pagar_e_envelhecer(criado["token"], 31)
+    pedidos.marcar_pago(criado["token"], forma_pagamento="pix", parcelas=None, valor_pago=1.0, transaction_nsu="tx")
+    pedidos.atualizar_status(criado["token"], "faturado")
+    pedidos.atualizar_status(criado["token"], "enviado")
 
     with patch("app.enviar_pedido_avaliacao", return_value={"ok": True}) as mock_email:
-        _enviar_pedidos_para_avaliacao()
-
+        resposta = client.post(
+            f"/admin/pedidos/{criado['token']}/status", data={"status": "entregue"},
+            auth=("admin", "segredo123"),
+        )
+    assert resposta.status_code == 302
     assert mock_email.call_count == 1
     produto_nome = mock_email.call_args.args[1]
     url_produto = mock_email.call_args.args[2]
@@ -70,31 +72,30 @@ def test_manda_pedido_de_avaliacao_e_marca_uma_vez(client, monkeypatch):
     pedido = pedidos.obter_pedido(criado["token"])
     assert pedido["email_avaliacao_enviado"] == 1
 
-    # rodar de novo nao deve mandar duas vezes
+
+def test_marcar_entregue_de_novo_nao_reenvia(client, monkeypatch):
+    """Reenviar o mesmo formulario de status (sem mudar de "entregue"
+    pra "entregue") nao deve mandar o e-mail de novo."""
+    _preparar_admin(monkeypatch)
+    with patch("app.criar_link_pagamento", return_value={"url": "https://checkout.infinitepay.io/abc"}):
+        criado = client.post("/api/pedido/criar", json=_corpo_valido()).get_json()
+    pedidos.marcar_pago(criado["token"], forma_pagamento="pix", parcelas=None, valor_pago=1.0, transaction_nsu="tx")
+
+    with patch("app.enviar_pedido_avaliacao", return_value={"ok": True}):
+        client.post(
+            f"/admin/pedidos/{criado['token']}/status", data={"status": "entregue"},
+            auth=("admin", "segredo123"),
+        )
     with patch("app.enviar_pedido_avaliacao") as mock_email2:
-        _enviar_pedidos_para_avaliacao()
+        client.post(
+            f"/admin/pedidos/{criado['token']}/status", data={"status": "entregue"},
+            auth=("admin", "segredo123"),
+        )
     mock_email2.assert_not_called()
 
 
-def test_pedido_recente_ainda_nao_recebe_pedido_de_avaliacao(client, monkeypatch):
-    import app as app_module
-
-    monkeypatch.setattr(app_module, "CANONICAL_DOMAIN", "atacado.lojanovedejulho.com.br")
-
-    with patch("app.criar_link_pagamento", return_value={"url": "https://checkout.infinitepay.io/abc"}):
-        criado = client.post("/api/pedido/criar", json=_corpo_valido()).get_json()
-    _pagar_e_envelhecer(criado["token"], 2)
-
-    with patch("app.enviar_pedido_avaliacao") as mock_email:
-        _enviar_pedidos_para_avaliacao()
-    mock_email.assert_not_called()
-
-
 def test_pedido_sem_produto_valido_marca_processado_sem_email(client, monkeypatch):
-    import app as app_module
-
-    monkeypatch.setattr(app_module, "CANONICAL_DOMAIN", "atacado.lojanovedejulho.com.br")
-
+    _preparar_admin(monkeypatch)
     with patch("app.criar_link_pagamento", return_value={"url": "https://checkout.infinitepay.io/abc"}):
         criado = client.post(
             "/api/pedido/criar",
@@ -102,28 +103,61 @@ def test_pedido_sem_produto_valido_marca_processado_sem_email(client, monkeypatc
                 {"chave_preco": "16mm", "quantidade": 10, "produtoNome": "Personalizada"}
             ]),
         ).get_json()
-    _pagar_e_envelhecer(criado["token"], 31)
+    pedidos.marcar_pago(criado["token"], forma_pagamento="pix", parcelas=None, valor_pago=1.0, transaction_nsu="tx")
 
     with patch("app.enviar_pedido_avaliacao") as mock_email:
-        _enviar_pedidos_para_avaliacao()
+        client.post(
+            f"/admin/pedidos/{criado['token']}/status", data={"status": "entregue"},
+            auth=("admin", "segredo123"),
+        )
     mock_email.assert_not_called()
 
     pedido = pedidos.obter_pedido(criado["token"])
     assert pedido["email_avaliacao_enviado"] == 1
 
 
-def test_pedido_enviado_tambem_recebe_pedido_de_avaliacao(client, monkeypatch):
-    """Nao precisa continuar 'pago' -- se ja avancou pro fluxo (faturado/
-    enviado/entregue) antes dos dias passarem, ainda conta."""
+# ---- 2o e-mail (seguimento): N dias depois da entrega ----
+
+def test_sem_canonical_domain_nao_faz_nada(client, monkeypatch):
+    import app as app_module
+
+    monkeypatch.setattr(app_module, "CANONICAL_DOMAIN", "")
+    with patch("app.enviar_pedido_avaliacao") as mock_email:
+        _enviar_seguimento_avaliacao_entregues()
+    mock_email.assert_not_called()
+
+
+def test_manda_seguimento_e_marca_uma_vez(client, monkeypatch):
     import app as app_module
 
     monkeypatch.setattr(app_module, "CANONICAL_DOMAIN", "atacado.lojanovedejulho.com.br")
 
     with patch("app.criar_link_pagamento", return_value={"url": "https://checkout.infinitepay.io/abc"}):
         criado = client.post("/api/pedido/criar", json=_corpo_valido()).get_json()
-    _pagar_e_envelhecer(criado["token"], 31)
-    pedidos.atualizar_status(criado["token"], "faturado")
+    _entregar_e_envelhecer(criado["token"], 8)
 
     with patch("app.enviar_pedido_avaliacao", return_value={"ok": True}) as mock_email:
-        _enviar_pedidos_para_avaliacao()
+        _enviar_seguimento_avaliacao_entregues()
+
     assert mock_email.call_count == 1
+    pedido = pedidos.obter_pedido(criado["token"])
+    assert pedido["email_avaliacao_seguimento_enviado"] == 1
+
+    # rodar de novo nao deve mandar duas vezes
+    with patch("app.enviar_pedido_avaliacao") as mock_email2:
+        _enviar_seguimento_avaliacao_entregues()
+    mock_email2.assert_not_called()
+
+
+def test_entrega_recente_ainda_nao_recebe_seguimento(client, monkeypatch):
+    import app as app_module
+
+    monkeypatch.setattr(app_module, "CANONICAL_DOMAIN", "atacado.lojanovedejulho.com.br")
+
+    with patch("app.criar_link_pagamento", return_value={"url": "https://checkout.infinitepay.io/abc"}):
+        criado = client.post("/api/pedido/criar", json=_corpo_valido()).get_json()
+    _entregar_e_envelhecer(criado["token"], 2)
+
+    with patch("app.enviar_pedido_avaliacao") as mock_email:
+        _enviar_seguimento_avaliacao_entregues()
+    mock_email.assert_not_called()

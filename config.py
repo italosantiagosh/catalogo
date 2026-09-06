@@ -185,10 +185,16 @@ CANCELAMENTO_MINUTOS_APOS_LEMBRETE = int(os.environ.get("CANCELAMENTO_MINUTOS_AP
 # proximo pedido) -- ver app.py:_enviar_upsell_pedidos_pagos.
 UPSELL_HORAS_APOS_PAGAMENTO = int(os.environ.get("UPSELL_HORAS_APOS_PAGAMENTO", "24"))
 
-# Quanto tempo esperar depois do pagamento antes de pedir avaliacao por
-# e-mail (link pra um dos santos do pedido) -- ver
-# app.py:_enviar_pedidos_para_avaliacao.
-AVALIACAO_DIAS_APOS_PAGAMENTO = int(os.environ.get("AVALIACAO_DIAS_APOS_PAGAMENTO", "30"))
+# Pedido de avaliacao por e-mail (link pra um dos santos do pedido, ver
+# services/email.py:enviar_pedido_avaliacao) -- o 1o vai NA HORA que o
+# pedido vira "entregue" (ver app.py:admin_pedido_status), sem prazo de
+# espera (faz mais sentido pedir depois que o cliente RECEBEU a peca do
+# que so depois que pagou). Esse aqui e´ so o 2o e-mail (mesmo
+# conteudo, um lembrete), quantos dias depois da ENTREGA -- ver
+# app.py:_enviar_seguimento_avaliacao_entregues.
+AVALIACAO_SEGUIMENTO_DIAS_APOS_ENTREGA = int(
+    os.environ.get("AVALIACAO_SEGUIMENTO_DIAS_APOS_ENTREGA", "7")
+)
 
 # Armazenamento das imagens personalizadas (previa + recorte, ver
 # services/armazenamento_r2.py e services/imagens_personalizadas.py) no
@@ -211,6 +217,17 @@ R2_ACCOUNT_ID = os.environ.get("R2_ACCOUNT_ID", "")
 R2_ACCESS_KEY_ID = os.environ.get("R2_ACCESS_KEY_ID", "")
 R2_SECRET_ACCESS_KEY = os.environ.get("R2_SECRET_ACCESS_KEY", "")
 R2_BUCKET_NAME = os.environ.get("R2_BUCKET_NAME", "catalogo-personalizadas")
+
+# Quanto tempo esperar depois de um pedido CANCELADO (falta de
+# pagamento) antes de apagar as imagens personalizadas (previa+recorte)
+# que ele referenciava -- da tempo do e-mail de recuperacao ainda
+# funcionar (ver services/email.py:enviar_pedido_cancelado, reaproveita
+# o MESMO pedido com foto/recorte intactos) antes de liberar o espaco
+# de quem nao voltou (ver conversa, caso real: cliente cancelou e a
+# foto ficou guardada pra sempre a toa).
+RETENCAO_IMAGENS_PEDIDO_CANCELADO_DIAS = int(
+    os.environ.get("RETENCAO_IMAGENS_PEDIDO_CANCELADO_DIAS", "7")
+)
 
 # Prazo de producao em DIAS UTEIS depois do pagamento confirmado, antes
 # do pedido ser enviado -- mesma promessa ja usada como texto fixo em
