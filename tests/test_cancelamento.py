@@ -51,6 +51,7 @@ def test_cancela_e_manda_email_uma_vez(client, monkeypatch):
     import app as app_module
 
     monkeypatch.setattr(app_module, "CANONICAL_DOMAIN", "atacado.lojanovedejulho.com.br")
+    monkeypatch.setattr(app_module, "CANCELAMENTO_MINUTOS_APOS_LEMBRETE", 30)
 
     with patch("app.criar_link_pagamento", return_value={"url": "https://checkout.infinitepay.io/abc"}):
         criado = client.post("/api/pedido/criar", json=_corpo_valido()).get_json()

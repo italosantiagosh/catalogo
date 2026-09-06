@@ -48,6 +48,7 @@ def test_manda_lembrete_pro_pedido_antigo_e_marca_uma_vez(client, monkeypatch):
     import app as app_module
 
     monkeypatch.setattr(app_module, "CANONICAL_DOMAIN", "atacado.lojanovedejulho.com.br")
+    monkeypatch.setattr(app_module, "LEMBRETE_MINUTOS", 30)
 
     with patch("app.criar_link_pagamento", return_value={"url": "https://checkout.infinitepay.io/original"}):
         criado = client.post("/api/pedido/criar", json=_corpo_valido()).get_json()
@@ -90,6 +91,7 @@ def test_falha_ao_gerar_link_marca_erro_sem_mandar_email(client, monkeypatch):
     import app as app_module
 
     monkeypatch.setattr(app_module, "CANONICAL_DOMAIN", "atacado.lojanovedejulho.com.br")
+    monkeypatch.setattr(app_module, "LEMBRETE_MINUTOS", 30)
 
     with patch("app.criar_link_pagamento", return_value={"url": "https://checkout.infinitepay.io/abc"}):
         criado = client.post("/api/pedido/criar", json=_corpo_valido()).get_json()

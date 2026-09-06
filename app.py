@@ -3749,13 +3749,15 @@ def _limpar_imagens_personalizadas_antigas() -> None:
 
 
 def _limpar_imagens_pedidos_cancelados() -> None:
-    """Job agendado (ver _iniciar_scheduler_jobs abaixo) -- roda 1x por
-    dia, apaga as imagens personalizadas (previa + recorte) de pedidos
-    CANCELADOS ha´ mais de RETENCAO_IMAGENS_PEDIDO_CANCELADO_DIAS
-    (config.py) que ninguem reativou (ver services/pedidos.py:
-    reativar_pedido_cancelado, usado pelo e-mail de recuperacao) --
-    depois desse prazo a chance de recuperacao e´ baixa e a imagem so
-    ocupa espaco a toa (ver conversa)."""
+    """Job agendado (ver _iniciar_scheduler_jobs abaixo) -- roda de hora
+    em hora (nao 1x por dia como as outras limpezas, ver comentario em
+    config.py:RETENCAO_IMAGENS_PEDIDO_CANCELADO_DIAS), apaga as imagens
+    personalizadas (previa + recorte) de pedidos CANCELADOS ha´ mais de
+    RETENCAO_IMAGENS_PEDIDO_CANCELADO_DIAS (config.py) que ninguem
+    reativou (ver services/pedidos.py:reativar_pedido_cancelado, usado
+    pelo e-mail de recuperacao) -- depois desse prazo a chance de
+    recuperacao e´ baixa e a imagem so ocupa espaco a toa (ver
+    conversa)."""
     for pedido in listar_pedidos_cancelados_para_limpar_imagens(RETENCAO_IMAGENS_PEDIDO_CANCELADO_DIAS):
         tokens = _tokens_imagens_personalizadas_do_pedido(pedido)
         if tokens:
@@ -3776,7 +3778,7 @@ def _iniciar_scheduler_jobs() -> None:
         _limpar_imagens_personalizadas_antigas, "interval", hours=24, id="limpar_imagens_personalizadas"
     )
     scheduler.add_job(
-        _limpar_imagens_pedidos_cancelados, "interval", hours=24, id="limpar_imagens_pedidos_cancelados"
+        _limpar_imagens_pedidos_cancelados, "interval", hours=1, id="limpar_imagens_pedidos_cancelados"
     )
     # Codigos de /meus-pedidos vencem em 10 minutos (ver services/pedidos.py:
     # _CODIGO_VERIFICACAO_VALIDADE_MINUTOS) -- limpa a cada hora pra tabela

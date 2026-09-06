@@ -169,16 +169,19 @@ SECRET_KEY = os.environ.get("SECRET_KEY", "")
 # verdade sem querer.
 ENABLE_SCHEDULER = os.environ.get("ENABLE_SCHEDULER", "").lower() in ("1", "true", "yes")
 
-# Quanto tempo esperar (pedido "pendente" sem pagar) antes do lembrete.
-LEMBRETE_MINUTOS = int(os.environ.get("LEMBRETE_MINUTOS", "30"))
+# Quanto tempo esperar (pedido "pendente" sem pagar) antes do lembrete
+# -- metade do prazo total de 24h ate cancelar (ver
+# CANCELAMENTO_MINUTOS_APOS_LEMBRETE abaixo e conversa: "24h esperando
+# pagamento").
+LEMBRETE_MINUTOS = int(os.environ.get("LEMBRETE_MINUTOS", "720"))
 
 # Quanto tempo esperar DEPOIS do lembrete (2o link) antes de cancelar
 # automaticamente um pedido que continua "pendente" -- job agendado
 # junto com o lembrete acima (ver app.py). Contagem a partir de
 # email_lembrete_enviado_em, nao de criado_em -- ou seja, o pedido e´
 # cancelado LEMBRETE_MINUTOS + CANCELAMENTO_MINUTOS_APOS_LEMBRETE
-# depois de criado, no total.
-CANCELAMENTO_MINUTOS_APOS_LEMBRETE = int(os.environ.get("CANCELAMENTO_MINUTOS_APOS_LEMBRETE", "30"))
+# depois de criado, no total (720+720=1440min=24h por padrao).
+CANCELAMENTO_MINUTOS_APOS_LEMBRETE = int(os.environ.get("CANCELAMENTO_MINUTOS_APOS_LEMBRETE", "720"))
 
 # Quanto tempo esperar depois do PAGAMENTO confirmado antes de mandar o
 # e-mail de oportunidade (empurrao pra proxima faixa de desconto no
@@ -223,10 +226,13 @@ R2_BUCKET_NAME = os.environ.get("R2_BUCKET_NAME", "catalogo-personalizadas")
 # que ele referenciava -- da tempo do e-mail de recuperacao ainda
 # funcionar (ver services/email.py:enviar_pedido_cancelado, reaproveita
 # o MESMO pedido com foto/recorte intactos) antes de liberar o espaco
-# de quem nao voltou (ver conversa, caso real: cliente cancelou e a
-# foto ficou guardada pra sempre a toa).
+# de quem nao voltou (ver conversa: "24h esperando pagamento e 24h pra
+# uma segunda chance depois de cancelado"). O job que le isso roda de
+# hora em hora, nao 1x por dia (ver app.py:_iniciar_scheduler_jobs) --
+# com um prazo de so 1 dia, rodar 1x por dia deixaria a exclusao real
+# acontecer ate quase 48h depois, o dobro do prazo pretendido.
 RETENCAO_IMAGENS_PEDIDO_CANCELADO_DIAS = int(
-    os.environ.get("RETENCAO_IMAGENS_PEDIDO_CANCELADO_DIAS", "7")
+    os.environ.get("RETENCAO_IMAGENS_PEDIDO_CANCELADO_DIAS", "1")
 )
 
 # Prazo de producao em DIAS UTEIS depois do pagamento confirmado, antes
