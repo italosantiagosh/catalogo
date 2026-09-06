@@ -352,6 +352,20 @@ def criar_pedido_tiny(pedido: dict) -> dict:
     return {"ok": True, "numero": primeiro_registro.get("numero"), "id": primeiro_registro.get("id")}
 
 
+def erro_e_duplicidade(mensagem: str) -> bool:
+    """A Tiny recusa recriar um pedido que ja tem o mesmo
+    numero_pedido_ecommerce com esse erro especifico ("Registro em
+    duplicidade - Pedido de Venda ja cadastrado") -- acontece quando o
+    admin reenvia (botao individual ou acao em massa, ver
+    app.py:_sincronizar_pedido_tiny) um pedido que JA estava sincronizado
+    certinho. Nao e´ uma falha de verdade (a Tiny ja tem o pedido, exatamente
+    o que se queria) -- so nao ha um numero novo pra devolver nessa resposta
+    de erro (ver teste real: o registro de erro nao traz "numero"), entao
+    quem chama usa isso pra manter o numero ja conhecido em vez de mostrar
+    esse texto como se fosse um problema (ver conversa)."""
+    return "duplicidade" in (mensagem or "").lower()
+
+
 def buscar_contatos_tiny(termo: str) -> dict:
     """Busca contatos ja cadastrados na Tiny por nome/razao social/CPF-
     CNPJ (ver app.py:admin_tiny_buscar_contato) -- usado no painel pra

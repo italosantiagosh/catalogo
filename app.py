@@ -188,7 +188,7 @@ from services.imagens_personalizadas import (
 )
 from services.inter import baixar_pdf, consultar_cobranca, emitir_boleto
 from services.pix import gerar_copia_cola, gerar_qr_data_uri
-from services.tiny import buscar_contatos_tiny, criar_pedido_tiny
+from services.tiny import buscar_contatos_tiny, criar_pedido_tiny, erro_e_duplicidade
 from services.gerador.compositor import auto_cover_box, compose_medal, crop_to_box, load_rgba
 from services.gerador.config import IMAGE_EXTENSIONS, MEDAL_SPECS
 from services.pricing import CHAVES_PRECO, calcular_carrinho, preco_varejo
@@ -2691,10 +2691,18 @@ def _sincronizar_pedido_tiny(token: str) -> str | None:
         resultado_tiny = criar_pedido_tiny(pedido)
     except Exception as exc:  # nunca deixa o operador numa tela de erro generica
         resultado_tiny = {"erro": f"Erro inesperado ao sincronizar: {exc}"}
-    marcar_tiny_sincronizado(
-        token, numero_pedido=resultado_tiny.get("numero"), erro=resultado_tiny.get("erro")
-    )
-    return resultado_tiny.get("erro")
+
+    erro = resultado_tiny.get("erro")
+    numero = resultado_tiny.get("numero")
+    if erro and erro_e_duplicidade(erro) and pedido.get("tiny_numero_pedido"):
+        # A Tiny ja tem esse pedido (reenvio de algo que ja estava
+        # sincronizado, ver services/tiny.py:erro_e_duplicidade) -- mantem
+        # o numero ja conhecido em vez de apagar com None, e nao reporta
+        # como erro pro operador (nao e´ falha de verdade).
+        numero, erro = pedido["tiny_numero_pedido"], None
+
+    marcar_tiny_sincronizado(token, numero_pedido=numero, erro=erro)
+    return erro
 
 
 def _reenviar_email_confirmacao(token: str) -> str | None:

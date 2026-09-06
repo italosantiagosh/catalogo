@@ -1044,6 +1044,39 @@ def test_reenviar_tiny_manualmente(client, monkeypatch):
     assert pedido["tiny_numero_pedido"] == "99"
 
 
+def test_reenviar_tiny_duplicidade_mantem_numero_ja_conhecido(client, monkeypatch):
+    """Reenviar (manual ou acao em massa) um pedido que JA estava
+    sincronizado certinho faz a Tiny recusar com "Registro em
+    duplicidade" (nao ha pedido novo pra criar, ela ja tem esse mesmo
+    numero_pedido_ecommerce) -- isso NAO e´ uma falha de verdade, entao
+    nao deve apagar o numero ja conhecido nem mostrar como erro pro
+    operador (ver conversa e services/tiny.py:erro_e_duplicidade)."""
+    _preparar_admin(monkeypatch)
+    with patch("app.criar_link_pagamento", return_value={"url": "https://checkout.infinitepay.io/abc"}):
+        criado = client.post("/api/pedido/criar", json=_corpo_valido()).get_json()
+    with patch("app.criar_pedido_tiny", return_value={"ok": True, "numero": "1139", "id": 1}), \
+         patch("app.enviar_confirmacao_pedido", return_value={"ok": True}):
+        client.post(
+            "/webhook/infinitepay",
+            json={"order_nsu": criado["token"], "paid_amount": 6000, "capture_method": "pix"},
+        )
+    assert pedidos.obter_pedido(criado["token"])["tiny_numero_pedido"] == "1139"
+
+    with patch(
+        "app.criar_pedido_tiny",
+        return_value={"erro": "Registro em duplicidade – Pedido de Venda já cadastrado"},
+    ) as mock_tiny:
+        resposta = client.post(
+            f"/admin/pedidos/{criado['token']}/reenviar-tiny", auth=("admin", "segredo123")
+        )
+    assert resposta.status_code == 302
+    assert mock_tiny.call_count == 1
+
+    pedido = pedidos.obter_pedido(criado["token"])
+    assert pedido["tiny_erro"] is None
+    assert pedido["tiny_numero_pedido"] == "1139"
+
+
 def test_reenviar_tiny_com_excecao_inesperada_nao_500(client, monkeypatch):
     """Se criar_pedido_tiny estourar uma excecao nao prevista (ex: o bug
     real do formato de registros da Tiny), o operador nunca deve cair

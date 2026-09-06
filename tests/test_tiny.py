@@ -521,6 +521,14 @@ def test_resposta_com_erro_e_registros_como_objeto_nao_lista(monkeypatch):
     assert resultado == {"erro": "Registro em duplicidade – Pedido de Venda já cadastrado"}
 
 
+def test_erro_e_duplicidade_reconhece_mensagem_da_tiny():
+    assert tiny.erro_e_duplicidade("Registro em duplicidade – Pedido de Venda já cadastrado") is True
+    assert tiny.erro_e_duplicidade("REGISTRO EM DUPLICIDADE - pedido ja existe") is True
+    assert tiny.erro_e_duplicidade("Tiny fora do ar") is False
+    assert tiny.erro_e_duplicidade("") is False
+    assert tiny.erro_e_duplicidade(None) is False
+
+
 def test_erro_de_rede(monkeypatch):
     import requests
 
