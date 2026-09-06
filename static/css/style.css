@@ -2017,6 +2017,12 @@ input[type="file"] {
 
 .preview-personalizada img {
   width: 100%;
+  /* a peca real e´ pequena (medalha/entremeio/chaveiro) -- sem um teto,
+     a previa (imagem quadrada) esticava ate quase a largura toda do
+     <main> (960px) em telas largas, dominando a pagina sem necessidade
+     (ver conversa). Continua responsiva/menor no celular. */
+  max-width: 420px;
+  margin: 0 auto;
   border-radius: 12px;
   display: block;
 }
