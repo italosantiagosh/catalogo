@@ -1047,13 +1047,14 @@ def test_reenviar_tiny_manualmente(client, monkeypatch):
     assert pedido["tiny_numero_pedido"] == "99"
 
 
-def test_reenviar_tiny_duplicidade_mantem_numero_ja_conhecido(client, monkeypatch):
-    """Reenviar (manual ou acao em massa) um pedido que JA estava
-    sincronizado certinho faz a Tiny recusar com "Registro em
-    duplicidade" (nao ha pedido novo pra criar, ela ja tem esse mesmo
-    numero_pedido_ecommerce) -- isso NAO e´ uma falha de verdade, entao
-    nao deve apagar o numero ja conhecido nem mostrar como erro pro
-    operador (ver conversa e services/tiny.py:erro_e_duplicidade)."""
+def test_reenviar_tiny_ja_sincronizado_nao_chama_tiny_de_novo(client, monkeypatch):
+    """Reenviar um pedido que JA tem um numero valido da Tiny NAO chama
+    a API dela de novo -- a API da Tiny CRIA um pedido novo a cada
+    chamada, e nem sempre recusa como duplicidade so por ter o mesmo
+    numero_pedido_ecommerce (ver conversa: um reenvio real duplicou o
+    pedido #1119 como um #1140 novo na Tiny, em vez de ser recusado).
+    Entao a garantia contra duplicidade precisa ser NOSSA -- bloqueia
+    ANTES de tentar, sem depender da Tiny recusar do lado dela."""
     _preparar_admin(monkeypatch)
     with patch("app.criar_link_pagamento", return_value={"url": "https://checkout.infinitepay.io/abc"}):
         criado = client.post("/api/pedido/criar", json=_corpo_valido()).get_json()
@@ -1065,21 +1066,19 @@ def test_reenviar_tiny_duplicidade_mantem_numero_ja_conhecido(client, monkeypatc
         )
     assert pedidos.obter_pedido(criado["token"])["tiny_numero_pedido"] == "1139"
 
-    with patch(
-        "app.criar_pedido_tiny",
-        return_value={"erro": "Registro em duplicidade – Pedido de Venda já cadastrado"},
-    ) as mock_tiny:
+    with patch("app.criar_pedido_tiny") as mock_tiny:
         resposta = client.post(
             f"/admin/pedidos/{criado['token']}/reenviar-tiny", auth=("admin", "segredo123")
         )
     assert resposta.status_code == 302
-    assert mock_tiny.call_count == 1
+    assert mock_tiny.call_count == 0  # nunca chegou a chamar a Tiny de novo
 
     pedido = pedidos.obter_pedido(criado["token"])
     assert pedido["tiny_erro"] is None
     assert pedido["tiny_numero_pedido"] == "1139"
-    # duplicidade nao e´ falha de verdade -- sem alerta nenhum na volta
-    assert "tiny_erro" not in resposta.headers["Location"]
+    # mensagem informativa vira alerta pontual, mas o numero na tabela
+    # continua o mesmo -- nunca sobrescrito
+    assert "tiny_erro=Pedido" in resposta.headers["Location"]
 
 
 def test_reenviar_tiny_falha_de_verdade_manda_erro_na_url_pra_virar_alerta(client, monkeypatch):

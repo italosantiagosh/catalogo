@@ -2687,6 +2687,19 @@ def _sincronizar_pedido_tiny(token: str) -> str | None:
         return "Pedido não encontrado."
     if pedido["status"] not in ("pago", "faturado", "enviado", "entregue"):
         return "Só dá pra sincronizar com a Tiny um pedido já pago."
+
+    if pedido.get("tiny_numero_pedido"):
+        # JA tem um numero valido da Tiny -- nao reenvia. A API da Tiny
+        # CRIA um pedido novo a cada chamada; ela nem sempre recusa como
+        # duplicidade so por ter o mesmo numero_pedido_ecommerce (ver
+        # conversa: um reenvio real duplicou o pedido #1119 como um novo
+        # #1140 na Tiny, em vez de ser recusado). Entao a garantia contra
+        # duplicidade precisa ser NOSSA, aqui, e nao depender da Tiny.
+        return (
+            f"Pedido já sincronizado com a Tiny (#{pedido['tiny_numero_pedido']}) -- "
+            "não reenviado, pra evitar duplicidade."
+        )
+
     try:
         resultado_tiny = criar_pedido_tiny(pedido)
     except Exception as exc:  # nunca deixa o operador numa tela de erro generica
@@ -2695,10 +2708,12 @@ def _sincronizar_pedido_tiny(token: str) -> str | None:
     erro = resultado_tiny.get("erro")
     numero = resultado_tiny.get("numero")
     if erro and erro_e_duplicidade(erro) and pedido.get("tiny_numero_pedido"):
-        # A Tiny ja tem esse pedido (reenvio de algo que ja estava
-        # sincronizado, ver services/tiny.py:erro_e_duplicidade) -- mantem
-        # o numero ja conhecido em vez de apagar com None, e nao reporta
-        # como erro pro operador (nao e´ falha de verdade).
+        # Defesa extra pra uma corrida rara (dois cliques quase juntos,
+        # ou acao em massa com o mesmo pedido selecionado 2x): mesmo
+        # tendo passado pelo guard acima, a Tiny ainda pode recusar como
+        # duplicidade de verdade -- nesse caso mantem o numero ja
+        # conhecido em vez de apagar com None (ver services/tiny.py:
+        # erro_e_duplicidade).
         numero, erro = pedido["tiny_numero_pedido"], None
 
     marcar_tiny_sincronizado(token, numero_pedido=numero, erro=erro)
