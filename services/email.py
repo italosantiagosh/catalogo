@@ -408,6 +408,50 @@ def enviar_pedido_avaliacao(pedido: dict, url_avaliar: str) -> dict:
     )
 
 
+_RECOMPRA_TEXTO_POR_ESTAGIO = {
+    30: "Já faz um mês que seu pedido chegou -- ",
+    60: "Já faz dois meses que seu pedido chegou -- ",
+    90: "Já faz três meses que seu pedido chegou -- ",
+}
+
+
+def _corpo_html_pedido_recompra(pedido: dict, dias: int, url_repetir_ou_catalogo: str, tem_repetir: bool) -> str:
+    intro = _RECOMPRA_TEXTO_POR_ESTAGIO.get(dias, "Faz um tempinho que seu pedido chegou -- ")
+    if tem_repetir:
+        convite = (
+            f"que tal fazer um pedido novo? Preparamos um atalho: clique abaixo e o MESMO pedido "
+            f"(mesmos santos, formatos e quantidades) já entra pronto no seu carrinho, sem precisar "
+            f"escolher tudo de novo."
+        )
+        texto_botao = "🔁 Repetir meu pedido"
+    else:
+        convite = "que tal dar uma olhada no catálogo e fazer um pedido novo?"
+        texto_botao = "👉 Ver o catálogo completo"
+    return (
+        f"<p>Olá, {_esc(pedido.get('cliente_nome', ''))}! {intro}{convite}</p>"
+        f"{_botao(url_repetir_ou_catalogo, texto_botao)}"
+        f"<p>Qualquer dúvida ou pedido especial, é só chamar no WhatsApp.</p>"
+    )
+
+
+def enviar_pedido_recompra(pedido: dict, dias: int, url_repetir_ou_catalogo: str, *, tem_repetir: bool) -> dict:
+    """Convite pra um pedido novo, disparado 30/60/90 dias depois da
+    ENTREGA (ver app.py:_enviar_emails_recompra_entregues) -- os 3
+    estagios sao independentes (quem nao abriu o de 30 dias ainda
+    recebe o de 60). Quando o pedido tem pelo menos 1 item "repetivel"
+    (santo do catalogo com produtoId, ver app.py:
+    _itens_repetiveis_do_pedido), o botao leva direto pro carrinho ja´
+    preenchido com o MESMO pedido (`tem_repetir=True`); senao (pedido
+    so´ de peca personalizada) leva pro catalogo geral. Devolve
+    {"ok": True} ou {"erro": "..."}."""
+    return _enviar(
+        email_cliente=pedido.get("cliente_email", ""),
+        nome_cliente=pedido.get("cliente_nome", ""),
+        assunto="Bora fazer um novo pedido? — Nove de Julho",
+        corpo_html=_corpo_html_pedido_recompra(pedido, dias, url_repetir_ou_catalogo, tem_repetir),
+    )
+
+
 def enviar_pedido_cancelado(pedido: dict, url_reativar_pix: str, url_reativar_boleto: str) -> dict:
     """Disparado pelo job agendado (ver app.py) quando um pedido "pendente"
     e´ cancelado automaticamente por falta de pagamento apos o lembrete

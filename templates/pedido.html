@@ -174,6 +174,13 @@
     {% if pedido.status != 'pendente' %}
       <p class="pedido-linha">Forma de pagamento: <strong>{{ pedido.forma_pagamento }}</strong></p>
     {% endif %}
+
+    {% if itens_repetir %}
+      <button type="button" class="botao-secundario" id="btn-repetir-pedido">🔁 Repetir esse pedido</button>
+      {% if itens_repetir | length < pedido.itens | length %}
+        <p class="pedido-ajuda">Peça(s) personalizada(s) desse pedido não entram — só o que dá pra repetir direto.</p>
+      {% endif %}
+    {% endif %}
   </div>
 
   <div class="pedido-entrega">
@@ -230,6 +237,37 @@
           btnNovoLink.textContent = '💳 Gerar novo link de pagamento';
         }
       });
+    }
+
+    const btnRepetir = document.getElementById('btn-repetir-pedido');
+    if (btnRepetir) {
+      btnRepetir.addEventListener('click', () => {
+        const itens = {{ itens_repetir | tojson }};
+        itens.forEach((item) => {
+          const subAttr = item.formato === 'medalha' ? item.tamanho : (item.formato === 'entremeio' ? item.cor : '');
+          carrinhoAdicionarItem({
+            chave: `${item.produtoId}-${item.modeloId}-${item.formato}-${subAttr}`,
+            tipo: 'catalogo',
+            produtoId: item.produtoId,
+            produtoNome: item.produtoNome,
+            modeloId: item.modeloId,
+            modeloNome: item.modeloNome,
+            imagem: item.imagem,
+            formato: item.formato,
+            chave_preco: item.chave_preco,
+            tamanho: item.tamanho,
+            cor: item.cor,
+            quantidade: item.quantidade,
+          });
+        });
+        window.location.href = '{{ url_for("carrinho") }}';
+      });
+      // ?repetir=1 (link do e-mail de recompra 30/60/90 dias, ver
+      // app.py:_enviar_emails_recompra_entregues) -- clica sozinho,
+      // sem exigir 1 clique a mais de quem so quer repetir o pedido.
+      if (new URLSearchParams(window.location.search).get('repetir') === '1') {
+        btnRepetir.click();
+      }
     }
 
     document.querySelectorAll('.botao-copiar').forEach((botao) => {

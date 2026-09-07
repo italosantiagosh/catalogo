@@ -146,6 +146,23 @@ def faixa_label(chave_preco: str, quantidade_total_grupo: int) -> str:
     return ""
 
 
+def tabela_de_faixas(chave_preco: str) -> list[dict]:
+    """[{"label": "20-29 unidades", "preco": 4.50}, ...] pra mostrar a
+    tabela de desconto de atacado inteira de um GRUPO (ver docstring do
+    modulo) de uma vez -- usado no popup de faixas de desconto (ver
+    app.py:_tabelas_desconto_para_template/templates/base.html), bem
+    diferente de calcular_preco/proxima_faixa acima (essas resolvem
+    UMA faixa pra uma quantidade especifica no carrinho, essa aqui
+    lista TODAS as faixas de uma vez pra exibicao)."""
+    faixas = _faixas_ordenadas(chave_preco)
+    resultado = []
+    for i, (inicio, preco) in enumerate(faixas):
+        fim = faixas[i + 1][0] - 1 if i + 1 < len(faixas) else None
+        label = f"{inicio}+ unidades" if fim is None else f"{inicio}-{fim} unidades"
+        resultado.append({"label": label, "preco": preco})
+    return resultado
+
+
 def _grupo_atingiu_atacado(chave_preco: str, quantidade_total_grupo: int) -> bool:
     """True quando a quantidade ja passou da faixa "1" (varejo) pra
     qualquer faixa de atacado seguinte -- ver DESCONTO_FRETE_ATACADO_PCT."""

@@ -202,6 +202,16 @@ _COLUNAS_ADICIONAIS: list[tuple[str, str]] = [
     # email_avaliacao_enviado/email_avaliacao_erro que ja existiam).
     ("email_avaliacao_seguimento_enviado", "INTEGER NOT NULL DEFAULT 0"),
     ("email_avaliacao_seguimento_erro", "TEXT"),
+    # Convite de recompra 30/60/90 dias depois de "entregue" (ver
+    # app.py:_enviar_emails_recompra_entregues/services/email.py:
+    # enviar_pedido_recompra) -- os 3 estagios sao independentes entre
+    # si (quem nao abriu o de 30 dias ainda recebe o de 60).
+    ("email_recompra_30_enviado", "INTEGER NOT NULL DEFAULT 0"),
+    ("email_recompra_30_erro", "TEXT"),
+    ("email_recompra_60_enviado", "INTEGER NOT NULL DEFAULT 0"),
+    ("email_recompra_60_erro", "TEXT"),
+    ("email_recompra_90_enviado", "INTEGER NOT NULL DEFAULT 0"),
+    ("email_recompra_90_erro", "TEXT"),
 ]
 
 # Fluxo de status depois de "pago" -- alteravel manualmente pelo painel
@@ -845,6 +855,54 @@ def marcar_email_avaliacao_seguimento_enviado(token: str, *, erro: str | None) -
         conexao.execute(
             "UPDATE pedidos SET email_avaliacao_seguimento_enviado = 1, "
             "email_avaliacao_seguimento_erro = ? WHERE token = ?",
+            (erro, token),
+        )
+    return obter_pedido(token)
+
+
+# 3 estagios independentes de convite de recompra (ver
+# services/email.py:enviar_pedido_recompra) -- validado contra essa
+# tupla antes de virar nome de coluna (interpolado direto na query),
+# entao NUNCA aceita um numero vindo de fora sem checar antes.
+ESTAGIOS_RECOMPRA_DIAS = (30, 60, 90)
+
+
+def listar_pedidos_entregues_para_recompra(dias: int) -> list[dict]:
+    """Pedidos "entregue" ha´ pelo menos `dias` dias (30, 60 ou 90, ver
+    ESTAGIOS_RECOMPRA_DIAS) que ainda nao receberam o convite de
+    recompra desse estagio (ver app.py:
+    _enviar_emails_recompra_entregues)."""
+    if dias not in ESTAGIOS_RECOMPRA_DIAS:
+        raise ValueError(f"dias precisa ser um de {ESTAGIOS_RECOMPRA_DIAS}, recebeu {dias!r}")
+    coluna_enviado = f"email_recompra_{dias}_enviado"
+    inicializar_db()
+    limite = (datetime.now(timezone.utc) - timedelta(days=dias)).isoformat()
+    with _conexao() as conexao:
+        linhas = conexao.execute(
+            f"""
+            SELECT * FROM pedidos
+            WHERE status = 'entregue' AND {coluna_enviado} = 0
+                AND entregue_em <= ?
+            ORDER BY entregue_em ASC
+            """,
+            (limite,),
+        ).fetchall()
+    pedidos = []
+    for linha in linhas:
+        pedido = dict(linha)
+        pedido["itens"] = json.loads(pedido["itens"])
+        pedidos.append(pedido)
+    return pedidos
+
+
+def marcar_email_recompra_enviado(token: str, dias: int, *, erro: str | None) -> dict | None:
+    if dias not in ESTAGIOS_RECOMPRA_DIAS:
+        raise ValueError(f"dias precisa ser um de {ESTAGIOS_RECOMPRA_DIAS}, recebeu {dias!r}")
+    coluna_enviado = f"email_recompra_{dias}_enviado"
+    coluna_erro = f"email_recompra_{dias}_erro"
+    with _conexao() as conexao:
+        conexao.execute(
+            f"UPDATE pedidos SET {coluna_enviado} = 1, {coluna_erro} = ? WHERE token = ?",
             (erro, token),
         )
     return obter_pedido(token)

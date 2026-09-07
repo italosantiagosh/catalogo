@@ -112,7 +112,7 @@
               </div>
               <p class="cartao-produto">
                 Produto: {{ avaliacao.produto_id }}{% if avaliacao.formato %} — {{ avaliacao.formato }}{% endif %}
-                — {{ avaliacao.criado_em[:16] }}
+                — {{ avaliacao.criado_em | data_hora_br }}
               </p>
               {% if avaliacao.texto %}<p class="cartao-texto">{{ avaliacao.texto }}</p>{% endif %}
               {% if avaliacao.status == 'pendente' %}

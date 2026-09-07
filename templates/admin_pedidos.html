@@ -332,7 +332,7 @@
                   {% endif %}
                   {% if not pedido.email_pedido_criado_enviado and not pedido.email_enviado and not pedido.email_cancelado_enviado %}—{% endif %}
                 </td>
-                <td data-rotulo="Criado em">{{ pedido.criado_em[:16] }}</td>
+                <td data-rotulo="Criado em">{{ pedido.criado_em | data_hora_br }}</td>
                 <td class="linha-acoes">
                   <a class="editar" href="{{ url_for('admin_pedido_detalhe', token=pedido.token) }}">editar</a>
                   <a class="ver" href="{{ url_for('ver_pedido', token=pedido.token) }}" target="_blank" rel="noopener">ver →</a>

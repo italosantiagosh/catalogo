@@ -44,6 +44,7 @@ import re
 import secrets
 import tempfile
 from datetime import datetime, timedelta, timezone
+from zoneinfo import ZoneInfo
 from pathlib import Path
 from urllib.parse import urlsplit
 from xml.sax.saxutils import escape as escapar_xml
@@ -134,11 +135,13 @@ from services.email import (
     enviar_pedido_cancelado,
     enviar_pedido_enviado,
     enviar_pedido_excluido,
+    enviar_pedido_recompra,
 )
 from services.documentos import cpf_valido, documento_valido, numero_whatsapp, telefone_valido
 from services.frete import calcular_frete
 from services.infinitepay import criar_link_pagamento
 from services.pedidos import (
+    ESTAGIOS_RECOMPRA_DIAS,
     arquivar_pedido,
     atualizar_status,
     cancelar_pedido,
@@ -155,6 +158,7 @@ from services.pedidos import (
     listar_pedidos,
     listar_pedidos_boleto_pendentes,
     listar_pedidos_cancelados_para_limpar_imagens,
+    listar_pedidos_entregues_para_recompra,
     listar_pedidos_entregues_para_seguimento_avaliacao,
     listar_pedidos_pagos_para_upsell,
     listar_pedidos_pendentes_para_cancelar,
@@ -164,6 +168,7 @@ from services.pedidos import (
     marcar_email_avaliacao_enviado,
     marcar_email_avaliacao_seguimento_enviado,
     marcar_email_cancelado_enviado,
+    marcar_email_recompra_enviado,
     marcar_email_enviado,
     marcar_email_lembrete_enviado,
     marcar_email_pedido_criado_enviado,
@@ -202,7 +207,7 @@ from services.pix import gerar_copia_cola, gerar_qr_data_uri
 from services.tiny import buscar_contatos_tiny, criar_pedido_tiny, erro_e_duplicidade
 from services.gerador.compositor import auto_cover_box, compose_medal, crop_to_box, load_rgba
 from services.gerador.config import IMAGE_EXTENSIONS, MEDAL_SPECS
-from services.pricing import CHAVES_PRECO, calcular_carrinho, preco_varejo
+from services.pricing import CHAVES_PRECO, calcular_carrinho, preco_varejo, tabela_de_faixas
 
 app = Flask(__name__)
 app.config["MAX_CONTENT_LENGTH"] = 60 * 1024 * 1024  # 60MB no total do upload
@@ -415,6 +420,19 @@ def _dados_breadcrumb(itens: list[tuple[str, str]]) -> dict:
     }
 
 
+def _tabelas_desconto_para_template() -> list[dict]:
+    """[{"titulo": ..., "faixas": [...]}, ...] -- um bloco por GRUPO de
+    atacado (ver services/pricing.py) pro popup de faixas de desconto
+    acionado pelo aviso "desconto progressivo" do topo (ver
+    templates/base.html) -- cada grupo tem tabela propria, entao
+    aparecem 3 tabelas separadas em vez de uma so."""
+    return [
+        {"titulo": "Medalha e entremeio (1 lado)", "faixas": tabela_de_faixas("16mm")},
+        {"titulo": "Chaveiro (1 ou 2 lados)", "faixas": tabela_de_faixas("chaveiro")},
+        {"titulo": "Medalha e entremeio de 2 lados", "faixas": tabela_de_faixas("medalha_2lados")},
+    ]
+
+
 @app.context_processor
 def _injetar_globais_de_template():
     # Disponivel em todo template (base.html usa pro botao flutuante de
@@ -430,6 +448,7 @@ def _injetar_globais_de_template():
         "ano_atual": datetime.now(timezone.utc).year,
         "dados_organizacao": _dados_organizacao(),
         "dados_website": _dados_website(),
+        "tabelas_desconto": _tabelas_desconto_para_template(),
     }
 
 
@@ -460,16 +479,39 @@ def _formatar_preco(valor: float) -> str:
     return f"R$ {valor:.2f}".replace(".", ",")
 
 
-def _formatar_data_br(valor) -> str:
+# Todo timestamp do banco (criado_em/pago_em/entregue_em etc.) e´ salvo
+# em UTC (datetime.now(timezone.utc).isoformat(), ver services/
+# pedidos.py) -- sem converter pro fuso de Natal/Brasilia (UTC-3, sem
+# horario de verao desde 2019) antes de mostrar, todo horario no
+# painel aparecia 3h adiantado (ver conversa). ZoneInfo em vez de um
+# "-3h" fixo pra continuar certo se o Brasil um dia voltar a ter
+# horario de verao.
+FUSO_BRASIL = ZoneInfo("America/Sao_Paulo")
+
+
+def _para_fuso_brasil(valor) -> datetime | None:
     if valor is None:
-        return ""
+        return None
     if isinstance(valor, str):
         valor = datetime.fromisoformat(valor)
-    return valor.strftime("%d/%m/%Y")
+    if valor.tzinfo is not None:
+        valor = valor.astimezone(FUSO_BRASIL)
+    return valor
+
+
+def _formatar_data_br(valor) -> str:
+    valor = _para_fuso_brasil(valor)
+    return valor.strftime("%d/%m/%Y") if valor else ""
+
+
+def _formatar_data_hora_br(valor) -> str:
+    valor = _para_fuso_brasil(valor)
+    return valor.strftime("%d/%m/%Y %H:%M") if valor else ""
 
 
 app.jinja_env.filters["preco"] = _formatar_preco
 app.jinja_env.filters["data_br"] = _formatar_data_br
+app.jinja_env.filters["data_hora_br"] = _formatar_data_hora_br
 app.jinja_env.filters["whatsapp"] = numero_whatsapp
 # Registrado como global (nao filtro) pra poder ser chamado direto nos
 # templates do painel admin com o pedido inteiro (ver
@@ -2394,6 +2436,51 @@ def _timeline_do_pedido(pedido: dict) -> list[dict] | None:
     ]
 
 
+# "chave_preco" -> formato, so pros 4 formatos de item de santo do
+# catalogo escolhido DIRETO (sem passar por 2 lados/personalizada, ver
+# _itens_repetiveis_do_pedido abaixo) -- medalha_2lados/entremeio_2lados/
+# chaveiro_2lados ficam de fora de proposito (sao sempre um construto
+# de personalizada por baixo, nunca tem produtoId no nivel raiz do
+# item, ver static/js/personalizada.js).
+_FORMATO_POR_CHAVE_SIMPLES = {"12mm": "medalha", "16mm": "medalha", "entremeio": "entremeio", "chaveiro": "chaveiro"}
+
+
+def _itens_repetiveis_do_pedido(pedido: dict) -> list[dict]:
+    """Itens desse pedido que dá pra "repetir" com 1 clique (ver
+    static/js/pedido.js:repetirPedido, botao "Repetir esse pedido" em
+    pedido.html) -- so santo do catalogo escolhido direto, com
+    produtoId valido. Peca personalizada (sem produtoId proprio, foto
+    exclusiva daquele pedido) e item de 2 lados (sempre um construto
+    de personalizada) ficam de fora -- nao da pra "repetir" sem passar
+    pelo simulador nesses casos."""
+    itens = []
+    for item in pedido["itens"]:
+        produto_id = item.get("produtoId")
+        chave_preco = item.get("chave_preco")
+        formato = _FORMATO_POR_CHAVE_SIMPLES.get(chave_preco)
+        if not produto_id or not formato:
+            continue
+        # pra "medalha", chave_preco JA E´ o tamanho (12mm/16mm) -- so cai
+        # no item["tamanho"] quando ele nao veio preenchido (carrinhos
+        # antigos, ver static/js/carrinho.js:_migrarItemLegado).
+        tamanho = item.get("tamanho") or (chave_preco if formato == "medalha" else None)
+        itens.append(
+            {
+                "produtoId": produto_id,
+                "produtoNome": item.get("produtoNome", ""),
+                "modeloId": item.get("modeloId", ""),
+                "modeloNome": item.get("modeloNome", ""),
+                "imagem": item.get("imagem", ""),
+                "formato": formato,
+                "chave_preco": chave_preco,
+                "tamanho": tamanho,
+                "cor": item.get("cor") or None,
+                "quantidade": item.get("quantidade", 1),
+            }
+        )
+    return itens
+
+
 @app.route("/pedido/<token>", methods=["GET"])
 def ver_pedido(token: str):
     pedido = obter_pedido(token)
@@ -2414,6 +2501,7 @@ def ver_pedido(token: str):
         oportunidades_upsell=oportunidades_upsell,
         timeline=_timeline_do_pedido(pedido),
         previsoes=previsoes_do_pedido(pedido),
+        itens_repetir=_itens_repetiveis_do_pedido(pedido),
     )
 
 
@@ -4024,6 +4112,32 @@ def _enviar_seguimento_avaliacao_entregues() -> None:
             marcar_email_avaliacao_seguimento_enviado(pedido["token"], erro=resultado_email.get("erro"))
 
 
+def _enviar_emails_recompra_entregues() -> None:
+    """Job agendado (ver _iniciar_scheduler_jobs abaixo) -- convite de
+    recompra 30/60/90 dias depois da ENTREGA (ver conversa), 3 estagios
+    INDEPENDENTES entre si (ESTAGIOS_RECOMPRA_DIAS, ver
+    services/pedidos.py) -- quem nao abriu o de 30 dias ainda recebe o
+    de 60. Quando o pedido tem pelo menos 1 item "repetivel" (santo do
+    catalogo, ver _itens_repetiveis_do_pedido), o botao do e-mail leva
+    direto pro carrinho ja´ preenchido (?repetir=1 em /pedido/<token>,
+    ver templates/pedido.html); pedido so´ de peca personalizada leva
+    pro catalogo geral em vez disso."""
+    if not CANONICAL_DOMAIN:
+        return
+    with app.test_request_context(base_url=f"https://{CANONICAL_DOMAIN}"):
+        url_catalogo = url_for("catalogo_completo", _external=True)
+        for dias in ESTAGIOS_RECOMPRA_DIAS:
+            for pedido in listar_pedidos_entregues_para_recompra(dias):
+                tem_repetir = bool(_itens_repetiveis_do_pedido(pedido))
+                url = (
+                    url_for("ver_pedido", token=pedido["token"], repetir="1", _external=True)
+                    if tem_repetir
+                    else url_catalogo
+                )
+                resultado_email = enviar_pedido_recompra(pedido, dias, url, tem_repetir=tem_repetir)
+                marcar_email_recompra_enviado(pedido["token"], dias, erro=resultado_email.get("erro"))
+
+
 def _cancelar_pedidos_abandonados() -> None:
     """Job agendado (ver _iniciar_scheduler_jobs abaixo) -- roda a cada
     10min, cancela pedido "pendente" que continua sem pagar
@@ -4134,6 +4248,7 @@ def _iniciar_scheduler_jobs() -> None:
     scheduler.add_job(
         _enviar_seguimento_avaliacao_entregues, "interval", minutes=10, id="seguimento_avaliacao_entregues"
     )
+    scheduler.add_job(_enviar_emails_recompra_entregues, "interval", hours=1, id="emails_recompra_entregues")
     scheduler.add_job(_verificar_boletos_inter_pendentes, "interval", minutes=10, id="verificar_boletos_inter")
     scheduler.add_job(
         _limpar_imagens_personalizadas_antigas, "interval", hours=24, id="limpar_imagens_personalizadas"
@@ -4153,6 +4268,18 @@ def _iniciar_scheduler_jobs() -> None:
 # So liga em producao de verdade (ENABLE_SCHEDULER=true no servidor) --
 # nunca em teste/dev, senao sobe uma thread de fundo rodando de
 # verdade a cada import do modulo (ver config.py).
+#
+# IMPORTANTE se um dia aumentar "--workers" no render.yaml (hoje fixo
+# em 1 de proposito): CADA worker do gunicorn importa esse modulo
+# separado e subiria seu PROPRIO scheduler, duplicando (2x, 3x...)
+# todo e-mail/job agendado daqui pra baixo. Rodar com `--preload`
+# resolve ESSA parte (o modulo roda 1x so, no processo mestre, ANTES
+# do fork -- thread de fundo nao sobrevive ao fork, entao so o mestre
+# continua rodando os jobs), MAS o limiter.storage_uri="memory://" (ver
+# inicio do arquivo) tambem depende de workers=1 (cada worker contaria
+# limite de taxa separado, na pratica dobrando/triplicando o limite
+# real) -- os DOIS precisam ser resolvidos juntos (preload + storage
+# compartilhado tipo Redis pro limiter) antes de subir mais workers.
 if ENABLE_SCHEDULER:
     _iniciar_scheduler_jobs()
 

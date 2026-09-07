@@ -92,6 +92,18 @@ main {
   display: none;
 }
 
+.faixa-topo-botao {
+  background: none;
+  border: none;
+  color: inherit;
+  font: inherit;
+  letter-spacing: inherit;
+  cursor: pointer;
+  padding: 0;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
 .faixa-topo span:nth-child(2) {
   color: var(--gold-texto-escuro);
 }
@@ -1703,6 +1715,116 @@ body.tem-barra-fixa-comprar main {
   background: #000;
 }
 
+.imagem-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(10, 15, 25, 0.6);
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 18px;
+}
+
+.imagem-modal-caixa {
+  width: min(520px, 92vw);
+  max-height: 88vh;
+  overflow-y: auto;
+  background: var(--card);
+  border-radius: 14px;
+  padding: 18px;
+  position: relative;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.35);
+}
+
+.imagem-modal-caixa img {
+  width: 100%;
+  border-radius: 10px;
+  display: block;
+}
+
+.imagem-modal-caixa p {
+  font-size: 0.82rem;
+  color: var(--muted);
+  margin: 10px 0 0;
+  text-align: center;
+}
+
+.imagem-modal-fechar {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 34px;
+  height: 34px;
+  border: none;
+  border-radius: 50%;
+  background: rgba(20, 34, 56, 0.75);
+  color: #fff;
+  font-size: 18px;
+  cursor: pointer;
+  z-index: 2;
+}
+
+.imagem-modal-caixa-larga {
+  width: min(720px, 92vw);
+  text-align: left;
+}
+
+.tabela-desconto-titulo {
+  font-size: 1.1rem;
+  margin: 4px 30px 6px 0;
+}
+
+.tabela-desconto-intro {
+  font-size: 0.85rem;
+  color: var(--muted);
+  margin: 0 0 18px;
+}
+
+.tabela-desconto {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 20px;
+  font-size: 0.86rem;
+}
+
+.tabela-desconto caption {
+  text-align: left;
+  font-weight: 700;
+  margin-bottom: 8px;
+  color: var(--accent);
+}
+
+.tabela-desconto th,
+.tabela-desconto td {
+  padding: 7px 10px;
+  border-bottom: 1px solid var(--border);
+  text-align: left;
+}
+
+.tabela-desconto td:last-child,
+.tabela-desconto th:last-child {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.tabela-desconto tbody tr:last-child td {
+  font-weight: 700;
+  color: var(--gold-texto-claro);
+}
+
+.link-guia-tamanhos {
+  border: none;
+  background: none;
+  color: var(--accent);
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0;
+  margin-left: 8px;
+  text-decoration: underline;
+}
+
 .toast {
   position: fixed;
   left: 50%;
@@ -2267,6 +2389,13 @@ input[type="file"] {
 .botao-pagar:disabled {
   opacity: 0.6;
   cursor: default;
+}
+
+.selo-confianca {
+  text-align: center;
+  font-size: 0.76rem;
+  color: var(--muted);
+  margin: 10px 0 0;
 }
 
 .whatsapp-acoes {

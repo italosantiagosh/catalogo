@@ -209,7 +209,7 @@
     if (inputMedalha) inputMedalha.checked = true;
 
     const tamanhos = JSON.parse(botao.dataset.tamanhos || '[]');
-    tamanhosFieldset.innerHTML = '<legend>Tamanho *</legend>';
+    tamanhosFieldset.innerHTML = '<legend>Tamanho * <button type="button" class="link-guia-tamanhos" onclick="abrirGuiaTamanhos()">📏 Guia de tamanhos</button></legend>';
     tamanhos.forEach((tamanho) => {
       const id = `tamanho-${tamanho}`;
       const label = document.createElement('label');

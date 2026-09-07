@@ -71,7 +71,7 @@
 <body>
   <div class="topo-fixo">
     <div class="faixa-topo">
-      <span>💰 Desconto progressivo automático — até 65% OFF no atacado</span>
+      <button type="button" class="faixa-topo-botao" onclick="abrirTabelaDesconto()">💰 Desconto progressivo automático — até 65% OFF no atacado</button>
       <span>🚚 Frete grátis acima de R$ 300</span>
     </div>
     <header class="topo">
@@ -147,7 +147,36 @@
     <script>window.VIDEO_APRESENTACAO_URL = {{ video_apresentacao_url | tojson }};</script>
     <script src="{{ url_for('static', filename='js/video_flutuante.js') }}"></script>
   {% endif %}
+  <div class="imagem-modal" id="modal-guia-tamanhos" hidden>
+    <div class="imagem-modal-caixa">
+      <button type="button" class="imagem-modal-fechar" id="btn-guia-tamanhos-fechar" aria-label="Fechar">×</button>
+      <img src="{{ url_for('static', filename='img/guia-tamanhos.jpg') }}" alt="Guia de tamanhos: comparação real das medalhas de 1,2cm e 1,6cm (1 lado) e das medalhas de 2 lados em 1,2cm/1,6cm, ao lado de uma cruz de referência e de uma régua.">
+      <p>Tamanho real das peças, lado a lado com uma régua pra comparação.</p>
+    </div>
+  </div>
+
+  <div class="imagem-modal" id="modal-tabela-desconto" hidden>
+    <div class="imagem-modal-caixa imagem-modal-caixa-larga">
+      <button type="button" class="imagem-modal-fechar" id="btn-tabela-desconto-fechar" aria-label="Fechar">×</button>
+      <h2 class="tabela-desconto-titulo">Desconto progressivo por quantidade</h2>
+      <p class="tabela-desconto-intro">O preço por peça cai sozinho conforme a quantidade no carrinho aumenta — cada tabela abaixo é um grupo independente (não se misturam entre si).</p>
+      {% for grupo in tabelas_desconto %}
+        <table class="tabela-desconto">
+          <caption>{{ grupo.titulo }}</caption>
+          <thead>
+            <tr><th>Quantidade</th><th>Preço por peça</th></tr>
+          </thead>
+          <tbody>
+            {% for faixa in grupo.faixas %}
+              <tr><td>{{ faixa.label }}</td><td>{{ faixa.preco | preco }}</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      {% endfor %}
+    </div>
+  </div>
   <script src="{{ url_for('static', filename='js/carrinho.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/modais_base.js') }}"></script>
   {% block script %}{% endblock %}
 </body>
 </html>

@@ -10,10 +10,24 @@ from pathlib import Path
 DATA_DIR = Path(__file__).resolve().parent.parent / "data"
 PRODUTOS_PATH = DATA_DIR / "produtos.json"
 
+# Cache em memoria (por processo) -- produtos.json e´ estatico, so muda
+# com um novo deploy (ninguem edita pelo admin em runtime), entao nao
+# ha risco de servir dado velho. Antes disso, TODA pagina relia e
+# reparseava o JSON inteiro do zero, varias vezes por requisicao
+# (buscar_produto chama carregar_produtos, que por sua vez e´ chamado
+# de novo logo em seguida por quem so precisava da lista inteira) --
+# desperdicio de CPU/IO que so cresce com o catalogo. Nada aqui muta o
+# dict devolvido (conferido: todo consumidor so le), entao devolver a
+# MESMA lista cacheada, sem copiar, e´ seguro.
+_produtos_cache: list[dict] | None = None
+
 
 def carregar_produtos() -> list[dict]:
-    with PRODUTOS_PATH.open(encoding="utf-8") as f:
-        return json.load(f)
+    global _produtos_cache
+    if _produtos_cache is None:
+        with PRODUTOS_PATH.open(encoding="utf-8") as f:
+            _produtos_cache = json.load(f)
+    return _produtos_cache
 
 
 def buscar_produto(produto_id: str) -> dict | None:
