@@ -750,6 +750,22 @@ fieldset.cores legend {
   cursor: pointer;
 }
 
+.forma-pagamento .opcao-formato {
+  flex-wrap: wrap;
+}
+
+.etiqueta-rapido {
+  flex-basis: 100%;
+  margin-left: 22px;
+  width: fit-content;
+  background: var(--gold-soft);
+  color: var(--gold-texto-claro);
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 999px;
+}
+
 .quantidade {
   margin-bottom: 20px;
 }
