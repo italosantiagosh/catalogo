@@ -4002,7 +4002,7 @@ def admin_campanha_enviar_lote():
         _CAMPANHA_ENVIO_EM_ANDAMENTO.release()
         return redirect(url_for("admin_campanha_antigos"))
 
-    url_site = url_for("catalogo_completo", _external=True)
+    url_site = url_for("index", _external=True)
     url_avaliar = url_for("avaliar_geral", _external=True)
     threading.Thread(
         target=_enviar_lote_campanha_em_segundo_plano,
