@@ -2889,14 +2889,21 @@ def admin_pedidos_csv_total():
     """CSV de producao com os pedidos SELECIONADOS no painel (ver
     templates/admin_pedidos.html, botao "Baixar CSV total" na barra de
     selecao em massa), um em seguida do outro, na mesma ordem da
-    selecao. Entre um pedido e o proximo, quando a ULTIMA variacao
-    (tamanho) do pedido de cima e´ igual a PRIMEIRA do pedido de baixo,
-    insere uma linha "Nove de Julho,1,<variacao>,1" so pra marcar
-    visualmente onde um pedido acaba e o outro comeca -- sem isso, 2
-    pedidos consecutivos com a mesma variacao ficam indistinguiveis na
-    planilha de producao (ver conversa). Quando as variacoes diferem, a
-    propria mudanca de coluna ja separa, entao nao precisa de linha
-    extra ali."""
+    selecao.
+
+    O programa de producao MONTA UMA FOLHA POR TAMANHO (variacao 12,
+    16 ou 29), juntando so as linhas daquele tamanho -- nao mantem os
+    pedidos agrupados. Entao 2 pedidos consecutivos que compartilham um
+    MESMO tamanho (em qualquer posicao dentro do pedido, nao so na
+    ultima/primeira linha) ficam com as linhas desse tamanho grudadas
+    uma na outra dentro da folha, sem jeito de saber visualmente onde
+    um pedido acaba e o outro comeca (ver conversa). Por isso, pra
+    CADA tamanho que aparece nos dois pedidos ao mesmo tempo, insere
+    uma linha "Nove de Julho,1,<tamanho>,1" na fronteira entre os 2
+    pedidos -- essa linha some junto com o resto na hora de montar a
+    folha daquele tamanho especifico, servindo de marcador visual so´
+    ali. Tamanho que aparece so´ num dos dois pedidos nao precisa de
+    separador (nunca fica adjacente ao de outro pedido naquela folha)."""
     if not _autenticacao_admin_valida(request.authorization):
         return Response(
             "Autenticação necessária.", 401, {"WWW-Authenticate": 'Basic realm="Painel de pedidos"'}
@@ -2922,8 +2929,11 @@ def admin_pedidos_csv_total():
         for linha in linhas:
             escritor.writerow(linha)
         proximas_linhas = linhas_por_pedido[indice + 1] if indice + 1 < len(linhas_por_pedido) else None
-        if linhas and proximas_linhas and linhas[-1][2] == proximas_linhas[0][2]:
-            escritor.writerow(["Nove de Julho", 1, linhas[-1][2], 1])
+        if linhas and proximas_linhas:
+            tamanhos_deste = {linha[2] for linha in linhas}
+            tamanhos_proximo = {linha[2] for linha in proximas_linhas}
+            for tamanho in sorted(tamanhos_deste & tamanhos_proximo, key=lambda t: (len(t), t)):
+                escritor.writerow(["Nove de Julho", 1, tamanho, 1])
 
     conteudo_bytes = buffer.getvalue().encode("utf-8-sig")
     resposta = Response(conteudo_bytes, mimetype="text/csv")

@@ -98,6 +98,63 @@ def test_csv_total_insere_linha_separadora_quando_variacao_repete(client, monkey
     assert "Santa Rita" in linhas[3]
 
 
+def test_csv_total_separa_por_tamanho_compartilhado_mesmo_fora_das_bordas(client, monkeypatch):
+    """ver conversa: o programa de produção monta uma folha POR TAMANHO,
+    então o que importa é se os 2 pedidos compartilham um tamanho em
+    QUALQUER posição -- não só se a última linha de um bate com a
+    primeira do outro."""
+    _preparar_admin(monkeypatch)
+    token1 = _criar_pedido(
+        client,
+        itens=[
+            {"chave_preco": "12mm", "quantidade": 10, "produtoNome": "São José", "modeloNome": "Modelo 1"},
+            {"chave_preco": "16mm", "quantidade": 10, "produtoNome": "São José", "modeloNome": "Modelo 1"},
+        ],
+    )
+    token2 = _criar_pedido(
+        client,
+        itens=[
+            {"chave_preco": "12mm", "quantidade": 10, "produtoNome": "Santa Rita", "modeloNome": "Modelo 1"},
+            {"chave_preco": "chaveiro", "quantidade": 10, "produtoNome": "Santa Rita", "modeloNome": "Modelo 1"},
+        ],
+    )
+    resposta = client.post(
+        "/admin/pedidos/csv-total", data={"tokens": [token1, token2]}, auth=("admin", "segredo123")
+    )
+    texto = resposta.data.decode("utf-8-sig")
+    # ultima linha do pedido1 e´ 16, primeira do pedido2 e´ 12 -- bordas
+    # diferentes, mas os 2 pedidos COMPARTILHAM o tamanho 12 (1a linha
+    # do pedido1, nao a ultima)
+    assert "Nove de Julho;1;12;1" in texto
+    assert "Nove de Julho;1;16;1" not in texto  # 16 so aparece no pedido1
+    assert "Nove de Julho;1;29;1" not in texto  # 29 (chaveiro) so aparece no pedido2
+
+
+def test_csv_total_insere_separador_pra_cada_tamanho_compartilhado(client, monkeypatch):
+    _preparar_admin(monkeypatch)
+    token1 = _criar_pedido(
+        client,
+        itens=[
+            {"chave_preco": "12mm", "quantidade": 10, "produtoNome": "São José", "modeloNome": "Modelo 1"},
+            {"chave_preco": "16mm", "quantidade": 10, "produtoNome": "São José", "modeloNome": "Modelo 1"},
+        ],
+    )
+    token2 = _criar_pedido(
+        client,
+        itens=[
+            {"chave_preco": "16mm", "quantidade": 10, "produtoNome": "Santa Rita", "modeloNome": "Modelo 1"},
+            {"chave_preco": "12mm", "quantidade": 10, "produtoNome": "Santa Rita", "modeloNome": "Modelo 1"},
+        ],
+    )
+    resposta = client.post(
+        "/admin/pedidos/csv-total", data={"tokens": [token1, token2]}, auth=("admin", "segredo123")
+    )
+    linhas = resposta.data.decode("utf-8-sig").strip().splitlines()
+    assert "Nove de Julho;1;12;1" in linhas
+    assert "Nove de Julho;1;16;1" in linhas
+    assert linhas.index("Nove de Julho;1;12;1") < linhas.index("Nove de Julho;1;16;1")
+
+
 def test_csv_total_ignora_token_inexistente(client, monkeypatch):
     _preparar_admin(monkeypatch)
     token1 = _criar_pedido(client)
