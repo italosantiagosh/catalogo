@@ -2545,7 +2545,7 @@ def _atribuir_numeros_modelo_personalizada(pedido: dict) -> None:
 
 
 _ASSINATURA_WHATSAPP_CLIENTE = (
-    "\n\nQualquer dúvida é só falar. Deus abençoe. Shalom! 🙏\nÍtalo Santiago -- Nove de Julho"
+    "\n\nQualquer dúvida é só falar. Deus abençoe. Shalom! :)\nÍtalo Santiago -- Nove de Julho"
 )
 
 
@@ -2659,7 +2659,7 @@ def _mensagem_whatsapp_cliente(pedido: dict) -> str:
     if pedido["status"] == "entregue":
         url_avaliar = url_for("avaliar_geral", _external=True)
         return (
-            f"Olá {nome}! Que alegria saber que seu pedido #{codigo} já chegou! 🙏\n"
+            f"Olá {nome}! Que alegria saber que seu pedido #{codigo} já chegou! :)\n"
             f"Poderia avaliar sua compra? Leva menos de 1 minuto: {url_avaliar}"
             f"{_ASSINATURA_WHATSAPP_CLIENTE}"
         )
