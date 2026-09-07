@@ -653,35 +653,26 @@ def produtos_mais_vendidos(
     return resultado[:limite_itens]
 
 
-# Rotulo de MATERIAL (nao de produto/santo) por chave_preco -- 12mm/16mm
-# viram uma unica categoria "Medalha 1 lado" (mesmo material fisico, so
-# tamanho diferente, ver conversa). Usado so pra quantidade_por_material
-# abaixo (ver app.py:admin_analytics).
-_MATERIAL_LABEL_POR_CHAVE = {
-    "12mm": "Medalha 1 lado",
-    "16mm": "Medalha 1 lado",
-    "medalha_2lados": "Medalha 2 lados",
-    "entremeio": "Entremeio 1 lado",
-    "entremeio_2lados": "Entremeio 2 lados",
-    "chaveiro": "Chaveiro 1 lado",
-    "chaveiro_2lados": "Chaveiro 2 lados",
-}
-
-
 def quantidade_por_material(*, desde: datetime | None = None, ate: datetime | None = None) -> list[dict]:
     """[{"material": rotulo, "quantidade": int}, ...] a partir dos ITENS
-    dos pedidos PAGOS no periodo, somando quantidade por MATERIAL (ver
-    _MATERIAL_LABEL_POR_CHAVE) em vez de por santo/produto (ver
-    produtos_mais_vendidos acima) -- pedido do usuario: "quantidade
-    total de medalhas de 1 lado... e assim por diante de cada
-    material". Sempre devolve as 6 categorias, mesmo com quantidade 0,
-    pra dar visao completa do que mais consome estoque no periodo."""
-    contagem = dict.fromkeys(dict.fromkeys(_MATERIAL_LABEL_POR_CHAVE.values()), 0)
+    dos pedidos PAGOS no periodo, somando quantidade por VARIACAO
+    detalhada (ja guardada em item["detalhe"] desde a criacao do
+    pedido, ver app.py:_detalhe_formato_do_item/
+    _itens_com_descricao_do_corpo -- ex: "Medalha · 1,2 cm", "Entremeio
+    · Prata", "Medalha 2 lados · Ouro velho · 1,4 cm", "Chaveiro",
+    "Chaveiro 2 lados") em vez de por santo/produto (ver
+    produtos_mais_vendidos acima) ou por categoria generica -- pedido
+    do usuario: "separar detalhado: medalha de 1 lado 1,2cm, cor do
+    entremeio, cor e tamanho da medalha de 2 lados, chaveiro de 1 ou 2
+    lados". So´ lista variacao que realmente vendeu no periodo (sem
+    linha zerada -- ver produtos_mais_vendidos, mesmo criterio)."""
+    contagem: dict[str, int] = {}
     for itens in _itens_pagos_no_periodo(desde, ate):
         for item in itens:
-            rotulo = _MATERIAL_LABEL_POR_CHAVE.get(item.get("chave_preco"))
-            if rotulo:
-                contagem[rotulo] += int(item.get("quantidade", 0))
+            rotulo = item.get("detalhe")
+            if not rotulo:
+                continue
+            contagem[rotulo] = contagem.get(rotulo, 0) + int(item.get("quantidade", 0))
     resultado = [{"material": rotulo, "quantidade": quantidade} for rotulo, quantidade in contagem.items()]
     resultado.sort(key=lambda r: r["quantidade"], reverse=True)
     return resultado

@@ -101,7 +101,8 @@ def test_admin_analytics_mostra_visitas_e_fretes_de_ontem(client, monkeypatch):
 
 def _corpo_pedido_valido(**overrides):
     base = dict(
-        itens=[{"chave_preco": "16mm", "quantidade": 10, "produtoNome": "São José", "modeloNome": "Modelo 1"}],
+        itens=[{"chave_preco": "16mm", "tamanho": "16mm", "quantidade": 10,
+                "produtoNome": "São José", "modeloNome": "Modelo 1"}],
         frete={"texto": "Correios PAC — R$ 10,00", "preco": 10.0},
         cliente={"nome": "Maria Teste", "tipo_pessoa": "fisica", "documento": "11144477735",
                  "telefone": "84999999999", "email": "maria@example.com"},
@@ -181,7 +182,7 @@ def test_admin_analytics_mostra_secao_de_vendas_com_pedidos_reais(client, monkey
     assert "Produtos mais vendidos" in corpo
     assert "São José" in corpo
     assert "Quantidade por material" in corpo
-    assert "Medalha 1 lado" in corpo
+    assert "Medalha · 1,6 cm" in corpo
 
 
 def test_admin_analytics_periodo_selecionavel_pra_produtos_e_materiais(client, monkeypatch):

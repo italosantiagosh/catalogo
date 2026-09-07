@@ -225,30 +225,30 @@
       </form>
     </div>
 
-    <div class="stat-grade" style="margin-bottom: 18px;">
-      <div class="bloco" style="margin-bottom: 0;">
-        <p class="secao-nota" style="margin: 0 0 10px;">Produtos mais vendidos</p>
-        {% if produtos_mais_vendidos %}
-          {% set maior_produto = produtos_mais_vendidos[0].quantidade %}
-          {% for p in produtos_mais_vendidos %}
-            <div class="barra-lista-item">
-              <div class="barra-lista-topo">
-                <span class="barra-lista-pagina">{{ p.produto }}</span>
-                <span class="barra-lista-numero">{{ p.quantidade }}</span>
-              </div>
-              <div class="barra-lista-trilho">
-                <div class="barra-lista-preenchido" style="width: {{ (p.quantidade / maior_produto * 100) if maior_produto else 0 }}%;"></div>
-              </div>
+    <div class="bloco">
+      <p class="secao-nota" style="margin: 0 0 10px;">Produtos mais vendidos</p>
+      {% if produtos_mais_vendidos %}
+        {% set maior_produto = produtos_mais_vendidos[0].quantidade %}
+        {% for p in produtos_mais_vendidos %}
+          <div class="barra-lista-item">
+            <div class="barra-lista-topo">
+              <span class="barra-lista-pagina">{{ p.produto }}</span>
+              <span class="barra-lista-numero">{{ p.quantidade }}</span>
             </div>
-          {% endfor %}
-        {% else %}
-          <p class="secao-nota" style="margin: 0;">Sem venda paga nesse período.</p>
-        {% endif %}
-      </div>
+            <div class="barra-lista-trilho">
+              <div class="barra-lista-preenchido" style="width: {{ (p.quantidade / maior_produto * 100) if maior_produto else 0 }}%;"></div>
+            </div>
+          </div>
+        {% endfor %}
+      {% else %}
+        <p class="secao-nota" style="margin: 0;">Sem venda paga nesse período.</p>
+      {% endif %}
+    </div>
 
-      <div class="bloco" style="margin-bottom: 0;">
-        <p class="secao-nota" style="margin: 0 0 10px;">Quantidade por material</p>
-        {% set maior_material = quantidade_por_material[0].quantidade if quantidade_por_material else 0 %}
+    <div class="bloco">
+      <p class="secao-nota" style="margin: 0 0 10px;">Quantidade por material</p>
+      {% if quantidade_por_material %}
+        {% set maior_material = quantidade_por_material[0].quantidade %}
         {% for m in quantidade_por_material %}
           <div class="barra-lista-item">
             <div class="barra-lista-topo">
@@ -260,7 +260,9 @@
             </div>
           </div>
         {% endfor %}
-      </div>
+      {% else %}
+        <p class="secao-nota" style="margin: 0;">Sem venda paga nesse período.</p>
+      {% endif %}
     </div>
 
     {% if not configurado %}

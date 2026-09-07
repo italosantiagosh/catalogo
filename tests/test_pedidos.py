@@ -698,27 +698,60 @@ def test_unidades_vendidas_por_produto_fora_da_janela_nao_conta(monkeypatch, tmp
     assert "sao-jose" not in resultado
 
 
-def test_quantidade_por_material_agrupa_12mm_e_16mm_e_devolve_as_6_categorias(monkeypatch, tmp_path):
+def test_quantidade_por_material_agrupa_por_detalhe_e_separa_tamanho_cor(monkeypatch, tmp_path):
+    """item["detalhe"] ja vem pronto de app.py:_detalhe_formato_do_item
+    na hora que o pedido e´ criado (ver conversa 2026-09-08: quer o
+    material bem detalhado -- tamanho da medalha 1 lado, cor do
+    entremeio, cor+tamanho da medalha 2 lados, 1 ou 2 lados do
+    chaveiro), entao a mesma "Medalha" com tamanho diferente NAO deve
+    somar junto."""
     _reapontar_db(monkeypatch, tmp_path)
     pedido = pedidos.criar_pedido(**_pedido_exemplo(
         itens=[
-            {"chave_preco": "16mm", "quantidade": 10},
-            {"chave_preco": "12mm", "quantidade": 5},
-            {"chave_preco": "entremeio", "quantidade": 3, "cor": "prata"},
-            {"chave_preco": "medalha_2lados", "quantidade": 2, "cor": "prata", "tamanho": "18mm"},
+            {"chave_preco": "16mm", "quantidade": 10, "detalhe": "Medalha · 1,6 cm"},
+            {"chave_preco": "12mm", "quantidade": 5, "detalhe": "Medalha · 1,2 cm"},
+            {"chave_preco": "entremeio", "quantidade": 3, "detalhe": "Entremeio · Prata"},
+            {"chave_preco": "medalha_2lados", "quantidade": 2,
+             "detalhe": "Medalha 2 lados · Prata · 1,8 cm"},
+            {"chave_preco": "chaveiro", "quantidade": 4, "detalhe": "Chaveiro"},
         ],
     ))
     pedidos.marcar_pago(pedido["token"], forma_pagamento="pix", parcelas=None, valor_pago=100.0, transaction_nsu="tx1")
 
     resultado = {r["material"]: r["quantidade"] for r in pedidos.quantidade_por_material()}
-    assert resultado["Medalha 1 lado"] == 15  # 16mm + 12mm juntos
-    assert resultado["Entremeio 1 lado"] == 3
-    assert resultado["Medalha 2 lados"] == 2
-    # categorias sem venda continuam aparecendo, com 0
-    assert resultado["Entremeio 2 lados"] == 0
-    assert resultado["Chaveiro 1 lado"] == 0
-    assert resultado["Chaveiro 2 lados"] == 0
-    assert len(resultado) == 6
+    assert resultado["Medalha · 1,6 cm"] == 10
+    assert resultado["Medalha · 1,2 cm"] == 5  # nao soma com o de 1,6 cm
+    assert resultado["Entremeio · Prata"] == 3
+    assert resultado["Medalha 2 lados · Prata · 1,8 cm"] == 2
+    assert resultado["Chaveiro"] == 4
+    assert len(resultado) == 5  # so o que realmente vendeu, sem linha zerada
+
+
+def test_quantidade_por_material_soma_mesma_variacao_de_pedidos_diferentes(monkeypatch, tmp_path):
+    _reapontar_db(monkeypatch, tmp_path)
+    p1 = pedidos.criar_pedido(**_pedido_exemplo(
+        itens=[{"chave_preco": "16mm", "quantidade": 10, "detalhe": "Medalha · 1,6 cm"}],
+    ))
+    pedidos.marcar_pago(p1["token"], forma_pagamento="pix", parcelas=None, valor_pago=100.0, transaction_nsu="tx1")
+    p2 = pedidos.criar_pedido(**_pedido_exemplo(
+        itens=[{"chave_preco": "16mm", "quantidade": 7, "detalhe": "Medalha · 1,6 cm"}],
+    ))
+    pedidos.marcar_pago(p2["token"], forma_pagamento="pix", parcelas=None, valor_pago=100.0, transaction_nsu="tx2")
+
+    resultado = {r["material"]: r["quantidade"] for r in pedidos.quantidade_por_material()}
+    assert resultado["Medalha · 1,6 cm"] == 17
+
+
+def test_quantidade_por_material_item_sem_detalhe_fica_de_fora(monkeypatch, tmp_path):
+    """Pedido antigo/incompleto sem "detalhe" salvo -- nao quebra, so
+    fica de fora do relatorio (ver conversa)."""
+    _reapontar_db(monkeypatch, tmp_path)
+    pedido = pedidos.criar_pedido(**_pedido_exemplo(
+        itens=[{"chave_preco": "16mm", "quantidade": 10}],
+    ))
+    pedidos.marcar_pago(pedido["token"], forma_pagamento="pix", parcelas=None, valor_pago=100.0, transaction_nsu="tx1")
+
+    assert pedidos.quantidade_por_material() == []
 
 
 def test_taxa_clientes_recorrentes_conta_so_quem_ja_comprou_antes(monkeypatch, tmp_path):
