@@ -598,9 +598,13 @@ def test_confirmar_venda_com_telefone_do_destinatario_aparece_clicavel(client, m
 
     pedido = pedidos.obter_pedido(lead["token"])
     assert pedido["endereco_destinatario_telefone"] == "84988887777"
+    assert not pedido["cliente_telefone"]  # cliente pagante sem telefone, so o destinatario tem
 
     pagina = client.get(f"/admin/pedidos/{lead['token']}", auth=("admin", "segredo123")).get_data(as_text=True)
-    assert "https://wa.me/5584988887777" in pagina
+    # sem telefone do cliente pagante pra mandar a msg de status (ver
+    # conversa), o link do destinatario tem que vir com a mesma msg
+    # pre-preenchida, senao fica um botao de wpp mudo.
+    assert "https://wa.me/5584988887777?text=" in pagina
 
 
 def test_confirmar_venda_com_cpf_invalido_400(client, monkeypatch):

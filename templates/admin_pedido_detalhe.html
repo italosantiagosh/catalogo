@@ -133,7 +133,7 @@
         <p>
           Destinatário: {{ pedido.endereco_destinatario_nome }}{% if pedido.endereco_destinatario_documento %} ({{ pedido.endereco_destinatario_documento }}){% endif %}
           {%- if pedido.endereco_destinatario_telefone %} —
-            <a href="https://wa.me/{{ pedido.endereco_destinatario_telefone | whatsapp }}" target="_blank" rel="noopener">{{ pedido.endereco_destinatario_telefone }} 💬</a>
+            <a href="https://wa.me/{{ pedido.endereco_destinatario_telefone | whatsapp }}{% if mensagem_whatsapp_cliente %}?text={{ mensagem_whatsapp_cliente | urlencode }}{% endif %}" target="_blank" rel="noopener">{{ pedido.endereco_destinatario_telefone }} 💬</a>
           {%- endif %}
         </p>
       {% endif %}
