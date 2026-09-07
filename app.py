@@ -45,6 +45,7 @@ import secrets
 import tempfile
 import threading
 import time
+import zipfile
 from datetime import datetime, timedelta, timezone
 from zoneinfo import ZoneInfo
 from pathlib import Path
@@ -1561,6 +1562,33 @@ def _linhas_csv_do_item(item: dict) -> list[list]:
     return linhas
 
 
+def _linhas_csv_pedido(pedido: dict) -> list[list]:
+    linhas = []
+    for item in pedido["itens"]:
+        linhas.extend(_linhas_csv_do_item(item))
+    return linhas
+
+
+def _recortes_personalizados_do_item(item: dict) -> list[tuple]:
+    """Numero + URL de cada recorte 1:1 (imagem que vai pra producao de
+    verdade, ver conversa) que um item carrega -- 2 lados pode ter 0, 1
+    ou 2 (cada lado personalizada com foto propria conta separado, lado
+    do catalogo nao tem recorte); 1 lado tem 0 ou 1. MESMO criterio do
+    template admin_pedido_detalhe.html (ver os links "Baixar imagem
+    1:1" la´), reaproveitado aqui pro zip em massa (ver
+    admin_pedidos_zip_personalizadas abaixo)."""
+    if item.get("duasFaces"):
+        recortes = []
+        if item.get("imagemRecorteLado1"):
+            recortes.append((item.get("numeroModeloPersonalizadaLado1"), item["imagemRecorteLado1"]))
+        if item.get("imagemRecorteLado2"):
+            recortes.append((item.get("numeroModeloPersonalizadaLado2"), item["imagemRecorteLado2"]))
+        return recortes
+    if item.get("imagemRecorte"):
+        return [(item.get("numeroModeloPersonalizada"), item["imagemRecorte"])]
+    return []
+
+
 _PREFIXO_IMAGEM_PERSONALIZADA = "/imagem-personalizada/"
 
 
@@ -2845,9 +2873,8 @@ def admin_pedido_csv(token: str):
     buffer = io.StringIO()
     escritor = csv.writer(buffer, delimiter=";")
     escritor.writerow(["Produto", "Modelo", "Variação", "Quantidade"])
-    for item in pedido["itens"]:
-        for linha in _linhas_csv_do_item(item):
-            escritor.writerow(linha)
+    for linha in _linhas_csv_pedido(pedido):
+        escritor.writerow(linha)
 
     # utf-8-sig (BOM no inicio) -- Excel no Windows so reconhece acento
     # certo em CSV com esse prefixo, senao mostra "Variacao" quebrado.
@@ -2855,6 +2882,98 @@ def admin_pedido_csv(token: str):
     resposta = Response(conteudo_bytes, mimetype="text/csv")
     resposta.headers["Content-Disposition"] = f'attachment; filename="pedido-{pedido["codigo"]}.csv"'
     return resposta
+
+
+@app.route("/admin/pedidos/csv-total", methods=["POST"])
+def admin_pedidos_csv_total():
+    """CSV de producao com os pedidos SELECIONADOS no painel (ver
+    templates/admin_pedidos.html, botao "Baixar CSV total" na barra de
+    selecao em massa), um em seguida do outro, na mesma ordem da
+    selecao. Entre um pedido e o proximo, quando a ULTIMA variacao
+    (tamanho) do pedido de cima e´ igual a PRIMEIRA do pedido de baixo,
+    insere uma linha "Nove de Julho,1,<variacao>,1" so pra marcar
+    visualmente onde um pedido acaba e o outro comeca -- sem isso, 2
+    pedidos consecutivos com a mesma variacao ficam indistinguiveis na
+    planilha de producao (ver conversa). Quando as variacoes diferem, a
+    propria mudanca de coluna ja separa, entao nao precisa de linha
+    extra ali."""
+    if not _autenticacao_admin_valida(request.authorization):
+        return Response(
+            "Autenticação necessária.", 401, {"WWW-Authenticate": 'Basic realm="Painel de pedidos"'}
+        )
+    tokens = request.form.getlist("tokens")
+    status_filtro = str(request.form.get("status_filtro", "")).strip() or None
+    arquivados = request.form.get("arquivados") == "1"
+    if not tokens:
+        return redirect(url_for("admin_pedidos", status=status_filtro, arquivados="1" if arquivados else None))
+
+    linhas_por_pedido = []
+    for token in tokens:
+        pedido = obter_pedido(token)
+        if pedido is None:
+            continue
+        _atribuir_numeros_modelo_personalizada(pedido)
+        linhas_por_pedido.append(_linhas_csv_pedido(pedido))
+
+    buffer = io.StringIO()
+    escritor = csv.writer(buffer, delimiter=";")
+    escritor.writerow(["Produto", "Modelo", "Variação", "Quantidade"])
+    for indice, linhas in enumerate(linhas_por_pedido):
+        for linha in linhas:
+            escritor.writerow(linha)
+        proximas_linhas = linhas_por_pedido[indice + 1] if indice + 1 < len(linhas_por_pedido) else None
+        if linhas and proximas_linhas and linhas[-1][2] == proximas_linhas[0][2]:
+            escritor.writerow(["Nove de Julho", 1, linhas[-1][2], 1])
+
+    conteudo_bytes = buffer.getvalue().encode("utf-8-sig")
+    resposta = Response(conteudo_bytes, mimetype="text/csv")
+    resposta.headers["Content-Disposition"] = 'attachment; filename="pedidos-selecionados.csv"'
+    return resposta
+
+
+@app.route("/admin/pedidos/zip-personalizadas", methods=["POST"])
+def admin_pedidos_zip_personalizadas():
+    """Zip com as imagens 1:1 de producao (recorte, ver
+    services/imagens_personalizadas.py) de TODAS as pecas personalizadas
+    dos pedidos SELECIONADOS no painel -- mesmo nome de arquivo
+    (personalizada_modelo_<numero>.png) que os links avulsos "Baixar
+    imagem 1:1" ja usam (ver templates/admin_pedido_detalhe.html), pra
+    quem baixa em massa reconhecer cada peca do mesmo jeito. Pedido sem
+    nenhuma peca personalizada so nao contribui nada pro zip."""
+    if not _autenticacao_admin_valida(request.authorization):
+        return Response(
+            "Autenticação necessária.", 401, {"WWW-Authenticate": 'Basic realm="Painel de pedidos"'}
+        )
+    tokens = request.form.getlist("tokens")
+    status_filtro = str(request.form.get("status_filtro", "")).strip() or None
+    arquivados = request.form.get("arquivados") == "1"
+    if not tokens:
+        return redirect(url_for("admin_pedidos", status=status_filtro, arquivados="1" if arquivados else None))
+
+    buffer = io.BytesIO()
+    total_imagens = 0
+    with zipfile.ZipFile(buffer, "w", zipfile.ZIP_DEFLATED) as zip_arquivo:
+        for token in tokens:
+            pedido = obter_pedido(token)
+            if pedido is None:
+                continue
+            _atribuir_numeros_modelo_personalizada(pedido)
+            for item in pedido["itens"]:
+                for numero, url in _recortes_personalizados_do_item(item):
+                    if not url.startswith(_PREFIXO_IMAGEM_PERSONALIZADA):
+                        continue
+                    entrada = obter_imagem(url[len(_PREFIXO_IMAGEM_PERSONALIZADA):])
+                    if entrada is None:
+                        continue
+                    dados, _mimetype, _nome_arquivo = entrada
+                    zip_arquivo.writestr(f"personalizada_modelo_{numero}.png", dados)
+                    total_imagens += 1
+
+    if total_imagens == 0:
+        return redirect(url_for("admin_pedidos", status=status_filtro, arquivados="1" if arquivados else None))
+
+    buffer.seek(0)
+    return send_file(buffer, mimetype="application/zip", as_attachment=True, download_name="personalizadas.zip")
 
 
 @app.route("/admin/pedidos/<token>/status", methods=["POST"])

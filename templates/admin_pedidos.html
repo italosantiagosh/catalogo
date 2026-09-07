@@ -274,6 +274,8 @@
           {% else %}
             <button type="submit" name="acao" value="desarquivar">↩️ Desarquivar selecionados</button>
           {% endif %}
+          <button type="submit" formaction="{{ url_for('admin_pedidos_csv_total') }}">⬇ Baixar CSV total</button>
+          <button type="submit" formaction="{{ url_for('admin_pedidos_zip_personalizadas') }}">🖼️ Baixar zip com personalizadas</button>
         </div>
         <div class="tabela-wrap">
           <table>
