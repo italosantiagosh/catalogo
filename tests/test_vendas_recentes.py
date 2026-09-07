@@ -83,3 +83,25 @@ def test_venda_de_item_sem_produtoid_personalizada_nao_gera_selo(client):
 
     pagina = client.get("/catalogo").get_data(as_text=True)
     assert "badge-vendas" not in pagina
+
+
+# ---- pagina do produto (ver conversa: mesma logica, so que perto do
+# preco em vez de selo sobre a imagem) ----
+
+def test_pagina_produto_sem_vendas_suficientes_nao_mostra_aviso(client):
+    _vender(5)
+    pagina = client.get("/produto/sao-jose").get_data(as_text=True)
+    assert "vendas-recentes-produto" not in pagina
+
+
+def test_pagina_produto_mostra_aviso_quando_bate_o_minimo(client):
+    _vender(15)
+    pagina = client.get("/produto/sao-jose").get_data(as_text=True)
+    assert "vendas-recentes-produto" in pagina
+    assert ">15</strong> vendidas nos últimos 30 dias" in pagina
+
+
+def test_pagina_produto_nao_mostra_venda_de_outro_produto(client):
+    _vender(20, produto_id="santo-antonio")
+    pagina = client.get("/produto/sao-jose").get_data(as_text=True)
+    assert "vendas-recentes-produto" not in pagina

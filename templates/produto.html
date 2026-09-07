@@ -44,6 +44,9 @@
     A partir de <strong>{{ preco_varejo | preco }}</strong> — desconto de atacado calculado
     automático pela quantidade do carrinho.
   </p>
+  {% if vendas_recentes %}
+    <p class="vendas-recentes-produto">🔥 <strong>{{ vendas_recentes }}</strong> vendidas nos últimos 30 dias</p>
+  {% endif %}
   <p class="aviso-formatos">
     Disponível em <strong>medalha</strong> (1,2 ou 1,6 cm), <strong>entremeio</strong>
     (prata ou ouro velho) e <strong>chaveiro</strong> — escolha após o modelo.

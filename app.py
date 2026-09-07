@@ -1050,6 +1050,8 @@ def produto(produto_id: str):
 
     avaliacoes_aprovadas = listar_avaliacoes_aprovadas(produto_id)
     media_avaliacoes, total_avaliacoes = media_e_total_aprovadas(produto_id)
+    vendas_recentes_qtd = unidades_vendidas_por_produto(VENDAS_RECENTES_DIAS).get(produto_id, 0)
+    vendas_recentes = vendas_recentes_qtd if vendas_recentes_qtd >= VENDAS_RECENTES_MINIMO_PARA_EXIBIR else None
 
     dados_produto = {
         "@context": "https://schema.org",
@@ -1164,6 +1166,7 @@ def produto(produto_id: str):
         avaliacoes=avaliacoes_aprovadas,
         media_avaliacoes=media_avaliacoes,
         total_avaliacoes=total_avaliacoes,
+        vendas_recentes=vendas_recentes,
     )
 
 
