@@ -84,9 +84,9 @@
 
   {{ render_destaque(destaque_ano_jubilar) }}
 
-  <div class="banner-atacado">
-    <img src="{{ url_for('static', filename='img/banner-atacado.jpg') }}" alt="Preço de atacado automático: quanto mais medalhas e entremeios você adicionar ao carrinho — de qualquer santo, inclusive personalizada — menor o preço por unidade. Chaveiros têm tabela de atacado própria. O desconto é aplicado sozinho, sem cupom, assim que você adiciona os itens." loading="lazy" decoding="async" width="900" height="453">
-  </div>
+  <button type="button" class="banner-atacado" onclick="abrirTabelaDesconto()">
+    <img src="{{ url_for('static', filename='img/banner-atacado.jpg') }}" alt="Preço de atacado automático: quanto mais medalhas e entremeios você adicionar ao carrinho — de qualquer santo, inclusive personalizada — menor o preço por unidade. Chaveiros têm tabela de atacado própria. O desconto é aplicado sozinho, sem cupom, assim que você adiciona os itens. Toque pra ver a tabela completa." loading="lazy" decoding="async" width="900" height="453">
+  </button>
 
   {{ render_destaque(destaque_novidades) }}
 

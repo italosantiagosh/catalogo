@@ -1846,10 +1846,16 @@ body.tem-barra-fixa-comprar main {
    imagem fornecida pelo cliente, ver templates/index.html */
 
 .banner-atacado {
+  display: block;
+  width: 100%;
+  border: none;
+  background: none;
+  padding: 0;
   border-radius: 14px;
   overflow: hidden;
   margin: 0 0 16px;
   line-height: 0;
+  cursor: pointer;
 }
 
 .banner-atacado img {
