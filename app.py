@@ -43,6 +43,8 @@ import os
 import re
 import secrets
 import tempfile
+import threading
+import time
 from datetime import datetime, timedelta, timezone
 from zoneinfo import ZoneInfo
 from pathlib import Path
@@ -3958,31 +3960,56 @@ def admin_campanha_importar():
     return redirect(url_for("admin_campanha_antigos", **{f"importado_{k}": v for k, v in resultado.items()}))
 
 
+_CAMPANHA_ENVIO_EM_ANDAMENTO = threading.Lock()
+_CAMPANHA_PAUSA_ENTRE_ENVIOS_SEGUNDOS = 0.3  # nao martelar a API da Brevo
+
+
+def _enviar_lote_campanha_em_segundo_plano(tamanho: int, url_site: str, url_avaliar: str) -> None:
+    """Roda numa thread separada (ver admin_campanha_enviar_lote abaixo) --
+    NUNCA dentro do request/response, senao trava o UNICO worker do
+    gunicorn (ver render.yaml: --workers 1, precisa continuar assim por
+    causa do scheduler e do rate limiter, ver comentario mais abaixo em
+    ENABLE_SCHEDULER) pelo tempo inteiro do lote. Um lote de varias
+    dezenas de e-mails passa facil dos --timeout 90 do gunicorn -- o
+    worker e´ MORTO no meio, derrubando o site pra todo mundo ate´
+    reiniciar (foi exatamente isso que aconteceu quando um lote de
+    ~200 rodou de forma sincrona e so 147 saíram antes do timeout, ver
+    conversa)."""
+    try:
+        for contato in campanha_reengajamento.listar_pendentes(tamanho):
+            resultado = enviar_reengajamento_contato_antigo(contato["email"], contato["nome"], url_site, url_avaliar)
+            campanha_reengajamento.marcar_enviado(contato["email"], erro=resultado.get("erro"))
+            time.sleep(_CAMPANHA_PAUSA_ENTRE_ENVIOS_SEGUNDOS)
+    finally:
+        _CAMPANHA_ENVIO_EM_ANDAMENTO.release()
+
+
 @app.route("/admin/campanha-antigos/enviar-lote", methods=["POST"])
 def admin_campanha_enviar_lote():
     if not _autenticacao_admin_valida(request.authorization):
         return Response(
             "Autenticação necessária.", 401, {"WWW-Authenticate": 'Basic realm="Painel de campanha"'}
         )
+    if not _CAMPANHA_ENVIO_EM_ANDAMENTO.acquire(blocking=False):
+        return redirect(url_for("admin_campanha_antigos", lote_ja_em_andamento="1"))
+
     try:
         tamanho = int(request.form.get("tamanho", "0"))
     except ValueError:
         tamanho = 0
     tamanho = max(0, min(tamanho, _CAMPANHA_LOTE_MAXIMO))
+    if tamanho == 0:
+        _CAMPANHA_ENVIO_EM_ANDAMENTO.release()
+        return redirect(url_for("admin_campanha_antigos"))
 
     url_site = url_for("catalogo_completo", _external=True)
     url_avaliar = url_for("avaliar_geral", _external=True)
-    sucesso = 0
-    falha = 0
-    for contato in campanha_reengajamento.listar_pendentes(tamanho):
-        resultado = enviar_reengajamento_contato_antigo(contato["email"], contato["nome"], url_site, url_avaliar)
-        erro = resultado.get("erro")
-        campanha_reengajamento.marcar_enviado(contato["email"], erro=erro)
-        if erro:
-            falha += 1
-        else:
-            sucesso += 1
-    return redirect(url_for("admin_campanha_antigos", lote_sucesso=sucesso, lote_falha=falha))
+    threading.Thread(
+        target=_enviar_lote_campanha_em_segundo_plano,
+        args=(tamanho, url_site, url_avaliar),
+        daemon=True,
+    ).start()
+    return redirect(url_for("admin_campanha_antigos", lote_iniciado=tamanho))
 
 
 @app.route("/sw.js", methods=["GET"])

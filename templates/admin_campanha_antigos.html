@@ -94,10 +94,17 @@
         {{ request.args.get('importado_invalidos') }} sem e-mail válido.
       </div>
     {% endif %}
-    {% if request.args.get('lote_sucesso') is not none %}
+    {% if request.args.get('lote_iniciado') is not none %}
       <div class="aviso">
-        Lote enviado: {{ request.args.get('lote_sucesso') }} e-mail(s) com sucesso,
-        {{ request.args.get('lote_falha') }} com erro.
+        Lote de até {{ request.args.get('lote_iniciado') }} e-mail(s) iniciado em segundo plano —
+        o envio continua rodando mesmo depois dessa página carregar. Atualize a página (F5) daqui
+        a 1-2 minutos pra ver "Pendentes" caindo e "Enviados" subindo.
+      </div>
+    {% endif %}
+    {% if request.args.get('lote_ja_em_andamento') is not none %}
+      <div class="aviso" style="background:#f4ecd8;color:#7a5c1f;border-color:#e6d6ab;">
+        Já tem um lote rodando agora — espera terminar antes de mandar outro (acompanhe pelos
+        números abaixo) pra não sobrecarregar o envio.
       </div>
     {% endif %}
 

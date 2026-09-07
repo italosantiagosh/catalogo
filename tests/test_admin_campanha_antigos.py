@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import io
+import threading
 from unittest.mock import patch
 
 import openpyxl
@@ -11,11 +12,31 @@ import services.pedidos as pedidos
 from app import app
 
 
+class _ThreadSincrona:
+    """Substitui threading.Thread nos testes -- o envio de verdade roda
+    em segundo plano (ver app.py:admin_campanha_enviar_lote, corrige o
+    bug do worker travando durante o lote), mas nos testes queremos o
+    resultado pronto assim que o POST retorna, entao .start() chama a
+    funcao na hora, sincrono, na mesma thread do teste."""
+
+    def __init__(self, target, args=(), kwargs=None, daemon=None):
+        self._target = target
+        self._args = args
+        self._kwargs = kwargs or {}
+
+    def start(self):
+        self._target(*self._args, **self._kwargs)
+
+
 @pytest.fixture
 def client(monkeypatch, tmp_path):
     caminho = str(tmp_path / "pedidos.db")
     monkeypatch.setattr(pedidos, "DB_PATH", caminho)
     monkeypatch.setattr(campanha, "DB_PATH", caminho)
+    monkeypatch.setattr(threading, "Thread", _ThreadSincrona)
+    import app as app_module
+
+    monkeypatch.setattr(app_module, "_CAMPANHA_PAUSA_ENTRE_ENVIOS_SEGUNDOS", 0)
     app.config["TESTING"] = True
     return app.test_client()
 
@@ -117,3 +138,31 @@ def test_enviar_lote_respeita_tamanho_maximo(client, monkeypatch):
         client.post("/admin/campanha-antigos/enviar-lote", data={"tamanho": "999999"}, auth=credenciais)
     # trava no _CAMPANHA_LOTE_MAXIMO, mas so tem 3 pendentes mesmo
     assert mock_email.call_count == 3
+
+
+def test_enviar_lote_roda_em_segundo_plano_nao_no_request(client, monkeypatch):
+    """ver conversa: um lote sincrono dentro do request trava o UNICO
+    worker do gunicorn ate´ o --timeout 90 matar ele -- por isso o
+    envio precisa ir pra uma thread separada e o redirect volta na
+    hora, sem esperar o lote terminar."""
+    credenciais = _auth(monkeypatch)
+    campanha.importar_contatos([{"nome": "Maria Silva", "email": "maria@example.com"}])
+    with patch("app.enviar_reengajamento_contato_antigo", return_value={"ok": True}):
+        resposta = client.post("/admin/campanha-antigos/enviar-lote", data={"tamanho": "1"}, auth=credenciais)
+    assert resposta.status_code == 302
+    assert "lote_iniciado=1" in resposta.headers["Location"]
+
+
+def test_nao_deixa_2_lotes_rodarem_ao_mesmo_tempo(client, monkeypatch):
+    import app as app_module
+
+    credenciais = _auth(monkeypatch)
+    campanha.importar_contatos([{"nome": "Maria Silva", "email": "maria@example.com"}])
+    app_module._CAMPANHA_ENVIO_EM_ANDAMENTO.acquire()  # simula um lote ja´ em andamento
+    try:
+        with patch("app.enviar_reengajamento_contato_antigo") as mock_email:
+            resposta = client.post("/admin/campanha-antigos/enviar-lote", data={"tamanho": "1"}, auth=credenciais)
+        mock_email.assert_not_called()
+        assert "lote_ja_em_andamento=1" in resposta.headers["Location"]
+    finally:
+        app_module._CAMPANHA_ENVIO_EM_ANDAMENTO.release()
