@@ -519,6 +519,18 @@ a.link-carrinho #contador-carrinho {
   margin: 0 0 6px;
 }
 
+.card-avaliacoes {
+  font-size: 0.78rem;
+  color: var(--muted);
+  margin: 0 0 4px;
+}
+
+.card-estrelas {
+  color: var(--gold);
+  letter-spacing: 1px;
+  margin-right: 2px;
+}
+
 .preco-atacado {
   color: var(--gold-texto-claro);
   font-weight: 600;

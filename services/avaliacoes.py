@@ -135,6 +135,23 @@ def media_e_total_aprovadas(produto_id: str) -> tuple[float | None, int]:
     return media, total
 
 
+def medias_e_totais_aprovadas() -> dict[str, tuple[float, int]]:
+    """(media, total) das avaliacoes aprovadas de TODOS os produtos de
+    uma vez so´ (agrupado por produto_id) -- usado pra anexar a
+    estrelinha nos cards do catalogo/home/categoria (ver app.py:
+    _com_avaliacoes) sem bater no banco uma vez por produto a cada
+    carregamento de pagina. Produto sem nenhuma aprovada simplesmente
+    nao entra no dict (ver media_e_total_aprovadas, usada so´ pra UM
+    produto de cada vez, na pagina dele/schema.org)."""
+    inicializar_db()
+    with _conexao() as conexao:
+        linhas = conexao.execute(
+            "SELECT produto_id, AVG(nota) AS media, COUNT(*) AS total FROM avaliacoes "
+            "WHERE status = 'aprovada' GROUP BY produto_id"
+        ).fetchall()
+    return {linha["produto_id"]: (round(linha["media"], 1), linha["total"]) for linha in linhas}
+
+
 def atualizar_status(id_: int, novo_status: str) -> dict | None:
     if novo_status not in ("aprovada", "recusada"):
         return None

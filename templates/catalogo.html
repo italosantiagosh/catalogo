@@ -37,6 +37,12 @@
         </div>
         <div class="card-corpo">
           <h2>{{ produto.nome }}</h2>
+          {% if produto.total_avaliacoes %}
+            <p class="card-avaliacoes">
+              <span class="card-estrelas">{{ "★" * (produto.media_avaliacoes | round(0, "floor") | int) }}{{ "☆" * (5 - (produto.media_avaliacoes | round(0, "floor") | int)) }}</span>
+              {{ produto.media_avaliacoes }} ({{ produto.total_avaliacoes }})
+            </p>
+          {% endif %}
           {% if produto.personalizada_url %}
             <p class="preco">Envie sua foto e simule antes de pedir</p>
             <span class="ver-modelos">Simular agora →</span>

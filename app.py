@@ -111,6 +111,7 @@ from services.avaliacoes import (
     listar_avaliacoes,
     listar_avaliacoes_aprovadas,
     media_e_total_aprovadas,
+    medias_e_totais_aprovadas,
 )
 from services.push import (
     enviar_notificacao as enviar_notificacao_push,
@@ -803,6 +804,23 @@ def feed_produtos_xml():
     return Response(corpo, mimetype="application/xml")
 
 
+def _com_avaliacoes(itens: list[dict]) -> list[dict]:
+    """Anexa media_avaliacoes/total_avaliacoes em cada item do grid (ver
+    _itens_do_grid/_itens_personalizados_do_grid abaixo) pra estrelinha
+    aparecer no card do catalogo/home/categoria -- uma query so´ pra
+    tudo (ver services/avaliacoes.py:medias_e_totais_aprovadas), em vez
+    de bater no banco uma vez por produto a cada carregamento de
+    pagina. Produto sem avaliacao aprovada fica sem as duas chaves de
+    proposito (ver conversa: melhor nao mostrar nada do que 5 estrelas
+    cinza, que pareceria nota zero em vez de "ainda sem avaliacao")."""
+    medias = medias_e_totais_aprovadas()
+    for item in itens:
+        media_total = medias.get(item["id"])
+        if media_total:
+            item["media_avaliacoes"], item["total_avaliacoes"] = media_total
+    return itens
+
+
 def _itens_do_grid(produtos: list[dict]) -> list[dict]:
     return [
         {
@@ -866,7 +884,7 @@ def index():
     limpa/curta, mostrando so 4 santos em destaque + botao pro catalogo
     inteiro."""
     produtos = carregar_produtos()
-    itens = _itens_do_grid(produtos)
+    itens = _com_avaliacoes(_itens_do_grid(produtos))
     itens_por_id = {item["id"]: item for item in itens}
     # combos "medalha de 2 lados" prontos (ver DESTAQUES_HOME "novidades")
     # entram no mesmo dict pra _montar_destaques resolver os ids deles
@@ -905,7 +923,7 @@ def catalogo_completo():
     # (ver conversa). "Personalizada" nao tem pagina /categoria/<slug>
     # de verdade (nao e´ uma categoria de santo, ver categoria() abaixo)
     # -- slug=None faz o chip apontar pro proprio /catalogo em vez de 404.
-    itens = _itens_do_grid(produtos) + _itens_personalizados_do_grid()
+    itens = _com_avaliacoes(_itens_do_grid(produtos) + _itens_personalizados_do_grid())
     categorias = categorias_com_slug(produtos) + [{"nome": CATEGORIA_PERSONALIZADOS, "slug": None}]
     dados_breadcrumb = _dados_breadcrumb(
         [
@@ -975,16 +993,7 @@ def categoria(slug: str):
     nome_categoria = categoria_por_slug(produtos, slug)
     if nome_categoria is None:
         abort(404)
-    itens = [
-        {
-            "id": p["id"],
-            "nome": p["nome"],
-            "thumbnail": p["modelos"][0]["imagem"],
-            "thumbnail_chaveiro": p["modelos"][0]["imagem_chaveiro"],
-        }
-        for p in produtos
-        if p["categoria"] == nome_categoria
-    ]
+    itens = _com_avaliacoes(_itens_do_grid([p for p in produtos if p["categoria"] == nome_categoria]))
     dados_breadcrumb = _dados_breadcrumb(
         [
             ("Catálogo", url_for("index", _external=True)),
@@ -1138,6 +1147,23 @@ def produto(produto_id: str):
     )
 
 
+def _produto_para_avaliar(produto_id: str) -> dict | None:
+    """Resolve produto_id tanto do catalogo de santos quanto de
+    PRODUTOS_PERSONALIZADOS (config.py) -- avaliar_produto/
+    api_avaliacoes_criar abaixo precisam aceitar os dois (peca
+    personalizada tambem pode ser avaliada, ver conversa). Normaliza
+    os dois em {"id", "nome", "imagem"} (personalizada nao tem
+    "modelos", so um thumbnail unico) pro template nao precisar saber
+    a origem."""
+    produto = buscar_produto(produto_id)
+    if produto is not None:
+        return {"id": produto["id"], "nome": produto["nome"], "imagem": produto["modelos"][0]["imagem"]}
+    for p in PRODUTOS_PERSONALIZADOS:
+        if p["id"] == produto_id:
+            return {"id": p["id"], "nome": p["nome"], "imagem": p["thumbnail"]}
+    return None
+
+
 @app.route("/avaliar", methods=["GET"])
 def avaliar_geral():
     """Mesma pagina isolada de avaliar_produto abaixo, so que sem
@@ -1159,7 +1185,7 @@ def avaliar_produto(produto_id: str):
     automatico de avaliacao (ja sabe qual produto pedir, ver
     _enviar_pedidos_para_avaliacao) -- pro link geral sem produto fixo,
     ver avaliar_geral acima."""
-    produto = buscar_produto(produto_id)
+    produto = _produto_para_avaliar(produto_id)
     if produto is None:
         abort(404)
     return render_template("avaliar.html", produto=produto)
@@ -3525,11 +3551,13 @@ def servir_imagem_personalizada(token: str):
 @limiter.limit("5 per minute")
 def api_avaliacoes_criar():
     """Envio de avaliacao pelo cliente direto na pagina de produto (ver
-    templates/produto.html + static/js/avaliacoes.js) -- nasce
-    "pendente", so aparece pro publico depois de aprovada no painel
-    admin (ver services/avaliacoes.py e /admin/avaliacoes abaixo)."""
+    templates/produto.html + static/js/avaliacoes.js) ou de /avaliar
+    (santo do catalogo OU peca personalizada, ver _produto_para_avaliar
+    -- config.py:PRODUTOS_PERSONALIZADOS) -- nasce "pendente", so
+    aparece pro publico depois de aprovada no painel admin (ver
+    services/avaliacoes.py e /admin/avaliacoes abaixo)."""
     produto_id = str(request.form.get("produto_id", "")).strip()
-    if buscar_produto(produto_id) is None:
+    if _produto_para_avaliar(produto_id) is None:
         return jsonify(erro="Produto não encontrado."), 404
 
     nome_cliente = str(request.form.get("nome_cliente", "")).strip()

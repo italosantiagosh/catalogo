@@ -45,7 +45,7 @@
     {% endif %}
 
     <div class="avaliar-produto" id="avaliar-produto-card" {{ "hidden" if not produto }}>
-      <img id="avaliar-produto-imagem" src="{{ url_for('static', filename=produto.modelos[0].imagem) if produto else '' }}" alt="">
+      <img id="avaliar-produto-imagem" src="{{ url_for('static', filename=produto.imagem) if produto else '' }}" alt="">
       <div class="avaliar-produto-selecionado">
         <strong id="avaliar-produto-nome">{{ produto.nome if produto else '' }}</strong>
         {% if not produto %}

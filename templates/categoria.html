@@ -24,6 +24,12 @@
         </div>
         <div class="card-corpo">
           <h2>{{ produto.nome }}</h2>
+          {% if produto.total_avaliacoes %}
+            <p class="card-avaliacoes">
+              <span class="card-estrelas">{{ "★" * (produto.media_avaliacoes | round(0, "floor") | int) }}{{ "☆" * (5 - (produto.media_avaliacoes | round(0, "floor") | int)) }}</span>
+              {{ produto.media_avaliacoes }} ({{ produto.total_avaliacoes }})
+            </p>
+          {% endif %}
           <p class="preco">{{ preco_varejo | preco }} no varejo <span class="preco-atacado">· até 65% OFF no atacado</span></p>
           <span class="ver-modelos">Ver modelos →</span>
         </div>

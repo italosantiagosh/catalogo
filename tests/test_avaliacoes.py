@@ -37,6 +37,12 @@ def _produto_id_real():
     return carregar_produtos()[0]["id"]
 
 
+def _produto_id_personalizado():
+    from config import PRODUTOS_PERSONALIZADOS
+
+    return PRODUTOS_PERSONALIZADOS[0]["id"]
+
+
 def _corpo_avaliacao(**overrides):
     base = dict(
         produto_id=_produto_id_real(),
@@ -92,6 +98,25 @@ def test_pagina_avaliar_produto_mostra_formulario_aberto(client):
 def test_pagina_avaliar_produto_inexistente_404(client):
     resposta = client.get("/avaliar/nao-existe")
     assert resposta.status_code == 404
+
+
+def test_envio_avaliacao_de_produto_personalizado_e_aceito(client):
+    """Peca personalizada (config.py:PRODUTOS_PERSONALIZADOS) nao esta´
+    no catalogo de santos, mas tambem pode ser avaliada (ver
+    conversa) -- antes dava 404 porque so validava contra o catalogo."""
+    dados = _corpo_avaliacao(produto_id=_produto_id_personalizado())
+    arquivo, nome = _foto_teste()
+    resposta = client.post("/api/avaliacoes", data={**dados, "foto": (arquivo, nome)})
+    assert resposta.status_code == 200
+    assert resposta.get_json()["ok"] is True
+
+
+def test_pagina_avaliar_produto_personalizado_mostra_formulario_aberto(client):
+    produto_id = _produto_id_personalizado()
+    resposta = client.get(f"/avaliar/{produto_id}")
+    assert resposta.status_code == 200
+    corpo = resposta.get_data(as_text=True)
+    assert f'value="{produto_id}"' in corpo
 
 
 def test_pagina_avaliar_geral_mostra_busca_sem_produto_fixo(client):
@@ -209,6 +234,41 @@ def test_envio_com_foto_heic_do_iphone_funciona(client):
     resposta = client.post("/api/avaliacoes", data={**dados, "foto": (buffer, "IMG_1234.HEIC")})
     assert resposta.status_code == 200
     assert resposta.get_json()["ok"] is True
+
+
+def test_catalogo_sem_avaliacao_nao_mostra_estrelas(client):
+    """Ver conversa: produto sem nenhuma avaliacao aprovada fica sem a
+    estrelinha no card (nao mostra 5 estrelas cinza -- pareceria nota
+    zero em vez de "ainda sem avaliacao")."""
+    pagina = client.get("/catalogo").get_data(as_text=True)
+    assert "card-estrelas" not in pagina
+
+
+def test_catalogo_mostra_estrela_media_do_produto_avaliado(client, monkeypatch):
+    _preparar_admin(monkeypatch)
+    produto_id = _produto_id_real()
+    dados = _corpo_avaliacao(produto_id=produto_id)
+    arquivo, nome = _foto_teste()
+    client.post("/api/avaliacoes", data={**dados, "foto": (arquivo, nome)})
+    avaliacao = avaliacoes.listar_avaliacoes()[0]
+    client.post(f"/admin/avaliacoes/{avaliacao['id']}/aprovar", auth=("admin", "segredo123"))
+
+    pagina = client.get("/catalogo").get_data(as_text=True)
+    assert "card-estrelas" in pagina
+    assert "★★★★★" in pagina  # nota 5 (ver _corpo_avaliacao)
+
+
+def test_catalogo_mostra_estrela_de_produto_personalizado_avaliado(client, monkeypatch):
+    _preparar_admin(monkeypatch)
+    produto_id = _produto_id_personalizado()
+    dados = _corpo_avaliacao(produto_id=produto_id)
+    arquivo, nome = _foto_teste()
+    client.post("/api/avaliacoes", data={**dados, "foto": (arquivo, nome)})
+    avaliacao = avaliacoes.listar_avaliacoes()[0]
+    client.post(f"/admin/avaliacoes/{avaliacao['id']}/aprovar", auth=("admin", "segredo123"))
+
+    pagina = client.get("/catalogo").get_data(as_text=True)
+    assert "card-estrelas" in pagina
 
 
 def test_admin_avaliacoes_exige_autenticacao(client, monkeypatch):
