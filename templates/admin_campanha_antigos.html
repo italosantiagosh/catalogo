@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Reengajamento — Painel — Nove de Julho</title>
+  <link rel="icon" type="image/png" href="{{ url_for('static', filename='img/icon-192.png') }}">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Public+Sans:wght@400;500;600;700&display=swap"
+        rel="stylesheet" media="print" onload="this.media='all'">
+  <noscript><link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Public+Sans:wght@400;500;600;700&display=swap" rel="stylesheet"></noscript>
+  <style>
+    :root {
+      --azul-escuro: #14335c; --azul-claro: #29aae1; --dourado: #dba53b;
+      --fundo: #eef2f7; --cartao: #ffffff; --texto: #142238; --texto-suave: #5b6b82; --linha: #e2e7ee;
+    }
+    * { box-sizing: border-box; }
+    body {
+      font-family: 'Public Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--fundo); color: var(--texto); margin: 0; padding: 0 0 40px;
+    }
+    header.masthead {
+      background: linear-gradient(135deg, var(--azul-escuro) 0%, #1c4a80 100%);
+      color: #fff; padding: 20px clamp(16px, 4vw, 32px) 28px; border-radius: 0 0 20px 20px; margin-bottom: 24px;
+    }
+    .masthead-linha { display: flex; align-items: center; gap: 12px; }
+    .masthead-linha img { width: 38px; height: 38px; border-radius: 9px; flex-shrink: 0; }
+    .masthead-titulos h1 { font-family: 'Fraunces', Georgia, serif; font-weight: 700; font-size: 1.35rem; margin: 0; letter-spacing: -0.01em; }
+    .masthead-titulos p { margin: 2px 0 0; font-size: 0.8rem; color: #b9d0e8; }
+    .masthead-nav { margin: 14px 0 0; display: flex; gap: 14px; flex-wrap: wrap; }
+    .masthead-nav a { color: #dfeaf6; text-decoration: none; font-size: 0.8rem; font-weight: 600; }
+    .masthead-nav a:hover { color: #fff; }
+
+    .conteudo { max-width: 720px; margin: 0 auto; padding: 0 clamp(16px, 4vw, 32px); position: relative; z-index: 1; }
+
+    h2.secao-titulo { font-family: 'Fraunces', Georgia, serif; font-size: 1.05rem; margin: 30px 0 14px; }
+    h2.secao-titulo:first-of-type { margin-top: 4px; }
+    .secao-nota { font-size: 0.82rem; color: var(--texto-suave); margin: -8px 0 16px; line-height: 1.5; }
+
+    .cartao {
+      background: var(--cartao); border-radius: 14px; padding: 20px;
+      border: 1px solid var(--linha); box-shadow: 0 8px 20px -16px rgba(20, 51, 92, 0.35);
+    }
+
+    .stat-grade { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 12px; margin-bottom: 8px; }
+    .stat-cartao { background: var(--cartao); border-radius: 12px; padding: 14px; text-align: center; border: 1px solid var(--linha); }
+    .stat-numero { font-family: 'Fraunces', Georgia, serif; font-size: 1.6rem; font-weight: 700; color: var(--azul-escuro); }
+    .stat-rotulo { font-size: 0.75rem; color: var(--texto-suave); margin-top: 2px; }
+    .stat-cartao.pendente .stat-numero { color: #7a5c1f; }
+    .stat-cartao.enviado .stat-numero { color: #1e7a43; }
+    .stat-cartao.erro .stat-numero { color: #a13a2a; }
+
+    label { display: block; font-weight: 600; font-size: 0.85rem; margin: 14px 0 6px; }
+    input[type="file"], input[type="number"] {
+      width: 100%; padding: 10px 12px; border: 1px solid var(--linha); border-radius: 8px; font-size: 0.9rem;
+    }
+    .campo-nota { font-size: 0.78rem; color: var(--texto-suave); margin: 6px 0 0; }
+    button.btn-principal {
+      margin-top: 16px; padding: 11px 20px; border: none; border-radius: 8px; font-weight: 700;
+      cursor: pointer; font-size: 0.88rem; background: var(--azul-escuro); color: #fff;
+    }
+    button.btn-principal:hover { background: #0f2847; }
+
+    .aviso {
+      padding: 12px 16px; border-radius: 10px; font-size: 0.85rem; margin-bottom: 18px;
+      background: #e3f6ea; color: #1e7a43; border: 1px solid #bfe6cc;
+    }
+  </style>
+</head>
+<body>
+  <header class="masthead">
+    <div class="masthead-linha">
+      <img src="{{ url_for('static', filename='img/icon-192.png') }}" alt="">
+      <div class="masthead-titulos">
+        <h1>Reengajamento</h1>
+        <p>Nove de Julho</p>
+      </div>
+    </div>
+    <nav class="masthead-nav">
+      <a href="{{ url_for('admin_pedidos') }}">📦 Pedidos</a>
+      <a href="{{ url_for('admin_avaliacoes') }}">⭐ Avaliações</a>
+      <a href="{{ url_for('admin_analytics') }}">📊 Analytics</a>
+    </nav>
+  </header>
+
+  <div class="conteudo">
+    {% if request.args.get('importado_recebidos') is not none %}
+      <div class="aviso">
+        Planilha processada: {{ request.args.get('importado_recebidos') }} linha(s) lida(s),
+        {{ request.args.get('importado_novos_candidatos') }} novo(s) contato(s) adicionado(s) à fila,
+        {{ request.args.get('importado_ja_e_cliente_site_novo') }} já são clientes do site novo (ignorados),
+        {{ request.args.get('importado_invalidos') }} sem e-mail válido.
+      </div>
+    {% endif %}
+    {% if request.args.get('lote_sucesso') is not none %}
+      <div class="aviso">
+        Lote enviado: {{ request.args.get('lote_sucesso') }} e-mail(s) com sucesso,
+        {{ request.args.get('lote_falha') }} com erro.
+      </div>
+    {% endif %}
+
+    <h2 class="secao-titulo">Fila da campanha</h2>
+    <div class="stat-grade">
+      <div class="stat-cartao pendente">
+        <div class="stat-numero">{{ contagem.pendente }}</div>
+        <div class="stat-rotulo">Pendentes</div>
+      </div>
+      <div class="stat-cartao enviado">
+        <div class="stat-numero">{{ contagem.enviado }}</div>
+        <div class="stat-rotulo">Enviados</div>
+      </div>
+      <div class="stat-cartao erro">
+        <div class="stat-numero">{{ contagem.erro }}</div>
+        <div class="stat-rotulo">Com erro</div>
+      </div>
+    </div>
+
+    <h2 class="secao-titulo">1. Importar planilha(s) do sistema antigo</h2>
+    <p class="secao-nota">
+      Aceita a exportação de contatos do Tiny (.xlsx), com as colunas "Nome" e "E-mail" no
+      cabeçalho — pode subir mais de um arquivo de uma vez. Contatos repetidos entre as
+      planilhas e quem já comprou no site novo são ignorados automaticamente. Reimportar a
+      mesma planilha depois não duplica nem reenvia pra quem já está na fila.
+    </p>
+    <div class="cartao">
+      <form method="post" action="{{ url_for('admin_campanha_importar') }}" enctype="multipart/form-data">
+        <label for="planilhas">Arquivo(s) .xlsx</label>
+        <input type="file" id="planilhas" name="planilhas" accept=".xlsx" multiple required>
+        <button type="submit" class="btn-principal">Importar</button>
+      </form>
+    </div>
+
+    <h2 class="secao-titulo">2. Enviar lote</h2>
+    <p class="secao-nota">
+      Manda o convite (conhecer o site novo + pedir avaliação) pra quem ainda está pendente,
+      até o tamanho do lote escolhido. <strong>Cuidado com o limite diário de envio da Brevo</strong>
+      — ele é compartilhado com os e-mails normais do site (confirmação de pedido, etc). Prefira
+      lotes menores e repetir em vários dias em vez de mandar tudo de uma vez.
+    </p>
+    <div class="cartao">
+      <form method="post" action="{{ url_for('admin_campanha_enviar_lote') }}">
+        <label for="tamanho">Quantos e-mails enviar agora</label>
+        <input type="number" id="tamanho" name="tamanho" min="1" max="{{ lote_maximo }}" value="50" required>
+        <p class="campo-nota">Máximo {{ lote_maximo }} por clique. Só manda pra quem está "pendente".</p>
+        <button type="submit" class="btn-principal">Enviar lote agora</button>
+      </form>
+    </div>
+  </div>
+</body>
+</html>

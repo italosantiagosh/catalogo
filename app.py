@@ -52,6 +52,7 @@ from xml.sax.saxutils import escape as escapar_xml
 from flask import Flask, Response, abort, jsonify, redirect, render_template, request, send_file, session, url_for
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
+from openpyxl import load_workbook
 from PIL import Image, ImageOps
 from pillow_heif import register_heif_opener
 from werkzeug.datastructures import FileStorage
@@ -136,7 +137,9 @@ from services.email import (
     enviar_pedido_enviado,
     enviar_pedido_excluido,
     enviar_pedido_recompra,
+    enviar_reengajamento_contato_antigo,
 )
+import services.campanha_reengajamento as campanha_reengajamento
 from services.documentos import cpf_valido, documento_valido, numero_whatsapp, telefone_valido
 from services.frete import calcular_frete
 from services.infinitepay import criar_link_pagamento
@@ -3893,6 +3896,93 @@ def admin_avaliacao_recusar(id_: int):
         )
     atualizar_status_avaliacao(id_, "recusada")
     return redirect(url_for("admin_avaliacoes"))
+
+
+_CAMPANHA_LOTE_MAXIMO = 300  # trava contra clique acidental mandando a lista inteira de uma vez
+
+
+def _ler_contatos_da_planilha(arquivo: FileStorage) -> list[dict]:
+    """Le UMA planilha exportada do sistema antigo (Tiny) -- espera as
+    colunas "Nome" e "E-mail" em algum lugar do cabecalho (posicao nao
+    importa, ver conversa: os 2 arquivos ja´ recebidos tem 39 colunas
+    na mesma ordem, mas melhor nao depender disso). Linha sem e-mail
+    e´ ignorada aqui mesmo (campanha_reengajamento.importar_contatos
+    tambem valida, essa checagem e´ so pra nao instanciar linha vazia)."""
+    pasta = load_workbook(io.BytesIO(arquivo.read()), read_only=True, data_only=True)
+    aba = pasta.worksheets[0]
+    linhas = aba.iter_rows(values_only=True)
+    cabecalho = next(linhas, None) or []
+    indice_nome = next((i for i, titulo in enumerate(cabecalho) if titulo == "Nome"), None)
+    indice_email = next((i for i, titulo in enumerate(cabecalho) if titulo == "E-mail"), None)
+    if indice_nome is None or indice_email is None:
+        return []
+    contatos = []
+    for linha in linhas:
+        email = linha[indice_email] if indice_email < len(linha) else None
+        if not email:
+            continue
+        nome = linha[indice_nome] if indice_nome < len(linha) else ""
+        contatos.append({"nome": str(nome or "").strip(), "email": str(email).strip()})
+    return contatos
+
+
+@app.route("/admin/campanha-antigos", methods=["GET"])
+def admin_campanha_antigos():
+    """Painel da campanha pontual de reengajamento pra quem comprou no
+    sistema antigo (ver services/campanha_reengajamento.py) -- sobe a
+    planilha uma vez, depois manda em lotes manuais pra nao estourar o
+    limite diario da Brevo (que tambem atende os e-mails transacionais
+    normais do site)."""
+    if not _autenticacao_admin_valida(request.authorization):
+        return Response(
+            "Autenticação necessária.", 401, {"WWW-Authenticate": 'Basic realm="Painel de campanha"'}
+        )
+    return render_template(
+        "admin_campanha_antigos.html",
+        contagem=campanha_reengajamento.contagem_por_status(),
+        lote_maximo=_CAMPANHA_LOTE_MAXIMO,
+    )
+
+
+@app.route("/admin/campanha-antigos/importar", methods=["POST"])
+def admin_campanha_importar():
+    if not _autenticacao_admin_valida(request.authorization):
+        return Response(
+            "Autenticação necessária.", 401, {"WWW-Authenticate": 'Basic realm="Painel de campanha"'}
+        )
+    arquivos = [a for a in request.files.getlist("planilhas") if a and a.filename]
+    contatos = []
+    for arquivo in arquivos:
+        contatos.extend(_ler_contatos_da_planilha(arquivo))
+    resultado = campanha_reengajamento.importar_contatos(contatos)
+    return redirect(url_for("admin_campanha_antigos", **{f"importado_{k}": v for k, v in resultado.items()}))
+
+
+@app.route("/admin/campanha-antigos/enviar-lote", methods=["POST"])
+def admin_campanha_enviar_lote():
+    if not _autenticacao_admin_valida(request.authorization):
+        return Response(
+            "Autenticação necessária.", 401, {"WWW-Authenticate": 'Basic realm="Painel de campanha"'}
+        )
+    try:
+        tamanho = int(request.form.get("tamanho", "0"))
+    except ValueError:
+        tamanho = 0
+    tamanho = max(0, min(tamanho, _CAMPANHA_LOTE_MAXIMO))
+
+    url_site = url_for("catalogo_completo", _external=True)
+    url_avaliar = url_for("avaliar_geral", _external=True)
+    sucesso = 0
+    falha = 0
+    for contato in campanha_reengajamento.listar_pendentes(tamanho):
+        resultado = enviar_reengajamento_contato_antigo(contato["email"], contato["nome"], url_site, url_avaliar)
+        erro = resultado.get("erro")
+        campanha_reengajamento.marcar_enviado(contato["email"], erro=erro)
+        if erro:
+            falha += 1
+        else:
+            sucesso += 1
+    return redirect(url_for("admin_campanha_antigos", lote_sucesso=sucesso, lote_falha=falha))
 
 
 @app.route("/sw.js", methods=["GET"])
