@@ -2011,28 +2011,6 @@
     "categoria": "Devoções"
   },
   {
-    "id": "padre-henrique",
-    "nome": "Padre Henrique",
-    "categoria": "Devoções",
-    "modelos": [
-      {
-        "id": 1,
-        "nome": "Modelo 1",
-        "tamanhos": [
-          "12mm",
-          "16mm"
-        ],
-        "imagem": "img/produtos/padre-henrique_modelo_1_medalha.jpg",
-        "imagem_entremeio_prata": "img/produtos/padre-henrique_modelo_1_entremeio_prata.jpg",
-        "imagem_entremeio_ouro_velho": "img/produtos/padre-henrique_modelo_1_entremeio_ouro_velho.jpg",
-        "imagem_chaveiro": "img/produtos/padre-henrique_modelo_1_chaveiro.jpg",
-        "imagem_medalha_2lados_prata": "img/produtos/padre-henrique_modelo_1_medalha_2lados_prata.jpg",
-        "imagem_medalha_2lados_ouro_velho": "img/produtos/padre-henrique_modelo_1_medalha_2lados_ouro_velho.jpg",
-        "imagem_chaveiro_2lados": "img/produtos/padre-henrique_modelo_1_chaveiro_2lados.jpg"
-      }
-    ]
-  },
-  {
     "id": "padre-ibiapina",
     "nome": "Padre Ibiapina",
     "modelos": [
