@@ -109,6 +109,12 @@
     }
     #btn-ativar-notificacoes:disabled { opacity: 0.6; cursor: default; box-shadow: none; }
 
+    .botao-registrar-manual {
+      display: inline-block; padding: 10px 16px; border-radius: 10px; background: var(--azul-escuro);
+      color: #fff; font-weight: 700; font-size: 0.85rem; text-decoration: none; margin: 0 0 16px 10px;
+    }
+    .botao-registrar-manual:hover { background: #0f2847; }
+
     .filtros { margin: 0 0 16px; display: flex; flex-wrap: wrap; gap: 6px; }
     .filtros a {
       text-decoration: none; color: var(--azul-escuro); font-weight: 600; font-size: 0.8rem;
@@ -235,6 +241,7 @@
     {% if vapid_chave_publica %}
       <button type="button" id="btn-ativar-notificacoes">🔔 Ativar notificações de venda</button>
     {% endif %}
+    <a href="{{ url_for('admin_pedido_novo_manual') }}" class="botao-registrar-manual">➕ Registrar pedido manual</a>
 
     <div class="filtros">
       <a href="{{ url_for('admin_pedidos') }}" class="{{ 'ativo' if not status_filtro else '' }}">Todos</a>

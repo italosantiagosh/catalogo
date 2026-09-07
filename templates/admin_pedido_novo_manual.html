@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Registrar pedido manual — Painel — Nove de Julho</title>
+  <link rel="icon" type="image/png" href="{{ url_for('static', filename='img/icon-192.png') }}">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Public+Sans:wght@400;500;600;700&display=swap"
+        rel="stylesheet" media="print" onload="this.media='all'">
+  <noscript><link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Public+Sans:wght@400;500;600;700&display=swap" rel="stylesheet"></noscript>
+  <style>
+    :root {
+      --azul-escuro: #14335c; --azul-claro: #29aae1; --dourado: #dba53b;
+      --fundo: #eef2f7; --cartao: #ffffff; --texto: #142238; --texto-suave: #5b6b82; --linha: #e2e7ee;
+    }
+    * { box-sizing: border-box; }
+    body {
+      font-family: 'Public Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--fundo); color: var(--texto); margin: 0; padding: 0 0 40px;
+    }
+    header.masthead {
+      background: linear-gradient(135deg, var(--azul-escuro) 0%, #1c4a80 100%);
+      color: #fff; padding: 20px clamp(16px, 4vw, 32px) 28px; border-radius: 0 0 20px 20px; margin-bottom: 24px;
+    }
+    .masthead-linha { display: flex; align-items: center; gap: 12px; }
+    .masthead-linha img { width: 38px; height: 38px; border-radius: 9px; flex-shrink: 0; }
+    .masthead-titulos h1 { font-family: 'Fraunces', Georgia, serif; font-weight: 700; font-size: 1.35rem; margin: 0; letter-spacing: -0.01em; }
+    .masthead-titulos p { margin: 2px 0 0; font-size: 0.8rem; color: #b9d0e8; }
+    .masthead-nav { margin: 14px 0 0; display: flex; gap: 14px; flex-wrap: wrap; }
+    .masthead-nav a { color: #dfeaf6; text-decoration: none; font-size: 0.8rem; font-weight: 600; }
+    .masthead-nav a:hover { color: #fff; }
+
+    .conteudo { max-width: 720px; margin: 0 auto; padding: 0 clamp(16px, 4vw, 32px); position: relative; z-index: 1; }
+
+    h2.secao-titulo { font-family: 'Fraunces', Georgia, serif; font-size: 1.05rem; margin: 4px 0 14px; }
+    .secao-nota { font-size: 0.82rem; color: var(--texto-suave); margin: -8px 0 16px; line-height: 1.5; }
+
+    .cartao {
+      background: var(--cartao); border-radius: 14px; padding: 20px;
+      border: 1px solid var(--linha); box-shadow: 0 8px 20px -16px rgba(20, 51, 92, 0.35);
+    }
+
+    .linha-item { display: grid; grid-template-columns: 1fr 90px 130px 32px; gap: 8px; margin-bottom: 10px; align-items: center; }
+    .linha-item input {
+      width: 100%; padding: 9px 10px; border: 1px solid var(--linha); border-radius: 8px; font-size: 0.88rem;
+    }
+    .linha-item .remover {
+      background: none; border: none; color: #a13a2a; font-size: 1.1rem; cursor: pointer; padding: 4px;
+    }
+    .cabecalho-linha { display: grid; grid-template-columns: 1fr 90px 130px 32px; gap: 8px; font-size: 0.72rem; color: var(--texto-suave); font-weight: 700; margin-bottom: 6px; }
+
+    button.btn-secundario {
+      margin-top: 4px; padding: 8px 14px; border: 1px dashed var(--azul-claro); border-radius: 8px;
+      background: none; color: var(--azul-escuro); font-weight: 700; cursor: pointer; font-size: 0.82rem;
+    }
+    .total-linha {
+      margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--linha);
+      display: flex; justify-content: space-between; font-weight: 700; font-size: 1rem;
+    }
+    button.btn-principal {
+      margin-top: 16px; padding: 11px 20px; border: none; border-radius: 8px; font-weight: 700;
+      cursor: pointer; font-size: 0.88rem; background: var(--azul-escuro); color: #fff; width: 100%;
+    }
+    button.btn-principal:hover { background: #0f2847; }
+  </style>
+</head>
+<body>
+  <header class="masthead">
+    <div class="masthead-linha">
+      <img src="{{ url_for('static', filename='img/icon-192.png') }}" alt="">
+      <div class="masthead-titulos">
+        <h1>Registrar pedido manual</h1>
+        <p>Nove de Julho</p>
+      </div>
+    </div>
+    <nav class="masthead-nav">
+      <a href="{{ url_for('admin_pedidos') }}">📦 Pedidos</a>
+    </nav>
+  </header>
+
+  <div class="conteudo">
+    <h2 class="secao-titulo">Itens do pedido negociado</h2>
+    <p class="secao-nota">
+      Pra pedido combinado por fora do carrinho (ex: valor abaixo do mínimo de R$ 30 do
+      checkout normal). Digite o(s) item(ns) e o valor combinado — não passa pela tabela de
+      desconto automática, é o valor que você quiser. Depois de criar, o pedido cai na tela de
+      detalhe pra você preencher cliente/endereço/frete e confirmar a venda, do mesmo jeito que
+      já faz com um lead do WhatsApp.
+    </p>
+    <form method="post" action="{{ url_for('admin_pedido_criar_manual') }}" id="form-manual">
+      <div class="cartao">
+        <div class="cabecalho-linha">
+          <span>Descrição</span><span>Qtd.</span><span>Valor unit. R$</span><span></span>
+        </div>
+        <div id="linhas-itens">
+          <div class="linha-item">
+            <input type="text" name="descricao" placeholder="Ex: Medalha São José 12mm" required>
+            <input type="number" name="quantidade" min="1" value="1" required>
+            <input type="number" name="valor_unitario" min="0" step="0.01" placeholder="0,00" required>
+            <button type="button" class="remover" onclick="removerLinha(this)" title="Remover item">✕</button>
+          </div>
+        </div>
+        <button type="button" class="btn-secundario" onclick="adicionarLinha()">+ Adicionar item</button>
+        <div class="total-linha">
+          <span>Total</span>
+          <span id="total-calculado">R$ 0,00</span>
+        </div>
+      </div>
+      <button type="submit" class="btn-principal">Criar pedido e continuar pra confirmação</button>
+    </form>
+  </div>
+
+  <script>
+    function removerLinha(botao) {
+      const linhas = document.getElementById('linhas-itens');
+      if (linhas.children.length > 1) {
+        botao.closest('.linha-item').remove();
+      } else {
+        botao.closest('.linha-item').querySelectorAll('input').forEach(function (campo) {
+          campo.value = campo.type === 'number' ? (campo.name === 'quantidade' ? '1' : '') : '';
+        });
+      }
+      recalcularTotal();
+    }
+
+    function adicionarLinha() {
+      const linhas = document.getElementById('linhas-itens');
+      const modelo = linhas.children[0].cloneNode(true);
+      modelo.querySelectorAll('input').forEach(function (campo) {
+        campo.value = campo.name === 'quantidade' ? '1' : '';
+      });
+      linhas.appendChild(modelo);
+    }
+
+    function recalcularTotal() {
+      let total = 0;
+      document.querySelectorAll('.linha-item').forEach(function (linha) {
+        const quantidade = parseFloat(linha.querySelector('[name="quantidade"]').value) || 0;
+        const valorUnitario = parseFloat(linha.querySelector('[name="valor_unitario"]').value) || 0;
+        total += quantidade * valorUnitario;
+      });
+      document.getElementById('total-calculado').textContent =
+        'R$ ' + total.toFixed(2).replace('.', ',');
+    }
+
+    document.getElementById('linhas-itens').addEventListener('input', recalcularTotal);
+  </script>
+</body>
+</html>

@@ -3261,6 +3261,68 @@ def admin_pedido_confirmar_venda(token: str):
     return redirect(url_for("admin_pedido_detalhe", token=token))
 
 
+@app.route("/admin/pedidos/novo-manual", methods=["GET"])
+def admin_pedido_novo_manual():
+    """Formulario pra registrar um pedido negociado por fora do site
+    (ex: valor combinado abaixo do minimo de R$30 do checkout normal,
+    ver conversa) -- item(ns) e valor digitados na mao pelo admin, sem
+    passar pela validacao de minimo/pricing do carrinho (essa so faz
+    sentido pro cliente montando o proprio carrinho sozinho). Cria um
+    lead "whatsapp" igual ao de api_pedido_criar_whatsapp e cai no
+    MESMO fluxo ja existente de "Confirmar venda" (ver
+    admin_pedido_confirmar_venda) pra preencher cliente/endereco/frete/
+    pagamento e finalizar."""
+    if not _autenticacao_admin_valida(request.authorization):
+        return Response(
+            "Autenticação necessária.", 401, {"WWW-Authenticate": 'Basic realm="Painel de pedidos"'}
+        )
+    return render_template("admin_pedido_novo_manual.html")
+
+
+@app.route("/admin/pedidos/novo-manual", methods=["POST"])
+def admin_pedido_criar_manual():
+    if not _autenticacao_admin_valida(request.authorization):
+        return Response(
+            "Autenticação necessária.", 401, {"WWW-Authenticate": 'Basic realm="Painel de pedidos"'}
+        )
+    descricoes = request.form.getlist("descricao")
+    quantidades = request.form.getlist("quantidade")
+    valores_unitarios = request.form.getlist("valor_unitario")
+
+    itens = []
+    subtotal = 0.0
+    for descricao, quantidade_bruta, valor_bruto in zip(descricoes, quantidades, valores_unitarios):
+        descricao = descricao.strip()
+        if not descricao:
+            continue
+        try:
+            quantidade = int(quantidade_bruta)
+            valor_unitario = float(str(valor_bruto).replace(",", "."))
+        except ValueError:
+            abort(400, description="Quantidade e valor unitário precisam ser números válidos.")
+        if quantidade <= 0 or valor_unitario < 0:
+            abort(400, description="Quantidade precisa ser maior que zero e o valor não pode ser negativo.")
+        itens.append({
+            "produtoNome": descricao, "descricao": descricao, "modeloNome": "", "chave_preco": "",
+            "quantidade": quantidade, "valor_unitario": valor_unitario,
+        })
+        subtotal += quantidade * valor_unitario
+
+    if not itens:
+        abort(400, description="Informe ao menos um item com descrição, quantidade e valor.")
+
+    pedido = criar_pedido(
+        itens=itens,
+        subtotal=round(subtotal, 2),
+        frete_descricao="",
+        frete_preco=0.0,
+        cliente={},
+        endereco={},
+        status_inicial="whatsapp",
+    )
+    return redirect(url_for("admin_pedido_detalhe", token=pedido["token"]))
+
+
 @app.route("/admin/pedidos/<token>/descartar-whatsapp", methods=["POST"])
 def admin_pedido_descartar_whatsapp(token: str):
     """Descarta um lead "whatsapp" que nao fechou -- reaproveita
