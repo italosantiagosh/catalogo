@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import io
+import re
 
 import pytest
 
@@ -287,3 +288,50 @@ def test_aprovar_exige_autenticacao(client, monkeypatch):
 
     resposta = client.post(f"/admin/avaliacoes/{avaliacao['id']}/aprovar")
     assert resposta.status_code == 401
+
+
+# ---- /personalizada: cada formato e´ um produto_id proprio, entao a
+# secao de avaliacoes precisa mostrar um bloco por formato (ver
+# app.py:_avaliacoes_por_formato_personalizada) ----
+
+def _bloco_formato(pagina: str, formato: str) -> str:
+    """Extrai a tag de abertura do <div class="avaliacoes-formato"
+    data-formato-avaliacao="..."> desse formato, pra checar se tem
+    "hidden" nela sem confundir com outros "hidden" da pagina."""
+    match = re.search(rf'<div class="avaliacoes-formato" data-formato-avaliacao="{formato}"[^>]*>', pagina)
+    assert match, f"bloco de avaliacoes do formato {formato} nao encontrado"
+    return match.group(0)
+
+
+def test_pagina_personalizada_tem_um_bloco_de_avaliacoes_por_formato(client):
+    from config import PRODUTOS_PERSONALIZADOS
+
+    pagina = client.get("/personalizada").get_data(as_text=True)
+    assert 'id="avaliacoes"' in pagina
+    assert 'id="form-avaliacao"' in pagina
+    for produto in PRODUTOS_PERSONALIZADOS:
+        assert f'data-formato-avaliacao="{produto["formato"]}"' in pagina
+
+
+def test_pagina_personalizada_so_formato_inicial_fica_visivel(client):
+    pagina = client.get("/personalizada").get_data(as_text=True)  # formato padrao: medalha
+    assert "hidden" not in _bloco_formato(pagina, "medalha")
+    assert "hidden" in _bloco_formato(pagina, "chaveiro")
+
+    pagina_chaveiro = client.get("/personalizada?formato=chaveiro").get_data(as_text=True)
+    assert "hidden" in _bloco_formato(pagina_chaveiro, "medalha")
+    assert "hidden" not in _bloco_formato(pagina_chaveiro, "chaveiro")
+
+
+def test_pagina_personalizada_mostra_avaliacao_aprovada_do_formato_certo(client, monkeypatch):
+    _preparar_admin(monkeypatch)
+    dados = _corpo_avaliacao(produto_id=_produto_id_personalizado())
+    arquivo, nome = _foto_teste()
+    client.post("/api/avaliacoes", data={**dados, "foto": (arquivo, nome)})
+    avaliacao = avaliacoes.listar_avaliacoes()[0]
+    client.post(f"/admin/avaliacoes/{avaliacao['id']}/aprovar", auth=("admin", "segredo123"))
+
+    # _produto_id_personalizado() == PRODUTOS_PERSONALIZADOS[0], formato "medalha"
+    pagina = client.get("/personalizada").get_data(as_text=True)
+    assert "Maria Teste" in pagina
+    assert "★★★★★" in pagina

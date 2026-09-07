@@ -101,6 +101,21 @@
     return formato;
   }
 
+  // ---- avaliacoes (ver app.py:_avaliacoes_por_formato_personalizada)
+  // -- cada formato e´ um produto_id diferente pra avaliacao, entao a
+  // secao inteira (resumo + lista + o produto_id escondido do
+  // formulario) troca junto quando o formato muda. ----
+  function atualizarAvaliacoes() {
+    const formato = formatoAtual();
+    document.querySelectorAll('.avaliacoes-formato').forEach((bloco) => {
+      bloco.hidden = bloco.dataset.formatoAvaliacao !== formato;
+    });
+    const produtoIdInput = document.getElementById('aval-produto-id-personalizada');
+    if (produtoIdInput && window.PRODUTO_ID_POR_FORMATO && window.PRODUTO_ID_POR_FORMATO[formato]) {
+      produtoIdInput.value = window.PRODUTO_ID_POR_FORMATO[formato];
+    }
+  }
+
   function atualizarAvisoPreco() {
     if (!avisoPreco) return;
     let preco = window.PRECO_VAREJO_PADRAO;
@@ -228,7 +243,10 @@
   }
 
   formatosFieldset.addEventListener('change', (evento) => {
-    if (evento.target.name === 'formato') atualizarSubSelecao();
+    if (evento.target.name === 'formato') {
+      atualizarSubSelecao();
+      atualizarAvaliacoes();
+    }
   });
   tamanhosFieldset.addEventListener('change', (evento) => {
     if (evento.target.name === 'tamanho') {
@@ -912,4 +930,5 @@
   }
 
   atualizarSubSelecao();
+  atualizarAvaliacoes();
 })();

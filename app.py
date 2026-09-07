@@ -3442,6 +3442,26 @@ def _combo_2lados_para_js(combo_id: str) -> dict | None:
     return lados
 
 
+def _avaliacoes_por_formato_personalizada() -> dict[str, dict]:
+    """Media/total/lista de avaliacoes aprovadas de cada formato de
+    personalizada (config.py:PRODUTOS_PERSONALIZADOS) -- cada formato
+    tem seu proprio produto_id (ver conversa), entao a secao de
+    avaliacoes em /personalizada precisa mostrar um conjunto diferente
+    quando o formato e´ trocado (ver static/js/personalizada.js, que
+    alterna qual bloco fica visivel pelo `data-formato`)."""
+    resultado = {}
+    for p in PRODUTOS_PERSONALIZADOS:
+        media, total = media_e_total_aprovadas(p["id"])
+        resultado[p["formato"]] = {
+            "produto_id": p["id"],
+            "nome": p["nome"],
+            "media": media,
+            "total": total,
+            "avaliacoes": listar_avaliacoes_aprovadas(p["id"]) if total else [],
+        }
+    return resultado
+
+
 @app.route("/personalizada", methods=["GET"])
 def personalizada():
     """`?formato=` (opcional) vem dos cards "produto" da personalizada no
@@ -3471,6 +3491,8 @@ def personalizada():
         preco_varejo_2lados=preco_varejo("medalha_2lados"),
         dados_faq=_dados_faq(_FAQ_PERSONALIZADA),
         dados_breadcrumb=dados_breadcrumb,
+        avaliacoes_por_formato=_avaliacoes_por_formato_personalizada(),
+        produto_id_por_formato={p["formato"]: p["id"] for p in PRODUTOS_PERSONALIZADOS},
     )
 
 
