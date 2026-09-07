@@ -130,6 +130,57 @@ def test_csv_total_separa_por_tamanho_compartilhado_mesmo_fora_das_bordas(client
     assert "Nove de Julho;1;29;1" not in texto  # 29 (chaveiro) so aparece no pedido2
 
 
+def test_csv_total_pula_pedido_do_meio_sem_aquele_tamanho(client, monkeypatch):
+    """ver conversa: pedido1 tem 12+16+29, pedido2 so´ tem 12, pedido3
+    so´ tem 16 -- na folha do 16, pedido1 fica colado no pedido3
+    (pedido2 nao entra ali), entao precisa de separador de 16 mesmo
+    pedido3 nao sendo o vizinho direto de pedido1."""
+    _preparar_admin(monkeypatch)
+    token1 = _criar_pedido(
+        client,
+        itens=[
+            {"chave_preco": "12mm", "quantidade": 10, "produtoNome": "São José", "modeloNome": "Modelo 1"},
+            {"chave_preco": "16mm", "quantidade": 10, "produtoNome": "São José", "modeloNome": "Modelo 1"},
+            {"chave_preco": "chaveiro", "quantidade": 10, "produtoNome": "São José", "modeloNome": "Modelo 1"},
+        ],
+    )
+    token2 = _criar_pedido(
+        client, itens=[{"chave_preco": "12mm", "quantidade": 10, "produtoNome": "Santa Rita", "modeloNome": "Modelo 1"}]
+    )
+    token3 = _criar_pedido(
+        client, itens=[{"chave_preco": "16mm", "quantidade": 10, "produtoNome": "São Judas", "modeloNome": "Modelo 1"}]
+    )
+    resposta = client.post(
+        "/admin/pedidos/csv-total", data={"tokens": [token1, token2, token3]}, auth=("admin", "segredo123")
+    )
+    linhas = resposta.data.decode("utf-8-sig").strip().splitlines()
+    indice_sao_jose_16 = next(i for i, l in enumerate(linhas) if "São José" in l and ";16;" in l)
+    indice_sep_12 = linhas.index("Nove de Julho;1;12;1")
+    indice_sep_16 = linhas.index("Nove de Julho;1;16;1")
+    indice_santa_rita = next(i for i, l in enumerate(linhas) if "Santa Rita" in l)
+    indice_sao_judas = next(i for i, l in enumerate(linhas) if "São Judas" in l)
+    # os 2 separadores ficam logo apos o bloco do pedido1 (antes do pedido2 comecar)
+    assert indice_sao_jose_16 < indice_sep_12 < indice_santa_rita
+    assert indice_sao_jose_16 < indice_sep_16 < indice_santa_rita
+    assert indice_sep_12 < indice_santa_rita < indice_sao_judas
+    assert "Nove de Julho;1;29;1" not in linhas  # 29 nunca ganha separador
+
+
+def test_csv_total_nao_separa_tamanho_29_mesmo_compartilhado(client, monkeypatch):
+    _preparar_admin(monkeypatch)
+    token1 = _criar_pedido(
+        client, itens=[{"chave_preco": "chaveiro", "quantidade": 10, "produtoNome": "São José", "modeloNome": "Modelo 1"}]
+    )
+    token2 = _criar_pedido(
+        client, itens=[{"chave_preco": "chaveiro", "quantidade": 10, "produtoNome": "Santa Rita", "modeloNome": "Modelo 1"}]
+    )
+    resposta = client.post(
+        "/admin/pedidos/csv-total", data={"tokens": [token1, token2]}, auth=("admin", "segredo123")
+    )
+    texto = resposta.data.decode("utf-8-sig")
+    assert "Nove de Julho" not in texto
+
+
 def test_csv_total_insere_separador_pra_cada_tamanho_compartilhado(client, monkeypatch):
     _preparar_admin(monkeypatch)
     token1 = _criar_pedido(

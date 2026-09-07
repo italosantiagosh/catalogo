@@ -1562,6 +1562,9 @@ def _linhas_csv_do_item(item: dict) -> list[list]:
     return linhas
 
 
+_TAMANHOS_COM_SEPARADOR_CSV_TOTAL = {"12", "16"}  # 29 (chaveiro) fica de fora, ver conversa
+
+
 def _linhas_csv_pedido(pedido: dict) -> list[list]:
     linhas = []
     for item in pedido["itens"]:
@@ -2891,19 +2894,21 @@ def admin_pedidos_csv_total():
     selecao em massa), um em seguida do outro, na mesma ordem da
     selecao.
 
-    O programa de producao MONTA UMA FOLHA POR TAMANHO (variacao 12,
-    16 ou 29), juntando so as linhas daquele tamanho -- nao mantem os
-    pedidos agrupados. Entao 2 pedidos consecutivos que compartilham um
-    MESMO tamanho (em qualquer posicao dentro do pedido, nao so na
-    ultima/primeira linha) ficam com as linhas desse tamanho grudadas
-    uma na outra dentro da folha, sem jeito de saber visualmente onde
-    um pedido acaba e o outro comeca (ver conversa). Por isso, pra
-    CADA tamanho que aparece nos dois pedidos ao mesmo tempo, insere
-    uma linha "Nove de Julho,1,<tamanho>,1" na fronteira entre os 2
-    pedidos -- essa linha some junto com o resto na hora de montar a
-    folha daquele tamanho especifico, servindo de marcador visual so´
-    ali. Tamanho que aparece so´ num dos dois pedidos nao precisa de
-    separador (nunca fica adjacente ao de outro pedido naquela folha)."""
+    O programa de producao MONTA UMA FOLHA POR TAMANHO (variacao 12 ou
+    16 -- 29/chaveiro fica de fora de proposito, ver
+    _TAMANHOS_COM_SEPARADOR_CSV_TOTAL abaixo: mais raro, o usuario
+    prefere se virar sem separador ali), juntando so as linhas daquele
+    tamanho -- nao mantem os pedidos agrupados. Entao 2 pedidos que
+    compartilham um tamanho ficam com as linhas desse tamanho grudadas
+    uma na outra dentro da folha, mesmo que NAO sejam consecutivos na
+    selecao (ex: pedido 1 tem 12 e 16, pedido 2 so´ tem 12, pedido 3 so´
+    tem 16 -- na folha do 16, o pedido 1 fica colado no pedido 3, pulando
+    o 2 inteiro, ver conversa). Por isso o separador nao compara so´
+    pedidos vizinhos: pra cada tamanho, acha a ULTIMA vez que ele
+    apareceu (em qualquer pedido anterior, vizinho ou nao) e marca uma
+    linha "Nove de Julho,1,<tamanho>,1" logo depois DAQUELE pedido --
+    essa linha some junto com o resto na hora de montar a folha daquele
+    tamanho, servindo de marcador visual so´ ali."""
     if not _autenticacao_admin_valida(request.authorization):
         return Response(
             "Autenticação necessária.", 401, {"WWW-Authenticate": 'Basic realm="Painel de pedidos"'}
@@ -2922,18 +2927,26 @@ def admin_pedidos_csv_total():
         _atribuir_numeros_modelo_personalizada(pedido)
         linhas_por_pedido.append(_linhas_csv_pedido(pedido))
 
+    # pra cada tamanho, achar em que indice de pedido ele apareceu por
+    # ultimo -- na proxima vez que reaparecer (nao precisa ser no pedido
+    # seguinte), marca separador logo apos ESSE ultimo indice.
+    ultima_ocorrencia: dict[str, int] = {}
+    separadores_apos_indice: dict[int, set] = {}
+    for indice, linhas in enumerate(linhas_por_pedido):
+        tamanhos = {linha[2] for linha in linhas} & _TAMANHOS_COM_SEPARADOR_CSV_TOTAL
+        for tamanho in tamanhos:
+            if tamanho in ultima_ocorrencia:
+                separadores_apos_indice.setdefault(ultima_ocorrencia[tamanho], set()).add(tamanho)
+            ultima_ocorrencia[tamanho] = indice
+
     buffer = io.StringIO()
     escritor = csv.writer(buffer, delimiter=";")
     escritor.writerow(["Produto", "Modelo", "Variação", "Quantidade"])
     for indice, linhas in enumerate(linhas_por_pedido):
         for linha in linhas:
             escritor.writerow(linha)
-        proximas_linhas = linhas_por_pedido[indice + 1] if indice + 1 < len(linhas_por_pedido) else None
-        if linhas and proximas_linhas:
-            tamanhos_deste = {linha[2] for linha in linhas}
-            tamanhos_proximo = {linha[2] for linha in proximas_linhas}
-            for tamanho in sorted(tamanhos_deste & tamanhos_proximo, key=lambda t: (len(t), t)):
-                escritor.writerow(["Nove de Julho", 1, tamanho, 1])
+        for tamanho in sorted(separadores_apos_indice.get(indice, ())):
+            escritor.writerow(["Nove de Julho", 1, tamanho, 1])
 
     conteudo_bytes = buffer.getvalue().encode("utf-8-sig")
     resposta = Response(conteudo_bytes, mimetype="text/csv")
