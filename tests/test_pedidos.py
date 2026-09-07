@@ -665,6 +665,39 @@ def test_produtos_mais_vendidos_periodo_personalizado_com_ate(monkeypatch, tmp_p
     assert fora == []
 
 
+def test_unidades_vendidas_por_produto_soma_por_produtoid_dentro_da_janela(monkeypatch, tmp_path):
+    _reapontar_db(monkeypatch, tmp_path)
+    p1 = pedidos.criar_pedido(**_pedido_exemplo(
+        itens=[{"chave_preco": "16mm", "quantidade": 20, "produtoId": "sao-jose"}],
+        subtotal=100.0, frete_preco=0.0,
+    ))
+    pedidos.marcar_pago(p1["token"], forma_pagamento="pix", parcelas=None, valor_pago=100.0, transaction_nsu="tx1")
+    p2 = pedidos.criar_pedido(**_pedido_exemplo(
+        itens=[{"chave_preco": "16mm", "quantidade": 5, "produtoId": "sao-jose"},
+               {"chave_preco": "12mm", "quantidade": 3}],  # sem produtoId -- personalizada, fica de fora
+        subtotal=40.0, frete_preco=0.0,
+    ))
+    pedidos.marcar_pago(p2["token"], forma_pagamento="pix", parcelas=None, valor_pago=40.0, transaction_nsu="tx2")
+
+    resultado = pedidos.unidades_vendidas_por_produto(30)
+    assert resultado["sao-jose"] == 25
+    assert "" not in resultado
+
+
+def test_unidades_vendidas_por_produto_fora_da_janela_nao_conta(monkeypatch, tmp_path):
+    _reapontar_db(monkeypatch, tmp_path)
+    pedido = pedidos.criar_pedido(**_pedido_exemplo(
+        itens=[{"chave_preco": "16mm", "quantidade": 15, "produtoId": "sao-jose"}],
+    ))
+    pedidos.marcar_pago(pedido["token"], forma_pagamento="pix", parcelas=None, valor_pago=100.0, transaction_nsu="tx1")
+    with pedidos._conexao() as conexao:
+        ha_40_dias = (datetime.now(timezone.utc) - timedelta(days=40)).isoformat()
+        conexao.execute("UPDATE pedidos SET pago_em = ? WHERE token = ?", (ha_40_dias, pedido["token"]))
+
+    resultado = pedidos.unidades_vendidas_por_produto(30)
+    assert "sao-jose" not in resultado
+
+
 def test_quantidade_por_material_agrupa_12mm_e_16mm_e_devolve_as_6_categorias(monkeypatch, tmp_path):
     _reapontar_db(monkeypatch, tmp_path)
     pedido = pedidos.criar_pedido(**_pedido_exemplo(

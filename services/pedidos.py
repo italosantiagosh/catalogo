@@ -618,6 +618,24 @@ def _itens_pagos_no_periodo(desde: datetime | None, ate: datetime | None) -> lis
     return [json.loads(linha["itens"]) for linha in linhas]
 
 
+def unidades_vendidas_por_produto(dias: int = 30) -> dict[str, int]:
+    """{produto_id: quantidade} somando os itens dos pedidos PAGOS nos
+    ultimos `dias` dias -- usado pro selo "X vendidas nos ultimos 30
+    dias" nos cards do catalogo/home/categoria (ver app.py:
+    _com_vendas_recentes). So conta item com produtoId preenchido (um
+    santo do catalogo escolhido direto -- personalizada normalmente
+    nao tem produtoId proprio, ver conversa, entao fica de fora)."""
+    desde = datetime.now(timezone.utc) - timedelta(days=dias)
+    contagem: dict[str, int] = {}
+    for itens in _itens_pagos_no_periodo(desde, None):
+        for item in itens:
+            produto_id = item.get("produtoId")
+            if not produto_id:
+                continue
+            contagem[produto_id] = contagem.get(produto_id, 0) + int(item.get("quantidade", 0))
+    return contagem
+
+
 def produtos_mais_vendidos(
     *, desde: datetime | None = None, ate: datetime | None = None, limite_itens: int = 6
 ) -> list[dict]:

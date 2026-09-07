@@ -90,6 +90,8 @@ from config import (
     RETENCAO_IMAGENS_PEDIDO_CANCELADO_DIAS,
     SECRET_KEY,
     UPSELL_HORAS_APOS_PAGAMENTO,
+    VENDAS_RECENTES_DIAS,
+    VENDAS_RECENTES_MINIMO_PARA_EXIBIR,
     VIDEO_APRESENTACAO_URL,
     WEBHOOK_INFINITEPAY_SECRET,
     WHATSAPP_NUMBER,
@@ -184,6 +186,7 @@ from services.pedidos import (
     taxa_cancelamento,
     taxa_clientes_recorrentes,
     formas_pagamento_periodo,
+    unidades_vendidas_por_produto,
     vendas_por_dia,
     verificar_codigo_documento,
 )
@@ -821,6 +824,23 @@ def _com_avaliacoes(itens: list[dict]) -> list[dict]:
     return itens
 
 
+def _com_vendas_recentes(itens: list[dict]) -> list[dict]:
+    """Anexa vendas_recentes (unidades) em cada item do grid quando bate
+    VENDAS_RECENTES_MINIMO_PARA_EXIBIR nos ultimos VENDAS_RECENTES_DIAS
+    dias (ver services/pedidos.py:unidades_vendidas_por_produto) --
+    selo "X vendidas nos ultimos 30 dias" no card do catalogo/home/
+    categoria. Produto abaixo do minimo fica sem a chave de proposito
+    (ver conversa: numero baixo pareceria pouco procurado em vez de
+    reforcar confianca -- so vale a pena mostrar quando e´ um numero
+    que impressiona)."""
+    vendas = unidades_vendidas_por_produto(VENDAS_RECENTES_DIAS)
+    for item in itens:
+        quantidade = vendas.get(item["id"], 0)
+        if quantidade >= VENDAS_RECENTES_MINIMO_PARA_EXIBIR:
+            item["vendas_recentes"] = quantidade
+    return itens
+
+
 def _itens_do_grid(produtos: list[dict]) -> list[dict]:
     return [
         {
@@ -884,7 +904,7 @@ def index():
     limpa/curta, mostrando so 4 santos em destaque + botao pro catalogo
     inteiro."""
     produtos = carregar_produtos()
-    itens = _com_avaliacoes(_itens_do_grid(produtos))
+    itens = _com_vendas_recentes(_com_avaliacoes(_itens_do_grid(produtos)))
     itens_por_id = {item["id"]: item for item in itens}
     # combos "medalha de 2 lados" prontos (ver DESTAQUES_HOME "novidades")
     # entram no mesmo dict pra _montar_destaques resolver os ids deles
@@ -923,7 +943,7 @@ def catalogo_completo():
     # (ver conversa). "Personalizada" nao tem pagina /categoria/<slug>
     # de verdade (nao e´ uma categoria de santo, ver categoria() abaixo)
     # -- slug=None faz o chip apontar pro proprio /catalogo em vez de 404.
-    itens = _com_avaliacoes(_itens_do_grid(produtos) + _itens_personalizados_do_grid())
+    itens = _com_vendas_recentes(_com_avaliacoes(_itens_do_grid(produtos) + _itens_personalizados_do_grid()))
     categorias = categorias_com_slug(produtos) + [{"nome": CATEGORIA_PERSONALIZADOS, "slug": None}]
     dados_breadcrumb = _dados_breadcrumb(
         [
@@ -993,7 +1013,7 @@ def categoria(slug: str):
     nome_categoria = categoria_por_slug(produtos, slug)
     if nome_categoria is None:
         abort(404)
-    itens = _com_avaliacoes(_itens_do_grid([p for p in produtos if p["categoria"] == nome_categoria]))
+    itens = _com_vendas_recentes(_com_avaliacoes(_itens_do_grid([p for p in produtos if p["categoria"] == nome_categoria])))
     dados_breadcrumb = _dados_breadcrumb(
         [
             ("Catálogo", url_for("index", _external=True)),

@@ -503,6 +503,20 @@ a.link-carrinho #contador-carrinho {
   line-height: 1.3;
 }
 
+.badge-vendas {
+  position: absolute;
+  left: 6px;
+  top: 6px;
+  background: var(--gold);
+  color: #fff;
+  font-size: 0.62rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  padding: 3px 7px;
+  border-radius: 999px;
+  line-height: 1.3;
+}
+
 .card-corpo {
   padding: 10px 12px 14px;
 }

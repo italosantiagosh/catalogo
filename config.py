@@ -363,6 +363,14 @@ PROVA_SOCIAL = [
 # (devocao muito procurada atualmente).
 PROCURADOS_HOME = ["sao-miguel", "sao-bento", "nossa-senhora-aparecida", "nossa-senhora-desatadora-dos-nos"]
 
+# Selo "X vendidas nos ultimos 30 dias" no card do catalogo/home/categoria
+# (ver app.py:_com_vendas_recentes/services/pedidos.py:
+# unidades_vendidas_por_produto) -- so aparece quando a quantidade bate
+# esse minimo, pra nao expor numero baixo em produto pouco vendido (o
+# oposto do efeito de prova social pretendido, ver conversa).
+VENDAS_RECENTES_DIAS = int(os.environ.get("VENDAS_RECENTES_DIAS", "30"))
+VENDAS_RECENTES_MINIMO_PARA_EXIBIR = int(os.environ.get("VENDAS_RECENTES_MINIMO_PARA_EXIBIR", "10"))
+
 # "Produtos" da personalizada (pedido 2026-09-02: aparecer no catalogo/
 # busca como se fossem um produto normal, pra quem nao sabe que a
 # personalizada existe encontrar procurando). NAO ficam em

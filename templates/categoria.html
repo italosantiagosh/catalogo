@@ -19,6 +19,9 @@
       <a class="card-produto" href="{{ url_for('produto', produto_id=produto.id) }}">
         <div class="card-imagem-wrap">
           <img src="{{ url_for('static', filename=produto.thumbnail) }}" alt="{{ produto.nome }}" loading="lazy" decoding="async">
+          {% if produto.vendas_recentes %}
+            <span class="badge-vendas">🔥 {{ produto.vendas_recentes }} vendidas nos últimos 30 dias</span>
+          {% endif %}
           <img class="card-imagem-alt" src="{{ url_for('static', filename=produto.thumbnail_chaveiro) }}" alt="" loading="lazy" decoding="async" aria-hidden="true">
           <span class="badge-formatos">Medalha · Entremeio · Chaveiro</span>
         </div>
