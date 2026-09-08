@@ -968,6 +968,292 @@ ARTIGOS_BLOG = {
             </div>
         """,
     },
+    "nossa-senhora-titulos-e-aparicoes": {
+        "titulo": "Nossa Senhora: por que ela aparece de tantas formas diferentes?",
+        "resumo": (
+            "Lourdes, Guadalupe, Carmo, Perpétuo Socorro -- dezenas de nomes para a "
+            "mesma Maria. Entenda a diferença entre uma aparição e um título."
+        ),
+        "produto_relacionado_id": "nossa-senhora-imaculada-conceicao",
+        "publicado_em": "2026-09-11",
+        "corpo_html": """
+            <p>Quem já visitou uma livraria católica ou olhou o catálogo de uma loja de
+            medalhas provavelmente notou algo curioso: Nossa Senhora aparece sob dezenas de
+            nomes diferentes -- Aparecida, Lourdes, Guadalupe, Fátima, Carmo, e por aí vai.
+            Não são "Marias diferentes": é sempre a mesma mãe de Jesus, mas cada título
+            representa ou uma aparição específica em um lugar e época, ou um aspecto
+            particular de sua fé e sua história.</p>
+
+            <h2>Nossa Senhora de Lourdes</h2>
+            <p>Em 1858, na cidade francesa de Lourdes, uma jovem camponesa chamada
+            Bernadette Soubirous relatou dezoito aparições de uma "senhora" numa gruta às
+            margens do rio Gave. Na última delas, a aparição teria se identificado dizendo
+            "Eu sou a Imaculada Conceição" -- confirmando, segundo os fiéis, o dogma que a
+            Igreja havia proclamado apenas quatro anos antes. Lourdes se tornou um dos
+            maiores destinos de peregrinação do mundo, especialmente por doentes em busca
+            de cura na água da fonte que brotou no local.</p>
+
+            <h2>Nossa Senhora de Guadalupe</h2>
+            <p>Em 1531, no México, Maria teria aparecido ao indígena Juan Diego no monte
+            Tepeyac, deixando impressa em seu manto (tilma) uma imagem que, segundo os
+            devotos, permanece preservada até hoje na Basílica de Guadalupe, na Cidade do
+            México -- um dos santuários marianos mais visitados do planeta. É a padroeira
+            oficial de todo o continente americano.</p>
+
+            <h2>Nossa Senhora do Perpétuo Socorro</h2>
+            <p>Diferente das duas anteriores, essa devoção não vem de uma aparição, mas de
+            um ícone: uma pintura bizantina antiga, de autoria desconhecida, que retrata
+            Maria com o Menino Jesus enquanto dois anjos mostram a ele os instrumentos da
+            Paixão. O quadro está guardado em Roma desde o século XIX, sob os cuidados dos
+            padres Redentoristas, e se tornou uma das imagens marianas mais reproduzidas do
+            mundo católico.</p>
+
+            <h2>Nossa Senhora do Carmo</h2>
+            <p>Ligada à Ordem do Carmelo (a mesma dos <a href="/blog/santos-carmelitas-espiritualidade-do-carmelo">santos
+            carmelitas</a> que já contamos aqui), Nossa Senhora do Carmo é associada
+            tradicionalmente ao escapulário -- um pequeno tecido bento usado como sinal de
+            consagração e proteção mariana, que a tradição afirma ter sido entregue por
+            Maria a São Simão Stock, no século XIII.</p>
+
+            <h2>Imaculada Conceição</h2>
+            <p>Diferente das anteriores, essa não é uma aparição nem um objeto -- é um
+            <strong>dogma</strong>, uma verdade de fé definida oficialmente pela Igreja em
+            1854: a crença de que Maria foi concebida sem o pecado original, desde o
+            primeiro instante de sua existência. É uma das quatro grandes definições
+            marianas da Igreja Católica, e é justamente essa verdade que a aparição de
+            Lourdes teria vindo confirmar, quatro anos depois.</p>
+
+            <p>Aparições, ícones, dogmas -- caminhos diferentes que levam sempre ao mesmo
+            lugar: a mesma Maria, mãe de Jesus, olhada por ângulos diferentes ao longo da
+            história da fé.</p>
+
+            <div class="cta-blog-produto">
+              <p>Escolha o título de Nossa Senhora que mais fala com você</p>
+              <a href="__URL_PRODUTO__" class="botao-principal">Ver medalha, entremeio e chaveiro da Imaculada Conceição →</a>
+            </div>
+        """,
+    },
+    "santo-antonio-de-padua-santo-casamenteiro": {
+        "titulo": "Santo Antônio de Pádua: por que ele é o santo casamenteiro",
+        "resumo": (
+            "Pregador, professor e um dos santos mais populares do Brasil -- entenda a "
+            "origem da tradição de pedir a Santo Antônio ajuda para casar."
+        ),
+        "produto_relacionado_id": "santo-antonio",
+        "publicado_em": "2026-09-11",
+        "corpo_html": """
+            <p>Fernando Martins de Bulhões nasceu em Lisboa, Portugal, em 1195, numa
+            família nobre, e entrou ainda jovem para a vida religiosa -- primeiro como
+            cônego agostiniano, depois como frade franciscano, quando adotou o nome de
+            Antônio. Conhecido por sua eloquência e profundo conhecimento das Escrituras,
+            tornou-se um dos maiores pregadores de sua época, viajando por Portugal, Itália
+            e França para evangelizar. Morreu ainda jovem, aos 35 anos, em Pádua, na
+            Itália -- cidade que hoje carrega seu nome mais conhecido.</p>
+
+            <h2>Por que "casamenteiro"?</h2>
+            <p>A fama de Santo Antônio como intercessor para encontrar um bom casamento
+            vem, principalmente, de uma tradição popular portuguesa que remonta a séculos:
+            a de que ele ajudaria moças a encontrar um marido, prática que incluía até
+            rituais caseiros (como "afogar" uma imagem do santo até o pedido ser atendido --
+            algo que a Igreja nunca recomendou oficialmente, mas que se popularizou de
+            forma folclórica). O 13 de junho, dia de sua festa, é tradicionalmente marcado
+            por bênçãos de noivos e casais em igrejas por todo o Brasil e Portugal.</p>
+
+            <h2>O santo das coisas perdidas</h2>
+            <p>Outra devoção fortíssima ligada a Santo Antônio é a de recuperar objetos
+            perdidos -- tradição que remonta a um episódio contado sobre sua própria vida,
+            em que teria recuperado um livro de salmos roubado após rezar por sua
+            devolução. Até hoje, é comum ouvir alguém pedir "Santo Antônio, ajuda a
+            achar..." diante de uma chave sumida ou um documento extraviado.</p>
+
+            <h2>Parte da festa junina brasileira</h2>
+            <p>No Brasil, o dia de Santo Antônio (13 de junho) abre o tradicional trio de
+            festas juninas do mês, seguido por São João Batista (24 de junho) e São Pedro
+            (29 de junho) -- fazendo dele, além de um dos santos mais queridos em devoção
+            pessoal, também parte de uma das maiores tradições culturais e religiosas do
+            calendário brasileiro.</p>
+
+            <div class="cta-blog-produto">
+              <p>Um santo pra pedir ajuda em qualquer busca</p>
+              <a href="__URL_PRODUTO__" class="botao-principal">Ver medalha, entremeio e chaveiro de Santo Antônio →</a>
+            </div>
+        """,
+    },
+    "sao-jorge-cavaleiro-e-martir": {
+        "titulo": "São Jorge: a lenda do dragão e a história por trás do cavaleiro",
+        "resumo": (
+            "Soldado romano martirizado no século III, São Jorge é hoje um dos santos "
+            "mais populares do Brasil. Conheça a lenda e a história real por trás dela."
+        ),
+        "produto_relacionado_id": "sao-jorge",
+        "publicado_em": "2026-09-11",
+        "corpo_html": """
+            <p>Jorge foi, segundo a tradição, um soldado romano de origem grega que
+            serviu no exército do imperador Diocleciano, no fim do século III, numa época
+            de intensa perseguição aos cristãos. Recusando-se a abandonar sua fé mesmo sob
+            ordem direta do imperador, foi torturado e decapitado por volta do ano 303,
+            tornando-se um dos mártires mais venerados dos primeiros séculos da Igreja.</p>
+
+            <h2>A lenda do dragão</h2>
+            <p>A história mais conhecida sobre São Jorge, porém, não é histórica, e sim
+            uma lenda medieval que só surgiu séculos depois de sua morte: a de que ele
+            teria salvo uma cidade (geralmente identificada como Selene, na Líbia) de um
+            dragão que aterrorizava a população, exigindo sacrifícios humanos regulares. No
+            dia em que a vítima escolhida era a própria filha do rei, Jorge apareceu,
+            enfrentou e derrotou o dragão, salvando a princesa e convertendo toda a cidade
+            ao cristianismo. A imagem do cavaleiro montado, lança em riste contra o dragão,
+            é uma das mais reproduzidas de toda a arte religiosa.</p>
+
+            <h2>Padroeiro de soldados e de cidades inteiras</h2>
+            <p>Por seu histórico como soldado corajoso e fiel até a morte, São Jorge se
+            tornou padroeiro de exércitos, de cavaleiros e de nações inteiras -- é o santo
+            padroeiro da Inglaterra, da Geórgia (país que leva seu nome) e também do Rio de
+            Janeiro, onde sua festa, em 23 de abril, é feriado municipal e reúne
+            multidões nas ruas todos os anos.</p>
+
+            <p>Entre a história do soldado mártir e a lenda do cavaleiro contra o dragão,
+            São Jorge segue sendo um símbolo de coragem para enfrentar qualquer "dragão" --
+            literal ou simbólico -- que apareça pelo caminho.</p>
+
+            <div class="cta-blog-produto">
+              <p>Coragem pra enfrentar qualquer desafio</p>
+              <a href="__URL_PRODUTO__" class="botao-principal">Ver medalha, entremeio e chaveiro de São Jorge →</a>
+            </div>
+        """,
+    },
+    "santo-expedito-santo-das-causas-urgentes": {
+        "titulo": "Santo Expedito: a origem do santo das causas urgentes",
+        "resumo": (
+            "Um grito de \"hoje!\" contra um corvo que gritava \"amanhã\" -- essa é a "
+            "lenda por trás de um dos santos mais procurados em momentos de urgência."
+        ),
+        "produto_relacionado_id": "santo-expedito",
+        "publicado_em": "2026-09-11",
+        "corpo_html": """
+            <p>Diferente da maioria dos santos deste catálogo, é importante começar sendo
+            direto: a história de Santo Expedito tem pouquíssimo lastro documental
+            histórico. Estudiosos da própria Igreja -- os bolandistas, responsáveis por
+            avaliar criticamente a vida dos santos -- levantam a hipótese de que seu nome
+            possa até ter surgido de uma leitura equivocada da palavra "Elpidius" (outro
+            nome próprio) em documentos antigos. Ainda assim, a devoção popular a Santo
+            Expedito é imensa, especialmente no Brasil.</p>
+
+            <h2>Um soldado romano na Armênia</h2>
+            <p>Segundo a tradição mais difundida, Expedito teria sido comandante de uma
+            legião romana baseada na Armênia, no fim do século III, e teria se convertido
+            ao cristianismo -- decisão que lhe custou a vida durante a perseguição movida
+            pelo imperador Diocleciano, sendo martirizado junto de seus soldados.</p>
+
+            <h2>A lenda do corvo: "amanhã" contra "hoje"</h2>
+            <p>A história mais contada sobre ele, no entanto, é simbólica: no momento de
+            sua conversão, o próprio mal teria aparecido a Expedito na forma de um corvo,
+            gritando repetidamente "cras, cras, cras" -- "amanhã", em latim -- tentando
+            convencê-lo a adiar a decisão de mudar de vida. Expedito, segundo a lenda,
+            pisou sobre o corvo e respondeu "hodie" -- "hoje". Dessa cena nasceu tanto seu
+            título de "santo das causas urgentes" quanto a inscrição "HOJE", que aparece
+            até hoje estampada em suas imagens e medalhas.</p>
+
+            <h2>Uma devoção sobre não adiar</h2>
+            <p>Seja qual for a base histórica real por trás da figura, a mensagem que
+            sustenta essa devoção há séculos continua atual: diante de uma necessidade
+            urgente, não vale a pena adiar para amanhã o que precisa de resposta hoje --
+            nem a oração, nem a atitude diante do problema.</p>
+
+            <div class="cta-blog-produto">
+              <p>Pra quando a resposta não pode esperar</p>
+              <a href="__URL_PRODUTO__" class="botao-principal">Ver medalha, entremeio e chaveiro de Santo Expedito →</a>
+            </div>
+        """,
+    },
+    "santa-dulce-dos-pobres-primeira-santa-brasileira": {
+        "titulo": "Santa Dulce dos Pobres: a primeira santa nascida no Brasil",
+        "resumo": (
+            "Ainda adolescente, transformou a casa dos pais num abrigo pra mendigos e "
+            "doentes -- décadas depois, se tornou a primeira santa nascida em solo brasileiro."
+        ),
+        "produto_relacionado_id": "santa-dulce",
+        "publicado_em": "2026-09-11",
+        "corpo_html": """
+            <p>Maria Rita de Souza Brito Lopes Pontes nasceu em Salvador, Bahia, em 1914.
+            Ainda aos 13 anos, já demonstrava a vocação que marcaria toda sua vida:
+            transformou a própria casa da família num abrigo informal para mendigos e
+            doentes que não tinham pra onde ir -- iniciativa que ficou conhecida na
+            vizinhança como "A Portaria de São Francisco".</p>
+
+            <h2>De um posto médico a um hospital de referência</h2>
+            <p>Já como freira, com o nome religioso de Irmã Dulce, continuou expandindo
+            esse trabalho de forma organizada: fundou em 1936 a primeira organização
+            católica de assistência a operários da Bahia, e dois anos depois abriu uma
+            escola gratuita para trabalhadores e seus filhos. Esse conjunto de iniciativas
+            deu origem, com o tempo, às Obras Sociais Irmã Dulce (OSID), hoje um dos
+            maiores complexos hospitalares filantrópicos do Brasil, ainda em atividade em
+            Salvador.</p>
+
+            <h2>Reconhecimento em vida e depois da morte</h2>
+            <p>Irmã Dulce morreu em 1992, aos 77 anos, já reconhecida nacionalmente por seu
+            trabalho -- havia sido inclusive indicada ao Prêmio Nobel da Paz em 1988. Foi
+            beatificada em 2011, numa cerimônia em Salvador que reuniu mais de 70 mil
+            pessoas, e canonizada pelo Papa Francisco em 13 de outubro de 2019, tornando-se
+            a <strong>primeira santa nascida em solo brasileiro</strong> -- uma canonização
+            que levou apenas 27 anos após sua morte, uma das mais rápidas da história
+            recente da Igreja.</p>
+
+            <p>De uma menina de 13 anos abrindo as portas da própria casa a uma santa
+            reconhecida mundialmente: a trajetória de Santa Dulce mostra que cuidar de quem
+            precisa pode começar em qualquer idade, com qualquer recurso disponível.</p>
+
+            <div class="cta-blog-produto">
+              <p>O cuidado que vira exemplo pro mundo inteiro</p>
+              <a href="__URL_PRODUTO__" class="botao-principal">Ver medalha, entremeio e chaveiro de Santa Dulce →</a>
+            </div>
+        """,
+    },
+    "sao-joao-paulo-ii-o-papa-viajante": {
+        "titulo": "São João Paulo II: o papa que ajudou a mudar a história da Europa",
+        "resumo": (
+            "Primeiro papa não-italiano em mais de 450 anos, sobrevivente de um atentado, "
+            "João Paulo II se tornou um dos líderes religiosos mais influentes do século XX."
+        ),
+        "produto_relacionado_id": "sao-joao-paulo-ii",
+        "publicado_em": "2026-09-11",
+        "corpo_html": """
+            <p>Karol Józef Wojtyła nasceu em 1920, na Polônia, e viveu a juventude sob duas
+            das maiores tragédias do século XX: a ocupação nazista, durante a qual chegou a
+            trabalhar em fábricas e pedreiras para escapar da deportação, e depois o regime
+            comunista que dominou o país no pós-guerra. Ordenado padre em 1946, seguiu uma
+            trajetória acadêmica e pastoral na Igreja polonesa até ser eleito Papa em 1978
+            -- tornando-se o primeiro pontífice não-italiano em mais de 450 anos, adotando
+            o nome de João Paulo II.</p>
+
+            <h2>Um papa que sobreviveu a um atentado</h2>
+            <p>Em 13 de maio de 1981, João Paulo II foi baleado na Praça de São Pedro, em
+            Roma, por um atirador turco, e sobreviveu por pouco a ferimentos graves. Anos
+            depois, atribuiu sua sobrevivência à intercessão de Nossa Senhora de Fátima --
+            justamente no aniversário da primeira aparição -- e fez questão de visitar
+            pessoalmente, na prisão, o homem que tentara matá-lo, perdoando-o
+                publicamente.</p>
+
+            <h2>Papel na queda do comunismo</h2>
+            <p>Historiadores e líderes políticos da época reconhecem amplamente o papel de
+            João Paulo II no enfraquecimento dos regimes comunistas do Leste Europeu,
+            especialmente em sua Polônia natal -- suas visitas ao país e seu apoio moral ao
+            movimento sindical Solidariedade são frequentemente citados como fatores que
+            contribuíram para a queda do Muro de Berlim, em 1989, e o fim da Guerra Fria
+            que se seguiu.</p>
+
+            <h2>O papa viajante</h2>
+            <p>Ao longo de quase 27 anos de pontificado -- um dos mais longos da história
+            -- visitou mais de 120 países, um número sem precedentes até então, o que lhe
+            rendeu o apelido de "papa viajante". Morreu em 2005, foi beatificado em 2011
+            pelo Papa Bento XVI e canonizado em 2014 pelo Papa Francisco, na mesma
+            cerimônia que canonizou o Papa João XXIII.</p>
+
+            <div class="cta-blog-produto">
+              <p>A força de um papa que marcou o século XX</p>
+              <a href="__URL_PRODUTO__" class="botao-principal">Ver medalha, entremeio e chaveiro de São João Paulo II →</a>
+            </div>
+        """,
+    },
 }
 
 
