@@ -739,6 +739,235 @@ ARTIGOS_BLOG = {
             </div>
         """,
     },
+    "santos-martires-de-cunhau-e-uruacu": {
+        "titulo": "Santos Mártires de Cunhaú e Uruaçu: a fé que resistiu no Rio Grande do Norte",
+        "resumo": (
+            "Em 1645, dois massacres no litoral potiguar deram origem aos primeiros "
+            "santos nascidos em solo brasileiro. Uma história que começa bem perto daqui."
+        ),
+        "produto_relacionado_id": "santos-martires-do-rn",
+        "publicado_em": "2026-09-10",
+        "corpo_html": """
+            <p>Nem toda devoção do nosso catálogo nasceu do outro lado do mundo -- essa
+            começou bem perto daqui. Em 1645, o Brasil holandês vivia um período de forte
+            perseguição religiosa movida por tropas calvinistas contra a população
+            católica do litoral do que hoje é o Rio Grande do Norte.</p>
+
+            <h2>Dois massacres, poucos meses de diferença</h2>
+            <p>No dia 16 de julho de 1645, um grupo de fiéis participava de uma missa na
+            Capela de Nossa Senhora das Candeias, em Cunhaú (hoje Canguaretama-RN), quando
+            tropas calvinistas trancaram as portas da igreja e assassinaram todos que
+            estavam dentro. Meses depois, em 3 de outubro do mesmo ano, um ataque
+            semelhante aconteceu em Uruaçu, no atual município de São Gonçalo do
+            Amarante -- entre as vítimas estava o padre Ambrósio Francisco Ferro e o leigo
+            Mateus Moreira. Ao todo, cerca de trinta pessoas -- vinte e cinco homens e
+            cinco mulheres -- morreram nos dois episódios, reunidas simplesmente por
+            praticar sua fé.</p>
+
+            <h2>De beatos a santos, quase quatro séculos depois</h2>
+            <p>Os mártires de Cunhaú e Uruaçu foram beatificados em 5 de março de 2000
+            pelo Papa João Paulo II, e canonizados em 15 de outubro de 2017 pelo Papa
+            Francisco -- tornando-se os primeiros santos nascidos e martirizados em solo
+            brasileiro. A cerimônia de canonização, em Roma, reuniu cerca de 35 mil
+            pessoas, incluindo mais de 400 potiguares que viajaram até lá especialmente
+            para acompanhar o momento.</p>
+
+            <h2>Uma devoção que se pode visitar</h2>
+            <p>Diferente de muitas devoções que só existem em livros e imagens, essa dá
+            pra visitar de perto: a Capela dos Mártires, em São Gonçalo do Amarante, o
+            Santuário dos Mártires, no bairro Nossa Senhora de Nazaré, em Natal, e a
+            capela original de Nossa Senhora das Candeias, no antigo engenho de Cunhaú, em
+            Canguaretama, seguem recebendo romarias todos os anos -- uma fé que resistiu há
+            quase 400 anos, na mesma terra de onde saem nossas medalhas.</p>
+
+            <div class="cta-blog-produto">
+              <p>Uma devoção nascida bem perto daqui</p>
+              <a href="__URL_PRODUTO__" class="botao-principal">Ver medalha, entremeio e chaveiro dos Santos Mártires do RN →</a>
+            </div>
+        """,
+    },
+    "beata-nha-chica-baependi": {
+        "titulo": "Beata Nhá Chica: a ex-escravizada que virou mãe dos pobres de Baependi",
+        "resumo": (
+            "Analfabeta, nascida escravizada, Francisca de Paula de Jesus se tornou a "
+            "primeira mulher negra leiga beatificada pela Igreja no Brasil."
+        ),
+        "produto_relacionado_id": "beata-nha-xica",
+        "publicado_em": "2026-09-10",
+        "corpo_html": """
+            <p>Francisca de Paula de Jesus, mais conhecida pelo apelido carinhoso de
+            <strong>Nhá Chica</strong> (também escrito "Nhá Xica"), nasceu em 1810 em Minas
+            Gerais e passou a maior parte da vida em Baependi, pequena cidade no sul do
+            estado. Nascida em condição de escravidão, teve uma vida marcada pela pobreza e
+            pelo trabalho duro desde cedo -- e, ainda assim, tornou-se uma das figuras
+            espirituais mais queridas da região.</p>
+
+            <h2>Uma vida simples, dedicada aos outros</h2>
+            <p>Sem nunca ter aprendido a ler ou escrever, Nhá Chica viveu de forma humilde,
+            mas dedicou boa parte do que tinha -- tempo, atenção, os poucos recursos que
+            possuía -- a ajudar quem precisava em Baependi, o que lhe rendeu o apelido
+            popular de "mãe dos pobres". Morreu em 1895, e sua devoção, sempre viva entre
+            os moradores da cidade, cresceu de forma constante ao longo do século
+            seguinte.</p>
+
+            <h2>Primeira mulher negra leiga beatificada no Brasil</h2>
+            <p>O processo de beatificação reconheceu, em 2011, suas virtudes heroicas, e em
+            2013 o Papa Bento XVI aprovou o milagre necessário para sua beatificação: a
+            cura de uma professora de uma cidade vizinha, que se recuperou de um problema
+            cardíaco congênito sem cirurgia, atribuída à intercessão de Nhá Chica. Com a
+            beatificação, em 4 de maio de 2013, ela se tornou a primeira mulher negra leiga
+            (ou seja, sem ser freira) beatificada pela Igreja no Brasil.</p>
+
+            <p>Uma história que mostra que a santidade não exige nem estudo, nem riqueza,
+            nem poder -- só uma vida inteira dedicada a cuidar de quem está por perto.</p>
+
+            <div class="cta-blog-produto">
+              <p>A força de uma vida simples e dedicada</p>
+              <a href="__URL_PRODUTO__" class="botao-principal">Ver medalha, entremeio e chaveiro da Beata Nhá Chica →</a>
+            </div>
+        """,
+    },
+    "padre-cicero-e-frei-damiao-devocao-nordestina": {
+        "titulo": "Padre Cícero e Frei Damião: duas devoções que marcaram o Nordeste",
+        "resumo": (
+            "Nenhum dos dois foi oficialmente beatificado até hoje -- mas poucas figuras "
+            "marcaram tanto a fé popular do Nordeste brasileiro quanto esses dois padres."
+        ),
+        "produto_relacionado_id": "padre-cicero",
+        "publicado_em": "2026-09-10",
+        "corpo_html": """
+            <p>Nem toda devoção presente no nosso catálogo já recebeu um título oficial da
+            Igreja -- e é importante ser honesto sobre isso. Padre Cícero e Frei Damião
+            estão entre as figuras religiosas mais amadas e visitadas do Nordeste
+            brasileiro, mas nenhum dos dois foi, até hoje, oficialmente beatificado.
+            Mesmo assim, a fé popular que os cerca é grande demais pra ser ignorada.</p>
+
+            <h2><a href="/produto/padre-cicero">Padre Cícero</a>, o padrinho de Juazeiro</h2>
+            <p>Cícero Romão Batista (1844-1934) foi pároco em Juazeiro do Norte, no Ceará,
+            cidade que se transformou, em boa parte graças a ele, num dos maiores polos de
+            romaria católica do Brasil. Sua relação com a hierarquia da Igreja foi
+            historicamente conturbada -- chegou a ser suspenso de exercer funções
+            sacerdotais em 1894, após controvérsias envolvendo um episódio atribuído a
+            milagre, e só teve sua situação parcialmente normalizada anos depois. Apesar
+            disso, seu processo de causa de beatificação avança: a fase realizada na
+            Diocese de Crato (CE) foi concluída em 2025, e o caso segue agora em análise no
+            Vaticano, ainda sem data prevista para uma eventual beatificação. Enquanto isso,
+            é tratado por milhões de devotos, sobretudo no Ceará, como "Padim Ciço".</p>
+
+            <h2>Frei Damião, o missionário do Nordeste</h2>
+            <p><a href="/produto/frei-damiao">Frei Damião de Bozzano</a> (1898-1997)
+            nasceu Pio Giannotti, na Itália, e chegou ao Brasil em 1931 como frade
+            capuchinho. Dedicou 66 anos de vida a percorrer cidades do Norte e Nordeste
+            pregando o Evangelho, quase sempre a pé ou em meios de transporte simples,
+            tornando-se uma figura extremamente familiar e querida em centenas de
+            comunidades ao longo desse período. Foi declarado <strong>Venerável</strong>
+            pelo Papa Francisco em 2019, um passo formal a caminho da beatificação, que
+            ainda depende do reconhecimento oficial de um milagre.</p>
+
+            <p>Duas trajetórias diferentes, unidas pelo mesmo carinho popular -- a prova de
+            que, no Nordeste, a devoção muitas vezes anda alguns passos à frente dos
+            processos formais da Igreja.</p>
+
+            <div class="cta-blog-produto">
+              <p>A fé popular do Nordeste, numa medalha</p>
+              <a href="__URL_PRODUTO__" class="botao-principal">Ver medalha, entremeio e chaveiro do Padre Cícero →</a>
+            </div>
+        """,
+    },
+    "francisco-e-jacinta-pastorinhos-de-fatima": {
+        "titulo": "Francisco e Jacinta: os pastorinhos que viram Nossa Senhora em Fátima",
+        "resumo": (
+            "Duas crianças portuguesas, mortas ainda na infância, se tornaram os santos "
+            "não-mártires mais jovens da história da Igreja Católica."
+        ),
+        "produto_relacionado_id": "francisco-de-fatima",
+        "publicado_em": "2026-09-10",
+        "corpo_html": """
+            <p>Já contamos aqui <a href="/blog/nossa-senhora-aparecida-historia">a história
+            de Nossa Senhora Aparecida</a>, mas o Brasil não é o único país com uma
+            aparição mariana que marcou profundamente a fé católica. Em 1917, em Fátima,
+            Portugal, três crianças pastoras -- os irmãos <a href="/produto/francisco-de-fatima">Francisco</a>
+            e Jacinta Marto, e a prima deles, Lúcia dos Santos -- afirmaram ter visto Nossa
+            Senhora em seis aparições sucessivas, entre maio e outubro daquele ano.</p>
+
+            <h2>Duas crianças, uma missão de oração</h2>
+            <p>Segundo o relato dos três pastorinhos, Nossa Senhora pediu que rezassem o
+            terço todos os dias pela paz do mundo e fizessem sacrifícios pelos pecadores --
+            um pedido que as crianças levaram a sério com uma seriedade impressionante para
+            a idade que tinham (Francisco tinha 9 anos; Jacinta, 7). Pouco tempo depois,
+            ambos contraíram a gripe espanhola, pandemia que matou milhões de pessoas ao
+            redor do mundo entre 1918 e 1920. Francisco morreu em 1919, aos 10 anos; Jacinta,
+            em 1920, aos 9.</p>
+
+            <h2>Os santos mais jovens não-mártires da história</h2>
+            <p>Em 2017, no mesmo ano do centenário das aparições, o Papa Francisco
+            canonizou Francisco e Jacinta -- tornando-os os santos não-mártires mais jovens
+            já reconhecidos pela Igreja Católica (crianças que morreram mártires, matadas
+            por causa da fé, já haviam sido canonizadas antes, mas nenhuma que tenha
+            morrido de causas naturais tão jovem). Lúcia, a prima mais velha, viveu muito
+            mais tempo -- tornou-se freira carmelita e faleceu em 2005, aos 97 anos; seu
+            processo de beatificação segue em andamento.</p>
+
+            <p>Uma pequena aparição num campo de Portugal, sustentada pela fé simples de
+            duas crianças, que se tornou uma das devoções marianas mais fortes do mundo
+            católico.</p>
+
+            <div class="cta-blog-produto">
+              <p>A fé simples de uma criança</p>
+              <a href="__URL_PRODUTO__" class="botao-principal">Ver medalha, entremeio e chaveiro de Francisco de Fátima →</a>
+            </div>
+        """,
+    },
+    "espirito-santo-pentecostes-santissima-trindade": {
+        "titulo": "Espírito Santo, Pentecostes e Santíssima Trindade: entendendo as três devoções",
+        "resumo": (
+            "Três imagens diferentes, um só mistério de fé -- entenda a diferença entre "
+            "essas devoções que aparecem juntas com frequência."
+        ),
+        "produto_relacionado_id": "espirito-santo",
+        "publicado_em": "2026-09-10",
+        "corpo_html": """
+            <p>Entre as devoções do catálogo, três aparecem com frequência lado a lado e
+            geram dúvida sobre a diferença entre elas: Espírito Santo, Pentecostes e
+            Santíssima Trindade. Não são a mesma coisa -- mas estão profundamente
+            conectadas.</p>
+
+            <h2>Espírito Santo</h2>
+            <p>Na fé católica, Deus é <strong>um só</strong>, mas existe em três pessoas
+            distintas: Pai, Filho (Jesus) e Espírito Santo. O Espírito Santo é
+            tradicionalmente representado na forma de uma pomba branca, imagem que vem do
+            relato do batismo de Jesus no rio Jordão, quando o Espírito teria descido sobre
+            ele "como uma pomba". É invocado como fonte de sabedoria, força e inspiração
+            para viver a fé no dia a dia.</p>
+
+            <h2>Pentecostes</h2>
+            <p>O <a href="/produto/pentecostes">Pentecostes</a> é o EVENTO bíblico
+            específico em que o Espírito Santo desceu sobre os apóstolos, cinquenta dias
+            depois da Páscoa, na forma de "línguas de fogo" -- dando a eles a coragem e a
+            capacidade de pregar o Evangelho em várias línguas para os povos reunidos em
+            Jerusalém naquele dia. É considerado o marco do nascimento oficial da Igreja
+            Católica como comunidade organizada de fiéis, e é celebrado todos os anos, dez
+            dias após a Ascensão de Jesus.</p>
+
+            <h2>Santíssima Trindade</h2>
+            <p>Já a <a href="/produto/santissima-trindade">Santíssima Trindade</a> não é um
+            evento nem uma pessoa isolada -- é o próprio mistério central da fé católica: a
+            crença de que Deus é Pai, Filho e Espírito Santo ao mesmo tempo, três pessoas
+            distintas e, ainda assim, um único Deus. É um dos conceitos mais difíceis de
+            explicar racionalmente dentro da teologia católica, por isso costuma ser
+            representado visualmente -- muitas vezes como três figuras reunidas numa só
+            imagem -- em vez de apenas descrito em palavras.</p>
+
+            <p>Três devoções, um só fio condutor: a presença constante de Deus, seja
+            guiando (Espírito Santo), agindo na história (Pentecostes) ou existindo em sua
+            plenitude (Trindade).</p>
+
+            <div class="cta-blog-produto">
+              <p>A presença do Espírito Santo com você</p>
+              <a href="__URL_PRODUTO__" class="botao-principal">Ver medalha, entremeio e chaveiro do Espírito Santo →</a>
+            </div>
+        """,
+    },
 }
 
 

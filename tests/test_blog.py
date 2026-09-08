@@ -125,6 +125,11 @@ def test_artigos_misturados_carregam_200_e_linkam_produtos_citados(client):
         "santa-faustina-e-jesus-misericordioso": ["jesus-misericordioso"],
         "arcanjos-miguel-gabriel-rafael": ["sao-gabriel", "sao-rafael"],
         "familia-martin-pais-de-santa-teresinha": [],
+        "santos-martires-de-cunhau-e-uruacu": [],
+        "beata-nha-chica-baependi": [],
+        "padre-cicero-e-frei-damiao-devocao-nordestina": ["frei-damiao"],
+        "francisco-e-jacinta-pastorinhos-de-fatima": [],
+        "espirito-santo-pentecostes-santissima-trindade": ["pentecostes", "santissima-trindade"],
     }
     for slug, ids_citados in casos.items():
         resposta = client.get(f"/blog/{slug}")
