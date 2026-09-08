@@ -38,6 +38,11 @@
     <span aria-current="page">{{ produto.nome }}</span>
   </nav>
   <h1>{{ produto.nome }}</h1>
+  {% if slug_artigo_relacionado %}
+    <p class="link-blog-relacionado">
+      📖 <a href="{{ url_for('blog_artigo', slug=slug_artigo_relacionado) }}">Conheça a história de {{ produto.nome }}</a>
+    </p>
+  {% endif %}
   <p class="instrucao">Escolha um modelo:</p>
 
   <p class="aviso-preco-atacado" id="aviso-preco-atacado">

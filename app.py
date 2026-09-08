@@ -111,6 +111,7 @@ from services.catalogo import (
     slugify,
 )
 from services.paginas_institucionais import PAGINAS_ATENDIMENTO
+from services.blog import ARTIGOS_BLOG, artigo_por_produto_id
 from services.catalogo_pdf import gerar_pdf_catalogo
 from services.avaliacoes import (
     atualizar_status as atualizar_status_avaliacao,
@@ -412,6 +413,23 @@ def _dados_faq(faq_items: list[tuple[str, str]]) -> dict:
     }
 
 
+def _dados_artigo_schema(artigo: dict, url_artigo: str, imagem_url: str) -> dict:
+    """Schema.org BlogPosting -- pros artigos de /blog (ver
+    services/blog.py) aparecerem melhor formatados na busca do Google
+    (autor, data de publicacao, imagem)."""
+    return {
+        "@context": "https://schema.org",
+        "@type": "BlogPosting",
+        "headline": artigo["titulo"],
+        "description": artigo["resumo"],
+        "image": imagem_url,
+        "datePublished": artigo["publicado_em"],
+        "author": {"@type": "Organization", "name": "Nove de Julho"},
+        "publisher": {"@type": "Organization", "name": "Nove de Julho"},
+        "mainEntityOfPage": {"@type": "WebPage", "@id": url_artigo},
+    }
+
+
 def _dados_breadcrumb(itens: list[tuple[str, str]]) -> dict:
     """Schema.org BreadcrumbList a partir de uma lista [(nome, url_absoluta), ...],
     na ordem Catalogo -> ... -> pagina atual. Ver produto()/categoria()/
@@ -701,6 +719,8 @@ def sitemap_xml():
     ]
     entradas += [(url_for("produto", produto_id=p["id"]), "monthly", "0.6") for p in produtos]
     entradas += [(url_for("pagina_atendimento", slug=s), "yearly", "0.3") for s in PAGINAS_ATENDIMENTO]
+    entradas.append((url_for("blog_indice"), "monthly", "0.6"))
+    entradas += [(url_for("blog_artigo", slug=s), "yearly", "0.5") for s in ARTIGOS_BLOG]
 
     base = request.url_root.rstrip("/")
     itens_xml = "".join(
@@ -746,6 +766,7 @@ com a quantidade total do pedido (500+ peças: 7 dias úteis; 1000+: 8 dias
 - [Medalha personalizada]({base}{url_for('personalizada')}): envio de foto própria, com simulação antes de pedir
 - [Kit Livraria Shalom]({base}{url_for('kit_livraria_shalom')}): sortimento pronto com os santos mais vendidos
 - [Quem somos]({base}{url_for('pagina_atendimento', slug='quem-somos')}): história da marca e do fundador
+- [Blog]({base}{url_for('blog_indice')}): história e significado dos santos e devoções do catálogo
 
 ## Categorias
 
@@ -1199,6 +1220,7 @@ def produto(produto_id: str):
             (produto["nome"], url_for("produto", produto_id=produto_id, _external=True)),
         ]
     )
+    artigo_relacionado = artigo_por_produto_id(produto_id)
     return render_template(
         "produto.html",
         produto=produto,
@@ -1215,6 +1237,7 @@ def produto(produto_id: str):
         media_avaliacoes=media_avaliacoes,
         total_avaliacoes=total_avaliacoes,
         vendas_recentes=vendas_recentes,
+        slug_artigo_relacionado=artigo_relacionado[0] if artigo_relacionado else None,
     )
 
 
@@ -1304,6 +1327,57 @@ def pagina_atendimento(slug: str):
         slug=slug,
         dados_breadcrumb=dados_breadcrumb,
         dados_faq=dados_faq,
+    )
+
+
+def _thumbnail_do_artigo(artigo: dict) -> str:
+    """Miniatura de um artigo do blog -- reaproveita a foto do proprio
+    produto relacionado (ver services/blog.py), sem precisar de nenhuma
+    imagem nova so pro blog."""
+    produto = buscar_produto(artigo["produto_relacionado_id"])
+    return produto["modelos"][0]["imagem"] if produto else ""
+
+
+@app.route("/blog", methods=["GET"])
+def blog_indice():
+    dados_breadcrumb = _dados_breadcrumb(
+        [
+            ("Catálogo", url_for("index", _external=True)),
+            ("Blog", url_for("blog_indice", _external=True)),
+        ]
+    )
+    artigos = [
+        {"slug": slug, "thumbnail": _thumbnail_do_artigo(artigo), **artigo}
+        for slug, artigo in sorted(ARTIGOS_BLOG.items(), key=lambda item: item[1]["publicado_em"], reverse=True)
+    ]
+    return render_template("blog_indice.html", artigos=artigos, dados_breadcrumb=dados_breadcrumb)
+
+
+@app.route("/blog/<slug>", methods=["GET"])
+def blog_artigo(slug: str):
+    artigo = ARTIGOS_BLOG.get(slug)
+    if artigo is None:
+        abort(404)
+    url_produto = url_for("produto", produto_id=artigo["produto_relacionado_id"], _external=True)
+    corpo_html = artigo["corpo_html"].replace("__URL_PRODUTO__", url_produto)
+    imagem_url = url_for("static", filename=_thumbnail_do_artigo(artigo), _external=True)
+    url_artigo = url_for("blog_artigo", slug=slug, _external=True)
+    dados_breadcrumb = _dados_breadcrumb(
+        [
+            ("Catálogo", url_for("index", _external=True)),
+            ("Blog", url_for("blog_indice", _external=True)),
+            (artigo["titulo"], url_artigo),
+        ]
+    )
+    dados_artigo = _dados_artigo_schema(artigo, url_artigo, imagem_url)
+    return render_template(
+        "blog_artigo.html",
+        artigo=artigo,
+        corpo_html=corpo_html,
+        imagem_url=imagem_url,
+        url_produto=url_produto,
+        dados_breadcrumb=dados_breadcrumb,
+        dados_artigo=dados_artigo,
     )
 
 

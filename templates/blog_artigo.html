@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% block titulo %}{{ artigo.titulo }} | Nove de Julho{% endblock %}
+{% block meta_descricao %}{{ artigo.resumo }}{% endblock %}
+{% block og_imagem %}{{ imagem_url }}{% endblock %}
+
+{% block conteudo %}
+  <script type="application/ld+json">{{ dados_breadcrumb | tojson }}</script>
+  <script type="application/ld+json">{{ dados_artigo | tojson }}</script>
+  <nav class="breadcrumbs" aria-label="Breadcrumb">
+    <a href="{{ url_for('index') }}">Catálogo</a>
+    <span>›</span>
+    <a href="{{ url_for('blog_indice') }}">Blog</a>
+    <span>›</span>
+    <span aria-current="page">{{ artigo.titulo }}</span>
+  </nav>
+  <h1>{{ artigo.titulo }}</h1>
+  <img class="imagem-artigo-blog" src="{{ imagem_url }}" alt="{{ artigo.titulo }}" loading="lazy" decoding="async">
+  <div class="conteudo-institucional">
+    {{ corpo_html | safe }}
+  </div>
+  <p class="voltar-blog"><a href="{{ url_for('blog_indice') }}">← Ver todos os artigos</a></p>
+{% endblock %}

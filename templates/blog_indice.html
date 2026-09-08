@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block titulo %}Blog — Histórias dos santos e devoções | Nove de Julho{% endblock %}
+{% block meta_descricao %}Conheça a história, o significado e as devoções por trás dos santos católicos mais queridos -- e encontre a medalha, entremeio ou chaveiro de cada um.{% endblock %}
+
+{% block conteudo %}
+  <script type="application/ld+json">{{ dados_breadcrumb | tojson }}</script>
+  <nav class="breadcrumbs" aria-label="Breadcrumb">
+    <a href="{{ url_for('index') }}">Catálogo</a>
+    <span>›</span>
+    <span aria-current="page">Blog</span>
+  </nav>
+  <h1>Histórias dos santos e devoções</h1>
+  <p class="instrucao">
+    Quem foi, o que significa, por que essa devoção é tão forte -- histórias reais por trás
+    dos santos e devoções do nosso catálogo.
+  </p>
+
+  <div class="grid-blog">
+    {% for artigo in artigos %}
+      <a class="card-blog" href="{{ url_for('blog_artigo', slug=artigo.slug) }}">
+        <img src="{{ url_for('static', filename=artigo.thumbnail) }}" alt="{{ artigo.titulo }}" loading="lazy" decoding="async">
+        <div class="card-blog-corpo">
+          <h2>{{ artigo.titulo }}</h2>
+          <p>{{ artigo.resumo }}</p>
+          <span class="ver-modelos">Ler artigo →</span>
+        </div>
+      </a>
+    {% endfor %}
+  </div>
+{% endblock %}
