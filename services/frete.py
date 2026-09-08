@@ -123,6 +123,25 @@ def _preco_str_para_float(valor) -> float:
         return 0.0
 
 
+# Margem de 1 dia util somada em CIMA do prazo que a Frenet/Melhor Envio
+# cotam -- pedido do usuario 2026-09: na pratica a encomenda as vezes so
+# e´ efetivamente encaminhada pela transportadora no dia UTIL SEGUINTE
+# ao da postagem (nao no mesmo dia), entao o prazo cotado pela API
+# ficava sistematicamente 1 dia mais otimista do que a entrega real.
+# Aplicado no ponto em que cada cotacao bruta e´ lida (Frenet e Melhor
+# Envio, os dois abaixo) pra valer em toda transportadora, sem duplicar
+# a logica em quem consome "prazo_dias" depois (frete gratis, desconto
+# atacado, previsao de entrega do pedido).
+MARGEM_DIAS_UTEIS_EXTRA = 1
+
+
+def _prazo_dias_com_margem(bruto) -> int | None:
+    try:
+        return int(bruto) + MARGEM_DIAS_UTEIS_EXTRA
+    except (TypeError, ValueError):
+        return None
+
+
 def consultar_frenet(cep_destino: str, peso_kg: float, subtotal: float) -> dict:
     """Consulta a Frenet e devolve {"opcoes": [...]} ou {"erro": "..."}."""
     if not FRENET_TOKEN:
@@ -190,7 +209,7 @@ def consultar_frenet(cep_destino: str, peso_kg: float, subtotal: float) -> dict:
                 "transportadora": servico.get("Carrier", ""),
                 "servico": servico.get("ServiceDescription", ""),
                 "preco": preco,
-                "prazo_dias": servico.get("DeliveryTime"),
+                "prazo_dias": _prazo_dias_com_margem(servico.get("DeliveryTime")),
             }
         )
 
@@ -294,7 +313,7 @@ def consultar_melhor_envio(cep_destino: str, peso_kg: float, subtotal: float) ->
                 "transportadora": nome_transportadora,
                 "servico": servico.get("name", ""),
                 "preco": round(preco, 2),
-                "prazo_dias": servico.get("delivery_time"),
+                "prazo_dias": _prazo_dias_com_margem(servico.get("delivery_time")),
             }
         )
     return opcoes
