@@ -229,9 +229,12 @@ app.secret_key = SECRET_KEY or secrets.token_urlsafe(32)
 # imagem) -- protege contra abuso/spam automatizado sem incomodar
 # gente de verdade usando o site normalmente (ver conversa "tornar o
 # site e apis seguros"). storage_uri="memory://" e´ seguro aqui porque
-# o gunicorn roda com 1 worker so (Procfile/render.yaml) -- se um dia
-# isso mudar pra mais workers, precisa trocar pra um storage
-# compartilhado (Redis) senao cada worker conta separado.
+# o gunicorn roda com 1 worker (processo) so (render.yaml) -- as varias
+# THREADS desse worker (--worker-class gthread --threads 8) compartilham
+# a MESMA memoria, entao continuam contando pro mesmo limite certinho.
+# Se um dia isso mudar pra mais workers (processos, nao threads),
+# precisa trocar pra um storage compartilhado (Redis) senao cada
+# processo conta separado.
 limiter = Limiter(get_remote_address, app=app, storage_uri="memory://")
 
 
@@ -250,6 +253,23 @@ def _pular_rate_limit_em_teste() -> bool:
 from werkzeug.middleware.proxy_fix import ProxyFix  # noqa: E402
 
 app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1)
+
+# /static/* servido pelo WhiteNoise, ANTES de chegar no roteamento do
+# Flask -- ver conversa "auditoria Claude in Chrome": o handler padrao
+# de arquivo estatico do Flask e´ pensado pra desenvolvimento, nao pra
+# producao -- numa home com 30+ imagens carregando juntas, isso
+# contribuia pra imagem quebrada de forma intermitente (a mesma imagem
+# carregava normal se pedida sozinha, so falhava sob disputa por
+# atencao do processo -- resolvido em conjunto com "--threads 8" no
+# render.yaml). WhiteNoise serve o arquivo de forma mais leve e ja
+# manda Cache-Control -- curto pros arquivos daqui, que nao tem hash no
+# nome (nao dava pra usar cache longo/imutavel sem isso, senao um
+# deploy que troca o CONTEUDO de "logo-icone.png" mantendo o MESMO
+# nome ficaria servindo a versao antiga do cache do navegador por
+# muito tempo).
+from whitenoise import WhiteNoise  # noqa: E402
+
+app.wsgi_app = WhiteNoise(app.wsgi_app, root="static/", prefix="static/")
 
 
 @app.after_request
@@ -4731,7 +4751,13 @@ def _iniciar_scheduler_jobs() -> None:
 # verdade a cada import do modulo (ver config.py).
 #
 # IMPORTANTE se um dia aumentar "--workers" no render.yaml (hoje fixo
-# em 1 de proposito): CADA worker do gunicorn importa esse modulo
+# em 1 de proposito -- "--threads 8" com "--worker-class gthread", ver
+# render.yaml, e´ SEGURO e nao conta pra essa restricao: sao varias
+# threads dentro do MESMO processo, memoria compartilhada, entao nem o
+# scheduler nem o limiter abaixo duplicam; foi ligado justamente pra
+# imagem estatica parar de disputar o unico worker com pagina/API
+# durante o carregamento da home, ver conversa "auditoria Claude in
+# Chrome"): CADA worker (processo) do gunicorn importa esse modulo
 # separado e subiria seu PROPRIO scheduler, duplicando (2x, 3x...)
 # todo e-mail/job agendado daqui pra baixo. Rodar com `--preload`
 # resolve ESSA parte (o modulo roda 1x so, no processo mestre, ANTES
@@ -4740,7 +4766,8 @@ def _iniciar_scheduler_jobs() -> None:
 # inicio do arquivo) tambem depende de workers=1 (cada worker contaria
 # limite de taxa separado, na pratica dobrando/triplicando o limite
 # real) -- os DOIS precisam ser resolvidos juntos (preload + storage
-# compartilhado tipo Redis pro limiter) antes de subir mais workers.
+# compartilhado tipo Redis pro limiter) antes de subir mais workers
+# (processos) de verdade.
 if ENABLE_SCHEDULER:
     _iniciar_scheduler_jobs()
 

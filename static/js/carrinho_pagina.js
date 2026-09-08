@@ -362,6 +362,12 @@
 
     vazioEl.hidden = true;
     resumoEl.hidden = false;
+    // Sem isso, a lista fica visivelmente vazia (parece que o carrinho
+    // sumiu) durante o tempo do fetch abaixo -- ver conversa "auditoria
+    // Claude in Chrome": pra quem tem um carrinho de atacado grande,
+    // ver "0 itens" por 1-2s antes dos itens de verdade aparecerem
+    // passa a impressao de que o pedido foi perdido.
+    listaEl.innerHTML = '<p class="vazio-texto">Carregando seu carrinho...</p>';
 
     const resposta = await fetch('/api/carrinho/calcular', {
       method: 'POST',
