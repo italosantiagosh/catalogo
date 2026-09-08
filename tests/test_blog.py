@@ -170,3 +170,16 @@ def test_historia_da_loja_e_personalizacao_linkam_entre_si(client):
     resposta = client.get("/blog/por-que-personalizar-uma-medalha")
     pagina = resposta.get_data(as_text=True)
     assert "/blog/a-historia-da-nove-de-julho" in pagina
+
+
+def test_artigo_de_confianca_cita_dados_reais_e_linka_pro_catalogo(client):
+    """ver conversa: artigo pensado pra quem pesquisa no Google "a loja
+    e confiavel?" -- precisa citar CNPJ/endereco reais (mesmos do
+    rodape, ver templates/base.html) e levar pro catalogo no final."""
+    resposta = client.get("/blog/nove-de-julho-e-confiavel")
+    assert resposta.status_code == 200
+    pagina = resposta.get_data(as_text=True)
+    assert "39.390.354/0001-25" in pagina
+    assert "/atendimento/trocas-e-devolucao" in pagina
+    assert "/blog/a-historia-da-nove-de-julho" in pagina
+    assert "/catalogo" in pagina

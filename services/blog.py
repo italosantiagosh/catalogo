@@ -1391,6 +1391,84 @@ ARTIGOS_BLOG = {
             </div>
         """,
     },
+    "nove-de-julho-e-confiavel": {
+        "titulo": "A Nove de Julho é confiável? Veja como funciona cada etapa da compra",
+        "resumo": (
+            "CNPJ, endereço, pagamento processado por instituições conhecidas, nota "
+            "fiscal, acompanhamento do pedido -- reunimos aqui tudo que comprova que a "
+            "compra é segura."
+        ),
+        "produto_relacionado_id": None,
+        "cta_endpoint": "catalogo_completo",
+        "imagem_manual": "img/logo-icone.png",
+        "publicado_em": "2026-09-13",
+        "corpo_html": """
+            <p>É uma pergunta natural antes de comprar de uma loja nova, e a resposta
+            curta é sim: a Nove de Julho é uma empresa registrada, com CNPJ ativo, endereço
+            físico, pagamento processado por instituições financeiras conhecidas e um
+            histórico real de vendas desde 2020. Abaixo, detalhamos cada ponto pra você
+            conferir com os próprios olhos.</p>
+
+            <h2>Quem está por trás da loja</h2>
+            <p>A Nove de Julho é operada pela empresa <strong>Nove de Julho Artigos
+            Ltda</strong>, CNPJ <strong>39.390.354/0001-25</strong> -- número que qualquer
+            pessoa pode consultar gratuitamente no site da Receita Federal pra confirmar
+            que a empresa está ativa e regular. Tem endereço físico em
+            <strong>Rua Furnas, 4835, Neópolis, Natal/RN</strong> (retirada de pedidos só
+            mediante agendamento prévio) e foi fundada por Ítalo, cuja
+            <a href="/blog/a-historia-da-nove-de-julho">história real está contada aqui no
+            blog</a> -- não é uma loja anônima nem recém-criada só pra rodar uma campanha de
+            anúncios.</p>
+
+            <h2>O pagamento não passa direto pela loja</h2>
+            <p>Pix e cartão de crédito são processados pela <strong>InfinitePay</strong>,
+            e o boleto bancário é emitido diretamente pelo <strong>Banco Inter</strong> --
+            duas instituições financeiras homologadas e amplamente usadas por milhares de
+            outros negócios no Brasil. Isso significa que seus dados de pagamento nunca
+            ficam armazenados nos nossos servidores: quem processa a transação é a
+            instituição financeira, não a loja.</p>
+
+            <h2>Nota fiscal em todo pedido</h2>
+            <p>Toda venda emite nota fiscal, seja pra CPF (pessoa física) ou CNPJ (pessoa
+            jurídica) -- outro ponto que diferencia uma operação regular de um perfil
+            informal de rede social vendendo sem nenhum registro fiscal.</p>
+
+            <h2>Você acompanha o pedido do início ao fim</h2>
+            <p>Assim que o pagamento é confirmado, você recebe um link de acompanhamento
+            exclusivo do seu pedido, que mostra o status em tempo real -- produção, código
+            de rastreio dos Correios assim que é postado, e confirmação de entrega. Não é
+            preciso ficar perguntando "cadê meu pedido": a informação fica disponível pra
+            você consultar quando quiser.</p>
+
+            <h2>Avaliações reais, com moderação</h2>
+            <p>As avaliações que aparecem na página de cada santo são enviadas por quem
+            realmente comprou, muitas com foto da peça recebida, e passam por um filtro de
+            moderação antes de ficarem públicas -- exatamente pra evitar spam ou avaliação
+            falsa, pra cima ou pra baixo. Já são mais de <strong>100 mil medalhas
+            vendidas</strong> desde o início da operação.</p>
+
+            <h2>Direito de arrependimento garantido por lei</h2>
+            <p>Como toda compra feita fora de loja física, você tem até
+            <a href="/atendimento/trocas-e-devolucao">7 dias corridos após o recebimento
+            para desistir da compra</a>, sem precisar justificar o motivo -- direito
+            garantido pelo Código de Defesa do Consumidor em qualquer compra on-line no
+            Brasil, e que a Nove de Julho cumpre integralmente.</p>
+
+            <h2>Atendimento direto, sem robô</h2>
+            <p>Qualquer dúvida antes, durante ou depois da compra pode ser tirada
+            diretamente pelo WhatsApp, com uma pessoa de verdade respondendo -- não um chat
+            automatizado sem saída.</p>
+
+            <p>Nenhuma loja precisa ser perfeita pra ser confiável -- precisa ser
+            transparente. É exatamente isso que tentamos garantir em cada etapa da
+            compra.</p>
+
+            <div class="cta-blog-produto">
+              <p>Agora que você já conhece cada etapa, dá uma olhada no catálogo</p>
+              <a href="__URL_PRODUTO__" class="botao-principal">Ver catálogo completo →</a>
+            </div>
+        """,
+    },
 }
 
 
