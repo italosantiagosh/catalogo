@@ -1448,7 +1448,7 @@ ARTIGOS_BLOG = {
             <p>As avaliações que aparecem na página de cada santo são enviadas por quem
             realmente comprou, muitas com foto da peça recebida, e passam por um filtro de
             moderação antes de ficarem públicas -- exatamente pra evitar spam ou avaliação
-            falsa, pra cima ou pra baixo. Já são mais de <strong>100 mil medalhas
+            falsa, pra cima ou pra baixo. Já são mais de <strong>125 mil medalhas
             vendidas</strong> desde o início da operação.</p>
 
             <h2>Direito de arrependimento garantido por lei</h2>
