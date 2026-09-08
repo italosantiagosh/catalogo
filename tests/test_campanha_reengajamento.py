@@ -71,14 +71,14 @@ def test_reimportar_a_mesma_planilha_nao_duplica_nem_reseta_status(monkeypatch, 
 
     resultado = campanha.importar_contatos(contatos)
     assert resultado["novos_candidatos"] == 0  # ja existia, INSERT OR IGNORE nao mexeu
-    assert campanha.contagem_por_status() == {"pendente": 0, "enviado": 1, "erro": 0}
+    assert campanha.contagem_por_status() == {"pendente": 0, "enviado": 1, "erro": 0, "ignorado": 0}
 
 
 def test_marcar_enviado_com_erro(monkeypatch, tmp_path):
     _isolar_db(monkeypatch, tmp_path)
     campanha.importar_contatos([{"nome": "Maria Silva", "email": "maria@example.com"}])
     campanha.marcar_enviado("maria@example.com", erro="Não foi possível enviar o e-mail agora.")
-    assert campanha.contagem_por_status() == {"pendente": 0, "enviado": 0, "erro": 1}
+    assert campanha.contagem_por_status() == {"pendente": 0, "enviado": 0, "erro": 1, "ignorado": 0}
 
 
 def test_listar_pendentes_respeita_o_limite(monkeypatch, tmp_path):
@@ -86,3 +86,37 @@ def test_listar_pendentes_respeita_o_limite(monkeypatch, tmp_path):
     campanha.importar_contatos([{"nome": f"Cliente {i}", "email": f"cliente{i}@example.com"} for i in range(5)])
     assert len(campanha.listar_pendentes(2)) == 2
     assert len(campanha.listar_pendentes(10)) == 5
+
+
+def test_marcar_ignorado_tira_da_fila_quem_esta_pendente(monkeypatch, tmp_path):
+    """ver conversa: duplicata achada cruzando por CPF entre planilhas
+    diferentes (o sistema so compara e-mail, nao enxerga sozinho)."""
+    _isolar_db(monkeypatch, tmp_path)
+    campanha.importar_contatos([
+        {"nome": "Maria Silva", "email": "maria@example.com"},
+        {"nome": "Ana Costa", "email": "ana@example.com"},
+    ])
+    quantidade = campanha.marcar_ignorado(["maria@example.com"])
+    assert quantidade == 1
+    assert campanha.contagem_por_status() == {"pendente": 1, "enviado": 0, "erro": 0, "ignorado": 1}
+    assert [c["email"] for c in campanha.listar_pendentes(10)] == ["ana@example.com"]
+
+
+def test_marcar_ignorado_nunca_desfaz_um_envio_ja_feito(monkeypatch, tmp_path):
+    _isolar_db(monkeypatch, tmp_path)
+    campanha.importar_contatos([{"nome": "Maria Silva", "email": "maria@example.com"}])
+    campanha.marcar_enviado("maria@example.com", erro=None)
+    quantidade = campanha.marcar_ignorado(["maria@example.com"])
+    assert quantidade == 0
+    assert campanha.contagem_por_status()["enviado"] == 1
+
+
+def test_marcar_ignorado_ignora_email_desconhecido_sem_erro(monkeypatch, tmp_path):
+    _isolar_db(monkeypatch, tmp_path)
+    quantidade = campanha.marcar_ignorado(["nao-existe@example.com"])
+    assert quantidade == 0
+
+
+def test_marcar_ignorado_lista_vazia(monkeypatch, tmp_path):
+    _isolar_db(monkeypatch, tmp_path)
+    assert campanha.marcar_ignorado([]) == 0

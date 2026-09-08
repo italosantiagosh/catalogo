@@ -4195,6 +4195,23 @@ def admin_campanha_exportar_csv():
     return resposta
 
 
+@app.route("/admin/campanha-antigos/marcar-nao-enviar", methods=["POST"])
+def admin_campanha_marcar_nao_enviar():
+    """Tira da fila, sem mandar nada, quem esta´ "pendente" mas e´
+    duplicata de alguem que ja´ recebeu por outro e-mail (mesma pessoa
+    cadastrada com e-mail diferente no Tiny e no Yampi, achado
+    cruzando por CPF fora do site -- o sistema aqui so compara e-mail,
+    nao teria como enxergar isso sozinho, ver conversa). So mexe em
+    quem ainda esta´ "pendente" -- nunca reverte um envio ja´ feito."""
+    if not _autenticacao_admin_valida(request.authorization):
+        return Response(
+            "Autenticação necessária.", 401, {"WWW-Authenticate": 'Basic realm="Painel de campanha"'}
+        )
+    emails = [linha.strip() for linha in str(request.form.get("emails", "")).splitlines() if linha.strip()]
+    quantidade = campanha_reengajamento.marcar_ignorado(emails)
+    return redirect(url_for("admin_campanha_antigos", nao_enviar_marcados=quantidade))
+
+
 _CAMPANHA_ENVIO_EM_ANDAMENTO = threading.Lock()
 _CAMPANHA_PAUSA_ENTRE_ENVIOS_SEGUNDOS = 0.3  # nao martelar a API da Brevo
 

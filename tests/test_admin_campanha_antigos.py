@@ -89,7 +89,7 @@ def test_importar_planilha_via_upload(client, monkeypatch):
         follow_redirects=True,
     )
     assert resposta.status_code == 200
-    assert campanha.contagem_por_status() == {"pendente": 2, "enviado": 0, "erro": 0}
+    assert campanha.contagem_por_status() == {"pendente": 2, "enviado": 0, "erro": 0, "ignorado": 0}
 
 
 def test_importar_planilha_com_cabecalho_minusculo(client, monkeypatch):
@@ -113,7 +113,7 @@ def test_importar_planilha_com_cabecalho_minusculo(client, monkeypatch):
         follow_redirects=True,
     )
     assert resposta.status_code == 200
-    assert campanha.contagem_por_status() == {"pendente": 2, "enviado": 0, "erro": 0}
+    assert campanha.contagem_por_status() == {"pendente": 2, "enviado": 0, "erro": 0, "ignorado": 0}
 
 
 def test_importar_duas_planilhas_de_uma_vez_dedupe_entre_elas(client, monkeypatch):
@@ -152,7 +152,7 @@ def test_enviar_lote_marca_erro_quando_email_falha(client, monkeypatch):
     campanha.importar_contatos([{"nome": "Maria Silva", "email": "maria@example.com"}])
     with patch("app.enviar_reengajamento_contato_antigo", return_value={"erro": "falhou"}):
         client.post("/admin/campanha-antigos/enviar-lote", data={"tamanho": "10"}, auth=credenciais)
-    assert campanha.contagem_por_status() == {"pendente": 0, "enviado": 0, "erro": 1}
+    assert campanha.contagem_por_status() == {"pendente": 0, "enviado": 0, "erro": 1, "ignorado": 0}
 
 
 def test_enviar_lote_respeita_tamanho_maximo(client, monkeypatch):
@@ -214,3 +214,36 @@ def test_exportar_csv_lista_email_nome_status(client, monkeypatch):
     assert linhas[0] == "email;nome;status;criado_em;enviado_em;erro"
     assert any(l.startswith("maria@example.com;Maria Silva;enviado;") for l in linhas)
     assert any("ana@example.com;Ana Costa;erro;" in l and "Não foi possível enviar." in l for l in linhas)
+
+
+def test_marcar_nao_enviar_exige_autenticacao(client):
+    resposta = client.post("/admin/campanha-antigos/marcar-nao-enviar", data={"emails": "x@example.com"})
+    assert resposta.status_code == 401
+
+
+def test_marcar_nao_enviar_tira_da_fila(client, monkeypatch):
+    credenciais = _auth(monkeypatch)
+    campanha.importar_contatos([
+        {"nome": "Maria Silva", "email": "maria@example.com"},
+        {"nome": "Ana Costa", "email": "ana@example.com"},
+    ])
+    resposta = client.post(
+        "/admin/campanha-antigos/marcar-nao-enviar",
+        data={"emails": "maria@example.com\n\n  "},
+        auth=credenciais,
+    )
+    assert resposta.status_code == 302
+    assert "nao_enviar_marcados=1" in resposta.headers["Location"]
+    assert campanha.contagem_por_status() == {"pendente": 1, "enviado": 0, "erro": 0, "ignorado": 1}
+
+
+def test_marcar_nao_enviar_varios_de_uma_vez(client, monkeypatch):
+    credenciais = _auth(monkeypatch)
+    campanha.importar_contatos([{"nome": f"C{i}", "email": f"c{i}@example.com"} for i in range(3)])
+    resposta = client.post(
+        "/admin/campanha-antigos/marcar-nao-enviar",
+        data={"emails": "c0@example.com\nc1@example.com"},
+        auth=credenciais,
+    )
+    assert "nao_enviar_marcados=2" in resposta.headers["Location"]
+    assert campanha.contagem_por_status()["pendente"] == 1

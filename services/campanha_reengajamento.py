@@ -125,9 +125,29 @@ def contagem_por_status() -> dict:
         linhas = conexao.execute(
             "SELECT status, COUNT(*) AS total FROM campanha_contatos_antigos GROUP BY status"
         ).fetchall()
-    contagem = {"pendente": 0, "enviado": 0, "erro": 0}
+    contagem = {"pendente": 0, "enviado": 0, "erro": 0, "ignorado": 0}
     contagem.update({linha["status"]: linha["total"] for linha in linhas})
     return contagem
+
+
+def marcar_ignorado(emails: list[str]) -> int:
+    """Tira da fila um e-mail que ainda esta´ "pendente" sem mandar
+    nada pra ele -- usado pra duplicata que o sistema nao teria como
+    enxergar sozinho (mesma pessoa com e-mail diferente entre Tiny e
+    Yampi, achado cruzando por CPF fora daqui, ver conversa). So mexe
+    em quem ainda esta´ "pendente" -- nunca reverte um "enviado"/"erro"
+    ja´ registrado. Devolve quantos e-mails foram realmente marcados."""
+    inicializar_db()
+    if not emails:
+        return 0
+    agora = datetime.now(timezone.utc).isoformat()
+    with _conexao() as conexao:
+        cursor = conexao.executemany(
+            "UPDATE campanha_contatos_antigos SET status = 'ignorado', enviado_em = ? "
+            "WHERE email = ? AND status = 'pendente'",
+            [(agora, email.strip().lower()) for email in emails if email.strip()],
+        )
+        return cursor.rowcount if cursor.rowcount is not None and cursor.rowcount >= 0 else 0
 
 
 def listar_pendentes(limite: int) -> list[dict]:

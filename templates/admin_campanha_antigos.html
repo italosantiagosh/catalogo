@@ -51,6 +51,11 @@
     .stat-cartao.pendente .stat-numero { color: #7a5c1f; }
     .stat-cartao.enviado .stat-numero { color: #1e7a43; }
     .stat-cartao.erro .stat-numero { color: #a13a2a; }
+    .stat-cartao.ignorado .stat-numero { color: var(--texto-suave); }
+    textarea {
+      width: 100%; padding: 10px 12px; border: 1px solid var(--linha); border-radius: 8px;
+      font-size: 0.85rem; font-family: monospace; min-height: 110px; resize: vertical;
+    }
 
     label { display: block; font-weight: 600; font-size: 0.85rem; margin: 14px 0 6px; }
     input[type="file"], input[type="number"] {
@@ -107,6 +112,12 @@
         números abaixo) pra não sobrecarregar o envio.
       </div>
     {% endif %}
+    {% if request.args.get('nao_enviar_marcados') is not none %}
+      <div class="aviso">
+        {{ request.args.get('nao_enviar_marcados') }} e-mail(s) marcado(s) pra não enviar (tirado(s)
+        da fila de pendentes).
+      </div>
+    {% endif %}
 
     <h2 class="secao-titulo">Fila da campanha</h2>
     <div class="stat-grade">
@@ -121,6 +132,10 @@
       <div class="stat-cartao erro">
         <div class="stat-numero">{{ contagem.erro }}</div>
         <div class="stat-rotulo">Com erro</div>
+      </div>
+      <div class="stat-cartao ignorado">
+        <div class="stat-numero">{{ contagem.ignorado }}</div>
+        <div class="stat-rotulo">Marcados p/ não enviar</div>
       </div>
     </div>
     <p class="secao-nota">
@@ -143,7 +158,30 @@
       </form>
     </div>
 
-    <h2 class="secao-titulo">2. Enviar lote</h2>
+    <h2 class="secao-titulo">2. Marcar duplicatas como não enviar</h2>
+    <p class="secao-nota">
+      Achado cruzando o Tiny com o Yampi por CPF/CNPJ (ver conversa) -- essas 9 pessoas têm
+      e-mail diferente em cada planilha e JÁ RECEBERAM o convite pelo e-mail do Tiny. Os e-mails
+      abaixo (vindos do Yampi) estão pendentes na fila e tomariam um segundo envio se não forem
+      marcados aqui. Só tira quem ainda está "pendente" -- nunca desfaz um envio já feito.
+    </p>
+    <div class="cartao">
+      <form method="post" action="{{ url_for('admin_campanha_marcar_nao_enviar') }}">
+        <label for="emails">E-mails (um por linha)</label>
+        <textarea id="emails" name="emails">cordeiroalinesh82@gmail.com
+livrariacestfortaleza@comshalom.org
+alefmariae@gmail.com
+livrariaparangaba@comshalom.org
+diegoribeieo4883@gmail.com
+matermeaa@gmail.com
+smanduono@hotmail.com
+cordeiro.shaline@gmail.com
+espacodepazchaves@comshalom.org</textarea>
+        <button type="submit" class="btn-principal">Marcar como não enviar</button>
+      </form>
+    </div>
+
+    <h2 class="secao-titulo">3. Enviar lote</h2>
     <p class="secao-nota">
       Manda o convite (conhecer o site novo + pedir avaliação) pra quem ainda está pendente,
       até o tamanho do lote escolhido. <strong>Cuidado com o limite diário de envio da Brevo</strong>
