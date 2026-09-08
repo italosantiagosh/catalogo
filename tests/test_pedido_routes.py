@@ -777,13 +777,11 @@ def test_criar_pedido_sem_endereco_400(client):
 def test_criar_pedido_whatsapp_entra_como_lead_sem_link_de_pagamento(client):
     """Ver conversa: pedido fechado pelo WhatsApp deve aparecer no painel
     admin (status "whatsapp"), sem exigir cliente/endereco (o WhatsApp
-    nunca coletou isso, exceto o e-mail -- ver conversa abaixo) e sem
-    gerar link de pagamento nenhum."""
+    nunca coletou isso) e sem gerar link de pagamento nenhum."""
     resposta = client.post("/api/pedido/criar-whatsapp", json={
         "itens": [{"chave_preco": "16mm", "quantidade": 10, "produtoNome": "São José", "modeloNome": "Modelo 1"}],
         "frete": {},
         "cep_informado": "59000-000",
-        "cliente_email": "maria@exemplo.com",
     })
     assert resposta.status_code == 200
     dados = resposta.get_json()
@@ -794,32 +792,12 @@ def test_criar_pedido_whatsapp_entra_como_lead_sem_link_de_pagamento(client):
     pedido = pedidos_whatsapp[0]
     assert pedido["codigo"] == dados["codigo"]
     assert pedido["cliente_nome"] == ""
-    assert pedido["cliente_email"] == "maria@exemplo.com"
     assert "59000-000" in pedido["frete_descricao"]
 
 
 def test_criar_pedido_whatsapp_carrinho_vazio_400(client):
     resposta = client.post("/api/pedido/criar-whatsapp", json={"itens": []})
     assert resposta.status_code == 400
-
-
-def test_criar_pedido_whatsapp_sem_email_400(client):
-    """Ver conversa: diferente do resto dos dados de cliente, o e-mail
-    passou a ser obrigatorio mesmo no WhatsApp -- sem ele, o pedido
-    "whatsapp" nao tinha jeito nenhum da pessoa acompanhar depois em
-    "Meus pedidos" (o codigo de verificacao vai por e-mail)."""
-    resposta = client.post("/api/pedido/criar-whatsapp", json={
-        "itens": [{"chave_preco": "16mm", "quantidade": 10, "produtoNome": "São José", "modeloNome": "Modelo 1"}],
-        "frete": {},
-    })
-    assert resposta.status_code == 400
-
-    resposta_invalido = client.post("/api/pedido/criar-whatsapp", json={
-        "itens": [{"chave_preco": "16mm", "quantidade": 10, "produtoNome": "São José", "modeloNome": "Modelo 1"}],
-        "frete": {},
-        "cliente_email": "nao-e-um-email",
-    })
-    assert resposta_invalido.status_code == 400
 
 
 def test_criar_pedido_whatsapp_notifica_push_sem_falar_em_venda(client):
@@ -830,7 +808,6 @@ def test_criar_pedido_whatsapp_notifica_push_sem_falar_em_venda(client):
         client.post("/api/pedido/criar-whatsapp", json={
             "itens": [{"chave_preco": "16mm", "quantidade": 10, "produtoNome": "São José", "modeloNome": "Modelo 1"}],
             "frete": {},
-            "cliente_email": "joao@exemplo.com",
         })
     push_mock.assert_called_once()
     kwargs = push_mock.call_args.kwargs

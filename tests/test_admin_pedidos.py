@@ -476,7 +476,6 @@ def _criar_lead_whatsapp(client, **overrides):
     corpo = {
         "itens": [{"chave_preco": "16mm", "quantidade": 10, "produtoNome": "São José", "modeloNome": "Modelo 1"}],
         "frete": {},
-        "cliente_email": "lead@exemplo.com",
     }
     corpo.update(overrides)
     return client.post("/api/pedido/criar-whatsapp", json=corpo).get_json()

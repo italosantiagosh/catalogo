@@ -74,6 +74,42 @@ def test_cria_pedido_com_varios_itens_soma_o_total(client, monkeypatch):
     assert len(pedido["itens"]) == 2
 
 
+def test_form_tem_campo_de_email_do_cliente(client, monkeypatch):
+    """Ver conversa: o e-mail so precisa estar disponivel aqui (quando o
+    admin cadastra o pedido), nao no botao do cliente no carrinho."""
+    _preparar_admin(monkeypatch)
+    resposta = client.get("/admin/pedidos/novo-manual", auth=("admin", "segredo123"))
+    assert b'name="cliente_email"' in resposta.data
+
+
+def test_cria_pedido_com_email_do_cliente(client, monkeypatch):
+    _preparar_admin(monkeypatch)
+    resposta = client.post(
+        "/admin/pedidos/novo-manual",
+        data={
+            "descricao": ["Medalha São José 12mm"], "quantidade": ["4"], "valor_unitario": ["7,00"],
+            "cliente_email": "cliente@exemplo.com",
+        },
+        auth=("admin", "segredo123"),
+    )
+    token = resposta.headers["Location"].rsplit("/", 1)[-1]
+    pedido = pedidos.obter_pedido(token)
+    assert pedido["cliente_email"] == "cliente@exemplo.com"
+
+
+def test_cria_pedido_sem_email_nao_bloqueia(client, monkeypatch):
+    _preparar_admin(monkeypatch)
+    resposta = client.post(
+        "/admin/pedidos/novo-manual",
+        data={"descricao": ["Medalha São José 12mm"], "quantidade": ["4"], "valor_unitario": ["7,00"]},
+        auth=("admin", "segredo123"),
+    )
+    assert resposta.status_code == 302
+    token = resposta.headers["Location"].rsplit("/", 1)[-1]
+    pedido = pedidos.obter_pedido(token)
+    assert pedido["cliente_email"] == ""
+
+
 def test_ignora_linha_sem_descricao(client, monkeypatch):
     _preparar_admin(monkeypatch)
     resposta = client.post(

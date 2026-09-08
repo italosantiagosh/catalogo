@@ -65,6 +65,13 @@
       cursor: pointer; font-size: 0.88rem; background: var(--azul-escuro); color: #fff; width: 100%;
     }
     button.btn-principal:hover { background: #0f2847; }
+    .rotulo-email {
+      display: block; margin-top: 18px; font-size: 0.8rem; font-weight: 700; color: var(--texto-suave);
+    }
+    .campo-email {
+      width: 100%; margin-top: 6px; padding: 9px 10px; border: 1px solid var(--linha);
+      border-radius: 8px; font-size: 0.88rem; font-family: inherit;
+    }
   </style>
 </head>
 <body>
@@ -109,6 +116,10 @@
           <span id="total-calculado">R$ 0,00</span>
         </div>
       </div>
+
+      <label for="cliente_email" class="rotulo-email">E-mail do cliente (opcional)</label>
+      <input type="email" name="cliente_email" id="cliente_email" placeholder="cliente@exemplo.com" class="campo-email">
+
       <button type="submit" class="btn-principal">Criar pedido e continuar pra confirmação</button>
     </form>
   </div>

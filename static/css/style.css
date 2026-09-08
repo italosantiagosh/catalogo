@@ -2347,27 +2347,19 @@ input[type="file"] {
   gap: 4px;
 }
 
-.cadastro-campos label,
-.whatsapp-acoes label {
+.cadastro-campos label {
   font-size: 0.78rem;
   font-weight: 600;
   color: var(--muted);
   margin-top: 8px;
 }
 
-.cadastro-campos input,
-.whatsapp-acoes input {
+.cadastro-campos input {
   padding: 10px 12px;
   border: 1px solid var(--border);
   border-radius: 10px;
   font-size: 0.92rem;
   font-family: inherit;
-}
-
-.whatsapp-email-nota {
-  font-size: 0.78rem;
-  color: var(--muted);
-  margin: 0;
 }
 
 .cadastro-linha-dupla {
