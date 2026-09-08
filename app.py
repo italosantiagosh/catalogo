@@ -4107,19 +4107,26 @@ def admin_avaliacao_recusar(id_: int):
 _CAMPANHA_LOTE_MAXIMO = 300  # trava contra clique acidental mandando a lista inteira de uma vez
 
 
+_CABECALHOS_NOME_PLANILHA = {"nome", "primeiro_nome", "primeiro nome"}
+_CABECALHOS_EMAIL_PLANILHA = {"e-mail", "email"}
+
+
 def _ler_contatos_da_planilha(arquivo: FileStorage) -> list[dict]:
-    """Le UMA planilha exportada do sistema antigo (Tiny) -- espera as
-    colunas "Nome" e "E-mail" em algum lugar do cabecalho (posicao nao
-    importa, ver conversa: os 2 arquivos ja´ recebidos tem 39 colunas
-    na mesma ordem, mas melhor nao depender disso). Linha sem e-mail
-    e´ ignorada aqui mesmo (campanha_reengajamento.importar_contatos
-    tambem valida, essa checagem e´ so pra nao instanciar linha vazia)."""
+    """Le UMA planilha de contatos (exportada do sistema antigo/Tiny ou
+    de outra fonte, ver conversa -- ja apareceram cabecalhos "Nome"/
+    "E-mail" e tambem "nome"/"email" em minusculo) -- espera achar uma
+    coluna de nome e uma de e-mail em algum lugar do cabecalho (posicao
+    nao importa), comparando sem diferenciar maiusculas/minusculas nem
+    espaco sobrando. Linha sem e-mail e´ ignorada aqui mesmo
+    (campanha_reengajamento.importar_contatos tambem valida, essa
+    checagem e´ so pra nao instanciar linha vazia)."""
     pasta = load_workbook(io.BytesIO(arquivo.read()), read_only=True, data_only=True)
     aba = pasta.worksheets[0]
     linhas = aba.iter_rows(values_only=True)
     cabecalho = next(linhas, None) or []
-    indice_nome = next((i for i, titulo in enumerate(cabecalho) if titulo == "Nome"), None)
-    indice_email = next((i for i, titulo in enumerate(cabecalho) if titulo == "E-mail"), None)
+    cabecalho_normalizado = [str(titulo or "").strip().lower() for titulo in cabecalho]
+    indice_nome = next((i for i, titulo in enumerate(cabecalho_normalizado) if titulo in _CABECALHOS_NOME_PLANILHA), None)
+    indice_email = next((i for i, titulo in enumerate(cabecalho_normalizado) if titulo in _CABECALHOS_EMAIL_PLANILHA), None)
     if indice_nome is None or indice_email is None:
         return []
     contatos = []

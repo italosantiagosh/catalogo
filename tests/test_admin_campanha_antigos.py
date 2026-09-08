@@ -92,6 +92,30 @@ def test_importar_planilha_via_upload(client, monkeypatch):
     assert campanha.contagem_por_status() == {"pendente": 2, "enviado": 0, "erro": 0}
 
 
+def test_importar_planilha_com_cabecalho_minusculo(client, monkeypatch):
+    """ver conversa: planilha real chegou com cabecalho "nome"/"email"
+    em minusculo (formato diferente do "Nome"/"E-mail" do Tiny) -- nada
+    tinha importado por causa da comparacao exata que so aceitava
+    maiuscula."""
+    credenciais = _auth(monkeypatch)
+    pasta = openpyxl.Workbook()
+    aba = pasta.active
+    aba.append(["id", "tipo", "nome", "email", "cpf"])
+    aba.append([1, "f", "Maria Silva", "maria@example.com", "11144477735"])
+    aba.append([2, "f", "João Souza", "joao@example.com", "22233344456"])
+    buffer = io.BytesIO()
+    pasta.save(buffer)
+    resposta = client.post(
+        "/admin/campanha-antigos/importar",
+        data={"planilhas": (io.BytesIO(buffer.getvalue()), "clientes.xlsx")},
+        content_type="multipart/form-data",
+        auth=credenciais,
+        follow_redirects=True,
+    )
+    assert resposta.status_code == 200
+    assert campanha.contagem_por_status() == {"pendente": 2, "enviado": 0, "erro": 0}
+
+
 def test_importar_duas_planilhas_de_uma_vez_dedupe_entre_elas(client, monkeypatch):
     credenciais = _auth(monkeypatch)
     arquivo1 = _planilha_bytes([(1, "Maria Silva", "", "maria@example.com")])
