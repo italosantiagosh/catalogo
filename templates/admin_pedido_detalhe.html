@@ -271,8 +271,8 @@
         <input type="text" name="cliente_telefone" id="cliente_telefone">
         <p class="campo-erro" id="erro-cliente-telefone" hidden></p>
 
-        <label for="cliente_email">E-mail (opcional)</label>
-        <input type="text" name="cliente_email" id="cliente_email">
+        <label for="cliente_email">E-mail</label>
+        <input type="text" name="cliente_email" id="cliente_email" value="{{ pedido.cliente_email }}">
 
         <label for="endereco_cep">CEP</label>
         <input type="text" name="endereco_cep" id="endereco_cep" inputmode="numeric" placeholder="00000-000">

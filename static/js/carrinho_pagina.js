@@ -15,6 +15,8 @@
   const formaPagamentoRadios = document.querySelectorAll('input[name="forma-pagamento"]');
   const cadastroClienteEl = document.getElementById('cadastro-cliente');
   const whatsappFinalizarWrapEl = document.getElementById('whatsapp-finalizar-wrap');
+  const whatsappClienteEmailInput = document.getElementById('whatsapp-cliente-email');
+  const erroWhatsappClienteEmailEl = document.getElementById('erro-whatsapp-cliente-email');
   const btnLimpar = document.getElementById('btn-limpar');
   const freteCepInput = document.getElementById('frete-cep');
   const btnCalcularFrete = document.getElementById('btn-calcular-frete');
@@ -1204,6 +1206,25 @@
         return;
       }
 
+      // e-mail obrigatorio mesmo no WhatsApp -- ver conversa: sem ele o
+      // pedido "whatsapp" fica sem jeito nenhum da pessoa acompanhar em
+      // "Meus pedidos" depois (o codigo de verificacao vai por e-mail),
+      // a nao ser que o admin lembre de perguntar e digitar na mao
+      // depois durante a conversa.
+      const whatsappEmail = whatsappClienteEmailInput ? whatsappClienteEmailInput.value.trim() : '';
+      if (!whatsappClienteEmailInput || !whatsappClienteEmailInput.checkValidity() || !whatsappEmail) {
+        if (erroWhatsappClienteEmailEl) {
+          erroWhatsappClienteEmailEl.textContent = 'Digite um e-mail válido.';
+          erroWhatsappClienteEmailEl.hidden = false;
+        }
+        if (whatsappClienteEmailInput) {
+          whatsappClienteEmailInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          whatsappClienteEmailInput.focus();
+        }
+        return;
+      }
+      if (erroWhatsappClienteEmailEl) erroWhatsappClienteEmailEl.hidden = true;
+
       // registra o pedido no painel admin (status "whatsapp") antes de
       // abrir a conversa, pra quem vende poder acompanhar e preencher os
       // dados na mao se a venda fechar (ver conversa) -- best-effort: se
@@ -1223,6 +1244,7 @@
             itens: ultimosItens,
             frete: freteEscolhido || {},
             cep_informado: freteCepInput ? freteCepInput.value.trim() : '',
+            cliente_email: whatsappEmail,
           }),
         });
         const dados = await resposta.json();

@@ -2210,14 +2210,21 @@ def api_pedido_criar_boleto():
 def api_pedido_criar_whatsapp():
     """Lead criado ao clicar "Finalizar pelo WhatsApp" no carrinho (ver
     static/js/carrinho_pagina.js) -- sem link de pagamento e sem exigir
-    cliente/endereco (o WhatsApp nunca coletou isso). Só entra no painel
-    admin com status "whatsapp" pra quem vende acompanhar e preencher
-    os dados na mao se a pessoa realmente fechar o pedido na conversa
+    cliente/endereco (o WhatsApp nunca coletou isso), EXCETO o e-mail
+    (ver conversa): sem ele, o pedido "whatsapp" fica sem jeito nenhum
+    da pessoa acompanhar depois em "Meus pedidos" (o codigo de
+    verificacao vai por e-mail), a nao ser que o admin pergunte e
+    digite na mao durante a conversa. Resto dos dados (nome, documento,
+    endereco) continua so preenchido depois na mao, se a venda fechar
     (ver confirmar_venda_manual / admin_pedido_confirmar_venda)."""
     dados = request.get_json(silent=True) or {}
     itens_validos = _itens_com_descricao_do_corpo(dados)
     if not itens_validos:
         return jsonify(erro="Carrinho vazio."), 400
+
+    cliente_email = str(dados.get("cliente_email", "")).strip()
+    if not cliente_email or "@" not in cliente_email:
+        return jsonify(erro="Digite um e-mail válido."), 400
 
     calculo = calcular_carrinho(itens_validos)
     if not calculo["atinge_minimo"]:
@@ -2249,7 +2256,7 @@ def api_pedido_criar_whatsapp():
         frete_descricao=frete_descricao,
         frete_preco=frete_preco,
         frete_prazo_dias=frete_prazo_dias,
-        cliente={},
+        cliente={"email": cliente_email},
         endereco={},
         status_inicial="whatsapp",
     )
