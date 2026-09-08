@@ -314,10 +314,13 @@ PAGINAS_ATENDIMENTO = {
 
             <details class="acordeao">
                 <summary>Como cuidar da peça no dia a dia?</summary>
-                <p>Vale para medalha, entremeio e chaveiro:</p>
+                <p>A <strong>medalha</strong> (aço inoxidável) tem boa resistência a
+                água do dia a dia -- banho, chuva, suor não são problema. Já o
+                <strong>entremeio e o chaveiro</strong> (liga de zinco) merecem mais
+                cuidado, pra manter o acabamento por mais tempo:</p>
                 <ul>
-                    <li>Pode molhar sem problema (banho, chuva, suor) -- só evite
-                        exposição exagerada e constante, tipo sol e praia todo dia;</li>
+                    <li>Evite contato frequente com água, principalmente água salgada
+                        (praia) ou com cloro (piscina);</li>
                     <li>Evite passar produto químico ou perfume direto em cima da
                         peça;</li>
                     <li>Guarde longe de umidade excessiva quando não estiver usando,

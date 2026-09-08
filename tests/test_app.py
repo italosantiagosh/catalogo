@@ -99,8 +99,23 @@ def test_home_nao_tem_a_grade_completa_mas_linka_o_catalogo(client):
     resposta = client.get("/").get_data(as_text=True)
     assert 'id="grid-produtos"' not in resposta
     assert 'id="filtros-categoria"' in resposta
-    assert 'id="busca-home-resultados"' in resposta
+    assert 'class="busca-resultados busca-home-resultados"' in resposta
     assert 'href="/catalogo"' in resposta
+
+
+def test_home_tem_busca_logo_no_topo_e_tambem_mais_embaixo(client):
+    # ver conversa (auditoria): a busca era a funcionalidade mais forte
+    # do site e ficava escondida depois de varias secoes -- agora tem
+    # uma caixa logo abaixo do hero E a que ja existia mais embaixo,
+    # ambas ligadas em static/js/home_busca.js (uma instancia por
+    # ".busca-wrap-home" achado na pagina, nao mais por id fixo).
+    resposta = client.get("/").get_data(as_text=True)
+    assert resposta.count('class="busca-wrap busca-wrap-home"') == 2
+    assert resposta.count('class="busca-home-input"') == 2
+    pos_hero = resposta.index("hero-acoes")
+    pos_primeira_busca = resposta.index("busca-wrap-home")
+    pos_vantagens = resposta.index('class="vantagens"')
+    assert pos_hero < pos_primeira_busca < pos_vantagens
 
 
 def test_home_mostra_so_4_cards_no_final(client):

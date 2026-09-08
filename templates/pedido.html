@@ -209,6 +209,25 @@
 {% endblock %}
 
 {% block script %}
+  {% if mostrar_obrigado %}
+    <script>
+      // "purchase" so dispara aqui, no primeiro retorno do pagamento
+      // (?obrigado=1, ver app.py:ver_pedido) -- faltava esse evento no
+      // funil de GA4 (so tinhamos ate begin_checkout), o que
+      // impossibilitava medir ROAS de anuncio pago de verdade (ver
+      // conversa: auditoria Manus). So cobre pagamento direto no site
+      // (Pix/cartao) -- boleto e WhatsApp confirmam depois, fora dessa
+      // pagina, e precisariam de um evento server-side separado.
+      if (typeof gtag === 'function') {
+        gtag('event', 'purchase', {
+          transaction_id: {{ pedido.codigo | tojson }},
+          value: {{ pedido.total | tojson }},
+          currency: 'BRL',
+          num_items: {{ pedido.itens | length }},
+        });
+      }
+    </script>
+  {% endif %}
   <script>
     const btnNovoLink = document.getElementById('btn-novo-link');
     if (btnNovoLink) {

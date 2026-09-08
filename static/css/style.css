@@ -322,7 +322,7 @@ a.link-carrinho #contador-carrinho {
 }
 
 #busca,
-#busca-home,
+.busca-home-input,
 #busca-personalizada {
   width: 100%;
   padding: 14px 16px;
@@ -331,6 +331,13 @@ a.link-carrinho #contador-carrinho {
   border-radius: 12px;
   background: var(--card);
   color: var(--ink);
+}
+
+.busca-home-legenda {
+  margin: 0 0 20px;
+  font-size: 0.85rem;
+  color: var(--muted);
+  text-align: center;
 }
 
 .busca-resultados {
