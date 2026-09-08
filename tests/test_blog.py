@@ -18,9 +18,16 @@ def client():
 def test_todos_os_artigos_tem_produto_relacionado_valido():
     """ver services/blog.py -- cada artigo precisa apontar pra um santo
     que realmente existe no catalogo, senao o CTA principal do artigo
-    (e a pagina inteira, via _thumbnail_do_artigo) quebra."""
+    (e a pagina inteira, via _thumbnail_do_artigo) quebra. Artigo sem
+    produto de catalogo (ex: a historia da propria loja) precisa ter
+    cta_endpoint valido e imagem_manual no lugar."""
     for slug, artigo in ARTIGOS_BLOG.items():
-        produto = buscar_produto(artigo["produto_relacionado_id"])
+        produto_id = artigo["produto_relacionado_id"]
+        if produto_id is None:
+            assert artigo.get("cta_endpoint") in app.view_functions, f"{slug}: cta_endpoint inválido"
+            assert artigo.get("imagem_manual"), f"{slug}: falta imagem_manual"
+            continue
+        produto = buscar_produto(produto_id)
         assert produto is not None, f"{slug}: produto_relacionado_id inválido"
 
 
@@ -143,3 +150,23 @@ def test_artigos_misturados_carregam_200_e_linkam_produtos_citados(client):
         pagina = resposta.get_data(as_text=True)
         for pid in ids_citados:
             assert f"/produto/{pid}" in pagina
+
+
+def test_artigo_sem_produto_usa_cta_endpoint_manual(client):
+    """ver conversa: historia da propria loja e o texto sobre
+    personalizacao nao tem UM santo especifico -- o CTA principal
+    linka pra /personalizada (cta_endpoint) em vez de /produto/<id>."""
+    for slug in ("a-historia-da-nove-de-julho", "por-que-personalizar-uma-medalha"):
+        artigo = ARTIGOS_BLOG[slug]
+        assert artigo["produto_relacionado_id"] is None
+        resposta = client.get(f"/blog/{slug}")
+        assert resposta.status_code == 200
+        pagina = resposta.get_data(as_text=True)
+        assert "/personalizada" in pagina
+        assert "__URL_PRODUTO__" not in pagina
+
+
+def test_historia_da_loja_e_personalizacao_linkam_entre_si(client):
+    resposta = client.get("/blog/por-que-personalizar-uma-medalha")
+    pagina = resposta.get_data(as_text=True)
+    assert "/blog/a-historia-da-nove-de-julho" in pagina

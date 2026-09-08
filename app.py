@@ -1333,9 +1333,27 @@ def pagina_atendimento(slug: str):
 def _thumbnail_do_artigo(artigo: dict) -> str:
     """Miniatura de um artigo do blog -- reaproveita a foto do proprio
     produto relacionado (ver services/blog.py), sem precisar de nenhuma
-    imagem nova so pro blog."""
-    produto = buscar_produto(artigo["produto_relacionado_id"])
-    return produto["modelos"][0]["imagem"] if produto else ""
+    imagem nova so pro blog. Artigo sem produto de catalogo (ex: a
+    historia da propria loja, ver conversa) usa "imagem_manual" no
+    lugar -- uma imagem de marca ja existente em static/img/."""
+    produto_id = artigo.get("produto_relacionado_id")
+    if produto_id:
+        produto = buscar_produto(produto_id)
+        if produto:
+            return produto["modelos"][0]["imagem"]
+    return artigo.get("imagem_manual", "")
+
+
+def _url_cta_do_artigo(artigo: dict) -> str:
+    """URL do botao principal do artigo (substitui __URL_PRODUTO__ no
+    corpo, ver services/blog.py) -- pro produto relacionado quando
+    existir, ou pra uma rota manual (`cta_endpoint`) quando o artigo
+    nao for sobre um santo especifico do catalogo (ex: a historia da
+    propria loja linkando pra /personalizada)."""
+    produto_id = artigo.get("produto_relacionado_id")
+    if produto_id:
+        return url_for("produto", produto_id=produto_id, _external=True)
+    return url_for(artigo["cta_endpoint"], _external=True)
 
 
 @app.route("/blog", methods=["GET"])
@@ -1358,7 +1376,7 @@ def blog_artigo(slug: str):
     artigo = ARTIGOS_BLOG.get(slug)
     if artigo is None:
         abort(404)
-    url_produto = url_for("produto", produto_id=artigo["produto_relacionado_id"], _external=True)
+    url_produto = _url_cta_do_artigo(artigo)
     corpo_html = artigo["corpo_html"].replace("__URL_PRODUTO__", url_produto)
     imagem_url = url_for("static", filename=_thumbnail_do_artigo(artigo), _external=True)
     url_artigo = url_for("blog_artigo", slug=slug, _external=True)

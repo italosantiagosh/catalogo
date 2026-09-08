@@ -1254,6 +1254,143 @@ ARTIGOS_BLOG = {
             </div>
         """,
     },
+    "a-historia-da-nove-de-julho": {
+        "titulo": "A história da Nove de Julho: de uma medalha pra ele mesmo a milhares pelo Brasil",
+        "resumo": (
+            "Começou sem impressora, sem máquina de corte e sem apoio -- 7 meses só de "
+            "prejuízo. Essa é a história de como uma dificuldade pessoal virou a Nove de Julho."
+        ),
+        "produto_relacionado_id": None,
+        "cta_endpoint": "personalizada",
+        "imagem_manual": "img/banner-hero.jpg",
+        "publicado_em": "2026-09-12",
+        "corpo_html": """
+            <blockquote>"Não espere o momento ideal e os planos perfeitos, apenas
+            comece..."</blockquote>
+
+            <p>É assim que Ítalo, fundador da Nove de Julho, costuma resumir os últimos
+            anos da própria história. Consagrado da Comunidade Católica Shalom, ele tinha
+            planos bem diferentes para a vida antes de ir em missão. Quando voltou, em
+            2020, tudo começou a mudar -- a partir de um desejo simples: fazer uma medalha
+            pra si mesmo.</p>
+
+            <h2>Uma dor pessoal que era de muita gente</h2>
+            <p>A dificuldade era concreta: encontrar medalhas de santos e devoções menos
+            conhecidos -- como Santa Gianna ou Edith Stein -- praticamente não existia no
+            mercado. Some a isso o desejo de conseguir uma renda extra durante a
+            faculdade, e nasceu a ideia. Ítalo deu o primeiro passo, ainda de forma bem
+            simples, no dia <strong>28 de abril de 2020</strong>, completamente sem apoio,
+            bem no início da pandemia.</p>
+
+            <h2>Sete meses só de prejuízo</h2>
+            <p>Não deu certo de primeira. Durante sete meses, foi só prejuízo: material
+            ruim, forma de preparo inadequada, nenhum cliente. Foi só no dia
+            <strong>1º de outubro daquele ano</strong>, confiando especialmente à
+            intercessão de São José, Santa Teresinha e São Josemaria Escrivá, que as coisas
+            começaram a tomar corpo de verdade e as vendas passaram a alavancar.</p>
+
+            <h2>Decisões difíceis pra apostar no sonho</h2>
+            <p>Conforme a confiança e o apoio de amigos foram crescendo, vieram também as
+            decisões mais difíceis: desistir do curso superior numa universidade federal e
+            de um emprego que havia acabado de conseguir, pra apostar de vez no projeto que
+            ainda parecia arriscado demais aos olhos de fora.</p>
+
+            <h2>Começou sem quase nada</h2>
+            <p>Talvez a parte mais reveladora dessa história esteja nos detalhes pequenos.
+            Ítalo começou <strong>sem impressora</strong>, indo de bicicleta até a gráfica
+            toda vez que precisava imprimir algo. Começou <strong>sem máquina de
+            recorte</strong>, cortando cada peça na tesoura e pedindo ajuda de amigos.
+            Começou <strong>sem aparelhos industriais</strong>, evitando trabalhar em dias
+            de chuva por causa da umidade e colocando sal grosso ao redor do material pra
+            absorver o excesso de água do ar. Usou a <strong>resina errada</strong> no
+            início, que exalava um cheiro forte e não secava direito, e o
+            <strong>adesivo errado</strong>, que só rendia dor de cabeça. Usou
+            <strong>argolas de ferro</strong> por um tempo, porque ainda não sabia onde
+            encontrar argolas de aço inox de verdade. Chegou a enviar pedidos <strong>em
+            papel comum, como se fosse carta</strong>, sem saber que aquele não era o jeito
+            certo de proteger a peça no correio.</p>
+
+            <h2>De uma bicicleta a todos os estados do Brasil</h2>
+            <p>Anos de aprendizado depois -- e, como o próprio Ítalo costuma dizer, ainda
+            serão muitos outros --, a Nove de Julho hoje já enviou peças para todos os
+            estados do Brasil e também para fora do país. São medalhas presentes em
+            batizados, casamentos, retiros espirituais e momentos de fé de famílias
+            inteiras -- e não é raro que, viajando por aí, ele encontre alguém usando uma
+            peça que saiu das próprias mãos.</p>
+
+            <p>Uma medalha pensada pra resolver uma dificuldade pessoal se tornou, aos
+            poucos, parte da história de fé de milhares de pessoas -- prova de que o passo
+            mais importante, quase sempre, é simplesmente começar.</p>
+
+            <div class="cta-blog-produto">
+              <p>Continue essa história com a sua própria medalha</p>
+              <a href="__URL_PRODUTO__" class="botao-principal">Simular minha medalha personalizada →</a>
+            </div>
+        """,
+    },
+    "por-que-personalizar-uma-medalha": {
+        "titulo": "Por que personalizar uma medalha? A dor que descobri que era de muita gente",
+        "resumo": (
+            "Tudo começou querendo uma medalha só pra mim. Depois entendi que essa "
+            "vontade de carregar algo único, com a própria fé, é de muito mais gente do que imaginei."
+        ),
+        "produto_relacionado_id": None,
+        "cta_endpoint": "personalizada",
+        "imagem_manual": "img/banner-personalizada.jpg",
+        "publicado_em": "2026-09-12",
+        "corpo_html": """
+            <p>A <a href="/blog/a-historia-da-nove-de-julho">Nove de Julho nasceu</a> de
+            uma dor pessoal bem específica: a dificuldade de achar uma medalha de um santo
+            menos conhecido. Com o tempo, ficou claro que essa vontade -- de carregar algo
+            que representasse exatamente aquilo que importa pra você, e não só o que já
+            vem pronto numa prateleira -- não era só nossa. Era de muita gente.</p>
+
+            <h2>Uma foto no lugar de um santo -- ou os dois juntos</h2>
+            <p>A grande diferença de uma peça personalizada é simples de explicar e
+            profunda de sentir: em vez de um santo do catálogo, você escolhe QUALQUER foto
+            pra estampar numa medalha, entremeio ou chaveiro -- e, nos formatos de 2 lados,
+            dá pra combinar um santo de devoção de um lado com uma foto pessoal do outro.
+            Fé e memória, na mesma peça.</p>
+
+            <h2>Guardar quem já não está mais aqui</h2>
+            <p>Um dos motivos mais comuns -- e mais emocionantes de receber -- é a saudade.
+            Levar consigo o rosto de um avô, uma mãe, um filho que já partiu é uma forma de
+            manter essa pessoa fisicamente perto, todos os dias, em algo que se pode segurar
+            ou vestir.</p>
+
+            <h2>Batismos, primeira comunhão e outros marcos de fé</h2>
+            <p>Muita gente personaliza pra guardar um marco espiritual específico -- a foto
+            do dia do batismo, da primeira comunhão, da crisma -- transformando um registro
+            que normalmente ficaria só numa foto guardada em algo que a criança (ou quem
+            recebeu o sacramento) pode carregar fisicamente pelo resto da vida.</p>
+
+            <h2>Bichos de estimação, também</h2>
+            <p>Não é só gente: pedidos com foto de cães, gatos e outros bichos de estimação
+            que já se foram ou que ainda estão por perto são um dos pedidos mais frequentes
+            -- porque quem ama um animal sabe que ele também é família.</p>
+
+            <h2>Namoro, casamento e quem mora longe</h2>
+            <p>Casais pedem peças com a foto um do outro, ou da data do casamento. Quem
+            mora longe da família -- morando fora do país, ou só numa cidade distante --
+            também encontra na medalha personalizada uma forma de carregar quem ama mesmo à
+            distância.</p>
+
+            <h2>O simulador tira a dúvida antes de você decidir</h2>
+            <p>Uma das maiores travas de comprar algo personalizado pela internet é a
+            insegurança: "e se não ficar bom?". Por isso, antes de fechar o pedido, você
+            vê no simulador uma prévia de como a peça vai ficar de verdade, já recortada e
+            posicionada dentro do formato escolhido -- sem depender de imaginar como vai
+            sair.</p>
+
+            <p>Foi assim que resolvemos nossa própria dor -- e ficamos felizes toda vez que
+            uma peça personalizada ajuda alguém a resolver a dela também.</p>
+
+            <div class="cta-blog-produto">
+              <p>Crie a sua peça e veja o resultado antes de decidir</p>
+              <a href="__URL_PRODUTO__" class="botao-principal">Simular minha medalha personalizada →</a>
+            </div>
+        """,
+    },
 }
 
 
