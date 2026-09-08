@@ -190,3 +190,27 @@ def test_nao_deixa_2_lotes_rodarem_ao_mesmo_tempo(client, monkeypatch):
         assert "lote_ja_em_andamento=1" in resposta.headers["Location"]
     finally:
         app_module._CAMPANHA_ENVIO_EM_ANDAMENTO.release()
+
+
+def test_exportar_csv_exige_autenticacao(client):
+    resposta = client.get("/admin/campanha-antigos/csv")
+    assert resposta.status_code == 401
+
+
+def test_exportar_csv_lista_email_nome_status(client, monkeypatch):
+    credenciais = _auth(monkeypatch)
+    campanha.importar_contatos([
+        {"nome": "Maria Silva", "email": "maria@example.com"},
+        {"nome": "Ana Costa", "email": "ana@example.com"},
+    ])
+    campanha.marcar_enviado("maria@example.com", erro=None)
+    campanha.marcar_enviado("ana@example.com", erro="Não foi possível enviar.")
+
+    resposta = client.get("/admin/campanha-antigos/csv", auth=credenciais)
+    assert resposta.status_code == 200
+    assert resposta.mimetype == "text/csv"
+    texto = resposta.data.decode("utf-8-sig")
+    linhas = texto.strip().splitlines()
+    assert linhas[0] == "email;nome;status;criado_em;enviado_em;erro"
+    assert any(l.startswith("maria@example.com;Maria Silva;enviado;") for l in linhas)
+    assert any("ana@example.com;Ana Costa;erro;" in l and "Não foi possível enviar." in l for l in linhas)

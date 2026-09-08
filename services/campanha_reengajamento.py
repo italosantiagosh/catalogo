@@ -141,6 +141,21 @@ def listar_pendentes(limite: int) -> list[dict]:
     return [dict(linha) for linha in linhas]
 
 
+def listar_todos() -> list[dict]:
+    """Lista completa (email, nome, status, criado_em, enviado_em, erro)
+    -- pra exportar em CSV (ver app.py:admin_campanha_exportar_csv) e o
+    admin conseguir conferir pendente/enviado/erro de fora do painel,
+    ex: cruzando com outra planilha pra achar duplicata por CPF que o
+    sistema (que so compara e-mail) nao teria como enxergar sozinho."""
+    inicializar_db()
+    with _conexao() as conexao:
+        linhas = conexao.execute(
+            "SELECT email, nome, status, criado_em, enviado_em, erro FROM campanha_contatos_antigos "
+            "ORDER BY criado_em"
+        ).fetchall()
+    return [dict(linha) for linha in linhas]
+
+
 def marcar_enviado(email: str, *, erro: str | None) -> None:
     inicializar_db()
     agora = datetime.now(timezone.utc).isoformat()

@@ -4171,6 +4171,30 @@ def admin_campanha_importar():
     return redirect(url_for("admin_campanha_antigos", **{f"importado_{k}": v for k, v in resultado.items()}))
 
 
+@app.route("/admin/campanha-antigos/csv", methods=["GET"])
+def admin_campanha_exportar_csv():
+    """Lista completa (e-mail, nome, status) da fila da campanha em CSV
+    -- pra conferir pendente/enviado/erro fora do painel, ex: cruzando
+    com outra planilha por CPF pra achar duplicata que o sistema (so
+    compara e-mail) nao teria como enxergar sozinho (ver conversa)."""
+    if not _autenticacao_admin_valida(request.authorization):
+        return Response(
+            "Autenticação necessária.", 401, {"WWW-Authenticate": 'Basic realm="Painel de campanha"'}
+        )
+    buffer = io.StringIO()
+    escritor = csv.writer(buffer, delimiter=";")
+    escritor.writerow(["email", "nome", "status", "criado_em", "enviado_em", "erro"])
+    for contato in campanha_reengajamento.listar_todos():
+        escritor.writerow([
+            contato["email"], contato["nome"], contato["status"],
+            contato["criado_em"], contato["enviado_em"] or "", contato["erro"] or "",
+        ])
+    conteudo_bytes = buffer.getvalue().encode("utf-8-sig")
+    resposta = Response(conteudo_bytes, mimetype="text/csv")
+    resposta.headers["Content-Disposition"] = 'attachment; filename="campanha-contatos-antigos.csv"'
+    return resposta
+
+
 _CAMPANHA_ENVIO_EM_ANDAMENTO = threading.Lock()
 _CAMPANHA_PAUSA_ENTRE_ENVIOS_SEGUNDOS = 0.3  # nao martelar a API da Brevo
 
