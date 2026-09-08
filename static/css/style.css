@@ -223,6 +223,24 @@ a.link-carrinho #contador-carrinho {
   text-align: center;
 }
 
+.hero-titulo {
+  font-size: 1.6rem;
+  margin: 4px 0 8px;
+}
+
+.hero-subtitulo {
+  font-size: 0.95rem;
+  color: var(--muted);
+  max-width: 42em;
+  margin: 0 auto 16px;
+}
+
+.hero-posicionamento {
+  font-size: 0.8rem;
+  color: var(--muted);
+  margin: 0;
+}
+
 .hero-banner {
   display: block;
   width: 100%;
@@ -2479,7 +2497,7 @@ input[type="file"] {
 
 @media (min-width: 640px) {
   .rodape-colunas {
-    grid-template-columns: 2fr 1fr 1fr;
+    grid-template-columns: 2fr 1fr 1fr 1fr;
   }
 }
 

@@ -112,6 +112,7 @@ from services.catalogo import (
 )
 from services.paginas_institucionais import PAGINAS_ATENDIMENTO
 from services.blog import ARTIGOS_BLOG, artigo_por_produto_id
+from services.landing_paginas import PAGINAS_LANDING
 from services.catalogo_pdf import gerar_pdf_catalogo
 from services.avaliacoes import (
     atualizar_status as atualizar_status_avaliacao,
@@ -734,6 +735,7 @@ def sitemap_xml():
         (url_for("kit_livraria_shalom"), "monthly", "0.6"),
         (url_for("carrinho"), "yearly", "0.1"),
     ]
+    entradas += [(url_for("landing_pagina", slug=s), "monthly", "0.6") for s in PAGINAS_LANDING]
     entradas += [
         (url_for("categoria", slug=c["slug"]), "weekly", "0.7") for c in categorias_com_slug(produtos)
     ]
@@ -765,6 +767,10 @@ def llms_txt():
     linhas_categorias = "\n".join(
         f"- [{c['nome']}]({base}{url_for('categoria', slug=c['slug'])})" for c in categorias
     )
+    linhas_landing = "\n".join(
+        f"- [{p['titulo']}]({base}{url_for('landing_pagina', slug=s)}): {p['resumo']}"
+        for s, p in PAGINAS_LANDING.items()
+    )
     corpo = f"""# Nove de Julho -- Catálogo de Atacado
 
 > Catálogo de atacado de medalhas, entremeios e chaveiros religiosos católicos,
@@ -787,6 +793,10 @@ com a quantidade total do pedido (500+ peças: 7 dias úteis; 1000+: 8 dias
 - [Kit Livraria Shalom]({base}{url_for('kit_livraria_shalom')}): sortimento pronto com os santos mais vendidos
 - [Quem somos]({base}{url_for('pagina_atendimento', slug='quem-somos')}): história da marca e do fundador
 - [Blog]({base}{url_for('blog_indice')}): história e significado dos santos e devoções do catálogo
+
+## Páginas por público/uso
+
+{linhas_landing}
 
 ## Categorias
 
@@ -1416,6 +1426,29 @@ def blog_artigo(slug: str):
         url_produto=url_produto,
         dados_breadcrumb=dados_breadcrumb,
         dados_artigo=dados_artigo,
+    )
+
+
+@app.route("/para/<slug>", methods=["GET"])
+def landing_pagina(slug: str):
+    """Landing page por publico/uso (ver services/landing_paginas.py) --
+    diferente do /blog (narrativa sobre um santo) e do /atendimento
+    (suporte/politicas): aqui alguem chegando de anuncio ou busca tipo
+    "medalha pra casamento" acha os produtos certos pro uso dela."""
+    pagina = PAGINAS_LANDING.get(slug)
+    if pagina is None:
+        abort(404)
+    dados_breadcrumb = _dados_breadcrumb(
+        [
+            ("Catálogo", url_for("index", _external=True)),
+            (pagina["titulo"], url_for("landing_pagina", slug=slug, _external=True)),
+        ]
+    )
+    return render_template(
+        "landing.html",
+        pagina=pagina,
+        slug=slug,
+        dados_breadcrumb=dados_breadcrumb,
     )
 
 

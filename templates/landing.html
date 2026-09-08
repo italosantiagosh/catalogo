@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+
+{% block titulo %}{{ pagina.titulo }} — Nove de Julho{% endblock %}
+{% block meta_descricao %}{{ pagina.resumo }}{% endblock %}
+
+{% block conteudo %}
+  <script type="application/ld+json">{{ dados_breadcrumb | tojson }}</script>
+  <nav class="breadcrumbs" aria-label="Breadcrumb">
+    <a href="{{ url_for('index') }}">Catálogo</a>
+    <span>›</span>
+    <span aria-current="page">{{ pagina.titulo }}</span>
+  </nav>
+  <h1>{{ pagina.titulo }}</h1>
+  <div class="conteudo-institucional">
+    {{ pagina.corpo_html | safe }}
+  </div>
+{% endblock %}

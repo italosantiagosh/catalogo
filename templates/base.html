@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{% block titulo %}Nove de Julho — Medalhas, Entremeios e Chaveiros Católicos{% endblock %}</title>
-  <meta name="description" content="{% block meta_descricao %}Catálogo de atacado de medalhas, entremeios e chaveiros religiosos — mais de 130 santos e devoções, com desconto progressivo automático e frete grátis acima de R$ 300.{% endblock %}">
+  <meta name="description" content="{% block meta_descricao %}Medalhas, entremeios e chaveiros católicos — mais de 130 santos e devoções, no varejo ou atacado, com desconto progressivo automático e frete grátis acima de R$ 300.{% endblock %}">
   {% if google_site_verification %}
     <meta name="google-site-verification" content="{{ google_site_verification }}">
   {% endif %}
@@ -110,6 +110,14 @@
         <a href="{{ url_for('blog_indice') }}">Blog</a>
         <a href="{{ url_for('pagina_atendimento', slug='termos-e-privacidade') }}">Termos e privacidade</a>
         <a href="{{ url_for('pagina_atendimento', slug='perguntas-frequentes') }}">Perguntas frequentes</a>
+      </div>
+      <div class="rodape-coluna">
+        <strong>Comprar para</strong>
+        <a href="{{ url_for('landing_pagina', slug='casamentos') }}">Casamentos</a>
+        <a href="{{ url_for('landing_pagina', slug='batizados') }}">Batizados</a>
+        <a href="{{ url_for('landing_pagina', slug='retiros-espirituais') }}">Retiros espirituais</a>
+        <a href="{{ url_for('landing_pagina', slug='paroquias-e-catequese') }}">Paróquias e catequese</a>
+        <a href="{{ url_for('landing_pagina', slug='livrarias-e-revendedores') }}">Livrarias e revendedores</a>
       </div>
       <div class="rodape-coluna">
         <strong>Contato</strong>
