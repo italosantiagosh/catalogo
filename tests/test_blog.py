@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import re
+
 import pytest
 
 from app import app
@@ -96,3 +98,37 @@ def test_artigo_por_produto_id_acha_o_slug_certo():
 
 def test_artigo_por_produto_id_sem_artigo_devolve_none():
     assert artigo_por_produto_id("produto-sem-artigo-nenhum") is None
+
+
+def test_links_internos_dos_artigos_apontam_pra_coisas_reais():
+    """Artigos "misturados" citam varios produtos/outros artigos dentro
+    do texto (ver conversa) com link cru (<a href="/produto/...">,
+    "/blog/..."), sem passar por url_for -- essa checagem garante que
+    nenhum desses links crus aponta pra um id/slug que nao existe."""
+    ids_validos = {p["id"] for p in carregar_produtos()}
+    slugs_validos = set(ARTIGOS_BLOG.keys())
+    for slug, artigo in ARTIGOS_BLOG.items():
+        corpo = artigo["corpo_html"]
+        for pid in re.findall(r'/produto/([a-z0-9\-]+)', corpo):
+            assert pid in ids_validos, f"{slug}: link inline /produto/{pid} não existe"
+        for slug_inline in re.findall(r'/blog/([a-z0-9\-]+)', corpo):
+            assert slug_inline in slugs_validos, f"{slug}: link inline /blog/{slug_inline} não existe"
+
+
+def test_artigos_misturados_carregam_200_e_linkam_produtos_citados(client):
+    """Ver conversa: artigos que citam mais de um santo/beato/produto no
+    corpo (nao so o produto_relacionado_id principal)."""
+    casos = {
+        "jovens-santos-e-beatos": ["sao-pier-giorgio-frassati", "chiara-luce"],
+        "santos-carmelitas-espiritualidade-do-carmelo": ["santa-teresa-davila", "sao-joao-da-cruz", "edith-stein"],
+        "titulos-de-sao-jose": ["castissimo-coracao-de-sao-jose", "sao-jose-dormindo"],
+        "santa-faustina-e-jesus-misericordioso": ["jesus-misericordioso"],
+        "arcanjos-miguel-gabriel-rafael": ["sao-gabriel", "sao-rafael"],
+        "familia-martin-pais-de-santa-teresinha": [],
+    }
+    for slug, ids_citados in casos.items():
+        resposta = client.get(f"/blog/{slug}")
+        assert resposta.status_code == 200
+        pagina = resposta.get_data(as_text=True)
+        for pid in ids_citados:
+            assert f"/produto/{pid}" in pagina

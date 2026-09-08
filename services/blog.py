@@ -447,6 +447,298 @@ ARTIGOS_BLOG = {
             </div>
         """,
     },
+    "jovens-santos-e-beatos": {
+        "titulo": "Jovens santos e beatos: quando a santidade não espera envelhecer",
+        "resumo": (
+            "Carlo Acutis, Pier Giorgio Frassati e Chiara Luce Badano mostram que não é "
+            "preciso viver muitos anos pra deixar um exemplo de fé que atravessa gerações."
+        ),
+        "produto_relacionado_id": "carlo-acutis",
+        "publicado_em": "2026-09-09",
+        "corpo_html": """
+            <p>É comum imaginar a santidade como fruto de uma vida longa, dedicada
+            inteiramente à religião. Mas a Igreja também reconhece, cada vez com mais
+            força, jovens que viveram poucos anos e, ainda assim, deixaram um testemunho
+            de fé tão intenso quanto o de qualquer santo adulto.</p>
+
+            <h2>Carlo Acutis, o "influencer de Deus"</h2>
+            <p>Carlo Acutis nasceu em Londres em 1991 e morreu em Monza, na Itália, em
+            2006, aos 15 anos, vítima de uma leucemia fulminante. Apaixonado por
+            informática desde criança, usou justamente essa habilidade para catalogar, num
+            site que ele mesmo programou, milagres eucarísticos reconhecidos pela Igreja ao
+            redor do mundo -- um trabalho que continua disponível on-line até hoje. Beatificado
+            em 2020, foi <strong>canonizado em 7 de setembro de 2025</strong> pelo Papa Leão
+            XIV, tornando-se um dos primeiros santos "millennial" da Igreja Católica e
+            padroeiro da internet.</p>
+
+            <h2>Pier Giorgio Frassati, alpinista e servidor dos pobres</h2>
+            <p>Quase um século antes, outro jovem italiano já apontava nessa mesma direção:
+            <a href="/produto/sao-pier-giorgio-frassati">Pier Giorgio Frassati</a> (1901-1925)
+            vinha de uma família rica e influente de Turim, mas dedicava boa parte do tempo
+            livre a visitar e ajudar famílias pobres da cidade, muitas vezes escondendo
+            isso até dos próprios pais. Também era um alpinista apaixonado, e é justamente
+            numa dessas escaladas que aparece um de seus ditos mais conhecidos: "Verso
+            l'alto" ("Rumo ao alto"). Morreu aos 24 anos, de poliomielite, contraída
+            provavelmente ao cuidar de doentes. Beatificado em 1990 pelo Papa João Paulo
+            II, que o chamou de "homem das oito bem-aventuranças", foi canonizado no
+            mesmo dia que Carlo Acutis, em setembro de 2025.</p>
+
+            <h2>Chiara Luce Badano, o sorriso na dor</h2>
+            <p><a href="/produto/chiara-luce">Chiara Luce Badano</a> (1971-1990) era uma
+            adolescente italiana ligada ao Movimento dos Focolares quando, aos 17 anos, foi
+            diagnosticada com um tipo raro e agressivo de câncer ósseo. Ao longo do
+            tratamento, chamou a atenção de quem a cercava por manter um semblante sereno e
+            alegre mesmo diante da dor -- foi aí que ganhou o sobrenome espiritual "Luce"
+            (luz, em italiano). Morreu aos 18 anos, em 1990, e foi beatificada em 2010 pelo
+            Papa Bento XVI, sendo a primeira beata do Movimento dos Focolares.</p>
+
+            <p>Três histórias diferentes, uma mesma mensagem: não é preciso esperar
+            envelhecer para viver com profundidade a própria fé.</p>
+
+            <div class="cta-blog-produto">
+              <p>Um exemplo de fé jovem pra carregar com você</p>
+              <a href="__URL_PRODUTO__" class="botao-principal">Ver medalha, entremeio e chaveiro de Carlo Acutis →</a>
+            </div>
+        """,
+    },
+    "santos-carmelitas-espiritualidade-do-carmelo": {
+        "titulo": "Santos carmelitas: a espiritualidade do Monte Carmelo",
+        "resumo": (
+            "Santa Teresa d'Ávila, São João da Cruz, Santa Teresinha e Edith Stein "
+            "carregam o mesmo hábito e uma busca em comum: a união íntima com Deus."
+        ),
+        "produto_relacionado_id": "teresas-do-carmelo",
+        "publicado_em": "2026-09-09",
+        "corpo_html": """
+            <p>A Ordem do Carmelo nasceu no século XII, quando um grupo de eremitas
+            cristãos passou a viver em oração e silêncio no Monte Carmelo, na atual Israel
+            -- o mesmo monte onde, segundo a tradição, o profeta Elias enfrentou os
+            profetas de Baal. Ao longo dos séculos seguintes, a espiritualidade carmelita se
+            espalhou pela Europa e formou alguns dos místicos mais influentes da história da
+            Igreja.</p>
+
+            <h2>Santa Teresa d'Ávila, a reformadora</h2>
+            <p><a href="/produto/santa-teresa-davila">Santa Teresa d'Ávila</a> (1515-1582)
+            entrou para o Carmelo ainda jovem, na Espanha, mas percebeu com o tempo que a
+            vida da ordem havia se afastado do rigor e do silêncio original. Liderou então
+            uma reforma que deu origem aos Carmelitas Descalços, e escreveu obras
+            fundamentais sobre oração e vida interior, como <em>Castelo Interior</em>. Foi
+            declarada Doutora da Igreja em 1970 -- a primeira mulher a receber esse
+            título.</p>
+
+            <h2>São João da Cruz, o poeta da noite escura</h2>
+            <p><a href="/produto/sao-joao-da-cruz">São João da Cruz</a> (1542-1591) foi
+            companheiro de Teresa d'Ávila na reforma carmelita, e por isso mesmo chegou a
+            ser preso e maltratado por religiosos que se opunham às mudanças. Foi durante
+            esse cativeiro que escreveu parte de sua poesia mística mais conhecida,
+            incluindo o conceito de "noite escura da alma" -- o período de aridez espiritual
+            que, segundo ele, precede uma união mais profunda com Deus. Também é Doutor da
+            Igreja.</p>
+
+            <h2>Santa Teresinha, a pequena via</h2>
+            <p>Três séculos depois, Santa Teresinha do Menino Jesus levou essa mesma
+            tradição carmelita a um caminho mais simples -- a "pequena via" das pequenas
+            coisas feitas com amor, que já contamos em detalhe <a href="/blog/santa-teresinha-caminho-da-infancia-espiritual">num
+            outro artigo aqui do blog</a>.</p>
+
+            <h2>Edith Stein, a filósofa que virou carmelita</h2>
+            <p><a href="/produto/edith-stein">Edith Stein</a> (1891-1942) teve uma
+            trajetória bem diferente das demais: nascida numa família judia na Alemanha,
+            tornou-se uma respeitada filósofa antes de se converter ao catolicismo e entrar
+            para o Carmelo, adotando o nome de Teresa Benedita da Cruz. Presa pelos nazistas
+            justamente por sua origem judaica, morreu no campo de concentração de Auschwitz
+            em 1942. Foi canonizada em 1998 e declarada copadroeira da Europa em 1999.</p>
+
+            <div class="cta-blog-produto">
+              <p>A força espiritual do Carmelo, numa peça só</p>
+              <a href="__URL_PRODUTO__" class="botao-principal">Ver Teresas do Carmelo (medalha, entremeio e chaveiro) →</a>
+            </div>
+        """,
+    },
+    "titulos-de-sao-jose": {
+        "titulo": "Os vários títulos de São José: um só santo, muitas invocações",
+        "resumo": (
+            "Terror dos Demônios, Castíssimo Coração, São José Dormindo -- entenda por "
+            "que um mesmo santo aparece em tantas invocações diferentes."
+        ),
+        "produto_relacionado_id": "sao-jose",
+        "publicado_em": "2026-09-09",
+        "corpo_html": """
+            <p>Já contamos aqui a <a href="/blog/sao-jose-pai-adotivo-de-jesus">história de
+            São José</a>, pai adotivo de Jesus. Mas quem visita uma livraria católica ou
+            navega por um catálogo de medalhas costuma se deparar com títulos diferentes
+            para o mesmo santo -- "São José Operário", "Castíssimo Coração de São José",
+            "São José Dormindo", "São José Terror dos Demônios". Não são santos diferentes:
+            são invocações, formas da Igreja destacar um aspecto específico da vida ou da
+            proteção de São José, conforme a necessidade de quem reza.</p>
+
+            <h2>Castíssimo Coração de São José</h2>
+            <p><a href="/produto/castissimo-coracao-de-sao-jose">O Castíssimo Coração de
+            São José</a> segue o mesmo modelo de devoção do Sagrado Coração de Jesus e do
+            Imaculado Coração de Maria -- só que aqui destacando a pureza e a fidelidade de
+            José em seu papel de esposo e pai, sem nenhum vínculo carnal com Maria segundo a
+            tradição católica. É uma devoção que reforça o amor casto e a entrega total à
+            vontade de Deus.</p>
+
+            <h2>São José Dormindo</h2>
+            <p>A imagem de <a href="/produto/sao-jose-dormindo">São José dormindo</a> vem
+            direto dos Evangelhos: foi enquanto dormia que José recebeu, por três vezes, a
+            visita de um anjo em sonho -- avisando sobre a gravidez de Maria, sobre a fuga
+            para o Egito e sobre o momento seguro de voltar para Nazaré. A devoção ganhou
+            força recente com o Papa Francisco, que mantinha sobre sua própria escrivaninha
+            uma imagem de São José dormindo e o hábito de colocar embaixo dela pedidos de
+            oração escritos à mão, confiando-os ao santo enquanto "dormia" sobre eles.</p>
+
+            <h2>São José Terror dos Demônios</h2>
+            <p>Esse título vem direto da Litania de São José, oração tradicional aprovada
+            pela Igreja em 1909, que o invoca como <em>"Terror daemonum"</em> -- terror dos
+            demônios. A ideia por trás da invocação é simples: se José teve força e
+            coragem suficientes para proteger a Sagrada Família de perigos reais (como a
+            perseguição de Herodes), pode também proteger espiritualmente quem recorre a
+            ele contra qualquer forma de mal.</p>
+
+            <p>São invocações diferentes, mas sempre do mesmo José -- carpinteiro, esposo,
+            pai e protetor.</p>
+
+            <div class="cta-blog-produto">
+              <p>Escolha a invocação de São José que mais fala com você</p>
+              <a href="__URL_PRODUTO__" class="botao-principal">Ver medalha, entremeio e chaveiro de São José →</a>
+            </div>
+        """,
+    },
+    "santa-faustina-e-jesus-misericordioso": {
+        "titulo": "Santa Faustina e Jesus Misericordioso: a origem da Divina Misericórdia",
+        "resumo": (
+            "Uma freira polonesa simples deu origem a uma das devoções que mais cresceram "
+            "no mundo católico no último século. Conheça a história por trás da imagem "
+            "\"Jesus, eu confio em Vós\"."
+        ),
+        "produto_relacionado_id": "santa-faustina",
+        "publicado_em": "2026-09-09",
+        "corpo_html": """
+            <p>Faustina Kowalska nasceu em 1905, numa família humilde de agricultores da
+            Polônia, e entrou ainda jovem para a Congregação das Irmãs de Nossa Senhora da
+            Misericórdia. Foi lá, a partir de 1931, que começou a registrar em seu diário
+            uma série de experiências místicas: visões e diálogos com Jesus, que lhe pedia
+            que espalhasse a mensagem da sua misericórdia infinita por todo o mundo.</p>
+
+            <h2>A imagem de Jesus Misericordioso</h2>
+            <p>Numa dessas visões, Faustina viu Jesus com a mão direita levantada em sinal
+            de bênção e a esquerda tocando o peito, de onde saíam dois raios -- um pálido
+            e outro vermelho, representando a água e o sangue derramados na cruz. Segundo o
+            pedido que ela relatou ter recebido, a imagem deveria trazer a inscrição
+            <strong>"Jesus, eu confio em Vós"</strong> -- e é exatamente assim que a
+            <a href="/produto/jesus-misericordioso">imagem de Jesus Misericordioso</a> é
+            retratada até hoje.</p>
+
+            <h2>A Coroazinha e o Domingo da Misericórdia</h2>
+            <p>Além da imagem, Faustina também recebeu -- segundo seu relato -- uma oração
+            específica para pedir a misericórdia de Deus para si e para o mundo: a
+            Coroazinha da Divina Misericórdia, rezada com um terço comum, mas com orações
+            próprias. A devoção cresceu de forma tão significativa ao longo do século XX
+            que o Papa João Paulo II, também polonês e grande devoto da causa, instituiu
+            oficialmente o <strong>Domingo da Divina Misericórdia</strong> em 2000 --
+            celebrado sempre no domingo seguinte à Páscoa -- no mesmo dia em que canonizou
+            Santa Faustina.</p>
+
+            <p>De uma freira simples, quase desconhecida em vida, nasceu uma das devoções
+            que mais rapidamente se espalhou pelo mundo católico nas últimas décadas.</p>
+
+            <div class="cta-blog-produto">
+              <p>A confiança que atravessa qualquer dificuldade</p>
+              <a href="__URL_PRODUTO__" class="botao-principal">Ver medalha, entremeio e chaveiro de Santa Faustina →</a>
+            </div>
+        """,
+    },
+    "arcanjos-miguel-gabriel-rafael": {
+        "titulo": "Miguel, Gabriel e Rafael: os três arcanjos citados pela Bíblia",
+        "resumo": (
+            "Guerreiro, mensageiro e curador -- os três únicos arcanjos chamados pelo "
+            "nome na Bíblia têm papéis bem diferentes entre si. Conheça cada um."
+        ),
+        "produto_relacionado_id": "santos-arcanjos",
+        "publicado_em": "2026-09-09",
+        "corpo_html": """
+            <p>Entre todos os anjos mencionados na tradição cristã, apenas três são
+            chamados pelo próprio nome nos textos bíblicos reconhecidos pela Igreja
+            Católica: Miguel, Gabriel e Rafael. Não por acaso, a Igreja celebra os três
+            juntos, no mesmo dia -- 29 de setembro -- reconhecendo que, apesar de papéis
+            bem diferentes, formam um só grupo de mensageiros a serviço de Deus.</p>
+
+            <h2>Miguel, o guerreiro</h2>
+            <p>Já contamos em detalhe a <a href="/blog/sao-miguel-arcanjo-oracao-de-protecao">história
+            de São Miguel Arcanjo</a> aqui no blog -- líder dos exércitos celestiais contra
+            o mal, seu nome significa "Quem é como Deus?".</p>
+
+            <h2>Gabriel, o mensageiro</h2>
+            <p><a href="/produto/sao-gabriel">Gabriel</a> é o arcanjo dos grandes anúncios:
+            foi ele quem apareceu ao sacerdote Zacarias para anunciar o nascimento de João
+            Batista, e é ele também quem aparece a Maria, em Nazaré, para anunciar que ela
+            seria a mãe de Jesus -- a Anunciação, um dos momentos mais retratados de toda a
+            arte cristã. Seu nome significa "força de Deus" ou "Deus é minha força".</p>
+
+            <h2>Rafael, o curador</h2>
+            <p><a href="/produto/sao-rafael">Rafael</a> aparece apenas no Livro de Tobias,
+            onde se disfarça de companheiro de viagem do jovem Tobias, protegendo-o ao
+            longo do caminho, ajudando-o a encontrar sua futura esposa, Sara, e por fim
+            curando a cegueira de seu pai, Tobit. Seu nome significa "Deus cura", e por
+            causa dessa história é considerado padroeiro dos viajantes, dos médicos e
+            também das relações e encontros que dão certo.</p>
+
+            <p>Guerra, anúncio e cura -- três formas bem diferentes de servir, todas
+            reunidas nesses três mensageiros de Deus.</p>
+
+            <div class="cta-blog-produto">
+              <p>Os três arcanjos protegendo você ao mesmo tempo</p>
+              <a href="__URL_PRODUTO__" class="botao-principal">Ver Santos Arcanjos (medalha, entremeio e chaveiro) →</a>
+            </div>
+        """,
+    },
+    "familia-martin-pais-de-santa-teresinha": {
+        "titulo": "Louis e Zélie Martin: os pais de Santa Teresinha, canonizados juntos",
+        "resumo": (
+            "Um relojoeiro e uma rendeira franceses criaram cinco filhas que se tornaram "
+            "freiras -- e foram os primeiros esposos canonizados juntos na mesma cerimônia."
+        ),
+        "produto_relacionado_id": "familia-martin",
+        "publicado_em": "2026-09-09",
+        "corpo_html": """
+            <p>Quando se fala da <a href="/blog/santa-teresinha-caminho-da-infancia-espiritual">Santa
+            Teresinha do Menino Jesus</a>, é comum esquecer que ela cresceu numa casa com
+            outras quatro irmãs -- e que todas as cinco, sem exceção, escolheram a vida
+            religiosa. Por trás dessa família tão incomum estavam Louis e Zélie Martin, um
+            casal francês do século XIX hoje reconhecido pela Igreja como modelo de
+            santidade vivida dentro do casamento e da vida familiar comum.</p>
+
+            <h2>Um relojoeiro e uma rendeira</h2>
+            <p>Louis Martin trabalhava como relojoeiro e joalheiro em Alençon, na França, e
+            Zélie Guérin era uma habilidosa fabricante de rendas, dona do próprio pequeno
+            negócio -- uma independência pouco comum para mulheres da época. Casaram-se em
+            1858 e tiveram nove filhos, dos quais quatro morreram ainda bebês -- uma
+            realidade dura, mas frequente naquele período. As cinco filhas que sobreviveram
+            até a vida adulta entraram todas para conventos.</p>
+
+            <h2>Uma vida marcada por perda e fé</h2>
+            <p>Zélie foi diagnosticada com câncer de mama e morreu em 1877, quando
+            Teresinha, a caçula, tinha apenas quatro anos. Louis criou sozinho as cinco
+            filhas a partir daí, sustentando com dedicação a fé e a educação de todas elas
+            -- inclusive apoiando o pedido pouco comum de Teresinha para entrar no convento
+            ainda adolescente, aos 15 anos.</p>
+
+            <h2>Os primeiros esposos canonizados juntos</h2>
+            <p>Louis e Zélie foram beatificados juntos em 2008 e canonizados juntos pelo
+            Papa Francisco em 2015 -- tornando-se o primeiro casal de esposos da história
+            moderna da Igreja canonizado na mesma cerimônia. O reconhecimento reforça uma
+            mensagem cada vez mais valorizada: a santidade não pertence só a padres, freiras
+            e religiosos -- também pode florescer dentro de um casamento comum, criando
+            filhos, sustentando uma casa, enfrentando perdas.</p>
+
+            <div class="cta-blog-produto">
+              <p>Uma família inteira de fé, numa só peça</p>
+              <a href="__URL_PRODUTO__" class="botao-principal">Ver Família Martin (medalha, entremeio e chaveiro) →</a>
+            </div>
+        """,
+    },
 }
 
 
