@@ -509,7 +509,15 @@
 
     ultimosItens = itens;
     ultimoCalculo = dados;
-    pedidoIdTexto.textContent = `Pedido #${obterOuCriarPedidoId()}`;
+    // "Codigo de referencia", nao "Pedido #" -- esse codigo e´ so local
+    // (gerado no navegador, ver carrinho.js:obterOuCriarPedidoId) pra
+    // identificar a conversa se fechar pelo WhatsApp. Ainda NAO existe
+    // pedido nenhum registrado nesse ponto, e quem pagar direto no site
+    // recebe um codigo DIFERENTE (gerado no servidor na hora de
+    // confirmar) -- ver auditoria Claude in Chrome: "Pedido #JHRUWU"
+    // aparecendo antes do pagamento passava a impressao de pedido ja
+    // feito.
+    pedidoIdTexto.textContent = `Código de referência: #${obterOuCriarPedidoId()} (uso apenas se fechar pelo WhatsApp -- o pedido ainda não foi registrado)`;
   }
 
   // ---- calculadora de frete (Frenet) ----
@@ -933,13 +941,20 @@
       radio.addEventListener('change', () => {
         // boleto usa o MESMO cadastro (nome/documento/endereco) que o
         // pagamento direto no site -- so troca qual botao final aparece.
-        cadastroClienteEl.hidden = radio.value !== 'site' && radio.value !== 'boleto';
+        const vaiMostrarCadastro = radio.value === 'site' || radio.value === 'boleto';
+        cadastroClienteEl.hidden = !vaiMostrarCadastro;
         whatsappFinalizarWrapEl.hidden = radio.value !== 'whatsapp';
         if (btnPagarAgora) btnPagarAgora.hidden = radio.value !== 'site';
         if (btnGerarBoleto) btnGerarBoleto.hidden = radio.value !== 'boleto';
         if (boletoAviso2DiasEl) boletoAviso2DiasEl.hidden = radio.value !== 'boleto';
-        if (radio.checked && (radio.value === 'site' || radio.value === 'boleto')) {
+        if (radio.checked && vaiMostrarCadastro) {
           cadastroClienteEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          // scrollIntoView nao produz nenhuma mudanca visivel quando o
+          // formulario ja cabe no viewport -- o flash garante que dê
+          // pra perceber que o clique revelou algo mesmo assim.
+          cadastroClienteEl.classList.remove('destaque-revelado');
+          void cadastroClienteEl.offsetWidth;
+          cadastroClienteEl.classList.add('destaque-revelado');
         }
       });
     });

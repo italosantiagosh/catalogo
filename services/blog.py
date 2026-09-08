@@ -991,14 +991,16 @@ ARTIGOS_BLOG = {
             "Eu sou a Imaculada Conceição" -- confirmando, segundo os fiéis, o dogma que a
             Igreja havia proclamado apenas quatro anos antes. Lourdes se tornou um dos
             maiores destinos de peregrinação do mundo, especialmente por doentes em busca
-            de cura na água da fonte que brotou no local.</p>
+            de cura na água da fonte que brotou no local. Veja a
+            <a href="/produto/nossa-senhora-de-lourdes">medalha, entremeio e chaveiro de Nossa Senhora de Lourdes</a>.</p>
 
             <h2>Nossa Senhora de Guadalupe</h2>
             <p>Em 1531, no México, Maria teria aparecido ao indígena Juan Diego no monte
             Tepeyac, deixando impressa em seu manto (tilma) uma imagem que, segundo os
             devotos, permanece preservada até hoje na Basílica de Guadalupe, na Cidade do
             México -- um dos santuários marianos mais visitados do planeta. É a padroeira
-            oficial de todo o continente americano.</p>
+            oficial de todo o continente americano. Veja a
+            <a href="/produto/nossa-senhora-de-guadalupe">medalha, entremeio e chaveiro de Nossa Senhora de Guadalupe</a>.</p>
 
             <h2>Nossa Senhora do Perpétuo Socorro</h2>
             <p>Diferente das duas anteriores, essa devoção não vem de uma aparição, mas de
@@ -1006,14 +1008,16 @@ ARTIGOS_BLOG = {
             Maria com o Menino Jesus enquanto dois anjos mostram a ele os instrumentos da
             Paixão. O quadro está guardado em Roma desde o século XIX, sob os cuidados dos
             padres Redentoristas, e se tornou uma das imagens marianas mais reproduzidas do
-            mundo católico.</p>
+            mundo católico. Veja a
+            <a href="/produto/nossa-senhora-do-perpetuo-socorro">medalha, entremeio e chaveiro de Nossa Senhora do Perpétuo Socorro</a>.</p>
 
             <h2>Nossa Senhora do Carmo</h2>
             <p>Ligada à Ordem do Carmelo (a mesma dos <a href="/blog/santos-carmelitas-espiritualidade-do-carmelo">santos
             carmelitas</a> que já contamos aqui), Nossa Senhora do Carmo é associada
             tradicionalmente ao escapulário -- um pequeno tecido bento usado como sinal de
             consagração e proteção mariana, que a tradição afirma ter sido entregue por
-            Maria a São Simão Stock, no século XIII.</p>
+            Maria a São Simão Stock, no século XIII. Veja a
+            <a href="/produto/nossa-senhora-do-carmo">medalha, entremeio e chaveiro de Nossa Senhora do Carmo</a>.</p>
 
             <h2>Imaculada Conceição</h2>
             <p>Diferente das anteriores, essa não é uma aparição nem um objeto -- é um

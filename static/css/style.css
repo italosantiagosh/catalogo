@@ -2279,6 +2279,19 @@ input[type="file"] {
   background: var(--card);
 }
 
+/* Flash rapido quando o formulario aparece ao escolher "Pix ou Cartao"
+   -- sem isso, em telas onde o formulario ja cabe no viewport o
+   scrollIntoView nao move nada e o clique parece nao ter feito efeito
+   nenhum (ver auditoria Claude in Chrome). */
+.cadastro-cliente.destaque-revelado {
+  animation: destaqueRevelado 900ms ease-out;
+}
+
+@keyframes destaqueRevelado {
+  0% { background: var(--accent-soft, #fff3cd); border-color: var(--accent, #d4a017); }
+  100% { background: var(--card); border-color: var(--border); }
+}
+
 .cadastro-cliente h2 {
   font-size: 1rem;
   margin: 0 0 4px;
