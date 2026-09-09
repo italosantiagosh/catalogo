@@ -239,7 +239,16 @@ async function carrinhoAtualizarBarraPersistente() {
   }
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-  carrinhoAtualizarContador();
-  carrinhoAtualizarBarraPersistente();
-});
+// Chamado direto aqui (sem esperar DOMContentLoaded) de proposito: esse
+// script e´ um <script src> comum (sem defer/async) colocado DEPOIS do
+// cabecalho no HTML (ver base.html), entao o span do contador e a
+// barra persistente ja existem no DOM nesse ponto -- rodar aqui atualiza
+// o numero assim que esse script executa, em vez de esperar a pagina
+// INTEIRA terminar de parsear (imagens, resto do body, scripts de bloco
+// de cada pagina). Ver conversa: sem isso, todo carregamento de pagina
+// mostrava rapidamente o "0" fixo que ja vem escrito no HTML antes do
+// numero de verdade aparecer -- e´ o motivo do "Carrinho 10 -> Carrinho 0
+// -> Carrinho 10" visto na auditoria externa, nao um bug de dominio
+// duplicado como se suspeitava antes.
+carrinhoAtualizarContador();
+carrinhoAtualizarBarraPersistente();
