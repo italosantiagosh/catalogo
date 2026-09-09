@@ -223,22 +223,10 @@ a.link-carrinho #contador-carrinho {
   text-align: center;
 }
 
-.hero-titulo {
-  font-size: 1.6rem;
-  margin: 4px 0 8px;
-}
-
-.hero-subtitulo {
-  font-size: 0.95rem;
-  color: var(--muted);
-  max-width: 42em;
-  margin: 0 auto 16px;
-}
-
-.hero-posicionamento {
-  font-size: 0.8rem;
-  color: var(--muted);
-  margin: 0;
+.hero-banner-wrap {
+  position: relative;
+  line-height: 0;
+  margin: 0 0 20px;
 }
 
 .hero-banner {
@@ -247,15 +235,38 @@ a.link-carrinho #contador-carrinho {
   height: auto;
   max-width: 100%;
   border-radius: 16px;
-  margin: 0 0 20px;
 }
 
-.hero-acoes {
-  display: flex;
-  justify-content: center;
-  flex-wrap: wrap;
-  gap: 10px;
-  margin-bottom: 22px;
+/* os 3 botoes ("Explorar catalogo"/"Criar personalizada"/"Baixar
+   catalogo em PDF") ja vem DESENHADOS dentro da imagem do banner (ver
+   conversa) -- essas 3 areas invisiveis por cima so reproduzem os
+   links de verdade nas posicoes aproximadas de cada botao na imagem.
+   Posicoes em % (nao px) pra continuar batendo com o botao desenhado
+   em qualquer largura de tela, ja que a imagem escala com width:100%. */
+.hero-banner-area {
+  position: absolute;
+  display: block;
+}
+
+.hero-banner-area-1 {
+  top: 67.8%;
+  left: 3%;
+  width: 16.6%;
+  height: 11.7%;
+}
+
+.hero-banner-area-2 {
+  top: 67.8%;
+  left: 20.7%;
+  width: 15.6%;
+  height: 11.7%;
+}
+
+.hero-banner-area-3 {
+  top: 67.8%;
+  left: 37.4%;
+  width: 18.5%;
+  height: 11.7%;
 }
 
 .botao-hero-primario,

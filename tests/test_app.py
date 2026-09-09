@@ -66,10 +66,10 @@ def test_home_tem_h1_semantico(client):
 def test_home_ordem_das_secoes(client):
     corpo = client.get("/").get_data(as_text=True)
     marcadores = [
-        "vantagens", "Mais vendidos", "Quem faz a Nove de Julho", "Ano Jubilar",
+        "vantagens", "Pequenas peças, grandes significados", "Mais vendidos",
+        "Quem faz a Nove de Julho", "Ano Jubilar",
         "Preço de atacado automático", "Novidades", "Kit Livraria Shalom",
         "Preços e frete grátis podem mudar", "Peças personalizadas: envie sua foto",
-        "Medalhas religiosas para casamentos",
     ]
     posicoes = [corpo.find(m) for m in marcadores]
     assert all(p != -1 for p in posicoes), "algum marcador da home não foi encontrado"
@@ -113,7 +113,7 @@ def test_home_tem_busca_logo_no_topo_e_tambem_mais_embaixo(client):
     resposta = client.get("/").get_data(as_text=True)
     assert resposta.count('class="busca-wrap busca-wrap-home"') == 2
     assert resposta.count('class="busca-home-input"') == 2
-    pos_hero = resposta.index("hero-acoes")
+    pos_hero = resposta.index("hero-banner-wrap")
     pos_primeira_busca = resposta.index("busca-wrap-home")
     pos_vantagens = resposta.index('class="vantagens"')
     assert pos_hero < pos_primeira_busca < pos_vantagens

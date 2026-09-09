@@ -616,15 +616,68 @@
   let inicioPointer = { x: 0, y: 0 };
   let inicioOffset = { x: 0, y: 0 };
 
+  // ---- pinca de 2 dedos pra zoom no celular (ver conversa) -- o
+  // arraste de 1 dedo continua fazendo pan (Pointer Events ja unifica
+  // mouse/touch/caneta pra isso, so faltava o caso de 2 ponteiros ao
+  // mesmo tempo). Guarda a posicao de cada ponteiro ativo num Map;
+  // assim que o segundo entra, troca de "arrastar" pra "pinca" --
+  // zoom baseado na variacao da distancia entre os dois, sem tambem
+  // mover a imagem junto (mais simples e previsivel). ----
+  const pointersAtivos = new Map();
+  let pincaDistanciaInicial = 0;
+  let pincaEscalaInicial = 1;
+
+  function distanciaEntrePointers() {
+    const pontos = Array.from(pointersAtivos.values());
+    const dx = pontos[0].x - pontos[1].x;
+    const dy = pontos[0].y - pontos[1].y;
+    return Math.hypot(dx, dy);
+  }
+
+  function aplicarEscala(novaEscala) {
+    scale = Math.min(Math.max(novaEscala, minScale), maxScale);
+    clampOffset();
+    zoomSlider.value = escalaParaZoomSlider(scale);
+    desenharCropper();
+  }
+
   canvas.addEventListener('pointerdown', (ev) => {
+    pointersAtivos.set(ev.pointerId, { x: ev.clientX, y: ev.clientY });
+    try {
+      canvas.setPointerCapture(ev.pointerId);
+    } catch (e) {
+      // ignora -- alguns navegadores/gestos multi-touch nao aceitam
+      // capturar o 2o ponteiro, mas o pan/pinca continuam funcionando
+      // igual sem a captura (so evita perder o "solta fora do canvas").
+    }
+
+    if (pointersAtivos.size === 2) {
+      arrastando = false; // pinça tem prioridade sobre o pan de 1 dedo
+      pincaDistanciaInicial = distanciaEntrePointers();
+      pincaEscalaInicial = scale;
+      return;
+    }
+
     arrastando = true;
-    canvas.setPointerCapture(ev.pointerId);
     const rect = canvas.getBoundingClientRect();
     inicioPointer = { x: ev.clientX, y: ev.clientY };
     inicioOffset = { x: offsetX, y: offsetY };
     canvas._escalaTela = canvas.width / rect.width;
   });
   canvas.addEventListener('pointermove', (ev) => {
+    if (pointersAtivos.has(ev.pointerId)) {
+      pointersAtivos.set(ev.pointerId, { x: ev.clientX, y: ev.clientY });
+    }
+
+    if (pointersAtivos.size === 2) {
+      recorteFoiAjustado = true;
+      const distanciaAtual = distanciaEntrePointers();
+      if (pincaDistanciaInicial > 0) {
+        aplicarEscala(pincaEscalaInicial * (distanciaAtual / pincaDistanciaInicial));
+      }
+      return;
+    }
+
     if (!arrastando) return;
     recorteFoiAjustado = true;
     const fator = canvas._escalaTela || 1;
@@ -636,11 +689,39 @@
     desenharCropper();
   });
   function pararArraste(ev) {
-    if (arrastando) canvas.releasePointerCapture(ev.pointerId);
+    pointersAtivos.delete(ev.pointerId);
+    try {
+      if (arrastando) canvas.releasePointerCapture(ev.pointerId);
+    } catch (e) {
+      // idem pointerdown -- captura pode nao ter sido aceita
+    }
     arrastando = false;
+    // se ainda sobrou 1 dedo na tela depois de soltar o segundo, volta
+    // pro modo de pan a partir da posicao atual dele (sem pulo).
+    if (pointersAtivos.size === 1) {
+      const [[idRestante, pos]] = pointersAtivos;
+      arrastando = true;
+      inicioPointer = { x: pos.x, y: pos.y };
+      inicioOffset = { x: offsetX, y: offsetY };
+    }
   }
   canvas.addEventListener('pointerup', pararArraste);
   canvas.addEventListener('pointercancel', pararArraste);
+
+  // ---- scroll do mouse pra zoom no desktop (ver conversa) --
+  // preventDefault pra rolar o zoom em vez da pagina inteira quando o
+  // cursor esta em cima do circulo de recorte. */
+  canvas.addEventListener(
+    'wheel',
+    (ev) => {
+      ev.preventDefault();
+      recorteFoiAjustado = true;
+      const fatorPorPasso = 1.08;
+      const multiplicador = ev.deltaY < 0 ? fatorPorPasso : 1 / fatorPorPasso;
+      aplicarEscala(scale * multiplicador);
+    },
+    { passive: false }
+  );
 
   // ---- fluxo geral ----
 

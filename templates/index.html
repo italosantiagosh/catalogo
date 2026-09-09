@@ -20,23 +20,18 @@
 
 {% block conteudo %}
   <section class="hero">
-    <h1 class="hero-titulo">Medalhas católicas para cada devoção</h1>
-    <p class="hero-subtitulo">
-      Mais de 130 santos e devoções, peças personalizadas e preço especial pra
-      quem compra em quantidade. Encontre sua devoção ou crie a sua própria peça.
-    </p>
-    <img
-      class="hero-banner"
-      src="{{ url_for('static', filename='img/banner-hero.jpg') }}"
-      alt="Nove de Julho — Medalhas que carregam histórias de fé. Mais de 130 santos e devoções, em medalha, entremeio ou chaveiro — ou crie a sua própria medalha personalizada."
-      width="900" height="507" fetchpriority="high"
-    >
-    <div class="hero-acoes">
-      <a href="{{ url_for('catalogo_completo') }}" class="botao-hero-primario">Explorar catálogo</a>
-      <a href="{{ url_for('personalizada') }}" class="botao-hero-secundario">Criar personalizada</a>
-      <a href="{{ url_for('catalogo_pdf') }}" target="_blank" class="botao-hero-secundario">📄 Baixar catálogo em PDF</a>
+    <h1 class="sr-only">Medalhas que carregam histórias de fé — mais de 130 santos e devoções, peças personalizadas e preço especial pra quem compra em quantidade</h1>
+    <div class="hero-banner-wrap">
+      <img
+        class="hero-banner"
+        src="{{ url_for('static', filename='img/banner-hero.jpg') }}"
+        alt="Nove de Julho — Medalhas que carregam histórias de fé. Mais de 130 santos e devoções, peças personalizadas e preço especial pra quem compra em quantidade. Encontre sua devoção ou crie a sua própria peça."
+        width="900" height="338" fetchpriority="high"
+      >
+      <a class="hero-banner-area hero-banner-area-1" href="{{ url_for('catalogo_completo') }}" aria-label="Explorar catálogo"></a>
+      <a class="hero-banner-area hero-banner-area-2" href="{{ url_for('personalizada') }}" aria-label="Criar personalizada"></a>
+      <a class="hero-banner-area hero-banner-area-3" href="{{ url_for('catalogo_pdf') }}" target="_blank" aria-label="Baixar catálogo em PDF"></a>
     </div>
-    <p class="hero-posicionamento">Varejo e atacado · Desconto automático por quantidade</p>
   </section>
 
   <div class="busca-wrap busca-wrap-home">
@@ -78,6 +73,10 @@
     </div>
   </div>
 
+  <a class="banner-uso-real" href="{{ url_for('catalogo_completo') }}">
+    <img src="{{ url_for('static', filename='img/banner-uso-real.jpg') }}" alt="Pequenas peças, grandes significados: medalhas para casamentos, paróquias, retiros, presentes, devoção pessoal e revenda." loading="lazy" decoding="async" width="900" height="329">
+  </a>
+
   {{ render_destaque(destaque_mais_vendidos) }}
 
   <section class="nossa-historia">
@@ -96,7 +95,7 @@
   {{ render_destaque(destaque_ano_jubilar) }}
 
   <button type="button" class="banner-atacado" onclick="abrirTabelaDesconto()">
-    <img src="{{ url_for('static', filename='img/banner-atacado.jpg') }}" alt="Preço de atacado automático: quanto mais medalhas e entremeios você adicionar ao carrinho — de qualquer santo, inclusive personalizada — menor o preço por unidade. Chaveiros têm tabela de atacado própria. O desconto é aplicado sozinho, sem cupom, assim que você adiciona os itens. Toque pra ver a tabela completa." loading="lazy" decoding="async" width="900" height="453">
+    <img src="{{ url_for('static', filename='img/banner-atacado.jpg') }}" alt="Preço de atacado automático: quanto mais medalhas e entremeios você adicionar ao carrinho — de qualquer santo, inclusive personalizada — menor o preço por unidade. Chaveiros têm tabela de atacado própria. O desconto é aplicado sozinho, sem cupom, assim que você adiciona os itens. Toque pra ver a tabela completa." loading="lazy" decoding="async" width="900" height="338">
   </button>
 
   {{ render_destaque(destaque_novidades) }}
@@ -160,9 +159,6 @@
     </section>
   {% endif %}
 
-  <a class="banner-uso-real" href="{{ url_for('catalogo_completo') }}">
-    <img src="{{ url_for('static', filename='img/banner-uso-real.jpg') }}" alt="Medalhas religiosas para casamentos, retiros, paróquias e presentes -- pequenas peças, grandes significados." loading="lazy" decoding="async" width="900" height="333">
-  </a>
 {% endblock %}
 
 {% block script %}
