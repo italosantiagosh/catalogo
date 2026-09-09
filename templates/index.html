@@ -35,12 +35,6 @@
     </div>
   </section>
 
-  <a class="banner-uso-real" href="{{ url_for('catalogo_completo') }}">
-    <img src="{{ url_for('static', filename='img/banner-uso-real.jpg') }}" alt="Pequenas peças, grandes significados: medalhas para casamentos, paróquias, retiros, presentes, devoção pessoal e revenda." loading="lazy" decoding="async" width="900" height="329">
-  </a>
-
-  {{ render_destaque(destaque_mais_vendidos) }}
-
   <div class="vantagens">
     <div class="vantagem">
       <span class="vantagem-icone">🚚</span>
@@ -73,6 +67,12 @@
       <span>Emitimos nota fiscal para CNPJ ou CPF</span>
     </div>
   </div>
+
+  {{ render_destaque(destaque_mais_vendidos) }}
+
+  <a class="banner-uso-real" href="{{ url_for('catalogo_completo') }}">
+    <img src="{{ url_for('static', filename='img/banner-uso-real.jpg') }}" alt="Pequenas peças, grandes significados: medalhas para casamentos, paróquias, retiros, presentes, devoção pessoal e revenda." loading="lazy" decoding="async" width="900" height="329">
+  </a>
 
   {{ render_destaque(destaque_ano_jubilar) }}
 

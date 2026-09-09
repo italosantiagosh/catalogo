@@ -66,7 +66,7 @@ def test_home_tem_h1_semantico(client):
 def test_home_ordem_das_secoes(client):
     corpo = client.get("/").get_data(as_text=True)
     marcadores = [
-        "Pequenas peças, grandes significados", "Mais vendidos", "vantagens",
+        "vantagens", "Mais vendidos", "Pequenas peças, grandes significados",
         "Ano Jubilar", "Preço de atacado automático", "Novidades",
         "Kit Livraria Shalom", "Preços e frete grátis podem mudar",
         "Peças personalizadas: envie sua foto",
