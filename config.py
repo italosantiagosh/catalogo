@@ -469,7 +469,7 @@ DESTAQUES_HOME = [
         "titulo": "🔥 Mais vendidos",
         "produtos": [
             "sao-jose", "santa-teresinha", "carlo-acutis", "sagrada-familia", "sao-joao-paulo-ii",
-            "sao-jorge", "nossa-senhora-de-fatima", "santo-antonio",
+            "sao-miguel", "nossa-senhora-de-fatima", "sao-padre-pio",
         ],
     },
     {

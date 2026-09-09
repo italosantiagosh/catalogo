@@ -43,8 +43,6 @@ import os
 import re
 import secrets
 import tempfile
-import threading
-import time
 import zipfile
 from datetime import datetime, timedelta, timezone
 from zoneinfo import ZoneInfo
@@ -55,7 +53,6 @@ from xml.sax.saxutils import escape as escapar_xml
 from flask import Flask, Response, abort, jsonify, redirect, render_template, request, send_file, session, url_for
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
-from openpyxl import load_workbook
 from PIL import Image, ImageOps
 from pillow_heif import register_heif_opener
 from werkzeug.datastructures import FileStorage
@@ -142,9 +139,7 @@ from services.email import (
     enviar_pedido_enviado,
     enviar_pedido_excluido,
     enviar_pedido_recompra,
-    enviar_reengajamento_contato_antigo,
 )
-import services.campanha_reengajamento as campanha_reengajamento
 from services.documentos import cpf_valido, documento_valido, numero_whatsapp, telefone_valido
 from services.frete import calcular_frete
 from services.infinitepay import criar_link_pagamento
@@ -4258,166 +4253,6 @@ def admin_avaliacao_recusar(id_: int):
         )
     atualizar_status_avaliacao(id_, "recusada")
     return redirect(url_for("admin_avaliacoes"))
-
-
-_CAMPANHA_LOTE_MAXIMO = 300  # trava contra clique acidental mandando a lista inteira de uma vez
-
-
-_CABECALHOS_NOME_PLANILHA = {"nome", "primeiro_nome", "primeiro nome"}
-_CABECALHOS_EMAIL_PLANILHA = {"e-mail", "email"}
-
-
-def _ler_contatos_da_planilha(arquivo: FileStorage) -> list[dict]:
-    """Le UMA planilha de contatos (exportada do sistema antigo/Tiny ou
-    de outra fonte, ver conversa -- ja apareceram cabecalhos "Nome"/
-    "E-mail" e tambem "nome"/"email" em minusculo) -- espera achar uma
-    coluna de nome e uma de e-mail em algum lugar do cabecalho (posicao
-    nao importa), comparando sem diferenciar maiusculas/minusculas nem
-    espaco sobrando. Linha sem e-mail e´ ignorada aqui mesmo
-    (campanha_reengajamento.importar_contatos tambem valida, essa
-    checagem e´ so pra nao instanciar linha vazia)."""
-    pasta = load_workbook(io.BytesIO(arquivo.read()), read_only=True, data_only=True)
-    aba = pasta.worksheets[0]
-    linhas = aba.iter_rows(values_only=True)
-    cabecalho = next(linhas, None) or []
-    cabecalho_normalizado = [str(titulo or "").strip().lower() for titulo in cabecalho]
-    indice_nome = next((i for i, titulo in enumerate(cabecalho_normalizado) if titulo in _CABECALHOS_NOME_PLANILHA), None)
-    indice_email = next((i for i, titulo in enumerate(cabecalho_normalizado) if titulo in _CABECALHOS_EMAIL_PLANILHA), None)
-    if indice_nome is None or indice_email is None:
-        return []
-    contatos = []
-    for linha in linhas:
-        email = linha[indice_email] if indice_email < len(linha) else None
-        if not email:
-            continue
-        nome = linha[indice_nome] if indice_nome < len(linha) else ""
-        contatos.append({"nome": str(nome or "").strip(), "email": str(email).strip()})
-    return contatos
-
-
-@app.route("/admin/campanha-antigos", methods=["GET"])
-def admin_campanha_antigos():
-    """Painel da campanha pontual de reengajamento pra quem comprou no
-    sistema antigo (ver services/campanha_reengajamento.py) -- sobe a
-    planilha uma vez, depois manda em lotes manuais pra nao estourar o
-    limite diario da Brevo (que tambem atende os e-mails transacionais
-    normais do site)."""
-    if not _autenticacao_admin_valida(request.authorization):
-        return Response(
-            "Autenticação necessária.", 401, {"WWW-Authenticate": 'Basic realm="Painel de campanha"'}
-        )
-    return render_template(
-        "admin_campanha_antigos.html",
-        contagem=campanha_reengajamento.contagem_por_status(),
-        lote_maximo=_CAMPANHA_LOTE_MAXIMO,
-    )
-
-
-@app.route("/admin/campanha-antigos/importar", methods=["POST"])
-def admin_campanha_importar():
-    if not _autenticacao_admin_valida(request.authorization):
-        return Response(
-            "Autenticação necessária.", 401, {"WWW-Authenticate": 'Basic realm="Painel de campanha"'}
-        )
-    arquivos = [a for a in request.files.getlist("planilhas") if a and a.filename]
-    contatos = []
-    for arquivo in arquivos:
-        contatos.extend(_ler_contatos_da_planilha(arquivo))
-    resultado = campanha_reengajamento.importar_contatos(contatos)
-    return redirect(url_for("admin_campanha_antigos", **{f"importado_{k}": v for k, v in resultado.items()}))
-
-
-@app.route("/admin/campanha-antigos/csv", methods=["GET"])
-def admin_campanha_exportar_csv():
-    """Lista completa (e-mail, nome, status) da fila da campanha em CSV
-    -- pra conferir pendente/enviado/erro fora do painel, ex: cruzando
-    com outra planilha por CPF pra achar duplicata que o sistema (so
-    compara e-mail) nao teria como enxergar sozinho (ver conversa)."""
-    if not _autenticacao_admin_valida(request.authorization):
-        return Response(
-            "Autenticação necessária.", 401, {"WWW-Authenticate": 'Basic realm="Painel de campanha"'}
-        )
-    buffer = io.StringIO()
-    escritor = csv.writer(buffer, delimiter=";")
-    escritor.writerow(["email", "nome", "status", "criado_em", "enviado_em", "erro"])
-    for contato in campanha_reengajamento.listar_todos():
-        escritor.writerow([
-            contato["email"], contato["nome"], contato["status"],
-            contato["criado_em"], contato["enviado_em"] or "", contato["erro"] or "",
-        ])
-    conteudo_bytes = buffer.getvalue().encode("utf-8-sig")
-    resposta = Response(conteudo_bytes, mimetype="text/csv")
-    resposta.headers["Content-Disposition"] = 'attachment; filename="campanha-contatos-antigos.csv"'
-    return resposta
-
-
-@app.route("/admin/campanha-antigos/marcar-nao-enviar", methods=["POST"])
-def admin_campanha_marcar_nao_enviar():
-    """Tira da fila, sem mandar nada, quem esta´ "pendente" mas e´
-    duplicata de alguem que ja´ recebeu por outro e-mail (mesma pessoa
-    cadastrada com e-mail diferente no Tiny e no Yampi, achado
-    cruzando por CPF fora do site -- o sistema aqui so compara e-mail,
-    nao teria como enxergar isso sozinho, ver conversa). So mexe em
-    quem ainda esta´ "pendente" -- nunca reverte um envio ja´ feito."""
-    if not _autenticacao_admin_valida(request.authorization):
-        return Response(
-            "Autenticação necessária.", 401, {"WWW-Authenticate": 'Basic realm="Painel de campanha"'}
-        )
-    emails = [linha.strip() for linha in str(request.form.get("emails", "")).splitlines() if linha.strip()]
-    quantidade = campanha_reengajamento.marcar_ignorado(emails)
-    return redirect(url_for("admin_campanha_antigos", nao_enviar_marcados=quantidade))
-
-
-_CAMPANHA_ENVIO_EM_ANDAMENTO = threading.Lock()
-_CAMPANHA_PAUSA_ENTRE_ENVIOS_SEGUNDOS = 0.3  # nao martelar a API da Brevo
-
-
-def _enviar_lote_campanha_em_segundo_plano(tamanho: int, url_site: str, url_avaliar: str) -> None:
-    """Roda numa thread separada (ver admin_campanha_enviar_lote abaixo) --
-    NUNCA dentro do request/response, senao trava o UNICO worker do
-    gunicorn (ver render.yaml: --workers 1, precisa continuar assim por
-    causa do scheduler e do rate limiter, ver comentario mais abaixo em
-    ENABLE_SCHEDULER) pelo tempo inteiro do lote. Um lote de varias
-    dezenas de e-mails passa facil dos --timeout 90 do gunicorn -- o
-    worker e´ MORTO no meio, derrubando o site pra todo mundo ate´
-    reiniciar (foi exatamente isso que aconteceu quando um lote de
-    ~200 rodou de forma sincrona e so 147 saíram antes do timeout, ver
-    conversa)."""
-    try:
-        for contato in campanha_reengajamento.listar_pendentes(tamanho):
-            resultado = enviar_reengajamento_contato_antigo(contato["email"], contato["nome"], url_site, url_avaliar)
-            campanha_reengajamento.marcar_enviado(contato["email"], erro=resultado.get("erro"))
-            time.sleep(_CAMPANHA_PAUSA_ENTRE_ENVIOS_SEGUNDOS)
-    finally:
-        _CAMPANHA_ENVIO_EM_ANDAMENTO.release()
-
-
-@app.route("/admin/campanha-antigos/enviar-lote", methods=["POST"])
-def admin_campanha_enviar_lote():
-    if not _autenticacao_admin_valida(request.authorization):
-        return Response(
-            "Autenticação necessária.", 401, {"WWW-Authenticate": 'Basic realm="Painel de campanha"'}
-        )
-    if not _CAMPANHA_ENVIO_EM_ANDAMENTO.acquire(blocking=False):
-        return redirect(url_for("admin_campanha_antigos", lote_ja_em_andamento="1"))
-
-    try:
-        tamanho = int(request.form.get("tamanho", "0"))
-    except ValueError:
-        tamanho = 0
-    tamanho = max(0, min(tamanho, _CAMPANHA_LOTE_MAXIMO))
-    if tamanho == 0:
-        _CAMPANHA_ENVIO_EM_ANDAMENTO.release()
-        return redirect(url_for("admin_campanha_antigos"))
-
-    url_site = url_for("index", _external=True)
-    url_avaliar = url_for("avaliar_geral", _external=True)
-    threading.Thread(
-        target=_enviar_lote_campanha_em_segundo_plano,
-        args=(tamanho, url_site, url_avaliar),
-        daemon=True,
-    ).start()
-    return redirect(url_for("admin_campanha_antigos", lote_iniciado=tamanho))
 
 
 @app.route("/sw.js", methods=["GET"])

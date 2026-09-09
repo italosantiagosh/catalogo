@@ -504,58 +504,6 @@ def _corpo_html_notificacao_venda(pedido: dict, url_admin: str) -> str:
     )
 
 
-def _corpo_html_reengajamento_contato_antigo(nome: str, url_site: str, url_avaliar: str) -> str:
-    primeiro_nome = _esc((nome or "").split(" ")[0]) if nome else ""
-    saudacao = f"Olá, {primeiro_nome}!" if primeiro_nome else "Olá!"
-    return (
-        f"<p>{saudacao} Aqui é a Nove de Julho. 😊</p>"
-        f"<p>Muita coisa mudou desde a última vez que você comprou com a gente -- "
-        f"reconstruímos tudo do zero e chegou um <strong>site novo</strong>, pensado pra deixar "
-        f"mais fácil o caminho até a medalha que você procura, seja pra completar uma coleção, "
-        f"escolher aquele presente especial, ou comprar em quantidade pra revender.</p>"
-        f"<p>No site novo, você:</p>"
-        f"<ul>"
-        f"<li>🔍 Encontra o santo de devoção em segundos, com foto de cada modelo</li>"
-        f"<li>✨ Cria sua peça personalizada e vê no simulador, quase real, como fica -- em "
-        f"medalha, chaveiro ou entremeio, de 1 ou 2 lados -- antes de decidir</li>"
-        f"<li>📋 Vê o preço de cada quantidade na hora, sem precisar pedir tabela</li>"
-        f"<li>📦 No atacado, o desconto entra sozinho conforme a quantidade sobe</li>"
-        f"<li>💳 Fecha o pedido no seu tempo, com Pix, cartão ou boleto</li>"
-        f"<li>🔎 Acompanha produção e envio pelo link, sem precisar perguntar</li>"
-        f"</ul>"
-        f"{_botao(url_site, '👉 Conhecer o site novo')}"
-        f"<p>E já que você é cliente da gente desde antes desse site existir, sua opinião vale "
-        f"muito. Você toparia contar como foi sua experiência com a peça que levou? Leva menos "
-        f"de 1 minuto: escolha o produto, dê uma nota de 1 a 5 estrelas e, se quiser, deixe um "
-        f"comentário ou foto.</p>"
-        f"{_botao(url_avaliar, '⭐ Deixar minha avaliação')}"
-        f"<p>Sua avaliação ajuda quem tá chegando agora a comprar com mais confiança -- é o "
-        f"empurrãozinho pra próxima pessoa encontrar a medalha certa, do jeito que você "
-        f"encontrou a sua.</p>"
-        f"<p>Obrigado por fazer parte dessa história desde antes. 🙏</p>"
-        f'<p style="font-size:12px;color:#8592a6;">Você recebeu este e-mail porque já comprou '
-        f"com a Nove de Julho antes. Se não quiser mais receber novidades da gente, é só "
-        f"responder este e-mail pedindo pra sair da lista.</p>"
-    )
-
-
-def enviar_reengajamento_contato_antigo(email_destino: str, nome: str, url_site: str, url_avaliar: str) -> dict:
-    """Convite pontual (disparo manual, uma unica vez) pra quem comprou
-    no sistema antigo (planilha exportada do Tiny) conhecer o site novo
-    e avaliar a compra que ja´ fez -- ver conversa "campanha pra
-    contatos antigos". NAO e´ e-mail transacional de pedido (nao tem
-    `pedido` associado), por isso o aviso de opt-out manual no rodape:
-    a API da Brevo usada aqui (smtp/email, transacional) nao tem
-    unsubscribe/List-Unsubscribe automatico como a API de campanhas
-    teria. Devolve {"ok": True} ou {"erro": "..."}."""
-    return _enviar(
-        email_cliente=email_destino,
-        nome_cliente=nome,
-        assunto="O site novo da Nove de Julho chegou -- e queremos sua opinião",
-        corpo_html=_corpo_html_reengajamento_contato_antigo(nome, url_site, url_avaliar),
-    )
-
-
 def enviar_notificacao_venda(pedido: dict, url_admin: str) -> dict:
     """Aviso interno pra loja quando uma venda e´ confirmada (ver
     app.py:webhook_infinitepay) -- vai pra EMAIL_NOTIFICACAO_VENDA

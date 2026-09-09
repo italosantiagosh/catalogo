@@ -215,35 +215,3 @@ def test_pedido_cancelado_oferece_3_jeitos_de_reaproveitar_o_pedido(monkeypatch)
     assert "ABC123" in corpo
 
 
-def test_reengajamento_contato_antigo_convida_e_pede_avaliacao(monkeypatch):
-    """ver conversa "campanha pra contatos antigos" -- disparo manual,
-    uma unica vez, pra planilha exportada do sistema antigo."""
-    monkeypatch.setattr(email, "BREVO_API_KEY", "segredo")
-    resposta_mock = Mock()
-    resposta_mock.raise_for_status = Mock()
-    with patch("services.email.requests.post", return_value=resposta_mock) as post_mock:
-        resultado = email.enviar_reengajamento_contato_antigo(
-            "maria@example.com",
-            "Maria Teste da Silva",
-            "https://site/catalogo",
-            "https://site/avaliar",
-        )
-
-    assert resultado == {"ok": True}
-    payload = post_mock.call_args.kwargs["json"]
-    assert payload["to"] == [{"email": "maria@example.com", "name": "Maria Teste da Silva"}]
-    corpo = payload["htmlContent"]
-    assert "Olá, Maria!" in corpo  # so o primeiro nome na saudacao
-    assert "https://site/catalogo" in corpo
-    assert "https://site/avaliar" in corpo
-    assert "sair da lista" in corpo  # aviso de opt-out manual (sem unsubscribe automatico da Brevo)
-
-
-def test_reengajamento_sem_nome_usa_saudacao_generica(monkeypatch):
-    monkeypatch.setattr(email, "BREVO_API_KEY", "segredo")
-    resposta_mock = Mock()
-    resposta_mock.raise_for_status = Mock()
-    with patch("services.email.requests.post", return_value=resposta_mock) as post_mock:
-        email.enviar_reengajamento_contato_antigo("sem-nome@example.com", "", "https://site/catalogo", "https://site/avaliar")
-    corpo = post_mock.call_args.kwargs["json"]["htmlContent"]
-    assert "Olá!" in corpo
