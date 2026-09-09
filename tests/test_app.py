@@ -68,7 +68,7 @@ def test_home_ordem_das_secoes(client):
     marcadores = [
         "vantagens", "Mais vendidos", "Quem faz a Nove de Julho", "Ano Jubilar",
         "Preço de atacado automático", "Novidades", "Kit Livraria Shalom",
-        "Preços e frete grátis podem mudar", "Não encontrou a imagem que procura",
+        "Preços e frete grátis podem mudar", "Peças personalizadas: envie sua foto",
         "Medalhas religiosas para casamentos",
     ]
     posicoes = [corpo.find(m) for m in marcadores]
@@ -128,7 +128,7 @@ def test_home_banners_usam_imagem_em_vez_de_texto(client):
     resposta = client.get("/").get_data(as_text=True)
     assert "img/banner-atacado.jpg" in resposta
     assert "img/banner-kit.jpg" in resposta
-    assert "img/banner-personalizada-destaque.jpg" in resposta
+    assert "img/banner-personalizada.jpg" in resposta
     assert "img/banner-uso-real.jpg" in resposta
 
 
