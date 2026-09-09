@@ -35,11 +35,11 @@
     </div>
   </section>
 
-  <div class="busca-wrap busca-wrap-home">
-    <input type="search" class="busca-home-input" placeholder="Qual santo você procura? (ex: José, Carlo, Fátima)" aria-label="Buscar santo ou devoção" autocomplete="off">
-    <div class="busca-resultados busca-home-resultados" hidden></div>
-  </div>
-  <p class="busca-home-legenda">Mais de 130 santos e devoções disponíveis.</p>
+  <a class="banner-uso-real" href="{{ url_for('catalogo_completo') }}">
+    <img src="{{ url_for('static', filename='img/banner-uso-real.jpg') }}" alt="Pequenas peças, grandes significados: medalhas para casamentos, paróquias, retiros, presentes, devoção pessoal e revenda." loading="lazy" decoding="async" width="900" height="329">
+  </a>
+
+  {{ render_destaque(destaque_mais_vendidos) }}
 
   <div class="vantagens">
     <div class="vantagem">
@@ -73,25 +73,6 @@
       <span>Emitimos nota fiscal para CNPJ ou CPF</span>
     </div>
   </div>
-
-  <a class="banner-uso-real" href="{{ url_for('catalogo_completo') }}">
-    <img src="{{ url_for('static', filename='img/banner-uso-real.jpg') }}" alt="Pequenas peças, grandes significados: medalhas para casamentos, paróquias, retiros, presentes, devoção pessoal e revenda." loading="lazy" decoding="async" width="900" height="329">
-  </a>
-
-  {{ render_destaque(destaque_mais_vendidos) }}
-
-  <section class="nossa-historia">
-    <h2>Quem faz a Nove de Julho</h2>
-    <p>
-      A Nove de Julho nasceu em 2020, pelas mãos de Ítalo, Consagrado da
-      Comunidade Católica Shalom, de uma dificuldade pessoal: achar medalhas
-      de santos menos conhecidos, como Santa Gianna e Edith Stein. Ele mesmo
-      aprendeu a produzir artesanalmente em aço inox resinado, pra evangelizar
-      pela beleza, devoção e tradição da Igreja. Hoje são milhares de peças
-      levando fé a batizados, casamentos, retiros e paróquias pelo Brasil.
-    </p>
-    <a href="{{ url_for('pagina_atendimento', slug='quem-somos') }}" class="botao-secundario">Conheça nossa história completa →</a>
-  </section>
 
   {{ render_destaque(destaque_ano_jubilar) }}
 
@@ -161,6 +142,19 @@
       </div>
     </section>
   {% endif %}
+
+  <section class="nossa-historia">
+    <h2>Quem faz a Nove de Julho</h2>
+    <p>
+      A Nove de Julho nasceu em 2020, pelas mãos de Ítalo, Consagrado da
+      Comunidade Católica Shalom, de uma dificuldade pessoal: achar medalhas
+      de santos menos conhecidos, como Santa Gianna e Edith Stein. Ele mesmo
+      aprendeu a produzir artesanalmente em aço inox resinado, pra evangelizar
+      pela beleza, devoção e tradição da Igreja. Hoje são milhares de peças
+      levando fé a batizados, casamentos, retiros e paróquias pelo Brasil.
+    </p>
+    <a href="{{ url_for('pagina_atendimento', slug='quem-somos') }}" class="botao-secundario">Conheça nossa história completa →</a>
+  </section>
 
 {% endblock %}
 
