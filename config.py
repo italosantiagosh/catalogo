@@ -467,7 +467,10 @@ DESTAQUES_HOME = [
         # aparece pro usuario, so o "titulo" abaixo.
         "chave": "mais_vendidos",
         "titulo": "🔥 Mais vendidos",
-        "produtos": ["sao-jose", "santa-teresinha", "carlo-acutis", "sagrada-familia", "sao-joao-paulo-ii"],
+        "produtos": [
+            "sao-jose", "santa-teresinha", "carlo-acutis", "sagrada-familia", "sao-joao-paulo-ii",
+            "sao-jorge", "nossa-senhora-de-fatima", "santo-antonio",
+        ],
     },
     {
         "chave": "ano_jubilar",
@@ -488,6 +491,9 @@ DESTAQUES_HOME = [
             "sao-pier-giorgio-frassati",
             "beata-sandra-sabatine",
             "filho-prodigo-acamps",
+            "santa-bakhita",
+            "chiara-luce",
+            "sao-jose-moscatti",
         ],
     },
 ]

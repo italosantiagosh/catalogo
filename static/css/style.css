@@ -1991,6 +1991,26 @@ body.tem-barra-fixa-comprar main {
   color: #6b4a12;
 }
 
+/* sangria no mobile pros 3 banners novos (hero/atacado/uso-real) --
+   o texto vem desenhado dentro da imagem (ver conversa), entao ganhar
+   os ~32px do padding lateral do <main> aumenta o texto de verdade em
+   vez de so a moldura. Sem sangria no desktop -- ali a imagem ja fica
+   bem grande dentro do max-width de 960px do <main>. */
+@media (max-width: 640px) {
+  .hero-banner-wrap,
+  .banner-atacado,
+  .banner-uso-real {
+    margin-left: -16px;
+    margin-right: -16px;
+    width: calc(100% + 32px);
+    border-radius: 0;
+  }
+
+  .hero-banner {
+    border-radius: 0;
+  }
+}
+
 .nossa-historia {
   max-width: 68ch;
   margin: 0 0 20px;
