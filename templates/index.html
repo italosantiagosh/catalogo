@@ -110,6 +110,10 @@
     Garanta as condições de hoje.
   </div>
 
+  <a class="banner-personalizada" href="{{ url_for('personalizada') }}">
+    <img src="{{ url_for('static', filename='img/banner-personalizada.jpg') }}" alt="Peças personalizadas: envie sua foto e veja a simulação antes de pedir" loading="lazy" decoding="async" width="900" height="300">
+  </a>
+
   <div class="busca-wrap busca-wrap-home">
     <input type="search" class="busca-home-input" placeholder="Qual santo você procura? (ex: José, Carlo, Fátima)" aria-label="Buscar santo ou devoção" autocomplete="off">
     <div class="busca-resultados busca-home-resultados" hidden></div>
@@ -155,10 +159,6 @@
       </div>
     </section>
   {% endif %}
-
-  <a class="banner-personalizada" href="{{ url_for('personalizada') }}">
-    <img src="{{ url_for('static', filename='img/banner-personalizada.jpg') }}" alt="Peças personalizadas: envie sua foto e veja a simulação antes de pedir" loading="lazy" decoding="async" width="900" height="300">
-  </a>
 
   <a class="banner-uso-real" href="{{ url_for('catalogo_completo') }}">
     <img src="{{ url_for('static', filename='img/banner-uso-real.jpg') }}" alt="Medalhas religiosas para casamentos, retiros, paróquias e presentes -- pequenas peças, grandes significados." loading="lazy" decoding="async" width="900" height="333">
