@@ -1,10 +1,11 @@
 {% extends "base.html" %}
 
-{% macro render_destaque(grupo) %}
+{% macro render_destaque(grupo, subtitulo=None) %}
   {% if grupo %}
     <section class="destaques">
       <div class="destaques-grupo">
         <h2 class="destaques-titulo">{{ grupo.titulo }}</h2>
+        {% if subtitulo %}<p class="destaques-subtitulo">{{ subtitulo }}</p>{% endif %}
         <div class="destaques-linha">
           {% for produto in grupo.produtos %}
             <a class="destaque-card" href="{{ produto.personalizada_url or url_for('produto', produto_id=produto.id) }}">
@@ -26,7 +27,7 @@
         class="hero-banner"
         src="{{ url_for('static', filename='img/banner-hero.jpg') }}"
         alt="Nove de Julho — Medalhas que carregam histórias de fé. Mais de 130 santos e devoções, peças personalizadas e preço especial pra quem compra em quantidade. Encontre sua devoção ou crie a sua própria peça."
-        width="900" height="338" fetchpriority="high"
+        width="900" height="374" fetchpriority="high"
       >
       <a class="hero-banner-area hero-banner-area-1" href="{{ url_for('catalogo_completo') }}" aria-label="Explorar catálogo"></a>
       <a class="hero-banner-area hero-banner-area-2" href="{{ url_for('personalizada') }}" aria-label="Criar personalizada"></a>
@@ -95,7 +96,7 @@
   {{ render_destaque(destaque_ano_jubilar) }}
 
   <button type="button" class="banner-atacado" onclick="abrirTabelaDesconto()">
-    <img src="{{ url_for('static', filename='img/banner-atacado.jpg') }}" alt="Preço de atacado automático: quanto mais medalhas e entremeios você adicionar ao carrinho — de qualquer santo, inclusive personalizada — menor o preço por unidade. Chaveiros têm tabela de atacado própria. O desconto é aplicado sozinho, sem cupom, assim que você adiciona os itens. Toque pra ver a tabela completa." loading="lazy" decoding="async" width="900" height="338">
+    <img src="{{ url_for('static', filename='img/banner-atacado.jpg') }}" alt="Preço de atacado automático: quanto mais medalhas e entremeios você adicionar ao carrinho — de qualquer santo, inclusive personalizada — menor o preço por unidade. Chaveiros têm tabela de atacado própria. O desconto é aplicado sozinho, sem cupom, assim que você adiciona os itens. Toque pra ver a tabela completa." loading="lazy" decoding="async" width="900" height="211">
   </button>
 
   {{ render_destaque(destaque_novidades) }}
@@ -124,6 +125,8 @@
       <a href="{{ url_for('categoria', slug=categoria.slug) }}" class="chip-categoria">{{ categoria.nome }}</a>
     {% endfor %}
   </div>
+
+  {{ render_destaque(destaque_personalizados, subtitulo="Não encontrou o santo ou a devoção que procurava? Envie sua foto e crie uma peça só sua.") }}
 
   {% if procurados %}
     <section class="destaques">

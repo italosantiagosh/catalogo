@@ -1019,12 +1019,21 @@ def index():
     destaques_por_chave = {d["chave"]: d for d in destaques if d.get("chave")}
     procurados = [itens_por_id[pid] for pid in PROCURADOS_HOME if pid in itens_por_id]
     categorias = categorias_com_slug(produtos)
+    # "Ultima chance" antes da grade generica de santos, pra quem rolou a
+    # home inteira e ainda nao achou o que queria (ver conversa) -- reusa
+    # _itens_personalizados_do_grid, que ja tem o formato certo
+    # (personalizada_url) pro render_destaque da home.
+    destaque_personalizados = {
+        "titulo": "🎨 Não achou? Crie a sua peça personalizada",
+        "produtos": _itens_personalizados_do_grid(),
+    }
     return render_template(
         "index.html",
         preco_varejo=preco_varejo(),
         destaque_mais_vendidos=destaques_por_chave.get("mais_vendidos"),
         destaque_ano_jubilar=destaques_por_chave.get("ano_jubilar"),
         destaque_novidades=destaques_por_chave.get("novidades"),
+        destaque_personalizados=destaque_personalizados,
         procurados=procurados,
         categorias=categorias,
     )

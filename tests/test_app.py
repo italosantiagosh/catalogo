@@ -70,6 +70,7 @@ def test_home_ordem_das_secoes(client):
         "Quem faz a Nove de Julho", "Ano Jubilar",
         "Preço de atacado automático", "Novidades", "Kit Livraria Shalom",
         "Preços e frete grátis podem mudar", "Peças personalizadas: envie sua foto",
+        "Não achou? Crie a sua peça personalizada",
     ]
     posicoes = [corpo.find(m) for m in marcadores]
     assert all(p != -1 for p in posicoes), "algum marcador da home não foi encontrado"
