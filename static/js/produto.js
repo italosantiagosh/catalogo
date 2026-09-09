@@ -13,6 +13,7 @@
   const btnAdicionar = document.getElementById('btn-adicionar');
   const barraFixa = document.getElementById('barra-fixa-comprar');
   const barraFixaPreco = document.getElementById('barra-fixa-preco');
+  const barraFixaDetalhe = document.getElementById('barra-fixa-detalhe');
   const barraFixaBtn = document.getElementById('barra-fixa-btn-adicionar');
   const previewPrecoEl = document.getElementById('preview-preco');
   if (!grid || !painel) return;
@@ -62,6 +63,7 @@
     const resolvido = resolverChavePreco();
     if (!resolvido) {
       previewPrecoEl.hidden = true;
+      if (barraFixaDetalhe) barraFixaDetalhe.hidden = true;
       return;
     }
     const quantidade = Math.max(1, parseInt(quantidadeInput.value, 10) || 1);
@@ -98,8 +100,29 @@
       }
       previewPrecoEl.innerHTML = html;
       previewPrecoEl.hidden = false;
+
+      // resumo persistente da barra fixa (aparece ao rolar a pagina) --
+      // mesmos numeros do preview acima, so que continuam visiveis
+      // mesmo depois que o preview sai da tela (ver conversa: "painel
+      // de compra fixo" pedido pela auditoria da Manus).
+      if (barraFixaDetalhe) {
+        const COR_LABEL = { prata: 'Prata', ouro_velho: 'Ouro velho' };
+        const variacao = resolvido.subAttr
+          ? (COR_LABEL[resolvido.subAttr] || resolvido.subAttr)
+          : '';
+        // versao curta de proposito -- pouco espaco na barra fixa
+        // (compartilhado com nome do produto + botao), preco unitario
+        // ja aparece destacado no preview logo acima na pagina.
+        barraFixaDetalhe.textContent =
+          `${variacao ? variacao + ' · ' : ''}${quantidade} un · ${formatarPreco(itemPreview.subtotal)}`;
+        barraFixaDetalhe.hidden = false;
+        // esconde o "a partir de RX" generico -- ficaria redundante com
+        // o preco de verdade que acabou de aparecer logo abaixo.
+        if (barraFixaPreco) barraFixaPreco.hidden = true;
+      }
     } catch (e) {
       previewPrecoEl.hidden = true;
+      if (barraFixaDetalhe) barraFixaDetalhe.hidden = true;
     }
   }
 
@@ -183,6 +206,10 @@
     if (barraFixaPreco) {
       const preco = formato === 'chaveiro' ? window.PRECO_VAREJO_CHAVEIRO : window.PRECO_VAREJO_PADRAO;
       barraFixaPreco.textContent = `a partir de ${formatarPrecoLocal(preco)}`;
+      // sempre reaparece aqui -- atualizarPreviewPreco (chamada logo em
+      // seguida) esconde de novo se conseguir calcular o preco real,
+      // senao fica esse generico visivel mesmo.
+      barraFixaPreco.hidden = false;
     }
   }
 

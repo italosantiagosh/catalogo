@@ -1751,6 +1751,12 @@ body.tem-barra-fixa-comprar main {
   color: var(--muted);
 }
 
+#barra-fixa-detalhe {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 .barra-fixa-comprar .botao-carrinho {
   flex: 0 0 auto;
   width: auto;
