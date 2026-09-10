@@ -152,6 +152,7 @@ from services.pedidos import (
     contagem_pedidos_por_status,
     criar_pedido,
     desarquivar_pedido,
+    editar_item_formato,
     editar_valor,
     email_para_documento,
     estatisticas_hoje,
@@ -3234,6 +3235,76 @@ def admin_pedido_editar_valor(token: str):
             abort(400, description="Valor pago não pode ser negativo.")
 
     editar_valor(token, subtotal=subtotal, frete_preco=frete_preco, valor_pago=valor_pago)
+    return redirect(url_for("admin_pedido_detalhe", token=token))
+
+
+# Formatos editaveis pelo painel (ver admin_pedido_editar_item_formato) --
+# mesmos 6 formatos de sempre (_FORMATO_LABEL acima), sem as variantes
+# "personalizada" (essas ja chegam com chave_preco certa desde a
+# criacao, via /personalizada -- esse conserto e´ so pro item digitado a
+# mao no "Pedido manual", ver admin_pedido_criar_manual).
+_FORMATOS_ITEM_MANUAL = ("medalha", "entremeio", "chaveiro", "medalha_2lados", "entremeio_2lados", "chaveiro_2lados")
+
+
+@app.route("/admin/pedidos/<token>/itens/<int:indice>/editar-formato", methods=["POST"])
+def admin_pedido_editar_item_formato(token: str, indice: int):
+    """Corrige formato/tamanho/cor (e por tabela, chave_preco) de um
+    item -- pensado pro item do "Pedido manual" (ver
+    admin_pedido_criar_manual), que salva chave_preco="" por nao ter
+    como saber o material de verdade so com o texto digitado a mao.
+    Sem chave_preco valida, a Tiny recebe codigo/descricao em branco
+    pro produto (ver services/tiny.py:_chave_material -- so reconhece
+    as chaves de services/pricing.py:CHAVES_PRECO) e a sincronizacao
+    (admin_pedido_reenviar_tiny) nao manda o produto de verdade. Aqui o
+    admin escolhe o formato certo, do mesmo jeito que o carrinho do
+    site monta um item de catalogo -- nao mexe em quantidade nem no
+    valor cobrado do cliente."""
+    if not _autenticacao_admin_valida(request.authorization):
+        return Response(
+            "Autenticação necessária.", 401, {"WWW-Authenticate": 'Basic realm="Painel de pedidos"'}
+        )
+    pedido = obter_pedido(token)
+    if pedido is None or not (0 <= indice < len(pedido["itens"])):
+        abort(404)
+    if pedido["status"] in ("cancelado", "excluido"):
+        abort(400, description="Esse pedido não pode ter itens corrigidos por aqui.")
+
+    produto_nome = str(request.form.get("produto_nome", "")).strip()
+    formato = str(request.form.get("formato", ""))
+    tamanho = str(request.form.get("tamanho", ""))
+    cor = str(request.form.get("cor", ""))
+    if formato not in _FORMATOS_ITEM_MANUAL:
+        abort(400, description="Escolha um formato válido.")
+
+    if formato == "medalha":
+        if tamanho not in ("12mm", "16mm"):
+            abort(400, description="Escolha o tamanho da medalha.")
+        chave_preco = tamanho
+        cor = ""
+    elif formato == "medalha_2lados":
+        if tamanho not in ("14mm", "18mm") or cor not in ("prata", "ouro_velho"):
+            abort(400, description="Escolha o tamanho e a cor da medalha de 2 lados.")
+        chave_preco = formato
+    elif formato in ("entremeio", "entremeio_2lados"):
+        if cor not in ("prata", "ouro_velho"):
+            abort(400, description="Escolha a cor do entremeio.")
+        chave_preco = formato
+        tamanho = ""
+    else:  # chaveiro / chaveiro_2lados -- sem tamanho nem cor
+        chave_preco = formato
+        tamanho = ""
+        cor = ""
+
+    item = dict(pedido["itens"][indice])
+    item.update({
+        "produtoNome": produto_nome, "modeloNome": "", "formato": formato,
+        "tamanho": tamanho, "cor": cor, "chave_preco": chave_preco,
+    })
+    detalhe = _detalhe_formato_do_item(item)
+    item["detalhe"] = detalhe
+    item["descricao"] = " — ".join(p for p in (produto_nome, detalhe) if p) or detalhe
+
+    editar_item_formato(token, indice, item=item)
     return redirect(url_for("admin_pedido_detalhe", token=token))
 
 

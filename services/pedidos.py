@@ -1063,6 +1063,26 @@ def confirmar_venda_manual(
     return obter_pedido(token)
 
 
+def editar_item_formato(token: str, indice: int, *, item: dict) -> dict | None:
+    """Substitui o item no `indice` pelo dict `item` ja pronto (ver
+    app.py:admin_pedido_editar_item_formato) -- usado pra corrigir um
+    item criado pelo "Pedido manual" (ver admin_pedido_criar_manual),
+    que salva chave_preco="" por nao saber o material de verdade digitado
+    a mao. Sem chave_preco valida (ver services/pricing.py:CHAVES_PRECO),
+    a Tiny recebe codigo/descricao em branco pro produto (ver
+    services/tiny.py:_chave_material) e a venda nao sincroniza direito.
+    So mexe no item indicado -- quantidade/valor_unitario continuam os
+    mesmos, o preco ja cobrado do cliente nao muda."""
+    pedido = obter_pedido(token)
+    if pedido is None or not (0 <= indice < len(pedido["itens"])):
+        return None
+    itens = pedido["itens"]
+    itens[indice] = item
+    with _conexao() as conexao:
+        conexao.execute("UPDATE pedidos SET itens = ? WHERE token = ?", (json.dumps(itens), token))
+    return obter_pedido(token)
+
+
 def editar_valor(
     token: str, *, subtotal: float, frete_preco: float, valor_pago: float | None
 ) -> dict | None:

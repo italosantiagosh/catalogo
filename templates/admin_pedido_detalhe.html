@@ -55,6 +55,13 @@
     .tipo-pessoa input { width: auto; }
     .campo-erro { color: #a13a2a; font-size: 0.78rem; margin: 4px 0 0; }
     .campo-ie { margin-top: 4px; }
+    .editar-item { margin-top: 6px; }
+    .editar-item summary { font-size: 0.78rem; color: #14335c; cursor: pointer; }
+    .editar-item form { border: 1px solid #eef1f5; border-radius: 8px; padding: 10px; margin-top: 6px; }
+    .editar-item button { margin-top: 10px; padding: 8px 14px; font-size: 0.82rem; }
+    .editar-item label { margin: 8px 0 4px; }
+    .campo-formato-tamanho, .campo-formato-cor { display: none; }
+    .campo-formato-tamanho.ativo, .campo-formato-cor.ativo { display: block; }
   </style>
 </head>
 <body>
@@ -95,6 +102,46 @@
           {% elif item.imagemRecorte %}
             <br>
             <a href="{{ item.imagemRecorte }}" download="personalizada_modelo_{{ item.numeroModeloPersonalizada }}.png">⬇ Baixar imagem 1:1</a>
+          {% endif %}
+          {% if pedido.status not in ('cancelado', 'excluido') and not item.duasFaces and not item.imagemRecorte %}
+            <details class="editar-item">
+              <summary>{{ "⚠️ corrigir formato (pra sincronizar com a Tiny)" if not item.chave_preco else "✏️ corrigir formato" }}</summary>
+              <form method="post" action="{{ url_for('admin_pedido_editar_item_formato', token=pedido.token, indice=loop.index0) }}">
+                <label for="produto_nome-{{ loop.index0 }}">Nome do produto</label>
+                <input type="text" id="produto_nome-{{ loop.index0 }}" name="produto_nome" value="{{ item.produtoNome }}">
+
+                <label for="formato-{{ loop.index0 }}">Formato</label>
+                <select id="formato-{{ loop.index0 }}" name="formato" class="select-formato" data-indice="{{ loop.index0 }}">
+                  <option value="">Selecione…</option>
+                  <option value="medalha" {{ "selected" if item.formato == "medalha" }}>Medalha</option>
+                  <option value="entremeio" {{ "selected" if item.formato == "entremeio" }}>Entremeio</option>
+                  <option value="chaveiro" {{ "selected" if item.formato == "chaveiro" }}>Chaveiro</option>
+                  <option value="medalha_2lados" {{ "selected" if item.formato == "medalha_2lados" }}>Medalha de 2 lados</option>
+                  <option value="entremeio_2lados" {{ "selected" if item.formato == "entremeio_2lados" }}>Entremeio de 2 lados</option>
+                  <option value="chaveiro_2lados" {{ "selected" if item.formato == "chaveiro_2lados" }}>Chaveiro de 2 lados</option>
+                </select>
+
+                <div class="campo-formato-tamanho" data-para="{{ loop.index0 }}">
+                  <label for="tamanho-{{ loop.index0 }}">Tamanho</label>
+                  <select id="tamanho-{{ loop.index0 }}" name="tamanho">
+                    <option value="12mm" {{ "selected" if item.tamanho == "12mm" }}>1,2 cm</option>
+                    <option value="16mm" {{ "selected" if item.tamanho == "16mm" }}>1,6 cm</option>
+                    <option value="14mm" {{ "selected" if item.tamanho == "14mm" }}>1,4 cm</option>
+                    <option value="18mm" {{ "selected" if item.tamanho == "18mm" }}>1,8 cm</option>
+                  </select>
+                </div>
+
+                <div class="campo-formato-cor" data-para="{{ loop.index0 }}">
+                  <label for="cor-{{ loop.index0 }}">Cor</label>
+                  <select id="cor-{{ loop.index0 }}" name="cor">
+                    <option value="prata" {{ "selected" if item.cor == "prata" }}>Prata</option>
+                    <option value="ouro_velho" {{ "selected" if item.cor == "ouro_velho" }}>Ouro velho</option>
+                  </select>
+                </div>
+
+                <button type="submit">Salvar formato</button>
+              </form>
+            </details>
           {% endif %}
         </li>
       {% endfor %}
@@ -872,6 +919,25 @@
       </form>
     </div>
   {% endif %}
+
+  <script>
+    // ---- mostra tamanho/cor certos conforme o formato escolhido no
+    // "corrigir formato" de cada item (ver admin_pedido_editar_item_formato) ----
+    function atualizarCamposFormato(select) {
+      const indice = select.dataset.indice;
+      const formato = select.value;
+      const camposTamanho = { medalha: true, medalha_2lados: true };
+      const camposCor = { entremeio: true, entremeio_2lados: true, medalha_2lados: true };
+      const tamanhoWrap = document.querySelector('.campo-formato-tamanho[data-para="' + indice + '"]');
+      const corWrap = document.querySelector('.campo-formato-cor[data-para="' + indice + '"]');
+      if (tamanhoWrap) tamanhoWrap.classList.toggle('ativo', !!camposTamanho[formato]);
+      if (corWrap) corWrap.classList.toggle('ativo', !!camposCor[formato]);
+    }
+    document.querySelectorAll('.select-formato').forEach((select) => {
+      atualizarCamposFormato(select);
+      select.addEventListener('change', () => atualizarCamposFormato(select));
+    });
+  </script>
 
   {% if request.args.get('tiny_erro') %}
     <script>

@@ -189,6 +189,95 @@ def test_fluxo_completo_ate_confirmar_venda(client, monkeypatch):
     assert pedido["total"] == 28.0
 
 
+def test_editar_formato_do_item_corrige_chave_preco_pra_tiny(client, monkeypatch):
+    """ver conversa: item do pedido manual entra com chave_preco=""
+    (ninguem digita isso na mao), e sem uma chave valida de
+    services/pricing.py:CHAVES_PRECO a Tiny recebe codigo/descricao em
+    branco pro produto (ver services/tiny.py:_chave_material). Aqui o
+    admin escolhe o formato/tamanho de verdade e a chave passa a bater
+    com o que o carrinho normal do site geraria."""
+    _preparar_admin(monkeypatch)
+    criado = client.post(
+        "/admin/pedidos/novo-manual",
+        data={"descricao": ["Medalha São José"], "quantidade": ["4"], "valor_unitario": ["7,00"]},
+        auth=("admin", "segredo123"),
+    )
+    token = criado.headers["Location"].rsplit("/", 1)[-1]
+    pedido = pedidos.obter_pedido(token)
+    assert pedido["itens"][0]["chave_preco"] == ""
+
+    resposta = client.post(
+        f"/admin/pedidos/{token}/itens/0/editar-formato",
+        data={"produto_nome": "São José", "formato": "medalha", "tamanho": "12mm"},
+        auth=("admin", "segredo123"),
+    )
+    assert resposta.status_code == 302
+    pedido = pedidos.obter_pedido(token)
+    item = pedido["itens"][0]
+    assert item["chave_preco"] == "12mm"
+    assert item["formato"] == "medalha"
+    assert item["produtoNome"] == "São José"
+    assert "1,2 cm" in item["detalhe"]
+
+
+def test_editar_formato_entremeio_exige_cor(client, monkeypatch):
+    _preparar_admin(monkeypatch)
+    criado = client.post(
+        "/admin/pedidos/novo-manual",
+        data={"descricao": ["Entremeio Santa Rita"], "quantidade": ["1"], "valor_unitario": ["5,00"]},
+        auth=("admin", "segredo123"),
+    )
+    token = criado.headers["Location"].rsplit("/", 1)[-1]
+
+    sem_cor = client.post(
+        f"/admin/pedidos/{token}/itens/0/editar-formato",
+        data={"produto_nome": "Santa Rita", "formato": "entremeio"},
+        auth=("admin", "segredo123"),
+    )
+    assert sem_cor.status_code == 400
+
+    com_cor = client.post(
+        f"/admin/pedidos/{token}/itens/0/editar-formato",
+        data={"produto_nome": "Santa Rita", "formato": "entremeio", "cor": "ouro_velho"},
+        auth=("admin", "segredo123"),
+    )
+    assert com_cor.status_code == 302
+    item = pedidos.obter_pedido(token)["itens"][0]
+    assert item["chave_preco"] == "entremeio"
+    assert item["cor"] == "ouro_velho"
+
+
+def test_editar_formato_indice_invalido_404(client, monkeypatch):
+    _preparar_admin(monkeypatch)
+    criado = client.post(
+        "/admin/pedidos/novo-manual",
+        data={"descricao": ["Item"], "quantidade": ["1"], "valor_unitario": ["5,00"]},
+        auth=("admin", "segredo123"),
+    )
+    token = criado.headers["Location"].rsplit("/", 1)[-1]
+    resposta = client.post(
+        f"/admin/pedidos/{token}/itens/9/editar-formato",
+        data={"produto_nome": "X", "formato": "chaveiro"},
+        auth=("admin", "segredo123"),
+    )
+    assert resposta.status_code == 404
+
+
+def test_editar_formato_exige_autenticacao(client, monkeypatch):
+    _preparar_admin(monkeypatch)
+    criado = client.post(
+        "/admin/pedidos/novo-manual",
+        data={"descricao": ["Item"], "quantidade": ["1"], "valor_unitario": ["5,00"]},
+        auth=("admin", "segredo123"),
+    )
+    token = criado.headers["Location"].rsplit("/", 1)[-1]
+    resposta = client.post(
+        f"/admin/pedidos/{token}/itens/0/editar-formato",
+        data={"produto_nome": "X", "formato": "chaveiro"},
+    )
+    assert resposta.status_code == 401
+
+
 def test_item_manual_aparece_no_csv_de_producao(client, monkeypatch):
     """ver conversa: item manual nao tem produtoNome vindo do catalogo,
     precisa cair no CSV mesmo assim usando a descricao digitada."""
