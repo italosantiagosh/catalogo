@@ -1263,6 +1263,45 @@ def test_pagina_de_pedido_retirada_nao_mostra_aviso_de_transportadora(client, mo
     assert "🏬 Pronto para retirada" in corpo_html
 
 
+def test_pagina_de_pedido_mostra_aviso_de_mini_envios(client, monkeypatch):
+    """ver conversa: Mini Envios nao tem rastreamento detalhado (so
+    "postado" e depois "saiu pra entrega"), avisa isso na pagina de
+    acompanhamento pra ninguem achar que o pedido travou."""
+    import app as app_module
+
+    monkeypatch.setattr(app_module, "ADMIN_USER", "admin")
+    monkeypatch.setattr(app_module, "ADMIN_PASSWORD", "segredo123")
+    corpo = _corpo_valido(frete={"texto": "Correios Mini Envios — R$ 8,00", "preco": 8.0, "prazo_dias": 12})
+    with patch("app.criar_link_pagamento", return_value={"url": "https://checkout.infinitepay.io/abc"}):
+        criado = client.post("/api/pedido/criar", json=corpo).get_json()
+    client.post(
+        "/webhook/infinitepay",
+        json={"order_nsu": criado["token"], "paid_amount": 6000, "capture_method": "pix"},
+    )
+    client.post(f"/admin/pedidos/{criado['token']}/status", data={"status": "enviado"}, auth=("admin", "segredo123"))
+
+    corpo_html = client.get(f"/pedido/{criado['token']}").get_data(as_text=True)
+    assert "não tem rastreamento detalhado" in corpo_html
+
+
+def test_pagina_de_pedido_sem_mini_envios_nao_mostra_aviso(client, monkeypatch):
+    import app as app_module
+
+    monkeypatch.setattr(app_module, "ADMIN_USER", "admin")
+    monkeypatch.setattr(app_module, "ADMIN_PASSWORD", "segredo123")
+    corpo = _corpo_valido(frete={"texto": "Correios PAC — R$ 10,00", "preco": 10.0, "prazo_dias": 7})
+    with patch("app.criar_link_pagamento", return_value={"url": "https://checkout.infinitepay.io/abc"}):
+        criado = client.post("/api/pedido/criar", json=corpo).get_json()
+    client.post(
+        "/webhook/infinitepay",
+        json={"order_nsu": criado["token"], "paid_amount": 6000, "capture_method": "pix"},
+    )
+    client.post(f"/admin/pedidos/{criado['token']}/status", data={"status": "enviado"}, auth=("admin", "segredo123"))
+
+    corpo_html = client.get(f"/pedido/{criado['token']}").get_data(as_text=True)
+    assert "não tem rastreamento detalhado" not in corpo_html
+
+
 def test_webhook_e_idempotente_nao_reprocessa(client):
     with patch("app.criar_link_pagamento", return_value={"url": "https://checkout.infinitepay.io/abc"}):
         criado = client.post("/api/pedido/criar", json=_corpo_valido()).get_json()

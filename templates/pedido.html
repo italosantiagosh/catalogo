@@ -129,6 +129,12 @@
         ℹ️ Prazo estimado pela transportadora — imprevistos (trânsito, feriados, clima) podem mudar essa data.
       </p>
     {% endif %}
+    {% if 'Mini Envios' in pedido.frete_descricao %}
+      <p class="pedido-aviso-transportadora">
+        ⚠️ Esse envio é pelo Mini Envios, que não tem rastreamento detalhado — o código só mostra
+        "postado" e atualiza de novo quando sair pra entrega. Não é sinal de que o pedido parou.
+      </p>
+    {% endif %}
   {% elif pedido.status == 'entregue' %}
     {% if pedido.frete_descricao == 'Retirada no local' %}
       <p class="pedido-status pedido-status-entregue">🎉 Pedido retirado</p>

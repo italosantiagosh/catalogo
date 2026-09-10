@@ -123,21 +123,46 @@ def _preco_str_para_float(valor) -> float:
         return 0.0
 
 
-# Margem de 1 dia util somada em CIMA do prazo que a Frenet/Melhor Envio
+def _normalizar_nome(nome: str) -> str:
+    return re.sub(r"[^a-z0-9]", "", (nome or "").lower())
+
+
+# Margem de dias uteis somada em CIMA do prazo que a Frenet/Melhor Envio
 # cotam -- pedido do usuario 2026-09: na pratica a encomenda as vezes so
 # e´ efetivamente encaminhada pela transportadora no dia UTIL SEGUINTE
 # ao da postagem (nao no mesmo dia), entao o prazo cotado pela API
-# ficava sistematicamente 1 dia mais otimista do que a entrega real.
-# Aplicado no ponto em que cada cotacao bruta e´ lida (Frenet e Melhor
-# Envio, os dois abaixo) pra valer em toda transportadora, sem duplicar
-# a logica em quem consome "prazo_dias" depois (frete gratis, desconto
-# atacado, previsao de entrega do pedido).
-MARGEM_DIAS_UTEIS_EXTRA = 1
+# ficava sistematicamente mais otimista do que a entrega real. Ajuste
+# por transportadora (pedido do usuario 2026-09-10, depois de acompanhar
+# a entrega real de cada uma por um tempo): Azul Express e LATAM Cargo
+# mantem a margem original de 1 dia; Correios ganha mais 1 (fica em 2,
+# o mais atrasado na pratica); as demais (J&T Express, Jadlog, etc. --
+# "o restante") voltam a usar o prazo cru da API, sem margem nenhuma.
+# Chave e um trecho do nome ja normalizado, mesmo criterio de
+# TRANSPORTADORAS_MELHOR_ENVIO abaixo -- serve tanto pro nome cru da
+# Frenet ("Carrier") quanto da Melhor Envio ("company.name").
+MARGEM_DIAS_UTEIS_POR_TRANSPORTADORA = {
+    "azul": 1,
+    "latam": 1,
+    "correios": 2,
+}
+MARGEM_DIAS_UTEIS_PADRAO = 0
 
 
-def _prazo_dias_com_margem(bruto) -> int | None:
+def _margem_dias_uteis(nome_transportadora: str) -> int:
+    nome_normalizado = _normalizar_nome(nome_transportadora)
+    return next(
+        (
+            margem
+            for chave, margem in MARGEM_DIAS_UTEIS_POR_TRANSPORTADORA.items()
+            if chave in nome_normalizado
+        ),
+        MARGEM_DIAS_UTEIS_PADRAO,
+    )
+
+
+def _prazo_dias_com_margem(bruto, nome_transportadora: str) -> int | None:
     try:
-        return int(bruto) + MARGEM_DIAS_UTEIS_EXTRA
+        return int(bruto) + _margem_dias_uteis(nome_transportadora)
     except (TypeError, ValueError):
         return None
 
@@ -209,7 +234,7 @@ def consultar_frenet(cep_destino: str, peso_kg: float, subtotal: float) -> dict:
                 "transportadora": servico.get("Carrier", ""),
                 "servico": servico.get("ServiceDescription", ""),
                 "preco": preco,
-                "prazo_dias": _prazo_dias_com_margem(servico.get("DeliveryTime")),
+                "prazo_dias": _prazo_dias_com_margem(servico.get("DeliveryTime"), servico.get("Carrier", "")),
             }
         )
 
@@ -221,10 +246,6 @@ def consultar_frenet(cep_destino: str, peso_kg: float, subtotal: float) -> dict:
             "Fale com a gente pelo WhatsApp enviando seu carrinho para consultar o valor."
         )
     return resultado
-
-
-def _normalizar_nome(nome: str) -> str:
-    return re.sub(r"[^a-z0-9]", "", (nome or "").lower())
 
 
 # Transportadoras cotadas no Melhor Envio -- chave e um trecho do nome
@@ -313,7 +334,7 @@ def consultar_melhor_envio(cep_destino: str, peso_kg: float, subtotal: float) ->
                 "transportadora": nome_transportadora,
                 "servico": servico.get("name", ""),
                 "preco": round(preco, 2),
-                "prazo_dias": _prazo_dias_com_margem(servico.get("delivery_time")),
+                "prazo_dias": _prazo_dias_com_margem(servico.get("delivery_time"), nome_transportadora),
             }
         )
     return opcoes

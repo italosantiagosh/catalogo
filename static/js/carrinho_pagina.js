@@ -708,6 +708,17 @@
     return ` — com a produção, prazo de entrega dia ${formatarDataCurta(dataEntrega)}`;
   }
 
+  // "Mini Envios" (Correios) nao tem rastreamento detalhado -- so mostra
+  // "postado" e some ate sair pra entrega, sem passar por cada cidade no
+  // caminho como PAC/SEDEX (ver conversa e services/paginas_
+  // institucionais.py, que ja avisava isso so no FAQ). Aviso repetido
+  // aqui, na hora de ESCOLHER o frete, pra ninguem se assustar
+  // achando que o pedido parou.
+  function avisoMiniEnvios(opcao) {
+    if (!/mini envios/i.test(opcao.servico || '')) return '';
+    return '<div class="frete-opcao-aviso">⚠️ Rastreio simples: só mostra "postado" e atualiza de novo quando sair pra entrega</div>';
+  }
+
   // marca visualmente qual opcao esta selecionada e atualiza freteEscolhido
   // -- compartilhado pelos dois formatos (frete gratis com opcoes / frete
   // pago), pra clicar em qualquer uma trocar a escolha, nao so a primeira.
@@ -774,6 +785,7 @@
           <div>
             <div class="frete-opcao-nome">${opcao.transportadora} — ${opcao.servico}</div>
             <div class="frete-opcao-prazo">${prazo}</div>
+            ${avisoMiniEnvios(opcao)}
           </div>
           <div class="frete-opcao-preco">
             <span class="frete-opcao-preco-original">${formatarPreco(opcao.preco_original)}</span>
@@ -817,6 +829,7 @@
           <div>
             <div class="frete-opcao-nome">${opcao.transportadora} — ${opcao.servico}</div>
             <div class="frete-opcao-prazo">${prazo}</div>
+            ${avisoMiniEnvios(opcao)}
           </div>
           <div class="frete-opcao-preco">
             <span class="frete-opcao-preco-original">${formatarPreco(opcao.preco_original)}</span>
@@ -847,6 +860,7 @@
         <div>
           <div class="frete-opcao-nome">${opcao.transportadora} — ${opcao.servico}</div>
           <div class="frete-opcao-prazo">${prazo}</div>
+          ${avisoMiniEnvios(opcao)}
         </div>
         <div class="frete-opcao-preco">${formatarPreco(opcao.preco)}</div>
       `;

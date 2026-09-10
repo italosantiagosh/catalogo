@@ -1491,6 +1491,12 @@ input[readonly] {
   font-size: 0.78rem;
 }
 
+.frete-opcao-aviso {
+  color: #7a5c1f;
+  font-size: 0.74rem;
+  margin-top: 2px;
+}
+
 .frete-opcao-preco {
   font-weight: 700;
   color: var(--accent);

@@ -292,41 +292,54 @@ def _resposta_frenet_fake(*servicos):
     return resp
 
 
-def test_consultar_frenet_soma_1_dia_util_de_margem_no_prazo(monkeypatch):
-    # Pedido do usuario 2026-09: na pratica a transportadora as vezes so
-    # encaminha a encomenda no dia util SEGUINTE ao da postagem, entao o
-    # prazo cotado pela API sozinho ficava 1 dia mais otimista do que a
-    # entrega real -- MARGEM_DIAS_UTEIS_EXTRA soma 1 em cima do prazo
-    # bruto de toda transportadora.
+def test_consultar_frenet_correios_soma_2_dias_uteis_de_margem_no_prazo(monkeypatch):
+    # Pedido do usuario 2026-09-10: a margem deixou de ser uniforme por
+    # transportadora -- Correios (o mais atrasado na pratica, ja
+    # acompanhado por um tempo) ganhou mais 1 dia em cima da margem
+    # original (fica em 2 no total); Jadlog ("o restante") voltou a usar
+    # o prazo cru, sem margem nenhuma (ver
+    # MARGEM_DIAS_UTEIS_POR_TRANSPORTADORA).
     monkeypatch.setattr(frete, "FRENET_TOKEN", "token-fake")
     monkeypatch.setattr(frete, "CEP_ORIGEM", "59000000")
 
     servicos = [
         {"Carrier": "Correios", "ServiceDescription": "PAC", "ShippingPrice": "25.90",
          "DeliveryTime": 8, "Error": False},
-        {"Carrier": "Jadlog", "ServiceDescription": ".Package", "ShippingPrice": "0.00",
-         "DeliveryTime": None, "Error": True, "Msg": "CEP fora de area de cobertura"},
+        {"Carrier": "Jadlog", "ServiceDescription": ".Package", "ShippingPrice": "30.00",
+         "DeliveryTime": 11, "Error": False},
     ]
     with patch("services.frete.requests.post", return_value=_resposta_frenet_fake(*servicos)):
         resultado = frete.consultar_frenet("20040020", 0.05, 100.0)
 
-    assert resultado["opcoes"][0]["prazo_dias"] == 9  # 8 (bruto) + 1
+    prazo_por_transportadora = {o["transportadora"]: o["prazo_dias"] for o in resultado["opcoes"]}
+    assert prazo_por_transportadora["Correios"] == 10  # 8 (bruto) + 2
+    assert prazo_por_transportadora["Jadlog"] == 11  # 11 (bruto) + 0, margem revertida
 
 
-def test_consultar_melhor_envio_soma_1_dia_util_de_margem_no_prazo(monkeypatch):
+def test_consultar_melhor_envio_margem_por_transportadora(monkeypatch):
+    # Azul Express e LATAM Cargo mantem a margem original de 1 dia;
+    # Correios ganha mais 1 (fica em 2); J&T Express ("o restante")
+    # volta a usar o prazo cru, sem margem.
     monkeypatch.setattr(frete, "MELHOR_ENVIO_TOKEN", "token-fake")
     monkeypatch.setattr(frete, "CEP_ORIGEM", "59000000")
 
     resp = Mock()
     resp.raise_for_status = Mock()
     resp.json = Mock(return_value=[
-        {"name": "PAC", "price": "20.70", "delivery_time": 6,
-         "company": {"name": "Correios"}},
+        {"name": "PAC", "price": "20.70", "delivery_time": 6, "company": {"name": "Correios"}},
+        {"name": "Azul Express e-commerce", "price": "29.86", "delivery_time": 6,
+         "company": {"name": "Azul Cargo Express"}},
+        {"name": "LATAM Cargo", "price": "40.00", "delivery_time": 4, "company": {"name": "LATAM Cargo"}},
+        {"name": "J&T Express", "price": "15.00", "delivery_time": 5, "company": {"name": "J&T Express"}},
     ])
     with patch("services.frete.requests.post", return_value=resp):
-        opcoes = frete.consultar_melhor_envio("20040020", 0.05, 100.0)
+        opcoes = frete.consultar_melhor_envio("20040020", 0.05, 200.0)
 
-    assert opcoes[0]["prazo_dias"] == 7  # 6 (bruto) + 1
+    prazo_por_transportadora = {o["transportadora"]: o["prazo_dias"] for o in opcoes}
+    assert prazo_por_transportadora["Correios"] == 8  # 6 (bruto) + 2
+    assert prazo_por_transportadora["Azul Cargo Express"] == 7  # 6 (bruto) + 1, mantido
+    assert prazo_por_transportadora["LATAM Cargo"] == 5  # 4 (bruto) + 1, mantido
+    assert prazo_por_transportadora["J&T Express"] == 5  # 5 (bruto) + 0, margem revertida
 
 
 def test_consultar_frenet_filtra_so_erro_mini_envio_fica_e_ordena_por_preco(monkeypatch):
