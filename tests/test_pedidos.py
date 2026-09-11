@@ -305,7 +305,7 @@ def test_previsoes_marca_enviado_antecipado_e_recalcula_entrega_pelo_envio_real(
     monkeypatch.setattr(pedidos, "PRODUCAO_DIAS_UTEIS", 5)
     pedido = pedidos.criar_pedido(**_pedido_exemplo(frete_prazo_dias=7))
     # segunda-feira 04/11/2024 -- previsao de envio (+5 dias uteis) cai em 11/11 (segunda)
-    pago_em = datetime(2024, 11, 4, 12, 0, tzinfo=timezone.utc)  # 09:00 em Brasilia -- antes do corte das 18h
+    pago_em = datetime(2024, 11, 4, 12, 0, tzinfo=timezone.utc)  # 09:00 em Brasilia -- antes do corte das 14h
     _marcar_pago_em(pedido["token"], pago_em)
     # mas o pedido saiu bem antes do prometido: quarta 06/11
     enviado_em = datetime(2024, 11, 6, tzinfo=timezone.utc)
@@ -323,7 +323,7 @@ def test_previsoes_nao_marca_antecipado_quando_envio_nao_foi_adiantado(monkeypat
     _reapontar_db(monkeypatch, tmp_path)
     monkeypatch.setattr(pedidos, "PRODUCAO_DIAS_UTEIS", 5)
     pedido = pedidos.criar_pedido(**_pedido_exemplo(frete_prazo_dias=7))
-    pago_em = datetime(2024, 11, 4, 12, 0, tzinfo=timezone.utc)  # 09:00 em Brasilia -- antes do corte das 18h
+    pago_em = datetime(2024, 11, 4, 12, 0, tzinfo=timezone.utc)  # 09:00 em Brasilia -- antes do corte das 14h
     _marcar_pago_em(pedido["token"], pago_em)
     # previsao de envio era 11/11 -- saiu depois, no dia 12/11
     enviado_em = datetime(2024, 11, 12, tzinfo=timezone.utc)
@@ -364,7 +364,7 @@ def test_previsoes_usa_prazo_de_producao_maior_para_pedido_grande(monkeypatch, t
     ))
     # segunda-feira 04/11/2024 -- previsao de envio (+8 dias uteis, faixa
     # de 1000 pecas) cai em 14/11 (quinta), nao 11/11 (que seria +5 dias)
-    pago_em = datetime(2024, 11, 4, 12, 0, tzinfo=timezone.utc)  # 09:00 em Brasilia -- antes do corte das 18h
+    pago_em = datetime(2024, 11, 4, 12, 0, tzinfo=timezone.utc)  # 09:00 em Brasilia -- antes do corte das 14h
     _marcar_pago_em(pedido["token"], pago_em)
 
     previsoes = pedidos.previsoes_do_pedido(pedidos.obter_pedido(pedido["token"]))
@@ -372,16 +372,17 @@ def test_previsoes_usa_prazo_de_producao_maior_para_pedido_grande(monkeypatch, t
     assert previsoes["previsao_envio"].date().isoformat() == "2024-11-14"
 
 
-def test_inicio_producao_antes_das_18h_em_brasilia_mantem_o_mesmo_dia():
-    # 17:59 em Brasilia (UTC-3) == 20:59 UTC -- ainda dentro do prazo
-    pago = datetime(2026, 9, 10, 20, 59, tzinfo=timezone.utc)
+def test_inicio_producao_antes_das_14h_em_brasilia_mantem_o_mesmo_dia():
+    # 13:59 em Brasilia (UTC-3) == 16:59 UTC -- ainda dentro do prazo
+    pago = datetime(2026, 9, 10, 16, 59, tzinfo=timezone.utc)
     assert pedidos.inicio_producao(pago) == pago
 
 
-def test_inicio_producao_as_18h_em_brasilia_ja_desloca_pro_dia_seguinte():
-    # 18:00 em Brasilia (UTC-3) == 21:00 UTC -- pedido do usuario
-    # 2026-09-11: 18h em diante so entra na producao do dia seguinte
-    pago = datetime(2026, 9, 10, 21, 0, tzinfo=timezone.utc)
+def test_inicio_producao_as_14h_em_brasilia_ja_desloca_pro_dia_seguinte():
+    # 14:00 em Brasilia (UTC-3) == 17:00 UTC -- pedido do usuario
+    # 2026-09-11 (corte original as 18h, ajustado pra 14h em seguida):
+    # 14h em diante so entra na producao do dia seguinte
+    pago = datetime(2026, 9, 10, 17, 0, tzinfo=timezone.utc)
     assert pedidos.inicio_producao(pago) == pago + timedelta(days=1)
 
 
@@ -390,7 +391,7 @@ def test_inicio_producao_apos_o_corte_desloca_um_dia(monkeypatch, tmp_path):
     monkeypatch.setattr(pedidos, "PRODUCAO_DIAS_UTEIS", 5)
     pedido = pedidos.criar_pedido(**_pedido_exemplo())
     # quinta-feira 05/11/2026, 20h em Brasilia (23h UTC) -- depois do
-    # corte das 18h, entao a produção so conta a partir de sexta 06/11.
+    # corte das 14h, entao a produção so conta a partir de sexta 06/11.
     # +5 dias uteis a partir de sexta (nao conta a sexta em si) cai em
     # sexta seguinte, 13/11.
     pago_em = datetime(2026, 11, 5, 23, 0, tzinfo=timezone.utc)

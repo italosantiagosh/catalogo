@@ -1403,18 +1403,20 @@ def somar_dias_uteis(data_inicio: datetime, dias: int) -> datetime:
 
 FUSO_BRASIL = ZoneInfo("America/Sao_Paulo")
 
-# Pago ate´ 17:59 (horario de Brasilia) conta o dia do proprio pagamento
-# como base pra contagem dos dias uteis de producao, igual sempre foi.
-# Pago 18:00 em diante (ainda no mesmo dia UTC ou nao) so entra na
-# producao a partir do dia seguinte -- pedido do usuario 2026-09-11:
-# quem paga de noite nao tem como comecar a produzir no mesmo dia.
-HORA_LIMITE_PRODUCAO_MESMO_DIA = 18
+# Pago ate´ 13:59 (horario de Brasilia) conta o dia do proprio pagamento
+# como base pra contagem dos dias uteis de producao. Pago 14:00 em
+# diante so entra na producao a partir do dia seguinte -- pedido do
+# usuario 2026-09-11 (cutoff original as 18h) e ajustado em seguida pra
+# 14h: "se a pessoa fechar as 17h59 eu nao vou mais nem poder comecar o
+# pedido dele naquele dia" -- 14h deixa uma tarde real de producao pros
+# pedidos fechados durante o dia.
+HORA_LIMITE_PRODUCAO_MESMO_DIA = 14
 
 
 def inicio_producao(data_pago: datetime) -> datetime:
     """Ponto de partida real da contagem de dias uteis de producao (ver
     somar_dias_uteis/previsoes_do_pedido abaixo) -- desloca pro dia
-    seguinte quando o pagamento cai as 18h ou depois no horario de
+    seguinte quando o pagamento cai as 14h ou depois no horario de
     Brasilia (ver HORA_LIMITE_PRODUCAO_MESMO_DIA). Se esse dia seguinte
     cair num fim de semana, some_dias_uteis ja pula pra frente sozinho
     ao contar os dias uteis a partir daqui -- nao precisa tratar isso

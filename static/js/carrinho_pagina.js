@@ -728,15 +728,16 @@
     return dias;
   }
 
-  // Pago ate´ 17:59 conta o proprio dia como base da producao; 18h em
+  // Pago ate´ 13:59 conta o proprio dia como base da producao; 14h em
   // diante so entra a partir do dia seguinte -- espelha services/
-  // pedidos.py:HORA_LIMITE_PRODUCAO_MESMO_DIA/inicio_producao (ver
-  // conversa 2026-09-11). Usa a hora LOCAL do navegador (sem conversao
-  // de fuso), igual o resto deste arquivo ja faz com `new Date()` --
-  // pra visitante fora do Brasil o horario exibido pode nao bater
+  // pedidos.py:HORA_LIMITE_PRODUCAO_MESMO_DIA/inicio_producao (corte
+  // original as 18h, ajustado em seguida pra 14h -- ver conversa
+  // 2026-09-11). Usa a hora LOCAL do navegador (sem conversao de fuso),
+  // igual o resto deste arquivo ja faz com `new Date()` -- pra
+  // visitante fora do Brasil o horario exibido pode nao bater
   // exatamente com o corte real do servidor (que usa America/Sao_Paulo
   // de verdade), mas a esmagadora maioria acessa daqui mesmo.
-  const HORA_LIMITE_PRODUCAO_MESMO_DIA = 18;
+  const HORA_LIMITE_PRODUCAO_MESMO_DIA = 14;
 
   function antesDoCorteDeHoje() {
     return new Date().getHours() < HORA_LIMITE_PRODUCAO_MESMO_DIA;
@@ -760,7 +761,7 @@
   }
 
   // "Gatilho" de urgencia (ver conversa) -- so faz sentido contar ate o
-  // corte de HOJE: depois das 18h, qualquer compra ate a meia-noite ja
+  // corte de HOJE: depois das 14h, qualquer compra ate a meia-noite ja
   // cai no mesmo balde ("comeca amanha"), entao nao ha urgencia real em
   // "correr" pra comprar em seguida -- mostra so a data prevista, sem
   // contagem regressiva.
