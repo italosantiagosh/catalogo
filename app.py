@@ -3067,6 +3067,14 @@ def _mensagem_whatsapp_cliente(pedido: dict) -> str:
             f"{_ASSINATURA_WHATSAPP_CLIENTE}"
         )
 
+    if pedido["status"] == "enviado" and pedido.get("frete_descricao") == FRETE_RETIRADA_DESCRICAO:
+        return (
+            f"Olá {nome}! Seu pedido #{codigo} já está pronto pra retirada. 🏬\n"
+            f"Como você prefere combinar a retirada?\n"
+            f"Pra acompanhar: {link_pedido}"
+            f"{_ASSINATURA_WHATSAPP_CLIENTE}"
+        )
+
     if pedido["status"] == "enviado":
         previsao_entrega = _formatar_data_br(previsoes_do_pedido(pedido).get("previsao_entrega"))
         transportadora = pedido.get("transportadora") or ""

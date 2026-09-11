@@ -70,6 +70,21 @@ def _botao(url: str, texto: str) -> str:
     )
 
 
+# Mesmo estilo do _botao() acima, so que verde/tema WhatsApp -- link
+# wa.me com a mensagem ja´ preenchida (ver _corpo_html_pedido_enviado,
+# caso "Retirada no local").
+def _botao_whatsapp(mensagem: str, texto: str) -> str:
+    url = f"https://wa.me/{WHATSAPP_NUMBER}?text={quote(mensagem)}"
+    return (
+        f'<p style="margin:22px 0;">'
+        f'<a href="{url}" target="_blank" '
+        f'style="display:inline-block;padding:14px 28px;background-color:#25d366;color:#ffffff;'
+        f'text-decoration:none;border-radius:8px;font-weight:bold;font-size:15px;'
+        f'font-family:Arial,Helvetica,sans-serif;">{texto}</a>'
+        f"</p>"
+    )
+
+
 def _corpo_html_confirmacao(pedido: dict, url_pedido: str) -> str:
     previsoes = previsoes_do_pedido(pedido)
     previsao_html = ""
@@ -258,6 +273,26 @@ def enviar_lembrete_pedido_pendente(pedido: dict, url_pagamento: str, url_acompa
 def _corpo_html_pedido_enviado(
     pedido: dict, codigo_rastreio: str, link_rastreio: str, url_acompanhamento: str, transportadora: str = ""
 ) -> str:
+    # "Enviado" nao faz sentido pra quem vai retirar no local (mesmo
+    # criterio de app.py:FRETE_RETIRADA_DESCRICAO/_mensagem_whatsapp_cliente)
+    # -- manda um e-mail proprio avisando que ja´ esta´ pronto, com um
+    # botao de WhatsApp com a mensagem pronta pra combinar o horario.
+    if pedido.get("frete_descricao") == "Retirada no local":
+        mensagem_whatsapp = (
+            f"Oi! Meu pedido #{pedido['codigo']} está pronto pra retirada e eu gostaria de "
+            f"combinar o horário."
+        )
+        return (
+            f"<p>Olá, {_esc(pedido.get('cliente_nome', ''))}! Seu pedido já está pronto pra "
+            f"retirada. 🏬</p>"
+            f"<p><strong>Pedido #{pedido['codigo']}</strong></p>"
+            f"<ul>{_itens_html(pedido)}</ul>"
+            f"<p>Chama a gente no WhatsApp pra combinar o melhor horário:</p>"
+            f"{_botao_whatsapp(mensagem_whatsapp, '💬 Combinar retirada pelo WhatsApp')}"
+            f"<p>Ou acompanhe os detalhes do pedido a qualquer momento:</p>"
+            f"{_botao(url_acompanhamento, '🔎 Ver detalhes do pedido')}"
+        )
+
     rastreio_html = (
         f'<p>Código de rastreio: <strong>{_esc(codigo_rastreio)}</strong><br>'
         f'<a href="{_esc(link_rastreio)}">{_esc(link_rastreio)}</a></p>'
@@ -284,10 +319,15 @@ def enviar_pedido_enviado(
     painel admin (ver app.py:admin_pedido_status), no futuro tambem
     podera´ vir de um webhook da Tiny (ver services.pedidos.atualizar_status).
     Devolve {"ok": True} ou {"erro": "..."}."""
+    assunto = (
+        f"Pedido pronto para retirada — Pedido #{pedido['codigo']}"
+        if pedido.get("frete_descricao") == "Retirada no local"
+        else f"Pedido enviado — Pedido #{pedido['codigo']}"
+    )
     return _enviar(
         email_cliente=pedido.get("cliente_email", ""),
         nome_cliente=pedido.get("cliente_nome", ""),
-        assunto=f"Pedido enviado — Pedido #{pedido['codigo']}",
+        assunto=assunto,
         corpo_html=_corpo_html_pedido_enviado(
             pedido, codigo_rastreio, link_rastreio, url_acompanhamento, transportadora
         ),

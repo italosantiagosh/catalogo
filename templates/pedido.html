@@ -106,6 +106,10 @@
   {% elif pedido.status == 'enviado' %}
     {% if pedido.frete_descricao == 'Retirada no local' %}
       <p class="pedido-status pedido-status-enviado">🏬 Pronto para retirada</p>
+      <a class="botao-whatsapp" href="https://wa.me/{{ whatsapp_number }}?text={{ ('Oi! Meu pedido #' ~ pedido.codigo ~ ' está pronto pra retirada e eu gostaria de combinar o horário.') | urlencode }}" target="_blank" rel="noopener">
+        <img src="{{ url_for('static', filename='img/icones/whatsapp.svg') }}" alt="" class="botao-whatsapp-icone">
+        Combinar retirada pelo WhatsApp
+      </a>
     {% else %}
       <p class="pedido-status pedido-status-enviado">📦 Pedido enviado</p>
       {% if previsoes.enviado_antecipado %}

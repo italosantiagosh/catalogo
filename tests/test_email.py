@@ -193,6 +193,28 @@ def test_pedido_enviado_sem_link_de_rastreio(monkeypatch):
     assert "BR123456789BR" in corpo["htmlContent"]
 
 
+def test_pedido_enviado_com_retirada_no_local_manda_botao_de_whatsapp(monkeypatch):
+    """Pedido de retirada no local nao tem transportadora/rastreio --
+    o e-mail generico de "enviado" nao faz sentido, precisa avisar que
+    ja´ esta´ pronto com um botao de WhatsApp pra combinar (ver
+    conversa)."""
+    monkeypatch.setattr(email, "BREVO_API_KEY", "segredo")
+    monkeypatch.setattr(email, "WHATSAPP_NUMBER", "5584999999999")
+    resposta_mock = Mock()
+    resposta_mock.raise_for_status = Mock()
+    with patch("services.email.requests.post", return_value=resposta_mock) as post_mock:
+        resultado = email.enviar_pedido_enviado(
+            _pedido_exemplo(frete_descricao="Retirada no local"), "", "", "https://site/pedido/token"
+        )
+
+    assert resultado == {"ok": True}
+    corpo = post_mock.call_args.kwargs["json"]
+    assert "pronto para retirada" in corpo["subject"].lower()
+    assert "pronto pra" in corpo["htmlContent"].lower()
+    assert "https://wa.me/5584999999999?text=" in corpo["htmlContent"]
+    assert "ABC123" in corpo["htmlContent"]
+
+
 def test_pedido_cancelado_oferece_3_jeitos_de_reaproveitar_o_pedido(monkeypatch):
     """ver conversa: reaproveita o MESMO pedido -- Pix/cartao, boleto ou
     WhatsApp -- em vez de so linkar de volta pro catalogo."""

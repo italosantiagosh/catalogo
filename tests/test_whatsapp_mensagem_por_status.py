@@ -111,6 +111,21 @@ def test_enviado_menciona_transportadora_e_rastreio(client):
     assert "https://rastreio.exemplo/BR123" in mensagem
 
 
+def test_enviado_com_retirada_no_local_pergunta_como_combinar(client):
+    """Pedido de retirada no local nao tem transportadora/rastreio --
+    a mensagem de "enviado" generica nao faz sentido, precisa avisar
+    que esta´ pronto e perguntar como combinar (ver conversa)."""
+    token = _criar(client, frete={"texto": "Retirada no local", "preco": 0.0})
+    pedidos.marcar_pago(token, forma_pagamento="pix", parcelas=None, valor_pago=68.0, transaction_nsu="tx")
+    pedidos.atualizar_status(token, "enviado")
+    with app.test_request_context():
+        mensagem = app_module._mensagem_whatsapp_cliente(pedidos.obter_pedido(token))
+
+    assert "pronto pra retirada" in mensagem
+    assert "combinar" in mensagem.lower()
+    assert f"/pedido/{token}" in mensagem
+
+
 def test_entregue_convida_a_avaliar_o_produto(client):
     token = _criar(client)
     pedidos.marcar_pago(token, forma_pagamento="pix", parcelas=None, valor_pago=78.65, transaction_nsu="tx")

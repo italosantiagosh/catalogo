@@ -1261,6 +1261,9 @@ def test_pagina_de_pedido_retirada_nao_mostra_aviso_de_transportadora(client, mo
     corpo_html = client.get(f"/pedido/{criado['token']}").get_data(as_text=True)
     assert "prazo de entrega é uma estimativa" not in corpo_html
     assert "🏬 Pronto para retirada" in corpo_html
+    assert "Combinar retirada pelo WhatsApp" in corpo_html
+    assert f"pedido #{criado['codigo']}" in corpo_html or criado["codigo"] in corpo_html
+    assert "wa.me" in corpo_html and "text=" in corpo_html
 
 
 def test_pagina_de_pedido_mostra_aviso_de_mini_envios(client, monkeypatch):
