@@ -64,6 +64,22 @@ PAGINAS_ATENDIMENTO = {
             no Mini Envios, que não tem rastreamento detalhado. Se o prazo estimado for
             ultrapassado, fale com a gente que acompanhamos a entrega junto à
             transportadora.</p>
+
+            <h2>Transportadoras disponíveis</h2>
+            <p>O frete é calculado em tempo real no carrinho, com base no seu CEP -- a
+            opção mostrada é sempre a mais barata disponível pra essa combinação de
+            peso e destino, entre:</p>
+            <ul>
+                <li><strong>Correios</strong> (PAC, SEDEX ou Mini Envios, conforme o
+                    peso e o destino);</li>
+                <li><strong>Azul Cargo Express</strong>;</li>
+                <li><strong>LATAM Cargo</strong>;</li>
+                <li><strong>J&amp;T Express</strong>;</li>
+                <li>Eventualmente outras transportadoras de encomenda (Jadlog, Loggi,
+                    Total Express), pra pedidos maiores.</li>
+            </ul>
+            <p>Também é possível <strong>retirar o pedido pessoalmente</strong>, com
+            agendamento prévio -- veja o endereço no rodapé do site.</p>
         """,
     },
     "trocas-e-devolucao": {

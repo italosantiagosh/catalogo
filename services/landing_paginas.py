@@ -163,6 +163,49 @@ PAGINAS_LANDING = {
         """,
         "produtos_destaque": ["sagrada-familia"],
     },
+    "crisma-e-primeira-comunhao": {
+        "titulo": "Medalhas para Crisma e Primeira Comunhão",
+        "resumo": (
+            "Lembrancinha de Crisma ou Primeira Comunhão para a turma toda, ou uma "
+            "medalha personalizada com o nome do crismando -- desconto por quantidade."
+        ),
+        "corpo_html": """
+            <p>Crisma e Primeira Comunhão são dois dos momentos mais marcantes da
+            caminhada de fé de uma criança ou adolescente -- e uma medalha é uma das
+            lembranças mais tradicionais pra registrar a data, seja pra turma inteira ou
+            pra um presente individual.</p>
+
+            <h2>Pra Crisma: o dom do Espírito Santo</h2>
+            <p>Como o Sacramento da Crisma é justamente a efusão do Espírito Santo, a
+            <a href="/produto/espirito-santo">medalha do Espírito Santo</a> é a escolha mais
+            direta pro tema -- funciona tanto de lembrancinha pra toda a turma de
+            crismandos quanto de presente individual pro afilhado ou padrinho de crisma.</p>
+
+            <h2>Pra Primeira Comunhão: a presença de Jesus</h2>
+            <p>Pra Primeira Comunhão, o <a href="/produto/sagrado-coracao-de-jesus">Sagrado
+            Coração de Jesus</a> é uma das devoções mais escolhidas -- e quem prefere seguir
+            pelo nome de batismo da criança encontra o santo correspondente direto no
+            <a href="/categoria/jesus">catálogo completo</a> (mais de 130 santos e devoções).</p>
+
+            <h2>Turma grande? Sortimento pronto</h2>
+            <p>Quando a turma de catequese é grande e não dá pra escolher um santo só, o
+            <a href="/kit-livraria-shalom">Kit Livraria Shalom</a> já vem com um sortimento
+            dos santos que mais vendem, em quantidades editáveis -- e o desconto de atacado
+            soma a quantidade de todos os formatos e santos escolhidos juntos.</p>
+
+            <h2>Um registro mais pessoal</h2>
+            <p>Pra uma lembrança única do crismando ou da criança que fez a Primeira
+            Comunhão, dá pra <a href="/personalizada">criar uma medalha personalizada</a>
+            com o nome e a data, ou até uma foto -- você vê a simulação antes de fechar o
+            pedido.</p>
+
+            <div class="cta-blog-produto">
+              <p>Veja todas as opções e o desconto por quantidade</p>
+              <a href="/catalogo" class="botao-principal">Ver catálogo completo →</a>
+            </div>
+        """,
+        "produtos_destaque": ["espirito-santo", "sagrado-coracao-de-jesus"],
+    },
     "livrarias-e-revendedores": {
         "titulo": "Medalhas para Livrarias e Revendedores",
         "resumo": (

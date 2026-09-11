@@ -1473,6 +1473,103 @@ ARTIGOS_BLOG = {
             </div>
         """,
     },
+    "medalha-entremeio-ou-chaveiro-qual-escolher": {
+        "titulo": "Medalha, entremeio ou chaveiro: qual formato escolher?",
+        "resumo": (
+            "Mesma imagem do santo, três formatos diferentes -- medalha, entremeio e "
+            "chaveiro. Entenda a diferença de cada um antes de decidir."
+        ),
+        "produto_relacionado_id": None,
+        "cta_endpoint": "catalogo_completo",
+        "imagem_manual": "img/guia-tamanhos.jpg",
+        "publicado_em": "2026-09-14",
+        "corpo_html": """
+            <p>Todo santo do catálogo sai em três formatos -- a diferença não é o santo,
+            é o USO que a peça vai ter no dia a dia. Vale a pena entender as diferenças
+            antes de escolher, principalmente quando o pedido é pra revenda ou lembrancinha
+            em quantidade.</p>
+
+            <h2>Medalha: pra usar no corpo</h2>
+            <p>A medalha (1,2 cm ou 1,6 cm) vem com uma argola só, pensada pra colar ou
+            pulseira -- é o formato mais tradicional, o que a maioria das pessoas imagina
+            quando pensa em "medalha de santo". Em aço inoxidável, aguenta bem o uso diário
+            (banho, chuva, suor).</p>
+
+            <h2>Entremeio: pra montar um terço ou rosário</h2>
+            <p>O entremeio tem DUAS argolas (uma de cada lado), porque ele é feito pra
+            passar no cordão de um terço ou rosário -- não é pra usar sozinho no pescoço. Em
+            liga de zinco, nas cores prata ou ouro velho, é a peça certa pra quem monta ou
+            personaliza terços artesanais. Também combina com a
+            <a href="/cruz-para-terco">Cruz para Terço</a> na mesma cor, pra fechar o
+            conjunto.</p>
+
+            <h2>Chaveiro: o maior formato, pra levar junto</h2>
+            <p>Com 3 cm de diâmetro interno, o chaveiro é o maior formato do catálogo --
+            pensado pra ir na bolsa, mochila ou molho de chaves, não pra usar no corpo. É
+            uma escolha comum de lembrancinha, já que também funciona como objeto de
+            decoração/devoção sobre uma mesa.</p>
+
+            <h2>E se eu não souber qual escolher?</h2>
+            <p>Pra lembrancinha de evento (casamento, batizado, retiro), o mais comum é
+            variar: uma parte do pedido em medalha, outra em chaveiro. Como o desconto de
+            atacado soma a quantidade de medalhas e entremeios juntos (chaveiro tem tabela
+            própria), misturar formatos não atrapalha o preço por peça.</p>
+
+            <div class="cta-blog-produto">
+              <p>Veja os três formatos disponíveis em cada santo</p>
+              <a href="__URL_PRODUTO__" class="botao-principal">Ver catálogo completo →</a>
+            </div>
+        """,
+    },
+    "como-escolher-a-medalha-certa-para-o-batizado": {
+        "titulo": "Como escolher a medalha certa para o batizado",
+        "resumo": (
+            "Pelo nome do santo, por uma devoção da família ou personalizada com o nome "
+            "do bebê -- veja os caminhos mais comuns pra escolher a medalha de batizado."
+        ),
+        "produto_relacionado_id": None,
+        "cta_endpoint": "catalogo_completo",
+        "imagem_manual": "img/produtos/nossa_senhora_toda_pequena_modelo_1_medalha.jpg",
+        "publicado_em": "2026-09-15",
+        "corpo_html": """
+            <p>Não existe uma única forma "certa" de escolher a medalha de batizado -- mas
+            alguns caminhos são bem mais comuns que outros, e ajudam quem está decidindo
+            agora.</p>
+
+            <h2>Caminho 1: pelo nome de batismo</h2>
+            <p>O mais tradicional é buscar o santo que dá nome à criança -- se o nome de
+            batismo já está definido, é só procurar esse santo direto no
+            <a href="/catalogo">catálogo completo</a> (mais de 130 santos e devoções). É
+            comum encontrar até mais de uma representação do mesmo santo.</p>
+
+            <h2>Caminho 2: por uma devoção da família</h2>
+            <p>Quando o nome não corresponde a um santo específico (ou a família prefere
+            outra devoção), o comum é escolher pela proteção que se deseja pra criança.
+            <a href="/produto/nossa-senhora-toda-pequena">Nossa Senhora Toda Pequena</a> e
+            <a href="/produto/santa-teresinha-crianca">Santa Teresinha Criança</a> retratam
+            a santa ainda menina -- uma escolha frequente justamente por isso -- e os
+            <a href="/produto/santos-arcanjos">Santos Arcanjos</a> (Miguel, Gabriel e
+            Rafael) são a opção mais tradicional de proteção espiritual.</p>
+
+            <h2>Caminho 3: personalizada, com o nome e a data</h2>
+            <p>Pra quem quer uma lembrança mais única do dia, dá pra
+            <a href="/personalizada">criar uma medalha personalizada</a> com o nome do
+            bebê, a data do batizado ou até uma foto -- você vê a simulação antes de fechar
+            o pedido, sem depender de imaginar como vai ficar.</p>
+
+            <h2>Formato: medalha, entremeio ou os dois?</h2>
+            <p>Pra usar no corpo do bebê (ou guardar), a medalha é o formato mais comum.
+            Famílias que já têm o costume de rezar terço às vezes preferem o entremeio, pra
+            montar uma peça em memória do batizado. <a
+            href="/blog/medalha-entremeio-ou-chaveiro-qual-escolher">Veja a diferença entre
+            os formatos</a> antes de decidir.</p>
+
+            <div class="cta-blog-produto">
+              <p>Veja todas as opções e o desconto por quantidade</p>
+              <a href="__URL_PRODUTO__" class="botao-principal">Ver catálogo completo →</a>
+            </div>
+        """,
+    },
 }
 
 

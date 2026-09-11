@@ -2973,6 +2973,27 @@ input[type="file"] {
   margin-bottom: 4px;
 }
 
+/* Imagens NO MEIO do texto do artigo (ver conversa: "pesquisar imagens
+   na internet e colocar em meio aos textos") -- diferente da
+   .imagem-artigo-blog (foto de capa, fora do corpo_html, ja existente
+   em templates/blog_artigo.html). */
+.conteudo-institucional figure {
+  margin: 16px 0;
+}
+
+.conteudo-institucional figure img {
+  width: 100%;
+  border-radius: 12px;
+  display: block;
+}
+
+.conteudo-institucional figcaption {
+  font-size: 0.76rem;
+  color: var(--muted);
+  text-align: center;
+  margin-top: 6px;
+}
+
 .conteudo-institucional .acordeao {
   border: 1px solid var(--border);
   border-radius: 10px;
