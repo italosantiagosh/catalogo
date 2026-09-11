@@ -2877,20 +2877,17 @@ input[type="file"] {
   gap: 8px 14px;
 }
 
-.rodape-selo {
-  font-size: 0.78rem;
-  color: rgba(255, 255, 255, 0.85);
-  white-space: nowrap;
-}
-
-/* Visa/Mastercard/Apple Pay tem cores que somem ou perdem contraste no
-   fundo azul-marinho do rodape (Visa e´ um azul parecido, Apple Pay e´
-   preto puro) -- ver conversa: pediu as logos OFICIAIS, entao em vez de
-   recolorir (o que desrespeitaria a marca), cada uma ganha uma "placa"
-   branca pequena, igual aparece em maquininha/comprovante de cartao.
-   Pix e Banco Inter tem cor propria com contraste bom (teal/laranja) e
-   a InfinitePay tem uma versao "branco" pronta pra fundo escuro -- essas
-   3 vao direto no fundo do rodape, sem placa. */
+/* Quase toda logo de pagamento tem cor que some ou perde contraste no
+   fundo azul-marinho do rodape (Visa e´ um azul parecido, Apple Pay/
+   Samsung Wallet sao preto puro, Google Pay tem texto cinza escuro) --
+   ver conversa: pediu as logos OFICIAIS, entao em vez de recolorir (o
+   que desrespeitaria a marca), TODAS ganham uma "placa" branca, igual
+   aparece em maquininha/comprovante de cartao -- visual consistente pra
+   fileira inteira, em vez de misturar logo "solta" com logo "em placa".
+   "Pagamento seguro" e "Boleto" nao sao marca de uma empresa so (nao ha´
+   "logo oficial" pra elas) -- static/img/pagamento/pagamento-seguro.svg
+   e boleto.svg sao icones proprios (cadeado/codigo de barras + texto),
+   desenhados no mesmo padrao visual pra fila ficar consistente. */
 .rodape-selo-chip {
   display: inline-flex;
   align-items: center;
@@ -2911,8 +2908,8 @@ input[type="file"] {
   height: 20px;
 }
 
-.rodape-selo-logo-clara {
-  height: 20px;
+.rodape-selo-logo-larga {
+  height: 18px;
   width: auto;
 }
 

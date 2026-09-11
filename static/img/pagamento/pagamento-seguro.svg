@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 60" width="300" height="60">
+  <g fill="none" stroke="#14335c" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="10" y="26" width="34" height="26" rx="4"/>
+    <path d="M17 26v-8a10 10 0 0 1 20 0v8"/>
+    <path d="M27 36v6"/>
+  </g>
+  <text x="56" y="40" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="700" fill="#14335c">Pagamento seguro</text>
+</svg>
