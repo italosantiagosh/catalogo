@@ -150,6 +150,27 @@ function carrinhoAtualizarCor(chave, novaCor) {
   return itens;
 }
 
+// Cor da Cruz para Terco MUDA o preco de verdade (dourado custa mais
+// que prata/ouro velho, ver data/precos.json) -- diferente da troca
+// "segura" de cor do entremeio acima, aqui tambem precisa trocar
+// chave_preco (cruz_terco_prata/ouro_velho/dourado) pra recalcular o
+// preco certo (calcular_carrinho ja faz isso sozinho a partir do
+// chave_preco novo, ver services/pricing.py). Imagem por cor e´ sempre
+// a mesma peca fisica com nome de arquivo previsivel (ver
+// app.py:_cores_cruz_terco), entao monta a URL aqui direto, sem
+// precisar guardar as 3 no item.
+function carrinhoAtualizarCorCruz(chave, novaCor) {
+  const itens = carrinhoObterItens();
+  const item = itens.find((i) => i.chave === chave);
+  if (item) {
+    item.cor = novaCor;
+    item.chave_preco = `cruz_terco_${novaCor}`;
+    item.imagem = `/static/img/produtos/cruz_terco_${novaCor}_frente.jpg`;
+    carrinhoSalvarItens(itens);
+  }
+  return itens;
+}
+
 function carrinhoLimpar() {
   carrinhoSalvarItens([]);
   // proximo pedido comeca com um ID novo, nao reaproveita o de um pedido
@@ -179,7 +200,11 @@ function _percentualBarra(atual, inicioFaixa, alvo) {
 
 // Espelha services/pricing.py: GRUPO_DE_CHAVE / GRUPOS -- cada chave_preco
 // pertence a um grupo de atacado, e chaveiro NAO se mistura com
-// medalha/entremeio pra faixa de desconto.
+// medalha/entremeio pra faixa de desconto. cruz_terco_* entra aqui so
+// pra esse filtro nao quebrar (ver carrinhoAtualizarBarraPersistente
+// abaixo) -- o GRUPO em si e´ pulado na hora de montar a barra, ja que
+// tem preco fixo/sem faixa nenhuma (ver GRUPO_DE_CHAVE de verdade em
+// services/pricing.py).
 const GRUPO_DE_CHAVE = {
   '12mm': 'padrao',
   '16mm': 'padrao',
@@ -188,6 +213,9 @@ const GRUPO_DE_CHAVE = {
   chaveiro_2lados: 'chaveiro',
   medalha_2lados: 'duas_faces',
   entremeio_2lados: 'duas_faces',
+  cruz_terco_prata: 'cruz_terco',
+  cruz_terco_ouro_velho: 'cruz_terco',
+  cruz_terco_dourado: 'cruz_terco',
 };
 
 const GRUPO_LABEL = {
@@ -249,6 +277,12 @@ async function carrinhoAtualizarBarraPersistente() {
 
     let html = '';
     for (const nomeGrupo of Object.keys(dados.grupos)) {
+      // cruz_terco tem preco fixo, sem faixa de atacado nenhuma (ver
+      // GRUPO_DE_CHAVE em services/pricing.py) -- mostrar uma barra de
+      // "melhor faixa" pra ela sugeriria um desconto que nao existe
+      // (bug real: aparecia "melhor faixa de cruz_terco R$0,00/un",
+      // ver conversa/print).
+      if (nomeGrupo === 'cruz_terco') continue;
       const grupo = dados.grupos[nomeGrupo];
       if (grupo.quantidade_total === 0) continue;
       const itensDoGrupo = dados.itens.filter((i) => GRUPO_DE_CHAVE[i.chave_preco] === nomeGrupo);

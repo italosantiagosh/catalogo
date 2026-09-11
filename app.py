@@ -1333,6 +1333,7 @@ def produto(produto_id: str):
         total_avaliacoes=total_avaliacoes,
         vendas_recentes=vendas_recentes,
         slug_artigo_relacionado=artigo_relacionado[0] if artigo_relacionado else None,
+        producao_dias_uteis=PRODUCAO_DIAS_UTEIS,
     )
 
 

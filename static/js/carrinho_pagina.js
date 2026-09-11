@@ -187,8 +187,27 @@
   // de fora dessa troca "segura" no navegador.
   const OPCOES_COR_ENTREMEIO = ['prata', 'ouro_velho'];
 
+  // Cor da Cruz para Terco MUDA o preco (dourado custa mais, ver
+  // data/precos.json) -- diferente do entremeio acima, mas ainda da
+  // pra editar direto no carrinho: trocar a cor troca a chave_preco
+  // junto (ver static/js/carrinho.js:carrinhoAtualizarCorCruz), e o
+  // recalculo de preco na renderizacao ja usa o chave_preco novo
+  // sozinho, sem precisar de nenhuma logica extra aqui.
+  const OPCOES_COR_CRUZ = ['prata', 'ouro_velho', 'dourado'];
+
   function subtituloEditavelHtml(item) {
     const formato = item.formato || 'medalha';
+
+    if (formato === 'cruz_terco') {
+      const optionsCorCruz = OPCOES_COR_CRUZ
+        .map((v) => `<option value="${v}" ${item.cor === v ? 'selected' : ''}>${COR_LABEL[v] || v}</option>`)
+        .join('');
+      return (
+        `${FORMATO_LABEL.cruz_terco} · ` +
+        `<select class="variacao-cor-cruz-select" data-chave="${item.chave}" aria-label="Mudar cor">${optionsCorCruz}</select>`
+      );
+    }
+
     const opcoes = OPCOES_TAMANHO_POR_FORMATO[formato];
     const podeEditarCor = formato === 'entremeio' && item.imagensCor
       && item.imagensCor.prata && item.imagensCor.ouro_velho;
@@ -407,6 +426,14 @@
       selectCor.addEventListener('change', () => {
         carrinhoAtualizarCor(item.chave, selectCor.value);
         rastrearEventoGA4('mudar_cor_carrinho', { item_id: item.produtoId || item.tipo, cor: selectCor.value });
+        render();
+      });
+    }
+    const selectCorCruz = linha.querySelector('.variacao-cor-cruz-select');
+    if (selectCorCruz) {
+      selectCorCruz.addEventListener('change', () => {
+        carrinhoAtualizarCorCruz(item.chave, selectCorCruz.value);
+        rastrearEventoGA4('mudar_cor_carrinho', { item_id: item.produtoId || item.tipo, cor: selectCorCruz.value });
         render();
       });
     }

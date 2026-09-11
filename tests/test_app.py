@@ -503,6 +503,18 @@ def test_rodape_nao_aparece_duplicado_no_carrinho(client):
     assert "39.390.354/0001-25".encode() in resposta.data
 
 
+def test_pagina_de_produto_mostra_o_prazo_de_producao(client):
+    """Bug real (ver conversa): a rota /produto/<id> nao passava
+    producao_dias_uteis pro template, entao o aviso "producao em ate
+    <dias> dias uteis" (templates/produto.html) aparecia sem o numero
+    -- Jinja renderiza variavel indefinida como string vazia, sem erro,
+    entao passou despercebido ate o usuario reportar pelo print."""
+    from config import PRODUCAO_DIAS_UTEIS
+
+    resposta = client.get("/produto/sao-jose").get_data(as_text=True)
+    assert f"{PRODUCAO_DIAS_UTEIS} dias úteis" in resposta
+
+
 def test_carrinho_expoe_producao_dias_uteis_pro_js(client):
     """Ver conversa: prazo de entrega estimado (producao + transportadora)
     mostrado junto de cada opcao de frete (static/js/carrinho_pagina.js:
