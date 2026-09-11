@@ -337,7 +337,7 @@
       // sentido pra entremeio prata/ouro velho, que e´ o formato que
       // realmente vai junto num terco.
       if (formato === 'entremeio' && (cor === 'prata' || cor === 'ouro_velho') && typeof ofertarUpsellCruz === 'function') {
-        setTimeout(() => ofertarUpsellCruz(cor), 500);
+        setTimeout(() => ofertarUpsellCruz(cor, quantidade), 500);
       }
 
       const textoOriginal = 'Adicionar ao carrinho';

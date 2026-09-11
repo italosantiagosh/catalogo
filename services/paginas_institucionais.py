@@ -263,9 +263,10 @@ PAGINAS_ATENDIMENTO = {
         "faq_items": [
             (
                 "De que material são feitas as peças?",
-                "Medalha (1 lado): aço inoxidável, resinada. Chaveiro: liga de zinco, "
-                "resinado. Entremeio (para terço): liga de zinco, resinado, nas "
-                "colorações ouro velho ou prata antigo.",
+                "Medalha (1 lado): aço inoxidável, resinada. Medalha de 2 lados, "
+                "entremeio (1 ou 2 lados), chaveiro (1 ou 2 lados) e a Cruz para "
+                "Terço: liga de zinco, resinados, nas colorações ouro velho ou "
+                "prata antigo.",
             ),
             (
                 "Como cuidar da peça no dia a dia?",
@@ -305,19 +306,24 @@ PAGINAS_ATENDIMENTO = {
                 <summary>De que material são feitas as peças?</summary>
                 <ul>
                     <li><strong>Medalha (1 lado):</strong> aço inoxidável, resinada.</li>
-                    <li><strong>Chaveiro:</strong> liga de zinco, resinado.</li>
-                    <li><strong>Entremeio (para terço):</strong> liga de zinco, resinado,
-                        nas colorações <strong>ouro velho</strong> ou
+                    <li><strong>Medalha de 2 lados:</strong> liga de zinco, resinada.</li>
+                    <li><strong>Chaveiro (1 ou 2 lados):</strong> liga de zinco, resinado.</li>
+                    <li><strong>Entremeio (1 ou 2 lados, para terço):</strong> liga de
+                        zinco, resinado, nas colorações <strong>ouro velho</strong> ou
                         <strong>prata antigo</strong>.</li>
+                    <li><strong>Cruz para Terço:</strong> liga de zinco, resinada, nas
+                        colorações <strong>prata</strong>, <strong>ouro velho</strong> ou
+                        <strong>dourado</strong>.</li>
                 </ul>
             </details>
 
             <details class="acordeao">
                 <summary>Como cuidar da peça no dia a dia?</summary>
-                <p>A <strong>medalha</strong> (aço inoxidável) tem boa resistência a
-                água do dia a dia -- banho, chuva, suor não são problema. Já o
-                <strong>entremeio e o chaveiro</strong> (liga de zinco) merecem mais
-                cuidado, pra manter o acabamento por mais tempo:</p>
+                <p>A <strong>medalha de 1 lado</strong> (aço inoxidável) tem boa
+                resistência a água do dia a dia -- banho, chuva, suor não são problema.
+                Já a <strong>medalha de 2 lados, o entremeio, o chaveiro e a Cruz para
+                Terço</strong> (liga de zinco) merecem mais cuidado, pra manter o
+                acabamento por mais tempo:</p>
                 <ul>
                     <li>Evite contato frequente com água, principalmente água salgada
                         (praia) ou com cloro (piscina);</li>

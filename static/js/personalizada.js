@@ -907,7 +907,7 @@
 
     // upsell "Cruz para Terco" (ver static/js/upsell_cruz.js).
     if (r.formato === 'entremeio' && (r.cor === 'prata' || r.cor === 'ouro_velho') && typeof ofertarUpsellCruz === 'function') {
-      setTimeout(() => ofertarUpsellCruz(r.cor), 500);
+      setTimeout(() => ofertarUpsellCruz(r.cor, quantidade), 500);
     }
 
     const textoOriginal = 'Adicionar ao carrinho';
@@ -946,7 +946,7 @@
 
     // upsell "Cruz para Terco" (ver static/js/upsell_cruz.js).
     if (formatoAtual() === 'entremeio' && (corAtual() === 'prata' || corAtual() === 'ouro_velho') && typeof ofertarUpsellCruz === 'function') {
-      setTimeout(() => ofertarUpsellCruz(corAtual()), 500);
+      setTimeout(() => ofertarUpsellCruz(corAtual(), quantidade), 500);
     }
 
     const textoOriginal = 'Adicionar ao carrinho sem foto (envio depois pelo WhatsApp)';

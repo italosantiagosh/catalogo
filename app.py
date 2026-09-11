@@ -771,9 +771,10 @@ def llms_txt():
     corpo = f"""# Nove de Julho -- Catálogo de Atacado
 
 > Catálogo de atacado de medalhas, entremeios e chaveiros religiosos católicos,
-> em aço inox de qualidade. Mais de 130 santos e devoções, com desconto de
-> atacado automático por quantidade (sem cupom) e opção de peça personalizada
-> a partir de foto enviada pelo cliente.
+> resinados -- medalha de 1 lado em aço inoxidável, os demais formatos em liga
+> de zinco. Mais de 130 santos e devoções, com desconto de atacado automático
+> por quantidade (sem cupom) e opção de peça personalizada a partir de foto
+> enviada pelo cliente.
 
 Site institucional/loja da Nove de Julho, empresa brasileira. Preços em Real
 (R$), pagamento via Pix (padrão), cartão em até 12x ou boleto, com nota fiscal

@@ -600,11 +600,11 @@ DESCRICOES_FORMATO = {
         "mais tradicional, pra colar ou pulseira no dia a dia."
     ),
     "entremeio": (
-        "Entremeio resinado em aço inoxidável, 1,6 cm de diâmetro interno — passa direto "
+        "Entremeio resinado em liga de zinco, 1,6 cm de diâmetro interno — passa direto "
         "no cordão do terço/rosário, pra montar o seu com o santo de devoção."
     ),
     "chaveiro": (
-        "Peça resinada em aço inoxidável, 3 cm de diâmetro interno — o maior formato do "
+        "Peça resinada em liga de zinco, 3 cm de diâmetro interno — o maior formato do "
         "catálogo, ótimo pra bolsa, mochila ou presente."
     ),
 }
