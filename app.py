@@ -43,6 +43,7 @@ import os
 import re
 import secrets
 import tempfile
+import threading
 import zipfile
 from datetime import datetime, timedelta, timezone
 from zoneinfo import ZoneInfo
@@ -53,7 +54,7 @@ from xml.sax.saxutils import escape as escapar_xml
 from flask import Flask, Response, abort, jsonify, redirect, render_template, request, send_file, session, url_for
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
-from PIL import Image, ImageOps
+from PIL import ExifTags, Image, ImageOps
 from pillow_heif import register_heif_opener
 from werkzeug.datastructures import FileStorage
 
@@ -630,15 +631,32 @@ def _salvar_temp(arquivo: FileStorage) -> tempfile._TemporaryFileWrapper:
     return tmp
 
 
+# O servidor roda com 1 processo gunicorn e 8 threads (ver render.yaml)
+# -- todas compartilham a mesma memoria, entao 2+ uploads pesados
+# processando ao mesmo tempo somam os picos em vez de ficarem isolados
+# (ver conversa: caiu com "exceeded its memory limit" bem na hora de
+# subir 2 fotos de celular juntas pela personalizada). Esse semaforo
+# serializa so a parte pesada (abrir/reduzir/compor a imagem) -- uploads
+# extras esperam alguns segundos na fila em vez de estourarem a memoria
+# junto; o timeout fica abaixo do --timeout 90 do gunicorn pra devolver
+# um erro tratavel em vez do worker inteiro travar esperando.
+_LIMITE_PROCESSAMENTO_IMAGEM_PESADO = threading.Semaphore(1)
+_TIMEOUT_ESPERA_PROCESSAMENTO_SEGUNDOS = 60
+
+
 # Fotos de celular moderno passam facil de 12-48MP -- processar em
 # resolucao total (compose_medal/_crop_quadrada, que carregam a imagem
 # inteira em memoria varias vezes com PIL/numpy pra compor a medalha)
 # pode estourar a memoria do processo, pra uma peca que sai impressa
 # com 1,2 a 3cm de diametro (ver conversa: alerta real do Render
 # "exceeded its memory limit", log mostrando POST
-# /api/personalizada/preview bem no pico). Bem mais resolucao do que a
-# peca final jamais vai precisar.
-_FOTO_PERSONALIZADA_LADO_MAXIMO = 2400
+# /api/personalizada/preview bem no pico). O canvas final da medalha
+# (services/gerador/assets/base_medalha.png etc.) e´ so 1254x1254px, com
+# a foto do cliente preenchendo um circulo de ~890px de diametro
+# (INNER_RADIUS_FRAC=0.355 em services/gerador/config.py) -- 1600px da´
+# bastante folga pra recorte/zoom manual sem nunca precisar de mais que
+# isso.
+_FOTO_PERSONALIZADA_LADO_MAXIMO = 1600
 
 
 def _reduzir_temp_se_grande_demais(caminho: Path, box: "CropBox | None") -> "CropBox | None":
@@ -649,19 +667,39 @@ def _reduzir_temp_se_grande_demais(caminho: Path, box: "CropBox | None") -> "Cro
     MESMA proporcao, senao o recorte manual do cliente sai deslocado
     depois que a imagem encolhe."""
     with Image.open(caminho) as arquivo_original:
-        imagem = ImageOps.exif_transpose(arquivo_original)
-        largura, altura = imagem.size
+        # Tamanho e orientacao vem do cabecalho, leitura barata que nao
+        # decodifica pixel nenhum -- precisa ser lido ANTES do draft()
+        # abaixo, que ja´ muda o `.size` aparente do objeto pra escala
+        # reduzida. `box` vem em pixels da imagem original *ja´
+        # corrigida* pela orientacao EXIF (mesmo referencial que
+        # exif_transpose produz), entao troca largura/altura aqui se a
+        # orientacao for uma que roda 90/270 graus.
+        largura_bruta, altura_bruta = arquivo_original.size
+        orientacao = arquivo_original.getexif().get(ExifTags.Base.Orientation, 1)
+        troca_lados = orientacao in (5, 6, 7, 8)
+        largura, altura = (altura_bruta, largura_bruta) if troca_lados else (largura_bruta, altura_bruta)
         maior_lado = max(largura, altura)
         if maior_lado <= _FOTO_PERSONALIZADA_LADO_MAXIMO:
             return box
         fator = _FOTO_PERSONALIZADA_LADO_MAXIMO / maior_lado
-        # resize() ja devolve uma imagem nova com os pixels prontos,
-        # independente do arquivo original -- da pra salvar por cima do
-        # mesmo caminho com seguranca so depois que esse "with" fechar.
+
+        # draft() pede pro decoder de JPEG decodificar ja´ numa escala
+        # reduzida (1/2, 1/4...), em vez de decodificar os 12-48MP
+        # inteiros pra so´ depois encolher -- corta o pico de memoria
+        # bem na raiz pra fotos JPEG (a maioria fora do iPhone/HEIC, que
+        # nao suporta draft e cai no caminho normal abaixo mesmo assim).
+        # O resize() final sempre mira no tamanho calculado a partir do
+        # ORIGINAL (acima), entao o resultado fica identico independente
+        # de em que escala o draft decodificou.
+        arquivo_original.draft("RGB", (_FOTO_PERSONALIZADA_LADO_MAXIMO, _FOTO_PERSONALIZADA_LADO_MAXIMO))
+        imagem = ImageOps.exif_transpose(arquivo_original)
         imagem = imagem.resize(
             (max(1, round(largura * fator)), max(1, round(altura * fator))), Image.LANCZOS
         )
-
+    # "with" fecha e libera o buffer decodificado do arquivo original
+    # aqui, ANTES do save -- exif_transpose/resize sempre devolvem uma
+    # imagem propria, entao `imagem` continua valida depois que
+    # arquivo_original fecha.
     parametros_save = {"quality": 90} if caminho.suffix.lower() in (".jpg", ".jpeg") else {}
     imagem.save(caminho, **parametros_save)
 
@@ -4455,14 +4493,19 @@ def api_personalizada_preview():
     spec = MEDAL_SPECS[spec_id]
 
     box = _ler_box(request.form)
-    with _salvar_temp(arquivo) as tmp:
-        caminho = Path(tmp.name)
-        try:
-            box = _reduzir_temp_se_grande_demais(caminho, box)
-            resultado = compose_medal(spec, caminho, crop_box=box)
-            recorte = _crop_quadrada(caminho, box)
-        except Exception as exc:
-            return jsonify(erro=f"Erro ao gerar a simulação: {exc}"), 400
+    if not _LIMITE_PROCESSAMENTO_IMAGEM_PESADO.acquire(timeout=_TIMEOUT_ESPERA_PROCESSAMENTO_SEGUNDOS):
+        return jsonify(erro="Muita gente enviando foto agora, tenta de novo em alguns segundos."), 503
+    try:
+        with _salvar_temp(arquivo) as tmp:
+            caminho = Path(tmp.name)
+            try:
+                box = _reduzir_temp_se_grande_demais(caminho, box)
+                resultado = compose_medal(spec, caminho, crop_box=box)
+                recorte = _crop_quadrada(caminho, box)
+            except Exception as exc:
+                return jsonify(erro=f"Erro ao gerar a simulação: {exc}"), 400
+    finally:
+        _LIMITE_PROCESSAMENTO_IMAGEM_PESADO.release()
 
     nome_base = _sem_extensao(arquivo.filename)
     imagem_bytes = _imagem_para_bytes(resultado)
