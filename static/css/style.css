@@ -2786,10 +2786,29 @@ input[type="file"] {
   font-size: 1rem;
   font-weight: 700;
   cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
 }
 
 .botao-whatsapp:active {
   background: #1eb958;
+}
+
+.botao-whatsapp-icone {
+  height: 22px;
+  width: auto;
+  background: #fff;
+  border-radius: 50%;
+  padding: 2px;
+  flex-shrink: 0;
+}
+
+.opcao-formato-icone-wpp {
+  height: 18px;
+  width: auto;
+  vertical-align: -4px;
 }
 
 .botao-whatsapp-secundario {

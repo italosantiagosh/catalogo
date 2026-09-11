@@ -139,13 +139,16 @@ def _normalizar_nome(nome: str) -> str:
 # MARGEM_DIAS_UTEIS_POR_TRANSPORTADORA acima, reaproveitado aqui pra nao
 # duplicar a logica de normalizacao. So cobre as transportadoras que
 # realmente aparecem na cotacao hoje (Correios, Azul Cargo Express,
-# LATAM Cargo, J&T Express) -- as demais (Jadlog, Loggi, Total Express)
-# ficam sem logo por enquanto, mostram so o nome em texto.
+# LATAM Cargo, J&T Express, Loggi) -- Jadlog e Total Express ficam sem
+# logo por enquanto: nao existe imagem de licenca livre/reutilizavel
+# confirmada pra elas ainda (so achamos agregadores de logo de terceiros,
+# que nao dao garantia de uso), mostram so o nome em texto.
 LOGO_POR_TRANSPORTADORA = {
     "correios": "correios.svg",
     "azul": "azul-cargo.png",
     "latam": "latam-cargo.svg",
     "jt": "jt-express.svg",
+    "loggi": "loggi.png",
 }
 
 

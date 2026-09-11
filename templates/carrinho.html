@@ -66,7 +66,7 @@
       </label>
       <label class="opcao-formato">
         <input type="radio" name="forma-pagamento" id="forma-pagamento-whatsapp" value="whatsapp">
-        💬 Combinar pelo WhatsApp
+        <img src="{{ url_for('static', filename='img/icones/whatsapp.svg') }}" alt="WhatsApp" class="opcao-formato-icone-wpp"> Combinar pelo WhatsApp
       </label>
     </fieldset>
 
@@ -217,6 +217,7 @@
 
     <div class="whatsapp-acoes" id="whatsapp-finalizar-wrap" hidden>
       <button type="button" id="btn-whatsapp-finalizar" class="botao-whatsapp">
+        <img src="{{ url_for('static', filename='img/icones/whatsapp.svg') }}" alt="" class="botao-whatsapp-icone">
         Finalizar pedido pelo WhatsApp
       </button>
     </div>
