@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import pytest
 from PIL import ExifTags, Image
 
 import app as app_module
@@ -54,6 +55,21 @@ def test_imagem_grande_e_reduzida_e_box_escalado_junto(tmp_path):
         assert imagem.size == (limite, round(4000 * fator))
 
     assert box_devolvido == tuple(v * fator for v in box)
+
+
+def test_imagem_com_mais_de_80mp_e_rejeitada_antes_de_decodificar(tmp_path):
+    """Foto absurdamente grande (modo especial de camera, nao o padrao
+    de nenhum celular comum) e´ rejeitada com erro tratavel ANTES de
+    tentar decodificar -- pra HEIC nao tem draft() disponivel (so
+    ajuda JPEG), entao exif_transpose() decodificaria a foto inteira
+    em memoria sem essa checagem (ver conversa: 2 quedas reais do
+    Render no mesmo dia com pico quase vertical no grafico de
+    memoria)."""
+    caminho = tmp_path / "gigante.jpg"
+    Image.new("RGB", (10000, 8500), (10, 20, 30)).save(caminho, quality=85)  # 85MP
+
+    with pytest.raises(ValueError, match="grande demais"):
+        app_module._reduzir_temp_se_grande_demais(caminho, None)
 
 
 def test_box_none_continua_none_apos_reduzir(tmp_path):

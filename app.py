@@ -658,6 +658,18 @@ _TIMEOUT_ESPERA_PROCESSAMENTO_SEGUNDOS = 60
 # isso.
 _FOTO_PERSONALIZADA_LADO_MAXIMO = 1600
 
+# draft() (abaixo) so ajuda decoder de JPEG -- pra HEIC (padrao das
+# fotos de iPhone) nao tem atalho de decodificar ja´ em escala menor
+# na versao instalada do pillow_heif, entao exif_transpose() precisa
+# decodificar a foto INTEIRA em memoria antes de qualquer reducao. Uma
+# foto de 80+ megapixels (modo especial de camera, nao o padrao de
+# nenhum celular comum) sozinha ja´ passa de 200-300MB so´ de pixel cru
+# -- rejeita ANTES de tentar decodificar em vez de arriscar estourar o
+# processo inteiro (ver conversa: 2 quedas reais do Render no mesmo
+# dia, picos quase verticais no grafico de memoria, sem o padrao
+# gradual de 2+ uploads simultaneos que o semaforo acima ja cobre).
+_FOTO_PERSONALIZADA_MEGAPIXELS_MAXIMO = 80_000_000
+
 
 def _reduzir_temp_se_grande_demais(caminho: Path, box: "CropBox | None") -> "CropBox | None":
     """Reduz o arquivo temporario ANTES do processamento pesado, se
@@ -675,6 +687,12 @@ def _reduzir_temp_se_grande_demais(caminho: Path, box: "CropBox | None") -> "Cro
         # exif_transpose produz), entao troca largura/altura aqui se a
         # orientacao for uma que roda 90/270 graus.
         largura_bruta, altura_bruta = arquivo_original.size
+        if largura_bruta * altura_bruta > _FOTO_PERSONALIZADA_MEGAPIXELS_MAXIMO:
+            raise ValueError(
+                "essa foto é grande demais pra processar (mais de "
+                f"{_FOTO_PERSONALIZADA_MEGAPIXELS_MAXIMO // 1_000_000}MP) -- tenta reduzir a "
+                "resolução antes de enviar"
+            )
         orientacao = arquivo_original.getexif().get(ExifTags.Base.Orientation, 1)
         troca_lados = orientacao in (5, 6, 7, 8)
         largura, altura = (altura_bruta, largura_bruta) if troca_lados else (largura_bruta, altura_bruta)

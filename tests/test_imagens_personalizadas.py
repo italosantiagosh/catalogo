@@ -280,6 +280,27 @@ def test_preview_personalizada_devolve_url_duravel_nao_data_uri(client):
     assert client.get(dados["crop"]).status_code == 200
 
 
+def test_preview_personalizada_com_foto_gigante_devolve_erro_tratavel(client):
+    """Ponta a ponta do limite de megapixels (ver
+    app.py:_FOTO_PERSONALIZADA_MEGAPIXELS_MAXIMO) -- confirma que o
+    endpoint devolve um 400 com mensagem legivel em vez de deixar o
+    processo tentar decodificar uma foto absurdamente grande."""
+    buffer = io.BytesIO()
+    Image.new("RGB", (10000, 8500), (10, 20, 30)).save(buffer, format="JPEG", quality=85)  # 85MP
+    buffer.seek(0)
+    resposta = client.post(
+        "/api/personalizada/preview",
+        data={
+            "imagem": (buffer, "gigante.jpg"),
+            "formato": "medalha",
+            "x1": "0", "y1": "0", "x2": "10000", "y2": "8500",
+        },
+        content_type="multipart/form-data",
+    )
+    assert resposta.status_code == 400
+    assert "grande demais" in resposta.get_json()["erro"]
+
+
 def test_servir_imagem_personalizada_404_para_token_desconhecido(client):
     resposta = client.get("/imagem-personalizada/token-que-nao-existe")
     assert resposta.status_code == 404
