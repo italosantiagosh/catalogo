@@ -4,7 +4,28 @@ services:
     runtime: python
     plan: starter
     buildCommand: pip install -r requirements.txt
-    startCommand: gunicorn app:app --timeout 90 --workers 1 --worker-class gthread --threads 8 --max-requests 1000 --max-requests-jitter 100
+    # --max-requests baixado de 1000 pra 300: com 1 processo + 8 threads
+    # compartilhando a mesma memoria (gthread), fragmentacao do
+    # alocador do glibc sob varias alocacoes/liberacoes de buffers
+    # medios (PIL/numpy da composicao da medalha, ver
+    # services/gerador/compositor.py) faz o uso de memoria do processo
+    # so´ crescer com cada simulacao, sem nunca cair de volta -- ver
+    # conversa: queda real do Render mesmo com fotos ja reduzidas e SEM
+    # concorrencia, gerando varias simulacoes seguidas sem nunca
+    # finalizar o pedido. Reciclar o worker mais cedo limita ate onde
+    # essa fragmentacao consegue crescer antes de reiniciar sozinho.
+    startCommand: gunicorn app:app --timeout 90 --workers 1 --worker-class gthread --threads 8 --max-requests 300 --max-requests-jitter 50
+    envVars:
+      # Limita quantas "arenas" de memoria o glibc pode abrir por
+      # processo -- por padrao, malloc abre uma arena por thread ativa
+      # (ate 8x o normal de 1 processo aqui, ver --threads acima), e
+      # memoria liberada por uma arena nem sempre fica disponivel pras
+      # outras, o que e´ exatamente o padrao de "memoria so´ cresce,
+      # nunca cai" que causou quedas reais no Render (ver conversa).
+      # Correcao padrao/documentada pra esse sintoma em apps Python
+      # threaded -- sem mudanca de codigo nenhuma.
+      - key: MALLOC_ARENA_MAX
+        value: "2"
     disk:
       name: catalogo-dados
       mountPath: /var/data
