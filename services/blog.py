@@ -33,6 +33,12 @@ ARTIGOS_BLOG = {
             perseguição e precisavam de firmeza na fé. Depois da Ressurreição, teria pregado
             o Evangelho na Mesopotâmia, Síria e Armênia, onde foi martirizado.</p>
 
+            <figure>
+              <img src="/static/img/artigos/sao-judas-tadeu-santo-das-causas-impossiveis.jpg" alt="São Judas Tadeu, apóstolo de Jesus" loading="lazy" decoding="async">
+              <figcaption>São Judas Tadeu (Anthonis van Dyck, Kunsthistorisches Museum, Viena).</figcaption>
+            </figure>
+
+
             <h2>Por que "santo das causas impossíveis"?</h2>
             <p>A explicação mais aceita é também a mais simples: seu nome. Por soar
             parecido com Judas Iscariotes, o apóstolo que traiu Jesus, poucos cristãos ao
@@ -73,6 +79,12 @@ ARTIGOS_BLOG = {
             rede, a cabeça da mesma imagem. Diz a tradição que, a partir daquele lance, a
             pesca no rio se tornou tão farta que a canoa quase afundava com o peso dos
             peixes.</p>
+
+            <figure>
+              <img src="/static/img/artigos/nossa-senhora-aparecida-historia.jpg" alt="Imagem de Nossa Senhora Aparecida" loading="lazy" decoding="async">
+              <figcaption>A imagem original de Nossa Senhora Aparecida, encontrada em 1717 no rio Paraíba do Sul.</figcaption>
+            </figure>
+
 
             <h2>De uma capelinha simples à padroeira do Brasil</h2>
             <p>A imagem, de pouco mais de 30 centímetros e escurecida pelo tempo dentro
@@ -115,6 +127,12 @@ ARTIGOS_BLOG = {
             <em>ora et labora</em> ("reza e trabalha"). É considerado o fundador do
             monaquismo ocidental e, por sua influência na formação cultural da Europa, foi
             declarado padroeiro do continente pelo Papa Paulo VI em 1964.</p>
+
+            <figure>
+              <img src="/static/img/artigos/sao-bento-medalha-significado.jpg" alt="São Bento de Núrsia" loading="lazy" decoding="async">
+              <figcaption>São Bento de Núrsia, afresco de Fra Angelico no convento de San Marco, em Florença.</figcaption>
+            </figure>
+
 
             <h2>O que significam as letras na medalha</h2>
             <p>A medalha de São Bento é reconhecida pelas letras que cercam a cruz -- na
@@ -165,6 +183,12 @@ ARTIGOS_BLOG = {
             nós -- enquanto anjos levam a ela a fita ainda emaranhada e recolhem, do outro
             lado, a fita já livre.</p>
 
+            <figure>
+              <img src="/static/img/artigos/nossa-senhora-desatadora-dos-nos-oracao.jpg" alt="Nossa Senhora Desatadora dos Nós" loading="lazy" decoding="async">
+              <figcaption>A pintura original de Nossa Senhora Desatadora dos Nós, de Johann Schmidtner (c. 1700), na igreja de São Pedro em Perlach, Augsburgo.</figcaption>
+            </figure>
+
+
             <h2>Como a devoção chegou à América Latina</h2>
             <p>A imagem permaneceu relativamente pouco conhecida fora da Alemanha até o
             fim do século XX, quando um jovem padre argentino, Jorge Mario Bergoglio,
@@ -208,6 +232,12 @@ ARTIGOS_BLOG = {
             difícil, é lembrada por sua paciência e por rezar insistentemente pela
             conversão do marido -- que, segundo a tradição, de fato mudou de vida pouco
             antes de ser assassinado numa disputa local.</p>
+
+            <figure>
+              <img src="/static/img/artigos/santa-rita-de-cassia-santa-dos-impossiveis.jpg" alt="Santa Rita de Cássia" loading="lazy" decoding="async">
+              <figcaption>Santa Rita de Cássia, retrato tradicional da santa agostiniana de Cássia, na Itália.</figcaption>
+            </figure>
+
 
             <h2>Perdas profundas, uma depois da outra</h2>
             <p>Viúva, Rita viu seus dois filhos jurarem vingar a morte do pai -- e rezou
@@ -256,6 +286,12 @@ ARTIGOS_BLOG = {
             travessia, a criança revelou ser o próprio Jesus, e explicou que carregava não
             só o peso de um menino, mas o peso do mundo inteiro sobre os ombros.</p>
 
+            <figure>
+              <img src="/static/img/artigos/sao-cristovao-padroeiro-dos-viajantes.jpg" alt="São Cristóvão carregando o Menino Jesus" loading="lazy" decoding="async">
+              <figcaption>São Cristóvão atravessando o rio com o Menino Jesus, pintura de Hieronymus Bosch.</figcaption>
+            </figure>
+
+
             <h2>O que significa o nome "Cristóvão"</h2>
             <p>É justamente dessa lenda que vem o nome pelo qual ficou conhecido:
             "Cristóvão" (do grego <em>Christophoros</em>) significa literalmente "aquele
@@ -301,6 +337,12 @@ ARTIGOS_BLOG = {
             esposa e Jesus como filho -- um ato de coragem e fé que os Evangelhos registram
             com respeito, ainda que sem nenhuma palavra sua transcrita diretamente.</p>
 
+            <figure>
+              <img src="/static/img/artigos/sao-jose-pai-adotivo-de-jesus.jpg" alt="São José" loading="lazy" decoding="async">
+              <figcaption>São José, pintura de Agustín Rodríguez no Museo Nacional de Bellas Artes de Cuba.</figcaption>
+            </figure>
+
+
             <h2>Um pai de poucas palavras, muitos atos</h2>
             <p>Esse é um dos traços mais marcantes de José: em nenhuma passagem bíblica
             aparece uma fala sua registrada. Tudo o que se sabe sobre ele vem de suas
@@ -343,6 +385,12 @@ ARTIGOS_BLOG = {
             espinhos e em chamas, pedindo que essa imagem do seu amor por toda a
             humanidade fosse mais conhecida e venerada.</p>
 
+            <figure>
+              <img src="/static/img/artigos/sagrado-coracao-de-jesus-significado.jpg" alt="Sagrado Coração de Jesus" loading="lazy" decoding="async">
+              <figcaption>Sagrado Coração de Jesus, pintura da escola portuguesa do século XIX.</figcaption>
+            </figure>
+
+
             <h2>O que representam os símbolos</h2>
             <p>Nas imagens tradicionais, o Sagrado Coração aparece com alguns elementos
             fixos, cada um com um significado: as <strong>chamas</strong> representam o
@@ -384,6 +432,12 @@ ARTIGOS_BLOG = {
             liderando os anjos fiéis na batalha celestial contra o dragão (Satanás) e seus
             seguidores, expulsando-os do céu.</p>
 
+            <figure>
+              <img src="/static/img/artigos/sao-miguel-arcanjo-oracao-de-protecao.jpg" alt="São Miguel Arcanjo" loading="lazy" decoding="async">
+              <figcaption>São Miguel Arcanjo vencendo o demônio, pintura de Guido Reni (1636).</figcaption>
+            </figure>
+
+
             <h2>Um arcanjo, três papéis</h2>
             <p>Ao longo da tradição cristã, Miguel acumulou três funções principais:
             <strong>guerreiro</strong>, liderando a luta contra o mal; <strong>protetor</strong>,
@@ -424,6 +478,12 @@ ARTIGOS_BLOG = {
             de um convento, sem grandes feitos visíveis, tornou-se uma das santas mais
             populares e influentes da Igreja Católica moderna.</p>
 
+            <figure>
+              <img src="/static/img/artigos/santa-teresinha-caminho-da-infancia-espiritual.jpg" alt="Santa Teresinha do Menino Jesus" loading="lazy" decoding="async">
+              <figcaption>Fotografia de Santa Teresinha do Menino Jesus, tirada no Carmelo de Lisieux em 1895.</figcaption>
+            </figure>
+
+
             <h2>A "pequena via" da santidade</h2>
             <p>O legado de Santa Teresinha está principalmente em seu livro autobiográfico
             <em>História de uma Alma</em>, onde descreve o que chamou de "caminhozinho" ou
@@ -460,6 +520,12 @@ ARTIGOS_BLOG = {
             inteiramente à religião. Mas a Igreja também reconhece, cada vez com mais
             força, jovens que viveram poucos anos e, ainda assim, deixaram um testemunho
             de fé tão intenso quanto o de qualquer santo adulto.</p>
+
+            <figure>
+              <img src="/static/img/artigos/jovens-santos-e-beatos.jpg" alt="Túmulo do Beato Carlo Acutis" loading="lazy" decoding="async">
+              <figcaption>O corpo de Carlo Acutis, exposto no túmulo de vidro do Santuário da Espoliação, em Assis.</figcaption>
+            </figure>
+
 
             <h2>Carlo Acutis, o "influencer de Deus"</h2>
             <p>Carlo Acutis nasceu em Londres em 1991 e morreu em Monza, na Itália, em
@@ -517,6 +583,12 @@ ARTIGOS_BLOG = {
             espalhou pela Europa e formou alguns dos místicos mais influentes da história da
             Igreja.</p>
 
+            <figure>
+              <img src="/static/img/artigos/santos-carmelitas-espiritualidade-do-carmelo.jpg" alt="Nossa Senhora entrega o escapulário a São Simão Stock" loading="lazy" decoding="async">
+              <figcaption>Nossa Senhora do Carmo entrega o escapulário a São Simão Stock, pintura de Pietro Novelli (1641).</figcaption>
+            </figure>
+
+
             <h2>Santa Teresa d'Ávila, a reformadora</h2>
             <p><a href="/produto/santa-teresa-davila">Santa Teresa d'Ávila</a> (1515-1582)
             entrou para o Carmelo ainda jovem, na Espanha, mas percebeu com o tempo que a
@@ -572,6 +644,12 @@ ARTIGOS_BLOG = {
             são invocações, formas da Igreja destacar um aspecto específico da vida ou da
             proteção de São José, conforme a necessidade de quem reza.</p>
 
+            <figure>
+              <img src="/static/img/artigos/titulos-de-sao-jose.jpg" alt="São José carpinteiro com o Menino Jesus" loading="lazy" decoding="async">
+              <figcaption>São José Carpinteiro, pintura de Georges de La Tour (c. 1642), Museu do Louvre.</figcaption>
+            </figure>
+
+
             <h2>Castíssimo Coração de São José</h2>
             <p><a href="/produto/castissimo-coracao-de-sao-jose">O Castíssimo Coração de
             São José</a> segue o mesmo modelo de devoção do Sagrado Coração de Jesus e do
@@ -622,6 +700,12 @@ ARTIGOS_BLOG = {
             uma série de experiências místicas: visões e diálogos com Jesus, que lhe pedia
             que espalhasse a mensagem da sua misericórdia infinita por todo o mundo.</p>
 
+            <figure>
+              <img src="/static/img/artigos/santa-faustina-e-jesus-misericordioso.jpg" alt="Santa Faustina Kowalska" loading="lazy" decoding="async">
+              <figcaption>Santa Faustina Kowalska, religiosa polonesa que recebeu as revelações de Jesus Misericordioso.</figcaption>
+            </figure>
+
+
             <h2>A imagem de Jesus Misericordioso</h2>
             <p>Numa dessas visões, Faustina viu Jesus com a mão direita levantada em sinal
             de bênção e a esquerda tocando o peito, de onde saíam dois raios -- um pálido
@@ -664,6 +748,12 @@ ARTIGOS_BLOG = {
             Católica: Miguel, Gabriel e Rafael. Não por acaso, a Igreja celebra os três
             juntos, no mesmo dia -- 29 de setembro -- reconhecendo que, apesar de papéis
             bem diferentes, formam um só grupo de mensageiros a serviço de Deus.</p>
+
+            <figure>
+              <img src="/static/img/artigos/arcanjos-miguel-gabriel-rafael.jpg" alt="Os três arcanjos com Tobias" loading="lazy" decoding="async">
+              <figcaption>Os três arcanjos, com Tobias ao centro, pintura de Francesco Botticini (c. 1470), Galeria Uffizi.</figcaption>
+            </figure>
+
 
             <h2>Miguel, o guerreiro</h2>
             <p>Já contamos em detalhe a <a href="/blog/sao-miguel-arcanjo-oracao-de-protecao">história
@@ -710,6 +800,12 @@ ARTIGOS_BLOG = {
             casal francês do século XIX hoje reconhecido pela Igreja como modelo de
             santidade vivida dentro do casamento e da vida familiar comum.</p>
 
+            <figure>
+              <div style="display:flex;gap:12px;"><img src="/static/img/artigos/familia-martin-louis.jpg" alt="Louis Martin" loading="lazy" decoding="async" style="width:calc(50% - 6px);display:inline-block;"><img src="/static/img/artigos/familia-martin-zelie.jpg" alt="Zélie Martin" loading="lazy" decoding="async" style="width:calc(50% - 6px);display:inline-block;"></div>
+              <figcaption>Louis e Zélie Martin, pais de Santa Teresinha do Menino Jesus, canonizados juntos em 2015.</figcaption>
+            </figure>
+
+
             <h2>Um relojoeiro e uma rendeira</h2>
             <p>Louis Martin trabalhava como relojoeiro e joalheiro em Alençon, na França, e
             Zélie Guérin era uma habilidosa fabricante de rendas, dona do próprio pequeno
@@ -752,6 +848,12 @@ ARTIGOS_BLOG = {
             começou bem perto daqui. Em 1645, o Brasil holandês vivia um período de forte
             perseguição religiosa movida por tropas calvinistas contra a população
             católica do litoral do que hoje é o Rio Grande do Norte.</p>
+
+            <figure>
+              <img src="/static/img/artigos/santos-martires-de-cunhau-e-uruacu.jpg" alt="Capela erguida em memória dos mártires" loading="lazy" decoding="async">
+              <figcaption>Capela erguida em memória dos Mártires de Cunhaú e Uruaçu, no Rio Grande do Norte.</figcaption>
+            </figure>
+
 
             <h2>Dois massacres, poucos meses de diferença</h2>
             <p>No dia 16 de julho de 1645, um grupo de fiéis participava de uma missa na
@@ -802,6 +904,12 @@ ARTIGOS_BLOG = {
             pelo trabalho duro desde cedo -- e, ainda assim, tornou-se uma das figuras
             espirituais mais queridas da região.</p>
 
+            <figure>
+              <img src="/static/img/artigos/beata-nha-chica-baependi.jpg" alt="Imagem da Beata Nhá Chica" loading="lazy" decoding="async">
+              <figcaption>Imagem da Beata Nhá Chica, venerada em Baependi, Minas Gerais.</figcaption>
+            </figure>
+
+
             <h2>Uma vida simples, dedicada aos outros</h2>
             <p>Sem nunca ter aprendido a ler ou escrever, Nhá Chica viveu de forma humilde,
             mas dedicou boa parte do que tinha -- tempo, atenção, os poucos recursos que
@@ -841,6 +949,12 @@ ARTIGOS_BLOG = {
             estão entre as figuras religiosas mais amadas e visitadas do Nordeste
             brasileiro, mas nenhum dos dois foi, até hoje, oficialmente beatificado.
             Mesmo assim, a fé popular que os cerca é grande demais pra ser ignorada.</p>
+
+            <figure>
+              <img src="/static/img/artigos/padre-cicero-e-frei-damiao-devocao-nordestina.jpg" alt="Padre Cícero Romão Batista" loading="lazy" decoding="async">
+              <figcaption>Padre Cícero Romão Batista, pároco de Juazeiro do Norte.</figcaption>
+            </figure>
+
 
             <h2><a href="/produto/padre-cicero">Padre Cícero</a>, o padrinho de Juazeiro</h2>
             <p>Cícero Romão Batista (1844-1934) foi pároco em Juazeiro do Norte, no Ceará,
@@ -890,6 +1004,12 @@ ARTIGOS_BLOG = {
             e Jacinta Marto, e a prima deles, Lúcia dos Santos -- afirmaram ter visto Nossa
             Senhora em seis aparições sucessivas, entre maio e outubro daquele ano.</p>
 
+            <figure>
+              <img src="/static/img/artigos/francisco-e-jacinta-pastorinhos-de-fatima.jpg" alt="Lúcia, Francisco e Jacinta" loading="lazy" decoding="async">
+              <figcaption>Lúcia, Francisco e Jacinta, os três pastorinhos de Fátima, em outubro de 1917 (foto de Joshua Benoliel).</figcaption>
+            </figure>
+
+
             <h2>Duas crianças, uma missão de oração</h2>
             <p>Segundo o relato dos três pastorinhos, Nossa Senhora pediu que rezassem o
             terço todos os dias pela paz do mundo e fizessem sacrifícios pelos pecadores --
@@ -931,6 +1051,12 @@ ARTIGOS_BLOG = {
             geram dúvida sobre a diferença entre elas: Espírito Santo, Pentecostes e
             Santíssima Trindade. Não são a mesma coisa -- mas estão profundamente
             conectadas.</p>
+
+            <figure>
+              <img src="/static/img/artigos/espirito-santo-pentecostes-santissima-trindade.jpg" alt="Pentecostes" loading="lazy" decoding="async">
+              <figcaption>Pentecostes, pintura de El Greco, Museu do Prado.</figcaption>
+            </figure>
+
 
             <h2>Espírito Santo</h2>
             <p>Na fé católica, Deus é <strong>um só</strong>, mas existe em três pessoas
@@ -983,6 +1109,12 @@ ARTIGOS_BLOG = {
             Não são "Marias diferentes": é sempre a mesma mãe de Jesus, mas cada título
             representa ou uma aparição específica em um lugar e época, ou um aspecto
             particular de sua fé e sua história.</p>
+
+            <figure>
+              <img src="/static/img/artigos/nossa-senhora-titulos-e-aparicoes.jpg" alt="Nossa Senhora com cenas de suas aparições" loading="lazy" decoding="async">
+              <figcaption>Pintura mexicana de 1773 representando Nossa Senhora com cenas de suas aparições.</figcaption>
+            </figure>
+
 
             <h2>Nossa Senhora de Lourdes</h2>
             <p>Em 1858, na cidade francesa de Lourdes, uma jovem camponesa chamada
@@ -1054,6 +1186,12 @@ ARTIGOS_BLOG = {
             e França para evangelizar. Morreu ainda jovem, aos 35 anos, em Pádua, na
             Itália -- cidade que hoje carrega seu nome mais conhecido.</p>
 
+            <figure>
+              <img src="/static/img/artigos/santo-antonio-de-padua-santo-casamenteiro.jpg" alt="Santo Antônio de Pádua com o Menino Jesus" loading="lazy" decoding="async">
+              <figcaption>Santo Antônio de Pádua com o Menino Jesus, pintura de Stephan Kessler.</figcaption>
+            </figure>
+
+
             <h2>Por que "casamenteiro"?</h2>
             <p>A fama de Santo Antônio como intercessor para encontrar um bom casamento
             vem, principalmente, de uma tradição popular portuguesa que remonta a séculos:
@@ -1097,6 +1235,12 @@ ARTIGOS_BLOG = {
             de intensa perseguição aos cristãos. Recusando-se a abandonar sua fé mesmo sob
             ordem direta do imperador, foi torturado e decapitado por volta do ano 303,
             tornando-se um dos mártires mais venerados dos primeiros séculos da Igreja.</p>
+
+            <figure>
+              <img src="/static/img/artigos/sao-jorge-cavaleiro-e-martir.jpg" alt="São Jorge e o dragão" loading="lazy" decoding="async">
+              <figcaption>São Jorge e o Dragão, pintura de Gustave Moreau.</figcaption>
+            </figure>
+
 
             <h2>A lenda do dragão</h2>
             <p>A história mais conhecida sobre São Jorge, porém, não é histórica, e sim
@@ -1142,6 +1286,12 @@ ARTIGOS_BLOG = {
             nome próprio) em documentos antigos. Ainda assim, a devoção popular a Santo
             Expedito é imensa, especialmente no Brasil.</p>
 
+            <figure>
+              <img src="/static/img/artigos/santo-expedito-santo-das-causas-urgentes.jpg" alt="Santo Expedito" loading="lazy" decoding="async">
+              <figcaption>Estampa devocional de Santo Expedito, santo-soldado do século IV.</figcaption>
+            </figure>
+
+
             <h2>Um soldado romano na Armênia</h2>
             <p>Segundo a tradição mais difundida, Expedito teria sido comandante de uma
             legião romana baseada na Armênia, no fim do século III, e teria se convertido
@@ -1183,6 +1333,12 @@ ARTIGOS_BLOG = {
             transformou a própria casa da família num abrigo informal para mendigos e
             doentes que não tinham pra onde ir -- iniciativa que ficou conhecida na
             vizinhança como "A Portaria de São Francisco".</p>
+
+            <figure>
+              <img src="/static/img/artigos/santa-dulce-dos-pobres-primeira-santa-brasileira.jpg" alt="Irmã Dulce dos Pobres" loading="lazy" decoding="async">
+              <figcaption>Irmã Dulce dos Pobres, fundadora das Obras Sociais Irmã Dulce, em Salvador.</figcaption>
+            </figure>
+
 
             <h2>De um posto médico a um hospital de referência</h2>
             <p>Já como freira, com o nome religioso de Irmã Dulce, continuou expandindo
@@ -1228,6 +1384,12 @@ ARTIGOS_BLOG = {
             trajetória acadêmica e pastoral na Igreja polonesa até ser eleito Papa em 1978
             -- tornando-se o primeiro pontífice não-italiano em mais de 450 anos, adotando
             o nome de João Paulo II.</p>
+
+            <figure>
+              <img src="/static/img/artigos/sao-joao-paulo-ii-o-papa-viajante.jpg" alt="São João Paulo II em meio à multidão" loading="lazy" decoding="async">
+              <figcaption>São João Paulo II durante uma de suas viagens apostólicas, em 1979 (foto: Thomas J. O'Halloran).</figcaption>
+            </figure>
+
 
             <h2>Um papa que sobreviveu a um atentado</h2>
             <p>Em 13 de maio de 1981, João Paulo II foi baleado na Praça de São Pedro, em
