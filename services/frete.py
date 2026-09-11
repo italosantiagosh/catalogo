@@ -60,6 +60,12 @@ PESO_KG_POR_CHAVE = {
     "16mm": 0.002,
     "entremeio": 0.002,
     "chaveiro": 0.015,
+    # Cruz para Terco (pedido em 2026-09-11) -- peso conferido pelo
+    # usuario direto no cadastro real do material na Tiny (0,002 kg
+    # liquido/bruto), mesmo criterio das linhas acima.
+    "cruz_terco_prata": 0.002,
+    "cruz_terco_ouro_velho": 0.002,
+    "cruz_terco_dourado": 0.002,
 }
 
 # Caixa padrao usada pro pedido inteiro (altura x largura x comprimento,

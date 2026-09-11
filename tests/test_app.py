@@ -152,6 +152,16 @@ def test_kit_livraria_shalom_tem_banner_nao_clicavel_no_topo(client):
     assert 'class="banner-kit"' not in resposta
 
 
+def test_cruz_para_terco_lista_as_3_cores_com_preco(client):
+    resposta = client.get("/cruz-para-terco")
+    assert resposta.status_code == 200
+    corpo = resposta.get_data(as_text=True)
+    assert "Cruz para Terço" in corpo
+    for cor, preco in (("Prata", "2,50"), ("Ouro velho", "2,50"), ("Dourado", "3,00")):
+        assert cor in corpo
+        assert preco in corpo
+
+
 def test_api_busca_encontra_por_nome_sem_acento(client):
     resposta = client.get("/api/busca?q=jose")
     assert resposta.status_code == 200

@@ -66,11 +66,11 @@
   if (!listaEl) return;
 
   const TAMANHO_LABEL = { '12mm': '1,2 cm', '16mm': '1,6 cm', '14mm': '1,4 cm', '18mm': '1,8 cm' };
-  const COR_LABEL = { prata: 'Prata', ouro_velho: 'Ouro velho' };
+  const COR_LABEL = { prata: 'Prata', ouro_velho: 'Ouro velho', dourado: 'Dourado' };
   const FORMATO_LABEL = {
     medalha: 'Medalha', entremeio: 'Entremeio', chaveiro: 'Chaveiro',
     medalha_2lados: 'Medalha 2 lados', entremeio_2lados: 'Entremeio 2 lados',
-    chaveiro_2lados: 'Chaveiro 2 lados',
+    chaveiro_2lados: 'Chaveiro 2 lados', cruz_terco: 'Cruz para terço',
   };
   const GRUPO_LABEL = { padrao: 'medalhas/entremeios', chaveiro: 'chaveiros', duas_faces: 'medalhas/entremeios de 2 lados' };
   // mesmo texto usado em app.py (FRETE_RETIRADA_DESCRICAO) pra detectar
@@ -161,6 +161,9 @@
     if (formato === 'medalha_2lados') {
       return `${FORMATO_LABEL[formato]} · ${COR_LABEL[item.cor] || item.cor} · ${TAMANHO_LABEL[item.tamanho] || item.tamanho}`;
     }
+    if (formato === 'cruz_terco') {
+      return `${FORMATO_LABEL.cruz_terco} · ${COR_LABEL[item.cor] || item.cor}`;
+    }
     return `${FORMATO_LABEL.medalha} · ${TAMANHO_LABEL[item.tamanho] || item.tamanho}`;
   }
 
@@ -206,6 +209,9 @@
             ? 'Foto: ainda não enviada -- enviar nesta conversa'
             : 'Foto: já anexada ao pedido, disponível no painel';
           return `${numero}. Personalizada\n${detalhe}\nQuantidade: ${item.quantidade}\n${notaFoto}`;
+        }
+        if (item.formato === 'cruz_terco') {
+          return `${numero}. ${item.produtoNome}\n${detalhe}\nQuantidade: ${item.quantidade}`;
         }
         return `${numero}. ${item.produtoNome}\nModelo: ${item.modeloId}\n${detalhe}\nQuantidade: ${item.quantidade}`;
       })
@@ -279,7 +285,7 @@
   function linhaItem(item, calculo) {
     const linha = document.createElement('article');
     linha.className = 'item-carrinho';
-    const subtitulo = item.tipo === 'personalizada'
+    const subtitulo = item.tipo === 'personalizada' || item.formato === 'cruz_terco'
       ? subtituloEditavelHtml(item)
       : `${item.modeloNome} &middot; ${subtituloEditavelHtml(item)}`;
     let avisoFoto = '';

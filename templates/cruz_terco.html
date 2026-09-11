@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+
+{% block titulo %}Cruz para Terço (Cruz do Papa) — Prata, Ouro velho e Dourado | Nove de Julho{% endblock %}
+{% block meta_descricao %}Cruz para terço no modelo "Cruz do Papa" (São João Paulo II), 4,2 x 1,7 cm, em aço inox resinado. Prata, ouro velho ou dourado — combina com os entremeios da mesma cor. Desconto de atacado automático.{% endblock %}
+{% block og_imagem %}{{ cores[0].imagem_frente }}{% endblock %}
+
+{% block conteudo %}
+  <script type="application/ld+json">{{ dados_breadcrumb | tojson }}</script>
+  <nav class="breadcrumbs" aria-label="Breadcrumb">
+    <a href="{{ url_for('index') }}">Início</a>
+    <span>›</span>
+    <span aria-current="page">Cruz para Terço</span>
+  </nav>
+
+  <h1>Cruz para Terço (Cruz do Papa)</h1>
+  <p class="instrucao">
+    Também conhecida como Cruz de São João Paulo II — a cruz que fecha o terço,
+    em aço inox resinado, 4,2 x 1,7 cm. Combina com os entremeios da mesma cor.
+  </p>
+
+  <div class="preview-formato-wrap">
+    <img id="cruz-imagem-frente" src="{{ cores[0].imagem_frente }}" alt="Cruz para Terço" loading="lazy" decoding="async">
+  </div>
+
+  <p class="aviso-preco-atacado">
+    A partir de <strong>{{ cores[0].preco | preco }}</strong> — mesma faixa de desconto de
+    atacado das medalhas e entremeios: comprar junto conta pra mesma quantidade.
+  </p>
+  <p class="aviso-simulacao">📷 Fotos meramente ilustrativas — cor e brilho da peça real podem variar
+  um pouco conforme iluminação e tela do aparelho.</p>
+
+  <fieldset class="cores" id="cruz-cores">
+    <legend>Cor *</legend>
+    {% for cor in cores %}
+      <label class="opcao-cor">
+        <input type="radio" name="cruz-cor" value="{{ cor.id }}" data-preco="{{ cor.preco }}"
+          data-chave-preco="{{ cor.chave_preco }}" data-imagem="{{ cor.imagem_frente }}"
+          data-imagem-perfil="{{ cor.imagem_perfil }}" {% if loop.first %}checked{% endif %}>
+        <img class="opcao-formato-thumb" src="{{ cor.imagem_frente }}" alt="" loading="lazy">
+        {{ cor.nome }} — {{ cor.preco | preco }}
+      </label>
+    {% endfor %}
+  </fieldset>
+
+  <div class="quantidade">
+    <label for="cruz-quantidade">Quantidade</label>
+    <div class="stepper">
+      <button type="button" id="cruz-qtd-menos" aria-label="Diminuir quantidade">−</button>
+      <input type="number" id="cruz-quantidade" value="1" min="1" inputmode="numeric">
+      <button type="button" id="cruz-qtd-mais" aria-label="Aumentar quantidade">+</button>
+    </div>
+  </div>
+
+  <div class="preview-preco" id="cruz-preview-preco"></div>
+
+  <button type="button" class="botao-carrinho" id="cruz-btn-adicionar">Adicionar ao carrinho</button>
+
+  <div class="selo-confianca">
+    <div class="selo-item">
+      <span class="selo-icone">📏</span>
+      <strong>4,2 x 1,7 cm</strong>
+      tamanho real
+    </div>
+    <div class="selo-divisor"></div>
+    <div class="selo-item">
+      <span class="selo-icone">🧵</span>
+      <strong>Combina</strong>
+      com o entremeio da mesma cor
+    </div>
+    <div class="selo-divisor"></div>
+    <div class="selo-item">
+      <span class="selo-icone">🇧🇷</span>
+      <strong>Envio</strong>
+      para todo o Brasil
+    </div>
+  </div>
+
+  <section class="relacionados">
+    <h3>Vista lateral e tamanho real</h3>
+    <div class="destaques-linha">
+      <img id="cruz-imagem-perfil" src="{{ cores[0].imagem_perfil }}" alt="Cruz para Terço — vista lateral" loading="lazy" decoding="async" width="480" height="480" style="border-radius: 14px;">
+      <img src="{{ url_for('static', filename='img/produtos/cruz_terco_prata_medidas.jpg') }}" alt="Cruz para Terço — medidas reais: 4,2 cm de altura por 1,7 cm de largura" loading="lazy" decoding="async" width="480" height="576" style="border-radius: 14px;">
+    </div>
+    <p class="instrucao">
+      Precisa também do entremeio de mesma cor pro corpo do terço?
+      <a href="{{ url_for('catalogo_completo') }}">Veja o catálogo completo →</a>
+    </p>
+  </section>
+{% endblock %}
+
+{% block script %}
+  <script src="{{ url_for('static', filename='js/cruz_terco.js') }}"></script>
+{% endblock %}

@@ -333,6 +333,13 @@
       if (typeof carrinhoAtualizarBarraPersistente === 'function') carrinhoAtualizarBarraPersistente();
       atualizarPreviewPreco();
 
+      // upsell "Cruz para Terco" (ver static/js/upsell_cruz.js) -- so faz
+      // sentido pra entremeio prata/ouro velho, que e´ o formato que
+      // realmente vai junto num terco.
+      if (formato === 'entremeio' && (cor === 'prata' || cor === 'ouro_velho') && typeof ofertarUpsellCruz === 'function') {
+        setTimeout(() => ofertarUpsellCruz(cor), 500);
+      }
+
       const textoOriginal = 'Adicionar ao carrinho';
       btnAdicionar.textContent = 'Adicionado ✓';
       setTimeout(() => {

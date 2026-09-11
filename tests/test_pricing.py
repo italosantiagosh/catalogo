@@ -280,6 +280,34 @@ def test_desconto_frete_atacado_soma_os_dois_grupos_quando_ambos_atingem():
     assert resultado["desconto_frete_atacado"] == 26.40
 
 
+def test_cruz_terco_preco_fixo_independente_da_quantidade():
+    # sem tabela de atacado (pedido do usuario: preco unico) -- mesmo
+    # preco em qualquer quantidade do grupo "padrao".
+    assert calcular_preco("cruz_terco_prata", 1) == 2.50
+    assert calcular_preco("cruz_terco_prata", 500) == 2.50
+    assert calcular_preco("cruz_terco_ouro_velho", 1) == 2.50
+    assert calcular_preco("cruz_terco_ouro_velho", 500) == 2.50
+    assert calcular_preco("cruz_terco_dourado", 1) == 3.00
+    assert calcular_preco("cruz_terco_dourado", 500) == 3.00
+
+
+def test_cruz_terco_entra_no_grupo_padrao_junto_com_entremeio():
+    # comprar cruz junto com entremeio conta pra MESMA faixa de atacado
+    # (upsell: pedido do usuario) -- 19 entremeios + 1 cruz = 20, ja
+    # entra na faixa de atacado (preco cai de 5,00 pra 4,50).
+    resultado = calcular_carrinho([
+        {"chave_preco": "entremeio", "quantidade": 19},
+        {"chave_preco": "cruz_terco_prata", "quantidade": 1},
+    ])
+    assert resultado["grupos"]["padrao"]["quantidade_total"] == 20
+    item_entremeio = resultado["itens"][0]
+    assert item_entremeio["preco_unitario"] == 4.50
+    item_cruz = resultado["itens"][1]
+    # a cruz continua com preco fixo dela mesma, so a FAIXA (quantidade)
+    # e´ compartilhada com o grupo -- nao o preco por unidade.
+    assert item_cruz["preco_unitario"] == 2.50
+
+
 def test_frete_gratis_considera_subtotal_combinado_de_ambos_grupos():
     # medalhas + chaveiros somam pro frete gratis, mesmo sem se misturar na faixa
     resultado = calcular_carrinho([

@@ -255,6 +255,29 @@ def test_entremeio_2lados_usa_codigo_por_cor(monkeypatch):
     assert pedido_json["itens"][1]["item"]["descricao"] == "Entremeio Personalizado de 2 lados - Ouro velho"
 
 
+def test_cruz_terco_usa_codigo_real_por_cor(monkeypatch):
+    """Cruz para Terco (pedido em 2026-09-11) -- SKUs reais das
+    variacoes ja cadastradas pela usuaria na Tiny (produto "Cruz para
+    Terço", variacao Cor), nao inventados aqui."""
+    monkeypatch.setattr(tiny, "TINY_API_TOKEN", "segredo123")
+    itens = [
+        {"chave_preco": "cruz_terco_prata", "quantidade": 2, "descricao": "Cruz para terço · Prata", "valor_unitario": 2.5, "cor": "prata"},
+        {"chave_preco": "cruz_terco_ouro_velho", "quantidade": 1, "descricao": "Cruz para terço · Ouro velho", "valor_unitario": 2.5, "cor": "ouro_velho"},
+        {"chave_preco": "cruz_terco_dourado", "quantidade": 3, "descricao": "Cruz para terço · Dourado", "valor_unitario": 3.0, "cor": "dourado"},
+    ]
+    with patch("services.tiny.requests.post", return_value=_resposta_ok()) as post_mock:
+        tiny.criar_pedido_tiny(_pedido_exemplo(itens=itens))
+    pedido_json = json.loads(post_mock.call_args.kwargs["data"]["pedido"])["pedido"]
+    codigos = [i["item"]["codigo"] for i in pedido_json["itens"]]
+    descricoes = [i["item"]["descricao"] for i in pedido_json["itens"]]
+    assert codigos == ["CRUZPRATEADA", "CRUZOV", "CRUZDOURADA"]
+    assert descricoes == [
+        "Cruz para Terço - Prata",
+        "Cruz para Terço - Ouro velho",
+        "Cruz para Terço - Dourado",
+    ]
+
+
 def test_chaveiro_2lados_usa_codigo_proprio_separado_do_chaveiro_1_lado(monkeypatch):
     """Ver conversa 2026-09-04: a usuaria usava o MESMO material da Tiny
     pros chaveiros de 1 e 2 lados -- pediu SKU proprio pra separar e

@@ -729,6 +729,7 @@ def sitemap_xml():
         (url_for("catalogo_completo"), "weekly", "0.8"),
         (url_for("personalizada"), "monthly", "0.7"),
         (url_for("kit_livraria_shalom"), "monthly", "0.6"),
+        (url_for("cruz_para_terco"), "monthly", "0.6"),
         (url_for("carrinho"), "yearly", "0.1"),
     ]
     entradas += [(url_for("landing_pagina", slug=s), "monthly", "0.6") for s in PAGINAS_LANDING]
@@ -787,6 +788,7 @@ com a quantidade total do pedido (500+ peças: 7 dias úteis; 1000+: 8 dias
 - [Catálogo completo]({base}{url_for('catalogo_completo')}): todos os santos e devoções disponíveis
 - [Medalha personalizada]({base}{url_for('personalizada')}): envio de foto própria, com simulação antes de pedir
 - [Kit Livraria Shalom]({base}{url_for('kit_livraria_shalom')}): sortimento pronto com os santos mais vendidos
+- [Cruz para Terço]({base}{url_for('cruz_para_terco')}): cruz avulsa (prata, ouro velho ou dourado) pra completar o terço
 - [Quem somos]({base}{url_for('pagina_atendimento', slug='quem-somos')}): história da marca e do fundador
 - [Blog]({base}{url_for('blog_indice')}): história e significado dos santos e devoções do catálogo
 
@@ -1104,6 +1106,54 @@ def kit_livraria_shalom():
         itens=itens,
         quantidade_total_sugerida=sum(i["quantidade_sugerida"] for i in itens),
         preco_varejo=preco_varejo(),
+        dados_breadcrumb=dados_breadcrumb,
+    )
+
+
+@app.route("/cruz-para-terco", methods=["GET"])
+def cruz_para_terco():
+    """Cruz pra terco (pedido em 2026-09-11, "Cruz do Papa"/"Cruz de Sao
+    Joao Paulo II") -- pagina propria (nao usa o produto.html generico,
+    ver conversa: nao tem santo/modelo, so 3 cores da MESMA peca fisica,
+    4,2 x 1,7 cm), no mesmo padrao de pagina dedicada do /kit-livraria-
+    shalom. Preco vem sempre de precos.json (preco_varejo), nunca
+    hardcoded aqui -- prata/ouro velho R$2,50, dourado R$3,00 (pedido do
+    usuario, sem tabela de atacado propria pra essa peca)."""
+    cores = [
+        {
+            "id": "prata",
+            "nome": "Prata",
+            "chave_preco": "cruz_terco_prata",
+            "preco": preco_varejo("cruz_terco_prata"),
+            "imagem_frente": url_for("static", filename="img/produtos/cruz_terco_prata_frente.jpg"),
+            "imagem_perfil": url_for("static", filename="img/produtos/cruz_terco_prata_perfil.jpg"),
+        },
+        {
+            "id": "ouro_velho",
+            "nome": "Ouro velho",
+            "chave_preco": "cruz_terco_ouro_velho",
+            "preco": preco_varejo("cruz_terco_ouro_velho"),
+            "imagem_frente": url_for("static", filename="img/produtos/cruz_terco_ouro_velho_frente.jpg"),
+            "imagem_perfil": url_for("static", filename="img/produtos/cruz_terco_ouro_velho_perfil.jpg"),
+        },
+        {
+            "id": "dourado",
+            "nome": "Dourado",
+            "chave_preco": "cruz_terco_dourado",
+            "preco": preco_varejo("cruz_terco_dourado"),
+            "imagem_frente": url_for("static", filename="img/produtos/cruz_terco_dourado_frente.jpg"),
+            "imagem_perfil": url_for("static", filename="img/produtos/cruz_terco_dourado_perfil.jpg"),
+        },
+    ]
+    dados_breadcrumb = _dados_breadcrumb(
+        [
+            ("Início", url_for("index", _external=True)),
+            ("Cruz para Terço", url_for("cruz_para_terco", _external=True)),
+        ]
+    )
+    return render_template(
+        "cruz_terco.html",
+        cores=cores,
         dados_breadcrumb=dados_breadcrumb,
     )
 
@@ -1591,11 +1641,11 @@ def _itens_validos_do_corpo(dados: dict) -> list[dict]:
 # viu no carrinho, incluindo a variacao (tamanho/cor), que antes nao
 # aparecia no pedido persistido (so produto + modelo).
 _TAMANHO_LABEL = {"12mm": "1,2 cm", "16mm": "1,6 cm", "14mm": "1,4 cm", "18mm": "1,8 cm"}
-_COR_LABEL = {"prata": "Prata", "ouro_velho": "Ouro velho"}
+_COR_LABEL = {"prata": "Prata", "ouro_velho": "Ouro velho", "dourado": "Dourado"}
 _FORMATO_LABEL = {
     "medalha": "Medalha", "entremeio": "Entremeio", "chaveiro": "Chaveiro",
     "medalha_2lados": "Medalha 2 lados", "entremeio_2lados": "Entremeio 2 lados",
-    "chaveiro_2lados": "Chaveiro 2 lados",
+    "chaveiro_2lados": "Chaveiro 2 lados", "cruz_terco": "Cruz para terço",
 }
 
 
@@ -1621,6 +1671,11 @@ def _detalhe_formato_do_item(item: dict) -> str:
         cor = str(item.get("cor", ""))
         tamanho = str(item.get("tamanho", ""))
         return f"{_FORMATO_LABEL[formato]} · {_COR_LABEL.get(cor, cor)} · {_TAMANHO_LABEL.get(tamanho, tamanho)}"
+    if formato == "cruz_terco":
+        # sem tamanho (peca unica, 4,2 x 1,7 cm -- ver conversa
+        # 2026-09-11) -- so a cor muda.
+        cor = str(item.get("cor", ""))
+        return f"{_FORMATO_LABEL['cruz_terco']} · {_COR_LABEL.get(cor, cor)}"
     tamanho = str(item.get("tamanho", ""))
     return f"{_FORMATO_LABEL['medalha']} · {_TAMANHO_LABEL.get(tamanho, tamanho)}"
 

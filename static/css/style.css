@@ -2048,6 +2048,12 @@ body.tem-barra-fixa-comprar main {
   margin: 0 0 12px;
 }
 
+.ajuda-botao-centralizado {
+  display: flex;
+  width: fit-content;
+  margin: 0 auto 12px;
+}
+
 .popup-ajuda-inicial {
   position: fixed;
   left: 12px;
@@ -2081,6 +2087,22 @@ body.tem-barra-fixa-comprar main {
 }
 
 #popup-ajuda-sim {
+  border: none;
+  border-radius: 10px;
+  background: var(--accent);
+  color: #fff;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.upsell-cruz-texto {
+  font-size: 0.92rem !important;
+  color: var(--ink) !important;
+  text-align: left !important;
+  margin: 12px 0 14px !important;
+}
+
+#upsell-cruz-adicionar {
   border: none;
   border-radius: 10px;
   background: var(--accent);

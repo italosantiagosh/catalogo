@@ -201,8 +201,8 @@
       <div class="ajuda-caminho">
         <h3>🏛️ Catálogo pronto</h3>
         <ol>
-          <li>Ache um santo pela busca ou role a página</li>
-          <li>Escolha o formato: medalha, entremeio ou chaveiro</li>
+          <li>Ache um santo pela busca ou role a página — as fotos mostradas são todas de medalhas</li>
+          <li>Depois é só escolher o formato: continuar como medalha ou trocar para entremeio (para terço) ou chaveiro</li>
           <li>Se for medalha, escolha o tamanho</li>
           <li>Escolha a quantidade e adicione ao carrinho</li>
         </ol>
@@ -226,16 +226,34 @@
       <button type="button" class="imagem-modal-fechar" id="btn-ajuda-produto-fechar" aria-label="Fechar">×</button>
       <h2 class="tabela-desconto-titulo">Como pedir esse santo</h2>
       <ol>
-        <li>Escolha um modelo (foto)</li>
-        <li>Escolha o formato: medalha, entremeio ou chaveiro</li>
+        <li>Escolha um modelo (foto) — as fotos mostradas são todas de medalhas</li>
+        <li>Escolha o formato: continue como medalha ou troque para entremeio (para terço) ou chaveiro</li>
         <li>Se for medalha, escolha o tamanho (1,2 cm ou 1,6 cm)</li>
         <li>Escolha a quantidade</li>
         <li>Toque em "Adicionar ao carrinho"</li>
       </ol>
     </div>
   </div>
+
+  <div class="imagem-modal" id="modal-upsell-cruz" hidden>
+    <div class="imagem-modal-caixa">
+      <button type="button" class="imagem-modal-fechar" id="btn-upsell-cruz-fechar" aria-label="Fechar">×</button>
+      <img id="upsell-cruz-imagem" src="" alt="Cruz para terço" width="200" height="200">
+      <p class="upsell-cruz-texto">
+        Você adicionou um entremeio <strong id="upsell-cruz-cor-nome"></strong>.
+        Que tal completar o terço com a <strong>Cruz para Terço</strong> na mesma cor,
+        por <strong id="upsell-cruz-preco"></strong>?
+      </p>
+      <div class="popup-ajuda-botoes">
+        <button type="button" id="upsell-cruz-adicionar">Sim, adicionar</button>
+        <button type="button" id="upsell-cruz-nao" class="botao-secundario">Não, obrigado</button>
+      </div>
+    </div>
+  </div>
   <script src="{{ url_for('static', filename='js/carrinho.js') }}"></script>
   <script src="{{ url_for('static', filename='js/modais_base.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/upsell_cruz.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/bloqueio_zoom.js') }}"></script>
   {% block script %}{% endblock %}
 </body>
 </html>

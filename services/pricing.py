@@ -4,11 +4,18 @@ Motor de preco por atacado.
 Tres "familias" de produto, cada uma com seu proprio GRUPO de atacado --
 a quantidade que conta pra faixa de desconto NAO se mistura entre grupos:
 
-    "padrao"      -- medalhas (12mm/16mm) e entremeios de 1 lado. Mesma
+    "padrao"      -- medalhas (12mm/16mm), entremeios de 1 lado e a cruz
+                     pra terco (cruz_terco_prata/ouro_velho/dourado,
+                     pedido em 2026-09-11 -- entra nesse grupo de
+                     proposito, pra contar junto com entremeios na
+                     mesma faixa de atacado, ja que e´ vendida como
+                     upsell/combo dos entremeios da mesma cor). Mesma
                      regra de sempre (secao 25 do briefing original): a
                      faixa depende da quantidade TOTAL desse grupo no
                      carrinho, somando todos os santos/tamanhos/cores
-                     livremente.
+                     livremente. cruz_terco_* tem preco UNICO (uma so
+                     faixa em data/precos.json, sem tabela de atacado
+                     propria -- o usuario nao passou degraus pra ela).
     "chaveiro"    -- tabela de precos propria (varejo R$15, atacado
                      proprio). Conta pra faixa dele isoladamente; nao
                      soma com os outros grupos nem eles somam com ele.
@@ -49,6 +56,9 @@ GRUPO_DE_CHAVE = {
     "12mm": "padrao",
     "16mm": "padrao",
     "entremeio": "padrao",
+    "cruz_terco_prata": "padrao",
+    "cruz_terco_ouro_velho": "padrao",
+    "cruz_terco_dourado": "padrao",
     "chaveiro": "chaveiro",
     "chaveiro_2lados": "chaveiro",
     "medalha_2lados": "duas_faces",

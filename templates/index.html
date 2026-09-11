@@ -40,7 +40,7 @@
     </div>
   </section>
 
-  <button type="button" class="ajuda-botao" onclick="abrirAjudaHome()">❓ Como funciona / Como pedir</button>
+  <button type="button" class="ajuda-botao ajuda-botao-centralizado" onclick="abrirAjudaHome()">❓ Como funciona / Como pedir</button>
 
   <div class="popup-ajuda-inicial" id="popup-ajuda-inicial" hidden>
     <p>Quer ajuda pra fazer seu pedido?</p>
@@ -109,6 +109,19 @@
   <a class="banner-personalizada" href="{{ url_for('personalizada') }}">
     <img src="{{ url_for('static', filename='img/banner-personalizada.jpg') }}" alt="Peças personalizadas: envie sua foto e veja a simulação antes de pedir" loading="lazy" decoding="async" width="900" height="300">
   </a>
+
+  <section class="destaques">
+    <div class="destaques-grupo">
+      <h2 class="destaques-titulo">Complete seu terço</h2>
+      <p class="destaques-subtitulo">Cruz avulsa em prata, ouro velho ou dourado — combina com o entremeio da mesma cor.</p>
+      <div class="destaques-linha">
+        <a class="destaque-card" href="{{ url_for('cruz_para_terco') }}">
+          <img src="{{ url_for('static', filename='img/produtos/cruz_terco_prata_frente.jpg') }}" alt="Cruz para Terço" loading="lazy" decoding="async" width="480" height="480">
+          <span>Cruz para Terço</span>
+        </a>
+      </div>
+    </div>
+  </section>
 
   <div class="busca-wrap busca-wrap-home">
     <input type="search" class="busca-home-input" placeholder="Qual santo você procura? (ex: José, Carlo, Fátima)" aria-label="Buscar santo ou devoção" autocomplete="off">

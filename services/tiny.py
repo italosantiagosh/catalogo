@@ -147,6 +147,13 @@ def _cliente_para_tiny(pedido: dict) -> dict:
 # do primeiro pedido sincronizar certo -- sem isso cadastrado la, a
 # sincronizacao pode falhar ou cair num material errado, dependendo de
 # como a Tiny trata codigo desconhecido.
+#
+# "cruz_terco_prata/ouro_velho/dourado": produto novo (pedido em
+# 2026-09-11, "Cruz para Terço"/"Cruz do Papa") -- diferente de
+# chaveiro_2lados, aqui a usuaria ja cadastrou o material na Tiny ELA
+# MESMA (print de tela do Olist/Tiny, produto "Cruz para Terço" com
+# variacao "Cor": Dourado/Ouro velho/Prata) e mandou os SKUs reais das
+# variacoes -- codigos abaixo sao ESSES, nao inventados aqui.
 _CODIGO_MATERIAL_TINY = {
     "12mm": "WSL5RSRKA",
     "16mm": "LCEHXXXNP",
@@ -161,6 +168,9 @@ _CODIGO_MATERIAL_TINY = {
     "entremeio_2lados_ouro_velho": "5TQHLBKE2",
     "entremeio_2lados_dourado": "V9SBJB3M3",
     "chaveiro_2lados": "WLVU4VAUI",
+    "cruz_terco_prata": "CRUZPRATEADA",
+    "cruz_terco_ouro_velho": "CRUZOV",
+    "cruz_terco_dourado": "CRUZDOURADA",
 }
 
 _DESCRICAO_MATERIAL_TINY = {
@@ -177,6 +187,9 @@ _DESCRICAO_MATERIAL_TINY = {
     "entremeio_2lados_ouro_velho": "Entremeio Personalizado de 2 lados - Ouro velho",
     "entremeio_2lados_dourado": "Entremeio Personalizado de 2 lados - Dourado",
     "chaveiro_2lados": "Chaveiro Personalizado de 2 lados",
+    "cruz_terco_prata": "Cruz para Terço - Prata",
+    "cruz_terco_ouro_velho": "Cruz para Terço - Ouro velho",
+    "cruz_terco_dourado": "Cruz para Terço - Dourado",
 }
 
 

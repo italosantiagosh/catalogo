@@ -905,6 +905,11 @@
     });
     rastrearEventoGA4('add_custom_to_cart', { formato: r.formato, quantity: quantidade, com_foto: true });
 
+    // upsell "Cruz para Terco" (ver static/js/upsell_cruz.js).
+    if (r.formato === 'entremeio' && (r.cor === 'prata' || r.cor === 'ouro_velho') && typeof ofertarUpsellCruz === 'function') {
+      setTimeout(() => ofertarUpsellCruz(r.cor), 500);
+    }
+
     const textoOriginal = 'Adicionar ao carrinho';
     btnAdicionar.textContent = 'Adicionado ✓';
     setTimeout(() => {
@@ -938,6 +943,11 @@
       semImagem: true,
     });
     rastrearEventoGA4('add_custom_to_cart', { formato: formatoAtual(), quantity: quantidade, com_foto: false });
+
+    // upsell "Cruz para Terco" (ver static/js/upsell_cruz.js).
+    if (formatoAtual() === 'entremeio' && (corAtual() === 'prata' || corAtual() === 'ouro_velho') && typeof ofertarUpsellCruz === 'function') {
+      setTimeout(() => ofertarUpsellCruz(corAtual()), 500);
+    }
 
     const textoOriginal = 'Adicionar ao carrinho sem foto (envio depois pelo WhatsApp)';
     btnSemFoto.textContent = 'Adicionado ✓ — não esqueça de enviar a foto depois';
