@@ -180,6 +180,11 @@
       <input type="range" id="cropper-zoom" min="0" max="1000" value="0">
       <span style="font-size:1.5rem">&#9673;</span>
     </div>
+    <p class="aviso-borda-medalha" id="aviso-borda-medalha" hidden>
+      ⚠️ Na medalha de 1 lado, a borda alta da resina cobre uma faixa da lateral da foto na peça
+      real (um efeito parecido com dar zoom). Evite deixar letras, rostos ou detalhes importantes
+      muito perto da borda do círculo — centralize o que for essencial.
+    </p>
     <button type="button" id="botao-cropper-confirmar">Gerar prévia</button>
     <button type="button" id="botao-cropper-cancelar" class="botao-secundario">Cancelar</button>
   </section>
@@ -187,6 +192,8 @@
   <!-- 3) resultado -->
   <section id="view-preview" class="preview-personalizada" hidden>
     <img id="preview-imagem" alt="Simulação da medalha personalizada">
+    <p class="aviso-simulacao">📷 Simulação aproximada — cor, brilho e nitidez da peça real podem variar
+    um pouco da imagem gerada aqui na tela.</p>
 
     <p class="aviso-info" id="aviso-reenvio"></p>
 
@@ -228,6 +235,8 @@
         <img id="preview-imagem-lado2" alt="Simulação do lado 2">
       </div>
     </div>
+    <p class="aviso-simulacao">📷 Simulação aproximada — cor, brilho e nitidez da peça real podem variar
+    um pouco da imagem gerada aqui na tela.</p>
 
     <p class="aviso-info" id="aviso-reenvio-2f"></p>
 

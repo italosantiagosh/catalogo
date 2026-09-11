@@ -10,6 +10,7 @@
   const avisoMinimoEl = document.getElementById('aviso-minimo');
   const avisoProducaoDiasEl = document.getElementById('avisoProducaoDias');
   const pedidoIdTexto = document.getElementById('pedido-id-texto');
+  const gatilhoProducaoEl = document.getElementById('gatilho-producao');
   const btnWhatsappFinalizar = document.getElementById('btn-whatsapp-finalizar');
   const btnWhatsappDuvida = document.getElementById('btn-whatsapp-duvida');
   const formaPagamentoRadios = document.querySelectorAll('input[name="forma-pagamento"]');
@@ -509,6 +510,13 @@
 
     ultimosItens = itens;
     ultimoCalculo = dados;
+    atualizarGatilhoProducao();
+    if (!intervaloGatilhoProducao) {
+      // atualiza a contagem sozinha enquanto a pessoa fica na pagina
+      // decidindo -- 30s e´ suficiente pra granularidade de minuto (ver
+      // conversa), sem gastar bateria com algo por segundo.
+      intervaloGatilhoProducao = setInterval(atualizarGatilhoProducao, 30000);
+    }
     // "Codigo de referencia", nao "Pedido #" -- esse codigo e´ so local
     // (gerado no navegador, ver carrinho.js:obterOuCriarPedidoId) pra
     // identificar a conversa se fechar pelo WhatsApp. Ainda NAO existe
@@ -699,13 +707,63 @@
     return dias;
   }
 
+  // Pago ate´ 17:59 conta o proprio dia como base da producao; 18h em
+  // diante so entra a partir do dia seguinte -- espelha services/
+  // pedidos.py:HORA_LIMITE_PRODUCAO_MESMO_DIA/inicio_producao (ver
+  // conversa 2026-09-11). Usa a hora LOCAL do navegador (sem conversao
+  // de fuso), igual o resto deste arquivo ja faz com `new Date()` --
+  // pra visitante fora do Brasil o horario exibido pode nao bater
+  // exatamente com o corte real do servidor (que usa America/Sao_Paulo
+  // de verdade), mas a esmagadora maioria acessa daqui mesmo.
+  const HORA_LIMITE_PRODUCAO_MESMO_DIA = 18;
+
+  function antesDoCorteDeHoje() {
+    return new Date().getHours() < HORA_LIMITE_PRODUCAO_MESMO_DIA;
+  }
+
+  function inicioProducaoAgora() {
+    const agora = new Date();
+    if (antesDoCorteDeHoje()) return agora;
+    const amanha = new Date(agora);
+    amanha.setDate(amanha.getDate() + 1);
+    return amanha;
+  }
+
   function textoPrazoComProducao(prazoDiasTransportadora) {
     if (!prazoDiasTransportadora || !window.PRODUCAO_DIAS_UTEIS) return '';
     const quantidadeTotal = (ultimoCalculo && ultimoCalculo.quantidade_total) || 0;
     const diasProducao = producaoDiasUteisParaQuantidade(quantidadeTotal);
-    const dataProducaoPronta = somarDiasUteis(new Date(), diasProducao);
+    const dataProducaoPronta = somarDiasUteis(inicioProducaoAgora(), diasProducao);
     const dataEntrega = somarDiasUteis(dataProducaoPronta, prazoDiasTransportadora);
     return ` — com a produção, prazo de entrega dia ${formatarDataCurta(dataEntrega)}`;
+  }
+
+  // "Gatilho" de urgencia (ver conversa) -- so faz sentido contar ate o
+  // corte de HOJE: depois das 18h, qualquer compra ate a meia-noite ja
+  // cai no mesmo balde ("comeca amanha"), entao nao ha urgencia real em
+  // "correr" pra comprar em seguida -- mostra so a data prevista, sem
+  // contagem regressiva.
+  let intervaloGatilhoProducao = null;
+
+  function atualizarGatilhoProducao() {
+    if (!gatilhoProducaoEl || !window.PRODUCAO_DIAS_UTEIS) return;
+    const quantidadeTotal = (ultimoCalculo && ultimoCalculo.quantidade_total) || 0;
+    const diasProducao = producaoDiasUteisParaQuantidade(quantidadeTotal);
+    const dataEnvio = somarDiasUteis(inicioProducaoAgora(), diasProducao);
+    const dataFormatada = formatarDataCurta(dataEnvio);
+
+    if (antesDoCorteDeHoje()) {
+      const agora = new Date();
+      const limiteHoje = new Date(agora);
+      limiteHoje.setHours(HORA_LIMITE_PRODUCAO_MESMO_DIA, 0, 0, 0);
+      const restanteMs = limiteHoje - agora;
+      const horas = Math.floor(restanteMs / 3600000);
+      const minutos = Math.floor((restanteMs % 3600000) / 60000);
+      gatilhoProducaoEl.textContent =
+        `⏰ Compre nas próximas ${horas}h ${minutos}min e garanta envio até dia ${dataFormatada}`;
+    } else {
+      gatilhoProducaoEl.textContent = `📦 Comprando agora, envio previsto até dia ${dataFormatada}`;
+    }
   }
 
   // "Mini Envios" (Correios) nao tem rastreamento detalhado -- so mostra

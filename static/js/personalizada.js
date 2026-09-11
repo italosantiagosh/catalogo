@@ -8,6 +8,7 @@
   const viewUpload = document.getElementById('view-upload');
   const opcaoSemFoto = document.getElementById('opcao-sem-foto');
   const viewCropper = document.getElementById('view-cropper');
+  const avisoBordaMedalha = document.getElementById('aviso-borda-medalha');
   const viewPreview = document.getElementById('view-preview');
   const viewPreviewDuasFaces = document.getElementById('view-preview-duas-faces');
   const bannerErro = document.getElementById('banner-erro');
@@ -59,6 +60,11 @@
     viewCropper.hidden = nome !== 'cropper';
     viewPreview.hidden = nome !== 'preview';
     viewPreviewDuasFaces.hidden = nome !== 'preview-2f';
+    // aviso da borda alta so faz sentido pra medalha de 1 lado (ver
+    // conversa) -- os outros formatos nao tem esse recorte/zoom.
+    if (nome === 'cropper' && avisoBordaMedalha) {
+      avisoBordaMedalha.hidden = formatoAtual() !== 'medalha';
+    }
     window.scrollTo(0, 0);
   }
 

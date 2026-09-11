@@ -33,6 +33,7 @@ import sqlite3
 from contextlib import contextmanager
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
+from zoneinfo import ZoneInfo
 
 from config import FAIXAS_PRODUCAO_DIAS_UTEIS, PRODUCAO_DIAS_UTEIS
 
@@ -1400,6 +1401,29 @@ def somar_dias_uteis(data_inicio: datetime, dias: int) -> datetime:
     return data
 
 
+FUSO_BRASIL = ZoneInfo("America/Sao_Paulo")
+
+# Pago ate´ 17:59 (horario de Brasilia) conta o dia do proprio pagamento
+# como base pra contagem dos dias uteis de producao, igual sempre foi.
+# Pago 18:00 em diante (ainda no mesmo dia UTC ou nao) so entra na
+# producao a partir do dia seguinte -- pedido do usuario 2026-09-11:
+# quem paga de noite nao tem como comecar a produzir no mesmo dia.
+HORA_LIMITE_PRODUCAO_MESMO_DIA = 18
+
+
+def inicio_producao(data_pago: datetime) -> datetime:
+    """Ponto de partida real da contagem de dias uteis de producao (ver
+    somar_dias_uteis/previsoes_do_pedido abaixo) -- desloca pro dia
+    seguinte quando o pagamento cai as 18h ou depois no horario de
+    Brasilia (ver HORA_LIMITE_PRODUCAO_MESMO_DIA). Se esse dia seguinte
+    cair num fim de semana, some_dias_uteis ja pula pra frente sozinho
+    ao contar os dias uteis a partir daqui -- nao precisa tratar isso
+    aqui tambem."""
+    if data_pago.astimezone(FUSO_BRASIL).hour >= HORA_LIMITE_PRODUCAO_MESMO_DIA:
+        return data_pago + timedelta(days=1)
+    return data_pago
+
+
 def producao_dias_uteis_para_quantidade(quantidade_total: int) -> int:
     """Prazo de producao (dias uteis) pra um pedido com essa quantidade
     TOTAL de pecas (todos os formatos somados) -- ver config.py:
@@ -1440,7 +1464,7 @@ def previsoes_do_pedido(pedido: dict) -> dict:
     dias_producao = producao_dias_uteis_para_quantidade(quantidade_total)
     resultado["dias_producao"] = dias_producao
     data_pago = datetime.fromisoformat(pago_em)
-    previsao_envio = somar_dias_uteis(data_pago, dias_producao)
+    previsao_envio = somar_dias_uteis(inicio_producao(data_pago), dias_producao)
     resultado["previsao_envio"] = previsao_envio
 
     prazo_frete = pedido.get("frete_prazo_dias")

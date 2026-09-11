@@ -56,6 +56,12 @@
     Disponível em <strong>medalha</strong> (1,2 ou 1,6 cm), <strong>entremeio</strong>
     (prata ou ouro velho) e <strong>chaveiro</strong> — escolha após o modelo.
   </p>
+  <p class="aviso-producao">
+    🛠️ Peça sob encomenda, não é pronta entrega: produção em até
+    <strong>{{ producao_dias_uteis }} dias úteis</strong> após o pagamento confirmado, antes do envio.
+  </p>
+  <p class="aviso-simulacao">📷 Fotos meramente ilustrativas — cor e brilho da peça real podem variar
+  um pouco conforme iluminação e tela do aparelho.</p>
 
   <div class="modelos-grid" id="modelos-grid" data-produto-id="{{ produto.id }}" data-produto-nome="{{ produto.nome }}">
     {% for modelo in produto.modelos %}

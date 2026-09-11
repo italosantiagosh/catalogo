@@ -269,6 +269,34 @@ a.link-carrinho #contador-carrinho {
   height: 9%;
 }
 
+/* linha de botoes de verdade (clicaveis, com texto legivel por leitor
+   de tela) logo abaixo do banner -- pedido do usuario: os 3 botoes ja
+   desenhados na imagem (hero-banner-area acima) continuam existindo
+   por enquanto, essa linha e´ redundante de proposito ate a imagem ser
+   refeita. Cabe em UMA linha ate no menor celular -- por isso o texto
+   mais curto ("Baixar PDF" em vez de "Baixar catálogo em PDF") e fonte
+   pequena, em vez do padrao .botao-hero-primario/secundario (grande
+   demais pra 3 caberem lado a lado). */
+.hero-acoes-linha {
+  display: flex;
+  gap: 6px;
+  margin-top: 10px;
+}
+
+.hero-acao {
+  flex: 1 1 0;
+  min-width: 0;
+  text-align: center;
+  padding: 9px 4px;
+  border-radius: 10px;
+  background: var(--accent);
+  color: #fff;
+  text-decoration: none;
+  font-size: 0.74rem;
+  font-weight: 600;
+  line-height: 1.25;
+}
+
 .botao-hero-primario,
 .botao-hero-secundario {
   display: inline-block;
@@ -740,6 +768,24 @@ h1 {
   font-size: 0.85rem;
   margin: 0 0 16px;
   line-height: 1.4;
+}
+
+.aviso-simulacao {
+  color: var(--muted);
+  font-size: 0.78rem;
+  text-align: center;
+  margin: 8px 0 16px;
+  line-height: 1.4;
+}
+
+.aviso-borda-medalha {
+  background: var(--gold-soft);
+  color: #7a5c1f;
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 0.82rem;
+  line-height: 1.4;
+  margin: 0 0 12px;
 }
 
 .aviso-formatos {
@@ -1566,6 +1612,21 @@ input[readonly] {
 
 .aviso-producao strong {
   color: var(--ink);
+}
+
+.gatilho-producao {
+  background: var(--gold-soft);
+  color: #7a5c1f;
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  line-height: 1.4;
+  margin: 0 0 12px;
+}
+
+.gatilho-producao:empty {
+  display: none;
 }
 
 .nudge-desconto {
