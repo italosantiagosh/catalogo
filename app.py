@@ -690,8 +690,10 @@ def _reduzir_temp_se_grande_demais(caminho: Path, box: "CropBox | None") -> "Cro
         if largura_bruta * altura_bruta > _FOTO_PERSONALIZADA_MEGAPIXELS_MAXIMO:
             raise ValueError(
                 "essa foto é grande demais pra processar (mais de "
-                f"{_FOTO_PERSONALIZADA_MEGAPIXELS_MAXIMO // 1_000_000}MP) -- tenta reduzir a "
-                "resolução antes de enviar"
+                f"{_FOTO_PERSONALIZADA_MEGAPIXELS_MAXIMO // 1_000_000}MP). Tenta mandar ela pra "
+                "você mesmo pelo WhatsApp primeiro -- ele reduz o tamanho sozinho -- e reenvia "
+                "esse arquivo aqui. Ou já manda a foto direto pro nosso WhatsApp (bolinha verde "
+                "aqui embaixo) que a gente monta a peça pra você"
             )
         orientacao = arquivo_original.getexif().get(ExifTags.Base.Orientation, 1)
         troca_lados = orientacao in (5, 6, 7, 8)
