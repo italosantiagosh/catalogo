@@ -2727,41 +2727,96 @@ def _timeline_do_pedido(pedido: dict) -> list[dict] | None:
     ]
 
 
-# "chave_preco" -> formato, so pros 4 formatos de item de santo do
-# catalogo escolhido DIRETO (sem passar por 2 lados/personalizada, ver
-# _itens_repetiveis_do_pedido abaixo) -- medalha_2lados/entremeio_2lados/
-# chaveiro_2lados ficam de fora de proposito (sao sempre um construto
-# de personalizada por baixo, nunca tem produtoId no nivel raiz do
-# item, ver static/js/personalizada.js).
+# "chave_preco" -> formato, pros 4 formatos de 1 lado so (catalogo
+# escolhido direto OU personalizada de 1 lado -- ver
+# _itens_repetiveis_do_pedido abaixo). medalha_2lados/entremeio_2lados/
+# chaveiro_2lados NAO entram aqui -- pra elas o "formato" armazenado no
+# pedido JA E´ o proprio chave_preco (ver
+# static/js/personalizada.js:chavePrecoAtual/duasFacesAtual), tratadas
+# a parte no ramo duasFaces abaixo.
 _FORMATO_POR_CHAVE_SIMPLES = {"12mm": "medalha", "16mm": "medalha", "entremeio": "entremeio", "chaveiro": "chaveiro"}
+_CHAVES_2LADOS_VALIDAS = {"medalha_2lados", "entremeio_2lados", "chaveiro_2lados"}
+_IMAGEM_SEM_FOTO = "/static/img/sem-foto.svg"
 
 
 def _itens_repetiveis_do_pedido(pedido: dict) -> list[dict]:
-    """Itens desse pedido que dá pra "repetir" com 1 clique (ver
-    static/js/pedido.js:repetirPedido, botao "Repetir esse pedido" em
-    pedido.html) -- so santo do catalogo escolhido direto, com
-    produtoId valido. Peca personalizada (sem produtoId proprio, foto
-    exclusiva daquele pedido) e item de 2 lados (sempre um construto
-    de personalizada) ficam de fora -- nao da pra "repetir" sem passar
-    pelo simulador nesses casos."""
+    """Itens desse pedido que dá pra "repetir" com 1 clique (botão
+    "Repetir esse pedido" em pedido.html) -- reconstrói tanto santo do
+    catálogo escolhido direto (produtoId válido) quanto peça
+    personalizada (1 lado ou 2 lados), já que a imagem/recorte de toda
+    peça personalizada fica guardada de forma DURÁVEL (SQLite, ver
+    services/imagens_personalizadas.py) desde a criação do pedido --
+    não precisa passar pelo simulador de novo pra repetir a mesma foto.
+    Item personalizado nunca tem produtoId no nível raiz (ver
+    static/js/personalizada.js), é esse o critério que separa os dois
+    casos abaixo."""
     itens = []
     for item in pedido["itens"]:
         produto_id = item.get("produtoId")
         chave_preco = item.get("chave_preco")
-        formato = _FORMATO_POR_CHAVE_SIMPLES.get(chave_preco)
-        if not produto_id or not formato:
+
+        if produto_id:
+            formato = _FORMATO_POR_CHAVE_SIMPLES.get(chave_preco)
+            if not formato:
+                continue
+            # pra "medalha", chave_preco JA E´ o tamanho (12mm/16mm) -- so
+            # cai no item["tamanho"] quando ele nao veio preenchido
+            # (carrinhos antigos, ver static/js/carrinho.js:_migrarItemLegado).
+            tamanho = item.get("tamanho") or (chave_preco if formato == "medalha" else None)
+            itens.append(
+                {
+                    "tipo": "catalogo",
+                    "produtoId": produto_id,
+                    "produtoNome": item.get("produtoNome", ""),
+                    "modeloId": item.get("modeloId", ""),
+                    "modeloNome": item.get("modeloNome", ""),
+                    "imagem": item.get("imagem", ""),
+                    "formato": formato,
+                    "chave_preco": chave_preco,
+                    "tamanho": tamanho,
+                    "cor": item.get("cor") or None,
+                    "quantidade": item.get("quantidade", 1),
+                }
+            )
             continue
-        # pra "medalha", chave_preco JA E´ o tamanho (12mm/16mm) -- so cai
-        # no item["tamanho"] quando ele nao veio preenchido (carrinhos
-        # antigos, ver static/js/carrinho.js:_migrarItemLegado).
+
+        if item.get("duasFaces"):
+            if chave_preco not in _CHAVES_2LADOS_VALIDAS:
+                continue
+            imagem_lado1 = item.get("imagemLado1")
+            imagem_lado2 = item.get("imagemLado2")
+            if not imagem_lado1 or not imagem_lado2:
+                continue
+            itens.append(
+                {
+                    "tipo": "personalizada",
+                    "duasFaces": True,
+                    "produtoNome": "Personalizada",
+                    "formato": chave_preco,
+                    "chave_preco": chave_preco,
+                    "tamanho": item.get("tamanho") or None,
+                    "cor": item.get("cor") or None,
+                    "quantidade": item.get("quantidade", 1),
+                    "imagemLado1": imagem_lado1,
+                    "imagemRecorteLado1": item.get("imagemRecorteLado1") or "",
+                    "imagemLado2": imagem_lado2,
+                    "imagemRecorteLado2": item.get("imagemRecorteLado2") or "",
+                }
+            )
+            continue
+
+        formato = _FORMATO_POR_CHAVE_SIMPLES.get(chave_preco)
+        imagem = item.get("imagem")
+        if not formato or not imagem:
+            continue
         tamanho = item.get("tamanho") or (chave_preco if formato == "medalha" else None)
         itens.append(
             {
-                "produtoId": produto_id,
-                "produtoNome": item.get("produtoNome", ""),
-                "modeloId": item.get("modeloId", ""),
-                "modeloNome": item.get("modeloNome", ""),
-                "imagem": item.get("imagem", ""),
+                "tipo": "personalizada",
+                "duasFaces": False,
+                "produtoNome": "Personalizada",
+                "imagem": imagem,
+                "imagemRecorte": item.get("imagemRecorte") or "",
                 "formato": formato,
                 "chave_preco": chave_preco,
                 "tamanho": tamanho,

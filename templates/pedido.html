@@ -188,7 +188,7 @@
     {% if itens_repetir %}
       <button type="button" class="botao-secundario" id="btn-repetir-pedido">🔁 Repetir esse pedido</button>
       {% if itens_repetir | length < pedido.itens | length %}
-        <p class="pedido-ajuda">Peça(s) personalizada(s) desse pedido não entram — só o que dá pra repetir direto.</p>
+        <p class="pedido-ajuda">Uma ou mais peças desse pedido não entraram — só o que dá pra repetir direto.</p>
       {% endif %}
     {% endif %}
   </div>
@@ -271,8 +271,50 @@
     const btnRepetir = document.getElementById('btn-repetir-pedido');
     if (btnRepetir) {
       btnRepetir.addEventListener('click', () => {
+        const IMAGEM_SEM_FOTO = '/static/img/sem-foto.svg';
         const itens = {{ itens_repetir | tojson }};
-        itens.forEach((item) => {
+        itens.forEach((item, indice) => {
+          if (item.tipo === 'personalizada') {
+            // Mesmo formato de chave que static/js/personalizada.js usa
+            // ao adicionar pela primeira vez -- so acrescenta o indice
+            // do loop, pra 2 pecas personalizadas repetidas no mesmo
+            // clique nunca colidirem mesmo geradas no mesmo milissegundo.
+            const chave = `personalizada-${Date.now()}-${indice}-${Math.random().toString(36).slice(2, 8)}`;
+            if (item.duasFaces) {
+              const origemLado = (imagem) => (imagem === IMAGEM_SEM_FOTO ? 'sem_foto' : 'upload');
+              carrinhoAdicionarItem({
+                chave,
+                tipo: 'personalizada',
+                duasFaces: true,
+                produtoNome: item.produtoNome,
+                modeloNome: null,
+                formato: item.formato,
+                chave_preco: item.chave_preco,
+                cor: item.cor,
+                tamanho: item.tamanho,
+                quantidade: item.quantidade,
+                semImagem: item.imagemLado1 === IMAGEM_SEM_FOTO && item.imagemLado2 === IMAGEM_SEM_FOTO,
+                lado1: { origem: origemLado(item.imagemLado1), imagem: item.imagemLado1, imagemRecorte: item.imagemRecorteLado1 },
+                lado2: { origem: origemLado(item.imagemLado2), imagem: item.imagemLado2, imagemRecorte: item.imagemRecorteLado2 },
+              });
+            } else {
+              carrinhoAdicionarItem({
+                chave,
+                tipo: 'personalizada',
+                produtoNome: item.produtoNome,
+                modeloNome: null,
+                imagem: item.imagem,
+                imagemRecorte: item.imagemRecorte,
+                formato: item.formato,
+                chave_preco: item.chave_preco,
+                tamanho: item.tamanho,
+                cor: item.cor,
+                quantidade: item.quantidade,
+                semImagem: item.imagem === IMAGEM_SEM_FOTO,
+              });
+            }
+            return;
+          }
           const subAttr = item.formato === 'medalha' ? item.tamanho : (item.formato === 'entremeio' ? item.cor : '');
           carrinhoAdicionarItem({
             chave: `${item.produtoId}-${item.modeloId}-${item.formato}-${subAttr}`,
