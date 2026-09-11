@@ -312,6 +312,15 @@
       const { chavePreco, tamanho, cor, subAttr } = resolvido;
 
       const quantidade = Math.max(1, parseInt(quantidadeInput.value, 10) || 1);
+      // entremeio (1 lado) tem 2 cores com a MESMA imagem "estatica" do
+      // modelo (nao depende de foto do cliente) e o MESMO preco (ver
+      // services/pricing.py) -- guarda as 2 URLs no item pra permitir
+      // trocar a cor direto no carrinho, trocando so a imagem, sem
+      // precisar voltar nessa pagina (ver static/js/carrinho.js:
+      // carrinhoAtualizarCor).
+      const imagensCor = formato === 'entremeio'
+        ? { prata: modeloSelecionado.imagens.entremeio_prata, ouro_velho: modeloSelecionado.imagens.entremeio_ouro_velho }
+        : null;
       carrinhoAdicionarItem({
         chave: `${produtoId}-${modeloSelecionado.id}-${formato}-${subAttr}`,
         tipo: 'catalogo',
@@ -320,6 +329,7 @@
         modeloId: modeloSelecionado.id,
         modeloNome: modeloSelecionado.nome,
         imagem: imagemParaFormato(),
+        imagensCor,
         formato,
         chave_preco: chavePreco,
         tamanho,

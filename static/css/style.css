@@ -1318,6 +1318,20 @@ button.botao-carrinho:disabled {
   object-fit: cover;
 }
 
+.item-imagem-link {
+  display: block;
+  width: 72px;
+}
+
+.item-info h2 a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.item-info h2 a:hover {
+  text-decoration: underline;
+}
+
 /* item de 2 lados -- mesma coluna de 72px do .item-carrinho img normal,
    so que empilha as duas fotos (lado 1 em cima, lado 2 embaixo) em vez
    de uma unica imagem. */

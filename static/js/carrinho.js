@@ -128,6 +128,28 @@ function carrinhoAtualizarTamanho(chave, novoTamanho) {
   return itens;
 }
 
+// Cor do entremeio (1 lado, prata/ouro velho) e´ o MESMO preco (ver
+// services/pricing.py -- cor nao entra na chave_preco desse formato) e
+// so muda a imagem "estatica" do modelo (nao depende de foto do
+// cliente) -- da pra editar direto no carrinho, igual tamanho acima,
+// usando as 2 URLs guardadas no item (imagensCor, preenchido em
+// static/js/produto.js na hora de adicionar). Chaveiro/medalha nao tem
+// cor; medalha_2lados/entremeio_2lados sao gerados com a foto do
+// cliente (personalizada) -- trocar cor exigiria recompor a imagem no
+// servidor, fora de escopo aqui. cruz_terco tambem fica de fora: cor
+// MUDA o preco (dourado custa mais que prata/ouro velho), entao nao e´
+// uma troca "segura" feita so no navegador.
+function carrinhoAtualizarCor(chave, novaCor) {
+  const itens = carrinhoObterItens();
+  const item = itens.find((i) => i.chave === chave);
+  if (item && item.imagensCor && item.imagensCor[novaCor]) {
+    item.cor = novaCor;
+    item.imagem = item.imagensCor[novaCor];
+    carrinhoSalvarItens(itens);
+  }
+  return itens;
+}
+
 function carrinhoLimpar() {
   carrinhoSalvarItens([]);
   // proximo pedido comeca com um ID novo, nao reaproveita o de um pedido

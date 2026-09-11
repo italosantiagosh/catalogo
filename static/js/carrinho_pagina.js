@@ -173,17 +173,40 @@
   // Tamanho (12/16mm na medalha 1 lado; 14/18mm na de 2 lados) e´ o
   // MESMO preco nas duas opcoes (ver conversa) e a simulacao visual e´
   // identica -- so o texto/valor muda, nunca a imagem. Por isso da pra
-  // editar direto no carrinho sem precisar voltar no produto/personalizada
-  // -- cor (prata/ouro velho) muda a imagem de verdade, entao fica de
-  // fora por enquanto (ver conversa).
+  // editar direto no carrinho sem precisar voltar no produto/personalizada.
   const OPCOES_TAMANHO_POR_FORMATO = { medalha: ['12mm', '16mm'], medalha_2lados: ['14mm', '18mm'] };
+
+  // Cor do entremeio (1 lado) tambem e´ o MESMO preco (ver services/
+  // pricing.py) -- so muda a imagem "estatica" do modelo (nao depende
+  // de foto do cliente), por isso tambem da pra editar direto aqui
+  // (ver static/js/carrinho.js:carrinhoAtualizarCor) desde que o item
+  // tenha as 2 URLs guardadas (imagensCor, itens antigos no localStorage
+  // de antes dessa mudanca nao tem e caem no texto fixo de sempre).
+  // medalha_2lados/entremeio_2lados sao gerados com a foto do cliente
+  // (personalizada) e cruz_terco muda de PRECO por cor -- os dois ficam
+  // de fora dessa troca "segura" no navegador.
+  const OPCOES_COR_ENTREMEIO = ['prata', 'ouro_velho'];
 
   function subtituloEditavelHtml(item) {
     const formato = item.formato || 'medalha';
     const opcoes = OPCOES_TAMANHO_POR_FORMATO[formato];
-    if (!opcoes) return detalheFormato(item);
+    const podeEditarCor = formato === 'entremeio' && item.imagensCor
+      && item.imagensCor.prata && item.imagensCor.ouro_velho;
 
-    const corParte = formato === 'medalha_2lados' ? ` · ${COR_LABEL[item.cor] || item.cor}` : '';
+    if (!opcoes && !podeEditarCor) return detalheFormato(item);
+
+    let corParte;
+    if (podeEditarCor) {
+      const optionsCor = OPCOES_COR_ENTREMEIO
+        .map((v) => `<option value="${v}" ${item.cor === v ? 'selected' : ''}>${COR_LABEL[v] || v}</option>`)
+        .join('');
+      corParte = ` · <select class="variacao-cor-select" data-chave="${item.chave}" aria-label="Mudar cor">${optionsCor}</select>`;
+    } else {
+      corParte = formato === 'medalha_2lados' ? ` · ${COR_LABEL[item.cor] || item.cor}` : '';
+    }
+
+    if (!opcoes) return `${FORMATO_LABEL[formato]}${corParte}`;
+
     const options = opcoes
       .map((v) => `<option value="${v}" ${item.tamanho === v ? 'selected' : ''}>${TAMANHO_LABEL[v] || v}</option>`)
       .join('');
@@ -289,6 +312,19 @@
     }, 2600);
   }
 
+  // Link pra pagina do produto (ver conversa: "ao clicar no icone do
+  // produto, tem como linkar pra ir pra pagina daquele produto?") --
+  // cruz_terco e´ o unico formato "catalogo" com pagina propria fora do
+  // padrao /produto/<id>; personalizada nao tem pagina de produto de
+  // verdade (peca unica, sem produtoId), entao leva de volta pro
+  // simulador em vez de nao linkar nada.
+  function linkDoProduto(item) {
+    if (item.formato === 'cruz_terco') return '/cruz-para-terco';
+    if (item.tipo === 'catalogo' && item.produtoId) return `/produto/${item.produtoId}`;
+    if (item.tipo === 'personalizada') return '/personalizada';
+    return null;
+  }
+
   function linhaItem(item, calculo) {
     const linha = document.createElement('article');
     linha.className = 'item-carrinho';
@@ -304,16 +340,21 @@
         ? '<p class="item-aviso-foto">📷 Foto pendente -- enviar pelo WhatsApp</p>'
         : '<p class="item-aviso-foto">✅ Foto salva junto com o pedido</p>';
     }
-    const imagemHtml = item.duasFaces
+    const imagemInner = item.duasFaces
       ? `<div class="item-imagem-duas-faces">
            <img src="${item.lado1.imagem}" alt="${item.produtoNome} — lado 1">
            <img src="${item.lado2.imagem}" alt="${item.produtoNome} — lado 2">
          </div>`
       : `<img src="${item.imagem}" alt="${item.produtoNome}">`;
+    const href = linkDoProduto(item);
+    const imagemHtml = href
+      ? `<a href="${href}" class="item-imagem-link" aria-label="Ver ${item.produtoNome}">${imagemInner}</a>`
+      : imagemInner;
+    const nomeHtml = href ? `<a href="${href}">${item.produtoNome}</a>` : item.produtoNome;
     linha.innerHTML = `
       ${imagemHtml}
       <div class="item-info">
-        <h2>${item.produtoNome}</h2>
+        <h2>${nomeHtml}</h2>
         <p>${subtitulo}</p>
         ${avisoFoto}
         <div class="item-stepper">
@@ -358,6 +399,14 @@
       selectTamanho.addEventListener('change', () => {
         carrinhoAtualizarTamanho(item.chave, selectTamanho.value);
         rastrearEventoGA4('mudar_tamanho_carrinho', { item_id: item.produtoId || item.tipo, tamanho: selectTamanho.value });
+        render();
+      });
+    }
+    const selectCor = linha.querySelector('.variacao-cor-select');
+    if (selectCor) {
+      selectCor.addEventListener('change', () => {
+        carrinhoAtualizarCor(item.chave, selectCor.value);
+        rastrearEventoGA4('mudar_cor_carrinho', { item_id: item.produtoId || item.tipo, cor: selectCor.value });
         render();
       });
     }
