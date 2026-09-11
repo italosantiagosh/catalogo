@@ -1812,15 +1812,29 @@ input[readonly] {
   box-shadow: 0 10px 22px rgba(0, 0, 0, 0.18);
   cursor: pointer;
   z-index: 59;
-  display: block;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.video-flutuante video {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
-  pointer-events: none;
+/* Icone de play estatico em vez do video em autoplay/loop que tinha
+   aqui antes (ver conversa "PageSpeed Insights") -- numa bolha de
+   64px ninguem percebe a diferenca visual do video rodando, mas o
+   autoplay baixava os 8,5MB do video inteiro em TODA pagina do site,
+   de longe o maior item de peso do relatorio. O video de verdade
+   continua carregando normal, so que so quando clica (ver
+   #video-modal-player, com preload="none", em static/js/
+   video_flutuante.js -- isso ja era lazy, nao mudou). */
+.video-flutuante-play {
+  width: 26px;
+  height: 26px;
+  color: var(--gold);
+  animation: video-flutuante-pulso 2.4s ease-in-out infinite;
+}
+
+@keyframes video-flutuante-pulso {
+  0%, 100% { transform: scale(1); opacity: 0.9; }
+  50% { transform: scale(1.12); opacity: 1; }
 }
 
 .video-flutuante-fechar {
