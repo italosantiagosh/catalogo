@@ -109,8 +109,6 @@ main {
   letter-spacing: inherit;
   cursor: pointer;
   padding: 0;
-  text-decoration: underline;
-  text-underline-offset: 2px;
 }
 
 .faixa-topo span:nth-child(2) {
@@ -365,6 +363,34 @@ a.link-carrinho #contador-carrinho {
 .vantagem-icone {
   font-size: 1.5rem;
   margin-bottom: 4px;
+}
+
+.vantagem-icone-img {
+  height: 26px;
+  width: auto;
+}
+
+.vantagem-icone-duplo {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.vantagem-icone-duplo img {
+  height: 15px;
+  width: auto;
+}
+
+.vantagem-icone-chip-escuro {
+  display: inline-flex;
+  align-items: center;
+  background: #171527;
+  border-radius: 6px;
+  padding: 3px 6px;
+}
+
+.vantagem-icone-chip-escuro img {
+  height: 15px;
 }
 
 .vantagem strong {

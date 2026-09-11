@@ -67,12 +67,17 @@
       <span>Acima de R$ 300 em compras</span>
     </div>
     <div class="vantagem">
-      <span class="vantagem-icone">💬</span>
+      <img class="vantagem-icone vantagem-icone-img" src="{{ url_for('static', filename='img/icones/whatsapp.svg') }}" alt="">
       <strong>Pedido pelo WhatsApp</strong>
       <span>Finalize direto com a gente, sem burocracia</span>
     </div>
     <div class="vantagem">
-      <span class="vantagem-icone">💳</span>
+      <span class="vantagem-icone vantagem-icone-duplo">
+        <span class="vantagem-icone-chip-escuro">
+          <img src="{{ url_for('static', filename='img/pagamento/infinitepay.svg') }}" alt="InfinitePay">
+        </span>
+        <img src="{{ url_for('static', filename='img/pagamento/banco-inter.svg') }}" alt="Banco Inter">
+      </span>
       <strong>Pix, cartão ou boleto</strong>
       <span>Escolha a forma de pagamento que preferir</span>
     </div>
