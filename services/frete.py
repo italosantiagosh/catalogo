@@ -133,6 +133,35 @@ def _normalizar_nome(nome: str) -> str:
     return re.sub(r"[^a-z0-9]", "", (nome or "").lower())
 
 
+# Logo por transportadora (ver conversa: "logo oficial miniatura de cada
+# transportadora antes do nome" no simulador de frete e no painel admin)
+# -- mesmo criterio de match por trecho do nome ja normalizado usado em
+# MARGEM_DIAS_UTEIS_POR_TRANSPORTADORA acima, reaproveitado aqui pra nao
+# duplicar a logica de normalizacao. So cobre as transportadoras que
+# realmente aparecem na cotacao hoje (Correios, Azul Cargo Express,
+# LATAM Cargo, J&T Express) -- as demais (Jadlog, Loggi, Total Express)
+# ficam sem logo por enquanto, mostram so o nome em texto.
+LOGO_POR_TRANSPORTADORA = {
+    "correios": "correios.svg",
+    "azul": "azul-cargo.png",
+    "latam": "latam-cargo.svg",
+    "jt": "jt-express.svg",
+}
+
+
+def logo_transportadora(nome: str) -> str | None:
+    """Nome do arquivo em static/img/transportadoras/ pra essa
+    transportadora, ou None se nao tiver logo cadastrada (usado tanto
+    no nome cru vindo da cotacao quanto no campo `transportadora`
+    digitado a mao no admin, ver app.py:_dados_pedido_admin e
+    templates/admin_pedidos.html/admin_pedido_detalhe.html)."""
+    nome_normalizado = _normalizar_nome(nome)
+    return next(
+        (arquivo for chave, arquivo in LOGO_POR_TRANSPORTADORA.items() if chave in nome_normalizado),
+        None,
+    )
+
+
 # Margem de dias uteis somada em CIMA do prazo que a Frenet/Melhor Envio
 # cotam -- pedido do usuario 2026-09: na pratica a encomenda as vezes so
 # e´ efetivamente encaminhada pela transportadora no dia UTIL SEGUINTE

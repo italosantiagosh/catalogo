@@ -202,6 +202,7 @@
       td.linha-acoes { padding-bottom: 12px; }
       td.linha-acoes a, td.linha-acoes .form-arquivar { display: inline-block; margin-top: 2px; }
     }
+    .logo-transportadora-admin { height: 14px; width: auto; vertical-align: -2px; margin-right: 4px; }
   </style>
 </head>
 <body>
@@ -315,11 +316,18 @@
                   {% if pedido.status in ('pago', 'faturado') %}
                     {% set previsoes = previsoes_do_pedido(pedido) %}
                     {% if previsoes.previsao_envio %}Enviar até {{ previsoes.previsao_envio | data_br }}{% else %}—{% endif %}
+                  {% elif pedido.status in ('enviado', 'entregue') %}
+                    {% set previsoes = previsoes_do_pedido(pedido) %}
+                    {% if previsoes.previsao_entrega %}Entrega até {{ previsoes.previsao_entrega | data_br }}{% else %}—{% endif %}
                   {% else %}
                     —
                   {% endif %}
                 </td>
-                <td data-rotulo="Frete">{{ pedido.frete_descricao or "—" }}</td>
+                <td data-rotulo="Frete">
+                  {% set logo = logo_transportadora(pedido.frete_descricao) %}
+                  {% if logo %}<img class="logo-transportadora-admin" src="{{ url_for('static', filename='img/transportadoras/' ~ logo) }}" alt="">{% endif %}
+                  {{ pedido.frete_descricao or "—" }}
+                </td>
                 <td data-rotulo="Tiny">
                   {% if not pedido.tiny_sincronizado %}
                     —

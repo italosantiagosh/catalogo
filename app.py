@@ -141,7 +141,7 @@ from services.email import (
     enviar_pedido_recompra,
 )
 from services.documentos import cpf_valido, documento_valido, numero_whatsapp, telefone_valido
-from services.frete import calcular_frete
+from services.frete import calcular_frete, logo_transportadora
 from services.infinitepay import criar_link_pagamento
 from services.pedidos import (
     ESTAGIOS_RECOMPRA_DIAS,
@@ -558,6 +558,7 @@ app.jinja_env.filters["whatsapp"] = numero_whatsapp
 # templates do painel admin com o pedido inteiro (ver
 # services.pedidos.previsoes_do_pedido).
 app.jinja_env.globals["previsoes_do_pedido"] = previsoes_do_pedido
+app.jinja_env.globals["logo_transportadora"] = logo_transportadora
 
 
 def _extensao_valida(nome_arquivo: str) -> bool:

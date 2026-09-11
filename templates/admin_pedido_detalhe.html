@@ -226,7 +226,14 @@
       {% endif %}
       {% if pedido.codigo_rastreio %}
         <h2>Rastreio atual</h2>
-        {% if pedido.transportadora %}<p>Transportadora: {{ pedido.transportadora }}</p>{% endif %}
+        {% if pedido.transportadora %}
+          <p>
+            Transportadora:
+            {% set logo = logo_transportadora(pedido.transportadora) %}
+            {% if logo %}<img class="logo-transportadora-admin" src="{{ url_for('static', filename='img/transportadoras/' ~ logo) }}" alt="" style="height:14px;width:auto;vertical-align:-2px;">{% endif %}
+            {{ pedido.transportadora }}
+          </p>
+        {% endif %}
         <p>{{ pedido.codigo_rastreio }}{% if pedido.link_rastreio %} — <a href="{{ pedido.link_rastreio }}" target="_blank" rel="noopener">link</a>{% endif %}</p>
       {% endif %}
       {% if pedido.link_nota_fiscal %}

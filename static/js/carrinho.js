@@ -191,6 +191,27 @@ function formatarPreco(valor) {
   return 'R$ ' + valor.toFixed(2).replace('.', ',');
 }
 
+// Logo por transportadora (ver conversa: "logo oficial miniatura de cada
+// transportadora antes do nome na simulação do frete") -- espelha
+// services/frete.py:LOGO_POR_TRANSPORTADORA/logo_transportadora, mesmo
+// criterio de match por trecho do nome ja normalizado. So cobre quem
+// realmente aparece na cotacao hoje (Correios, Azul Cargo Express,
+// LATAM Cargo, J&T Express); as demais ficam sem logo, so o nome em
+// texto mesmo (ver static/js/carrinho_pagina.js).
+const LOGO_POR_TRANSPORTADORA = {
+  correios: 'correios.svg',
+  azul: 'azul-cargo.png',
+  latam: 'latam-cargo.svg',
+  jt: 'jt-express.svg',
+};
+
+function logoTransportadoraHtml(nomeTransportadora) {
+  const nomeNormalizado = (nomeTransportadora || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+  const chave = Object.keys(LOGO_POR_TRANSPORTADORA).find((c) => nomeNormalizado.includes(c));
+  if (!chave) return '';
+  return `<img class="frete-opcao-logo" src="/static/img/transportadoras/${LOGO_POR_TRANSPORTADORA[chave]}" alt="">`;
+}
+
 function _percentualBarra(atual, inicioFaixa, alvo) {
   if (alvo == null) return 100;
   const total = alvo - inicioFaixa;
