@@ -196,13 +196,16 @@ function formatarPreco(valor) {
 // services/frete.py:LOGO_POR_TRANSPORTADORA/logo_transportadora, mesmo
 // criterio de match por trecho do nome ja normalizado. So cobre quem
 // realmente aparece na cotacao hoje (Correios, Azul Cargo Express,
-// LATAM Cargo, J&T Express); as demais ficam sem logo, so o nome em
-// texto mesmo (ver static/js/carrinho_pagina.js).
+// LATAM Cargo, J&T Express, Loggi); Jadlog e Total Express ficam sem
+// logo por enquanto, so o nome em texto mesmo (ver
+// static/js/carrinho_pagina.js) -- nao achamos imagem de licenca
+// livre/reutilizavel confirmada pra elas ainda.
 const LOGO_POR_TRANSPORTADORA = {
   correios: 'correios.svg',
   azul: 'azul-cargo.png',
   latam: 'latam-cargo.svg',
   jt: 'jt-express.svg',
+  loggi: 'loggi.png',
 };
 
 function logoTransportadoraHtml(nomeTransportadora) {
