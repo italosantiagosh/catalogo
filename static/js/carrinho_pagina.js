@@ -72,7 +72,10 @@
     medalha_2lados: 'Medalha 2 lados', entremeio_2lados: 'Entremeio 2 lados',
     chaveiro_2lados: 'Chaveiro 2 lados', cruz_terco: 'Cruz para terço',
   };
-  const GRUPO_LABEL = { padrao: 'medalhas/entremeios', chaveiro: 'chaveiros', duas_faces: 'medalhas/entremeios de 2 lados' };
+  const GRUPO_LABEL = {
+    padrao: 'medalhas/entremeios', chaveiro: 'chaveiros', duas_faces: 'medalhas/entremeios de 2 lados',
+    cruz_terco: 'cruzes para terço',
+  };
   // mesmo texto usado em app.py (FRETE_RETIRADA_DESCRICAO) pra detectar
   // esse tipo de frete e trocar os rotulos da timeline ("enviado" nao
   // faz sentido pra quem vai retirar -- ver conversa).
@@ -221,6 +224,10 @@
   function montarLinhasFaixas(calculo) {
     const linhas = [];
     for (const nomeGrupo of Object.keys(calculo.grupos)) {
+      // "cruz_terco" tem preco fixo, sem faixa de atacado (ver
+      // GRUPO_DE_CHAVE em services/pricing.py) -- nao faz sentido listar
+      // "faixa" pra ela na mensagem do pedido.
+      if (nomeGrupo === 'cruz_terco') continue;
       const grupo = calculo.grupos[nomeGrupo];
       if (grupo.quantidade_total === 0) continue;
       linhas.push(`Faixa de atacado (${GRUPO_LABEL[nomeGrupo] || nomeGrupo}):`, grupo.faixa_label, '');
@@ -405,6 +412,10 @@
     // (medalhas/entremeios e chaveiros nao se misturam -- services/pricing.py)
     progressoGruposEl.innerHTML = '';
     for (const nomeGrupo of Object.keys(dados.grupos)) {
+      // "cruz_terco" tem preco fixo, sem faixa de atacado nenhuma (ver
+      // GRUPO_DE_CHAVE em services/pricing.py) -- mostrar uma barra de
+      // "progresso" pra ela sugeriria um desconto que nao existe.
+      if (nomeGrupo === 'cruz_terco') continue;
       const grupo = dados.grupos[nomeGrupo];
       if (grupo.quantidade_total === 0) continue;
       const bloco = document.createElement('div');
@@ -475,8 +486,12 @@
     // toast de comemoracao -- so depois da primeira renderizacao, pra nao
     // disparar assim que a pagina abre com um carrinho ja em faixa alta.
     if (!primeiraRenderizacao) {
+      // "cruz_terco" nunca teve preco "desbloqueado" de verdade (preco
+      // fixo, sem faixa -- ver GRUPO_DE_CHAVE em services/pricing.py):
+      // sem esse filtro, adicionar a PRIMEIRA cruz mudaria o faixa_label
+      // dela de "" pra "1+ unidades" e disparava esse toast por engano.
       const grupoMudou = Object.keys(dados.grupos).find(
-        (g) => dados.grupos[g].quantidade_total > 0 && dados.grupos[g].faixa_label !== faixasAnteriores[g]
+        (g) => g !== 'cruz_terco' && dados.grupos[g].quantidade_total > 0 && dados.grupos[g].faixa_label !== faixasAnteriores[g]
       );
       if (grupoMudou) {
         const itemDoGrupo = dados.itens.find((i) => GRUPO_DE_CHAVE[i.chave_preco] === grupoMudou);

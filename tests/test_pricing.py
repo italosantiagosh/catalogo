@@ -282,7 +282,7 @@ def test_desconto_frete_atacado_soma_os_dois_grupos_quando_ambos_atingem():
 
 def test_cruz_terco_preco_fixo_independente_da_quantidade():
     # sem tabela de atacado (pedido do usuario: preco unico) -- mesmo
-    # preco em qualquer quantidade do grupo "padrao".
+    # preco em qualquer quantidade do grupo "cruz_terco".
     assert calcular_preco("cruz_terco_prata", 1) == 2.50
     assert calcular_preco("cruz_terco_prata", 500) == 2.50
     assert calcular_preco("cruz_terco_ouro_velho", 1) == 2.50
@@ -291,20 +291,21 @@ def test_cruz_terco_preco_fixo_independente_da_quantidade():
     assert calcular_preco("cruz_terco_dourado", 500) == 3.00
 
 
-def test_cruz_terco_entra_no_grupo_padrao_junto_com_entremeio():
-    # comprar cruz junto com entremeio conta pra MESMA faixa de atacado
-    # (upsell: pedido do usuario) -- 19 entremeios + 1 cruz = 20, ja
-    # entra na faixa de atacado (preco cai de 5,00 pra 4,50).
+def test_cruz_terco_nao_conta_pra_faixa_de_atacado_do_entremeio():
+    # Chegou a entrar no grupo "padrao" (upsell), mas o usuario pediu pra
+    # TIRAR -- a cruz nao pode "baixar o preco das medalhas/entremeios"
+    # (ver conversa). Isolada no proprio grupo "cruz_terco": 19 entremeios
+    # + 1 cruz NAO fecha a faixa de atacado dos entremeios (precisa de 20
+    # entremeios de verdade).
     resultado = calcular_carrinho([
         {"chave_preco": "entremeio", "quantidade": 19},
         {"chave_preco": "cruz_terco_prata", "quantidade": 1},
     ])
-    assert resultado["grupos"]["padrao"]["quantidade_total"] == 20
+    assert resultado["grupos"]["padrao"]["quantidade_total"] == 19
+    assert resultado["grupos"]["cruz_terco"]["quantidade_total"] == 1
     item_entremeio = resultado["itens"][0]
-    assert item_entremeio["preco_unitario"] == 4.50
+    assert item_entremeio["preco_unitario"] == 5.00  # ainda no varejo, nao caiu pra 4,50
     item_cruz = resultado["itens"][1]
-    # a cruz continua com preco fixo dela mesma, so a FAIXA (quantidade)
-    # e´ compartilhada com o grupo -- nao o preco por unidade.
     assert item_cruz["preco_unitario"] == 2.50
 
 

@@ -4,18 +4,11 @@ Motor de preco por atacado.
 Tres "familias" de produto, cada uma com seu proprio GRUPO de atacado --
 a quantidade que conta pra faixa de desconto NAO se mistura entre grupos:
 
-    "padrao"      -- medalhas (12mm/16mm), entremeios de 1 lado e a cruz
-                     pra terco (cruz_terco_prata/ouro_velho/dourado,
-                     pedido em 2026-09-11 -- entra nesse grupo de
-                     proposito, pra contar junto com entremeios na
-                     mesma faixa de atacado, ja que e´ vendida como
-                     upsell/combo dos entremeios da mesma cor). Mesma
+    "padrao"      -- medalhas (12mm/16mm) e entremeios de 1 lado. Mesma
                      regra de sempre (secao 25 do briefing original): a
                      faixa depende da quantidade TOTAL desse grupo no
                      carrinho, somando todos os santos/tamanhos/cores
-                     livremente. cruz_terco_* tem preco UNICO (uma so
-                     faixa em data/precos.json, sem tabela de atacado
-                     propria -- o usuario nao passou degraus pra ela).
+                     livremente.
     "chaveiro"    -- tabela de precos propria (varejo R$15, atacado
                      proprio). Conta pra faixa dele isoladamente; nao
                      soma com os outros grupos nem eles somam com ele.
@@ -30,6 +23,19 @@ a quantidade que conta pra faixa de desconto NAO se mistura entre grupos:
                      padrao de 12mm/16mm/entremeio compartilharem a
                      tabela "padrao"). Conta pra faixa isoladamente,
                      igual chaveiro.
+    "cruz_terco"  -- cruz pra terco (cruz_terco_prata/ouro_velho/dourado,
+                     pedido em 2026-09-11). Chegou a entrar no grupo
+                     "padrao" (pra contar junto com entremeios na faixa
+                     de atacado, ja que e´ vendida como upsell/combo
+                     deles), mas o usuario pediu pra TIRAR isso: a cruz
+                     nao pode "baixar o preco das medalhas/entremeios"
+                     -- ela e´ upsell de VENDA, nao deve interferir na
+                     faixa de desconto de outro grupo. Isolada aqui,
+                     contando so com ela mesma (preco UNICO, uma so
+                     faixa em data/precos.json -- sem tabela de atacado
+                     propria, entao esse isolamento na pratica so evita
+                     ela contaminar a faixa alheia, sem efeito nela
+                     mesma).
 
 Cada item do carrinho manda uma "chave_preco" (12mm | 16mm | entremeio |
 chaveiro | chaveiro_2lados | medalha_2lados | entremeio_2lados) que
@@ -56,16 +62,16 @@ GRUPO_DE_CHAVE = {
     "12mm": "padrao",
     "16mm": "padrao",
     "entremeio": "padrao",
-    "cruz_terco_prata": "padrao",
-    "cruz_terco_ouro_velho": "padrao",
-    "cruz_terco_dourado": "padrao",
     "chaveiro": "chaveiro",
     "chaveiro_2lados": "chaveiro",
     "medalha_2lados": "duas_faces",
     "entremeio_2lados": "duas_faces",
+    "cruz_terco_prata": "cruz_terco",
+    "cruz_terco_ouro_velho": "cruz_terco",
+    "cruz_terco_dourado": "cruz_terco",
 }
 CHAVES_PRECO = tuple(GRUPO_DE_CHAVE)
-GRUPOS = ("padrao", "chaveiro", "duas_faces")
+GRUPOS = ("padrao", "chaveiro", "duas_faces", "cruz_terco")
 
 # Desconto no FRETE (nao no preco do produto) quando um grupo atinge a
 # primeira faixa de atacado (ver conversa: "antes do frete gratis...
@@ -224,6 +230,13 @@ def calcular_carrinho(itens: list[dict]) -> dict:
     chave_referencia_por_grupo.setdefault("padrao", "16mm")
     chave_referencia_por_grupo.setdefault("chaveiro", "chaveiro")
     chave_referencia_por_grupo.setdefault("duas_faces", "medalha_2lados")
+    # "cruz_terco" tem 3 chaves com tabelas DIFERENTES (prata/ouro_velho
+    # R$2,50 vs dourado R$3,00, ao contrario dos outros grupos acima,
+    # onde todas as chaves membras compartilham a MESMA tabela) -- mas
+    # como cada uma tem so 1 faixa, faixa_label/proxima_faixa dao o
+    # mesmo resultado (sempre "1+ unidades" / sem proxima faixa)
+    # independente de qual vira referencia, entao qualquer uma serve.
+    chave_referencia_por_grupo.setdefault("cruz_terco", "cruz_terco_prata")
 
     itens_calculados = []
     subtotal_total = 0.0

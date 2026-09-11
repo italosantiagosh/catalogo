@@ -9,8 +9,6 @@
   const btnAdicionar = document.getElementById('cruz-btn-adicionar');
   if (!coresFieldset || !btnAdicionar) return;
 
-  const GRUPO_LABEL = { padrao: 'medalhas/entremeios' };
-
   function formatarPreco(valor) {
     return 'R$ ' + valor.toFixed(2).replace('.', ',');
   }
@@ -46,17 +44,14 @@
       });
       const dados = await resposta.json();
       const itemPreview = dados.itens[dados.itens.length - 1];
-      const grupo = dados.grupos.padrao;
 
-      let html =
+      // preco fixo (sem faixa de atacado propria -- ver GRUPO_DE_CHAVE em
+      // services/pricing.py: "cruz_terco" e´ isolado dos outros grupos de
+      // proposito, pra nao interferir no desconto de medalhas/entremeios),
+      // entao aqui so mostra unidades/subtotal, sem "faltam X pra cair".
+      previewPrecoEl.innerHTML =
         `<strong>${quantidade} unidades</strong> · ${formatarPreco(itemPreview.preco_unitario)}/un · ` +
         `subtotal <strong>${formatarPreco(itemPreview.subtotal)}</strong>`;
-      if (grupo && grupo.proxima_faixa) {
-        html +=
-          `<br>Seu carrinho ficará com ${grupo.quantidade_total} ${GRUPO_LABEL.padrao} — faltam ` +
-          `${grupo.proxima_faixa.faltam} para cair para ${formatarPreco(grupo.proxima_faixa.preco)}/un`;
-      }
-      previewPrecoEl.innerHTML = html;
       previewPrecoEl.hidden = false;
     } catch (e) {
       previewPrecoEl.hidden = true;
