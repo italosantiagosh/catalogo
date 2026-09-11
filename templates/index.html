@@ -115,10 +115,12 @@
       <h2 class="destaques-titulo">Complete seu terço</h2>
       <p class="destaques-subtitulo">Cruz avulsa em prata, ouro velho ou dourado — combina com o entremeio da mesma cor.</p>
       <div class="destaques-linha">
-        <a class="destaque-card" href="{{ url_for('cruz_para_terco') }}">
-          <img src="{{ url_for('static', filename='img/produtos/cruz_terco_prata_frente.jpg') }}" alt="Cruz para Terço" loading="lazy" decoding="async" width="480" height="480">
-          <span>Cruz para Terço</span>
-        </a>
+        {% for cor in cores_cruz_terco %}
+          <a class="destaque-card" href="{{ url_for('cruz_para_terco') }}">
+            <img src="{{ cor.imagem_frente }}" alt="Cruz para Terço — {{ cor.nome }}" loading="lazy" decoding="async" width="480" height="480">
+            <span>{{ cor.nome }} — {{ cor.preco | preco }}</span>
+          </a>
+        {% endfor %}
       </div>
     </div>
   </section>

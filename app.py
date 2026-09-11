@@ -1034,6 +1034,7 @@ def index():
         destaque_personalizados=destaque_personalizados,
         procurados=procurados,
         categorias=categorias,
+        cores_cruz_terco=_cores_cruz_terco(),
     )
 
 
@@ -1110,16 +1111,12 @@ def kit_livraria_shalom():
     )
 
 
-@app.route("/cruz-para-terco", methods=["GET"])
-def cruz_para_terco():
-    """Cruz pra terco (pedido em 2026-09-11, "Cruz do Papa"/"Cruz de Sao
-    Joao Paulo II") -- pagina propria (nao usa o produto.html generico,
-    ver conversa: nao tem santo/modelo, so 3 cores da MESMA peca fisica,
-    4,2 x 1,7 cm), no mesmo padrao de pagina dedicada do /kit-livraria-
-    shalom. Preco vem sempre de precos.json (preco_varejo), nunca
-    hardcoded aqui -- prata/ouro velho R$2,50, dourado R$3,00 (pedido do
-    usuario, sem tabela de atacado propria pra essa peca)."""
-    cores = [
+def _cores_cruz_terco() -> list[dict]:
+    """3 cores da Cruz para Terco (ver cruz_para_terco/index abaixo) --
+    fatorado numa funcao pra home e a pagina do produto usarem os MESMOS
+    dados (preco sempre de precos.json via preco_varejo, nunca duplicado
+    a mao)."""
+    return [
         {
             "id": "prata",
             "nome": "Prata",
@@ -1145,6 +1142,18 @@ def cruz_para_terco():
             "imagem_perfil": url_for("static", filename="img/produtos/cruz_terco_dourado_perfil.jpg"),
         },
     ]
+
+
+@app.route("/cruz-para-terco", methods=["GET"])
+def cruz_para_terco():
+    """Cruz pra terco (pedido em 2026-09-11, "Cruz do Papa"/"Cruz de Sao
+    Joao Paulo II") -- pagina propria (nao usa o produto.html generico,
+    ver conversa: nao tem santo/modelo, so 3 cores da MESMA peca fisica,
+    4,2 x 1,7 cm), no mesmo padrao de pagina dedicada do /kit-livraria-
+    shalom. Preco vem sempre de precos.json (preco_varejo), nunca
+    hardcoded aqui -- prata/ouro velho R$2,50, dourado R$3,00 (pedido do
+    usuario, sem tabela de atacado propria pra essa peca)."""
+    cores = _cores_cruz_terco()
     dados_breadcrumb = _dados_breadcrumb(
         [
             ("Início", url_for("index", _external=True)),
