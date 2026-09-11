@@ -1562,6 +1562,15 @@ input[readonly] {
   margin-right: 5px;
 }
 
+/* Jadlog (marca compacta) e Loggi (marca quadrada) ficam visualmente
+   menores que as outras nessa altura padrão -- aumenta só essas duas
+   pra pesarem igual ao lado de Correios/Azul/Total Express. */
+.frete-opcao-logo[src$="jadlog.png"],
+.frete-opcao-logo[src$="loggi.png"] {
+  height: 22px;
+  vertical-align: -6px;
+}
+
 .frete-opcao-prazo {
   color: var(--muted);
   font-size: 0.78rem;
