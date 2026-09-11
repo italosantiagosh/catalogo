@@ -1403,27 +1403,34 @@ def somar_dias_uteis(data_inicio: datetime, dias: int) -> datetime:
 
 FUSO_BRASIL = ZoneInfo("America/Sao_Paulo")
 
-# Pago ate´ 13:59 (horario de Brasilia) conta o dia do proprio pagamento
-# como base pra contagem dos dias uteis de producao. Pago 14:00 em
-# diante so entra na producao a partir do dia seguinte -- pedido do
-# usuario 2026-09-11 (cutoff original as 18h) e ajustado em seguida pra
-# 14h: "se a pessoa fechar as 17h59 eu nao vou mais nem poder comecar o
-# pedido dele naquele dia" -- 14h deixa uma tarde real de producao pros
-# pedidos fechados durante o dia.
-HORA_LIMITE_PRODUCAO_MESMO_DIA = 14
+# Pedido em 2026-09-11: pago ate´ 17:59 (Brasilia) contava o proprio dia
+# como base da producao, pago 18h+ so entrava no dia seguinte -- ajustado
+# na mesma conversa pro corte ser as 14h em vez de 18h ("se a pessoa
+# fechar as 17h59 eu nao vou mais nem poder comecar o pedido dele
+# naquele dia"), e repensado ainda na mesma conversa pra virar 12h: em
+# vez de EMPURRAR o inicio da producao pro dia seguinte quando paga
+# tarde (penalidade), o prazo da tabela de sempre (PRODUCAO_DIAS_UTEIS/
+# FAIXAS_PRODUCAO_DIAS_UTEIS, config.py) volta a ser o prazo "normal"
+# (pago depois das 12h), e quem paga ANTES das 12h ganha 1 dia util de
+# BONUS (ex: 5 -> 4) -- nunca pior que a promessa antiga, as vezes
+# melhor. A contagem sempre comeca no proprio dia do pagamento (nunca
+# desloca mais pro dia seguinte).
+HORA_LIMITE_PRODUCAO_MESMO_DIA = 12
+
+# Nunca deixa a producao "sumir" (0 dias) se um dia a tabela em config.py
+# cadastrar um prazo baixo -- produzir sempre leva pelo menos 1 dia
+# util, mesmo com o bonus do corte.
+_DIAS_PRODUCAO_MINIMO = 1
 
 
-def inicio_producao(data_pago: datetime) -> datetime:
-    """Ponto de partida real da contagem de dias uteis de producao (ver
-    somar_dias_uteis/previsoes_do_pedido abaixo) -- desloca pro dia
-    seguinte quando o pagamento cai as 14h ou depois no horario de
-    Brasilia (ver HORA_LIMITE_PRODUCAO_MESMO_DIA). Se esse dia seguinte
-    cair num fim de semana, some_dias_uteis ja pula pra frente sozinho
-    ao contar os dias uteis a partir daqui -- nao precisa tratar isso
-    aqui tambem."""
-    if data_pago.astimezone(FUSO_BRASIL).hour >= HORA_LIMITE_PRODUCAO_MESMO_DIA:
-        return data_pago + timedelta(days=1)
-    return data_pago
+def dias_producao_com_bonus_de_horario(dias_producao_base: int, data_pago: datetime) -> int:
+    """Aplica o bonus de 1 dia util a menos quando o pagamento cai ANTES
+    das 12h (Brasilia) -- ver HORA_LIMITE_PRODUCAO_MESMO_DIA. Pago as
+    12h ou depois usa o prazo cheio da tabela, sem bonus nem penalidade
+    (essa e´ a promessa "de sempre", igual antes dessa mudanca)."""
+    if data_pago.astimezone(FUSO_BRASIL).hour < HORA_LIMITE_PRODUCAO_MESMO_DIA:
+        return max(_DIAS_PRODUCAO_MINIMO, dias_producao_base - 1)
+    return dias_producao_base
 
 
 def producao_dias_uteis_para_quantidade(quantidade_total: int) -> int:
@@ -1463,10 +1470,12 @@ def previsoes_do_pedido(pedido: dict) -> dict:
     if not pago_em:
         return resultado
     quantidade_total = sum(int(item.get("quantidade", 0)) for item in pedido.get("itens", []))
-    dias_producao = producao_dias_uteis_para_quantidade(quantidade_total)
-    resultado["dias_producao"] = dias_producao
     data_pago = datetime.fromisoformat(pago_em)
-    previsao_envio = somar_dias_uteis(inicio_producao(data_pago), dias_producao)
+    dias_producao = dias_producao_com_bonus_de_horario(
+        producao_dias_uteis_para_quantidade(quantidade_total), data_pago
+    )
+    resultado["dias_producao"] = dias_producao
+    previsao_envio = somar_dias_uteis(data_pago, dias_producao)
     resultado["previsao_envio"] = previsao_envio
 
     prazo_frete = pedido.get("frete_prazo_dias")

@@ -804,53 +804,51 @@
     return dias;
   }
 
-  // Pago ate´ 13:59 conta o proprio dia como base da producao; 14h em
-  // diante so entra a partir do dia seguinte -- espelha services/
-  // pedidos.py:HORA_LIMITE_PRODUCAO_MESMO_DIA/inicio_producao (corte
-  // original as 18h, ajustado em seguida pra 14h -- ver conversa
-  // 2026-09-11). Usa a hora LOCAL do navegador (sem conversao de fuso),
-  // igual o resto deste arquivo ja faz com `new Date()` -- pra
-  // visitante fora do Brasil o horario exibido pode nao bater
-  // exatamente com o corte real do servidor (que usa America/Sao_Paulo
-  // de verdade), mas a esmagadora maioria acessa daqui mesmo.
-  const HORA_LIMITE_PRODUCAO_MESMO_DIA = 14;
+  // Pago ANTES das 12h (Brasilia) ganha 1 dia util de BONUS na producao
+  // (ex: 5 -> 4); pago as 12h ou depois usa o prazo cheio da tabela de
+  // sempre, sem penalidade -- espelha services/pedidos.py:
+  // HORA_LIMITE_PRODUCAO_MESMO_DIA/dias_producao_com_bonus_de_horario
+  // (corte original as 18h, depois 14h, ajustado pra 12h -- ver
+  // conversa 2026-09-11). A contagem sempre comeca HOJE, nunca desloca
+  // pro dia seguinte (diferente da 1a versao dessa mudanca). Usa a hora
+  // LOCAL do navegador (sem conversao de fuso), igual o resto deste
+  // arquivo ja faz com `new Date()` -- pra visitante fora do Brasil o
+  // horario exibido pode nao bater exatamente com o corte real do
+  // servidor (que usa America/Sao_Paulo de verdade), mas a esmagadora
+  // maioria acessa daqui mesmo.
+  const HORA_LIMITE_PRODUCAO_MESMO_DIA = 12;
 
   function antesDoCorteDeHoje() {
     return new Date().getHours() < HORA_LIMITE_PRODUCAO_MESMO_DIA;
   }
 
-  function inicioProducaoAgora() {
-    const agora = new Date();
-    if (antesDoCorteDeHoje()) return agora;
-    const amanha = new Date(agora);
-    amanha.setDate(amanha.getDate() + 1);
-    return amanha;
+  function diasProducaoComBonus(diasBase, antesDoCorte) {
+    return antesDoCorte ? Math.max(1, diasBase - 1) : diasBase;
   }
 
   function textoPrazoComProducao(prazoDiasTransportadora) {
     if (!prazoDiasTransportadora || !window.PRODUCAO_DIAS_UTEIS) return '';
     const quantidadeTotal = (ultimoCalculo && ultimoCalculo.quantidade_total) || 0;
-    const diasProducao = producaoDiasUteisParaQuantidade(quantidadeTotal);
-    const dataProducaoPronta = somarDiasUteis(inicioProducaoAgora(), diasProducao);
+    const diasProducaoBase = producaoDiasUteisParaQuantidade(quantidadeTotal);
+    const diasProducao = diasProducaoComBonus(diasProducaoBase, antesDoCorteDeHoje());
+    const dataProducaoPronta = somarDiasUteis(new Date(), diasProducao);
     const dataEntrega = somarDiasUteis(dataProducaoPronta, prazoDiasTransportadora);
     return ` — com a produção, prazo de entrega dia ${formatarDataCurta(dataEntrega)}`;
   }
 
   // "Gatilho" de urgencia (ver conversa) -- so faz sentido contar ate o
-  // corte de HOJE: depois das 14h, qualquer compra ate a meia-noite ja
-  // cai no mesmo balde ("comeca amanha"), entao nao ha urgencia real em
-  // "correr" pra comprar em seguida -- mostra so a data prevista, sem
-  // contagem regressiva.
+  // corte de HOJE: depois das 12h, o bonus de 1 dia a menos ja nao da
+  // mais pra pegar hoje, entao nao ha urgencia real em "correr" -- mostra
+  // so a data (sem bonus) prevista, sem contagem regressiva.
   let intervaloGatilhoProducao = null;
 
   function atualizarGatilhoProducao() {
     if (!gatilhoProducaoEl || !window.PRODUCAO_DIAS_UTEIS) return;
     const quantidadeTotal = (ultimoCalculo && ultimoCalculo.quantidade_total) || 0;
-    const diasProducao = producaoDiasUteisParaQuantidade(quantidadeTotal);
-    const dataEnvio = somarDiasUteis(inicioProducaoAgora(), diasProducao);
-    const dataFormatada = formatarDataCurta(dataEnvio);
+    const diasProducaoBase = producaoDiasUteisParaQuantidade(quantidadeTotal);
 
     if (antesDoCorteDeHoje()) {
+      const dataComBonus = somarDiasUteis(new Date(), diasProducaoComBonus(diasProducaoBase, true));
       const agora = new Date();
       const limiteHoje = new Date(agora);
       limiteHoje.setHours(HORA_LIMITE_PRODUCAO_MESMO_DIA, 0, 0, 0);
@@ -858,9 +856,10 @@
       const horas = Math.floor(restanteMs / 3600000);
       const minutos = Math.floor((restanteMs % 3600000) / 60000);
       gatilhoProducaoEl.textContent =
-        `⏰ Compre nas próximas ${horas}h ${minutos}min e garanta envio até dia ${dataFormatada}`;
+        `⏰ Compre nas próximas ${horas}h ${minutos}min e garanta envio até dia ${formatarDataCurta(dataComBonus)}`;
     } else {
-      gatilhoProducaoEl.textContent = `📦 Comprando agora, envio previsto até dia ${dataFormatada}`;
+      const dataSemBonus = somarDiasUteis(new Date(), diasProducaoBase);
+      gatilhoProducaoEl.textContent = `📦 Comprando agora, envio previsto até dia ${formatarDataCurta(dataSemBonus)}`;
     }
   }
 

@@ -304,8 +304,9 @@ def test_previsoes_marca_enviado_antecipado_e_recalcula_entrega_pelo_envio_real(
     _reapontar_db(monkeypatch, tmp_path)
     monkeypatch.setattr(pedidos, "PRODUCAO_DIAS_UTEIS", 5)
     pedido = pedidos.criar_pedido(**_pedido_exemplo(frete_prazo_dias=7))
-    # segunda-feira 04/11/2024 -- previsao de envio (+5 dias uteis) cai em 11/11 (segunda)
-    pago_em = datetime(2024, 11, 4, 12, 0, tzinfo=timezone.utc)  # 09:00 em Brasilia -- antes do corte das 14h
+    # segunda-feira 04/11/2024, pago DEPOIS do corte das 12h (sem bonus)
+    # -- previsao de envio (+5 dias uteis) cai em 11/11 (segunda)
+    pago_em = datetime(2024, 11, 4, 23, 0, tzinfo=timezone.utc)  # 20:00 em Brasilia -- depois do corte das 12h
     _marcar_pago_em(pedido["token"], pago_em)
     # mas o pedido saiu bem antes do prometido: quarta 06/11
     enviado_em = datetime(2024, 11, 6, tzinfo=timezone.utc)
@@ -323,7 +324,7 @@ def test_previsoes_nao_marca_antecipado_quando_envio_nao_foi_adiantado(monkeypat
     _reapontar_db(monkeypatch, tmp_path)
     monkeypatch.setattr(pedidos, "PRODUCAO_DIAS_UTEIS", 5)
     pedido = pedidos.criar_pedido(**_pedido_exemplo(frete_prazo_dias=7))
-    pago_em = datetime(2024, 11, 4, 12, 0, tzinfo=timezone.utc)  # 09:00 em Brasilia -- antes do corte das 14h
+    pago_em = datetime(2024, 11, 4, 23, 0, tzinfo=timezone.utc)  # 20:00 em Brasilia -- depois do corte das 12h (sem bonus)
     _marcar_pago_em(pedido["token"], pago_em)
     # previsao de envio era 11/11 -- saiu depois, no dia 12/11
     enviado_em = datetime(2024, 11, 12, tzinfo=timezone.utc)
@@ -362,9 +363,12 @@ def test_previsoes_usa_prazo_de_producao_maior_para_pedido_grande(monkeypatch, t
         itens=[{"chave_preco": "16mm", "quantidade": 1000, "descricao": "São José — Modelo 1"}],
         frete_prazo_dias=7,
     ))
-    # segunda-feira 04/11/2024 -- previsao de envio (+8 dias uteis, faixa
-    # de 1000 pecas) cai em 14/11 (quinta), nao 11/11 (que seria +5 dias)
-    pago_em = datetime(2024, 11, 4, 12, 0, tzinfo=timezone.utc)  # 09:00 em Brasilia -- antes do corte das 14h
+    # segunda-feira 04/11/2024, pago DEPOIS do corte das 12h (sem bonus,
+    # ver dias_producao_com_bonus_de_horario) -- isola esse teste do
+    # bonus de horario, testando so a faixa por quantidade: previsao de
+    # envio (+8 dias uteis, faixa de 1000 pecas) cai em 14/11 (quinta),
+    # nao 11/11 (que seria +5 dias).
+    pago_em = datetime(2024, 11, 4, 23, 0, tzinfo=timezone.utc)  # 20:00 em Brasilia -- depois do corte das 12h
     _marcar_pago_em(pedido["token"], pago_em)
 
     previsoes = pedidos.previsoes_do_pedido(pedidos.obter_pedido(pedido["token"]))
@@ -372,65 +376,70 @@ def test_previsoes_usa_prazo_de_producao_maior_para_pedido_grande(monkeypatch, t
     assert previsoes["previsao_envio"].date().isoformat() == "2024-11-14"
 
 
-def test_inicio_producao_antes_das_14h_em_brasilia_mantem_o_mesmo_dia():
-    # 13:59 em Brasilia (UTC-3) == 16:59 UTC -- ainda dentro do prazo
-    pago = datetime(2026, 9, 10, 16, 59, tzinfo=timezone.utc)
-    assert pedidos.inicio_producao(pago) == pago
+def test_dias_producao_com_bonus_antes_das_12h_em_brasilia_desconta_1_dia():
+    # 11:59 em Brasilia (UTC-3) == 14:59 UTC -- ainda antes do corte
+    pago = datetime(2026, 9, 10, 14, 59, tzinfo=timezone.utc)
+    assert pedidos.dias_producao_com_bonus_de_horario(5, pago) == 4
 
 
-def test_inicio_producao_as_14h_em_brasilia_ja_desloca_pro_dia_seguinte():
-    # 14:00 em Brasilia (UTC-3) == 17:00 UTC -- pedido do usuario
-    # 2026-09-11 (corte original as 18h, ajustado pra 14h em seguida):
-    # 14h em diante so entra na producao do dia seguinte
-    pago = datetime(2026, 9, 10, 17, 0, tzinfo=timezone.utc)
-    assert pedidos.inicio_producao(pago) == pago + timedelta(days=1)
+def test_dias_producao_sem_bonus_as_12h_em_brasilia_usa_prazo_cheio():
+    # 12:00 em Brasilia (UTC-3) == 15:00 UTC -- pedido do usuario
+    # 2026-09-11 (corte original as 18h, depois 14h, ajustado pra 12h em
+    # seguida): as 12h ou depois usa o prazo cheio da tabela, sem bonus.
+    pago = datetime(2026, 9, 10, 15, 0, tzinfo=timezone.utc)
+    assert pedidos.dias_producao_com_bonus_de_horario(5, pago) == 5
 
 
-def test_inicio_producao_apos_o_corte_desloca_um_dia(monkeypatch, tmp_path):
+def test_dias_producao_com_bonus_nunca_fica_abaixo_de_1():
+    pago = datetime(2026, 9, 10, 14, 59, tzinfo=timezone.utc)  # antes do corte
+    assert pedidos.dias_producao_com_bonus_de_horario(1, pago) == 1
+
+
+def test_previsoes_pago_antes_do_corte_ganha_bonus_e_comeca_no_mesmo_dia(monkeypatch, tmp_path):
     _reapontar_db(monkeypatch, tmp_path)
     monkeypatch.setattr(pedidos, "PRODUCAO_DIAS_UTEIS", 5)
     pedido = pedidos.criar_pedido(**_pedido_exemplo())
-    # quinta-feira 05/11/2026, 20h em Brasilia (23h UTC) -- depois do
-    # corte das 14h, entao a produção so conta a partir de sexta 06/11.
-    # +5 dias uteis a partir de sexta (nao conta a sexta em si) cai em
-    # sexta seguinte, 13/11.
-    pago_em = datetime(2026, 11, 5, 23, 0, tzinfo=timezone.utc)
-    _marcar_pago_em(pedido["token"], pago_em)
-
-    previsoes = pedidos.previsoes_do_pedido(pedidos.obter_pedido(pedido["token"]))
-    assert previsoes["previsao_envio"].date().isoformat() == "2026-11-13"
-
-
-def test_inicio_producao_antes_do_corte_nao_desloca(monkeypatch, tmp_path):
-    _reapontar_db(monkeypatch, tmp_path)
-    monkeypatch.setattr(pedidos, "PRODUCAO_DIAS_UTEIS", 5)
-    pedido = pedidos.criar_pedido(**_pedido_exemplo())
-    # mesma quinta-feira 05/11/2026, mas as 10h em Brasilia (13h UTC) --
-    # antes do corte, conta a partir do proprio dia 05/11. +5 dias uteis
-    # cai em quinta seguinte, 12/11 (um dia antes do caso do corte acima).
+    # quinta-feira 05/11/2026, 10h em Brasilia (13h UTC) -- antes do
+    # corte das 12h, ganha bonus (5 -> 4 dias uteis) e a contagem comeca
+    # no PROPRIO dia 05/11 (nunca desloca mais pro dia seguinte).
     pago_em = datetime(2026, 11, 5, 13, 0, tzinfo=timezone.utc)
     _marcar_pago_em(pedido["token"], pago_em)
 
     previsoes = pedidos.previsoes_do_pedido(pedidos.obter_pedido(pedido["token"]))
-    assert previsoes["previsao_envio"].date().isoformat() == "2026-11-12"
+    assert previsoes["dias_producao"] == 4
+    assert previsoes["previsao_envio"].date().isoformat() == "2026-11-11"
 
 
-def test_inicio_producao_apos_o_corte_numa_sexta_pula_fim_de_semana(monkeypatch, tmp_path):
+def test_previsoes_pago_depois_do_corte_usa_prazo_cheio_a_partir_do_mesmo_dia(monkeypatch, tmp_path):
     _reapontar_db(monkeypatch, tmp_path)
     monkeypatch.setattr(pedidos, "PRODUCAO_DIAS_UTEIS", 5)
     pedido = pedidos.criar_pedido(**_pedido_exemplo())
-    # sexta-feira 06/11/2026, 20h em Brasilia (23h UTC) -- depois do
-    # corte, desloca pro sabado 07/11 -- mas somar_dias_uteis ja pula
-    # sabado/domingo sozinho ao contar os dias uteis a partir dali, sem
-    # precisar de nenhum tratamento especial aqui: cai na MESMA sexta
-    # 13/11 do teste "apos o corte" acima (a diferenca de 1 dia entre
-    # os dois pontos de partida cai num fim de semana, que ja nao conta
-    # mesmo).
-    pago_em = datetime(2026, 11, 6, 23, 0, tzinfo=timezone.utc)
+    # mesma quinta-feira 05/11/2026, mas as 20h em Brasilia (23h UTC) --
+    # depois do corte, sem bonus (prazo cheio de 5 dias uteis), mas
+    # AINDA contando a partir do proprio dia 05/11 -- so 1 dia depois do
+    # caso com bonus acima, nunca mais que isso (a promessa nunca piora
+    # em relacao a antes dessa mudanca).
+    pago_em = datetime(2026, 11, 5, 23, 0, tzinfo=timezone.utc)
     _marcar_pago_em(pedido["token"], pago_em)
 
     previsoes = pedidos.previsoes_do_pedido(pedidos.obter_pedido(pedido["token"]))
-    assert previsoes["previsao_envio"].date().isoformat() == "2026-11-13"
+    assert previsoes["dias_producao"] == 5
+    assert previsoes["previsao_envio"].date().isoformat() == "2026-11-12"
+
+
+def test_previsoes_sexta_com_bonus_pula_fim_de_semana_naturalmente(monkeypatch, tmp_path):
+    _reapontar_db(monkeypatch, tmp_path)
+    monkeypatch.setattr(pedidos, "PRODUCAO_DIAS_UTEIS", 5)
+    pedido = pedidos.criar_pedido(**_pedido_exemplo())
+    # sexta-feira 06/11/2026, 10h em Brasilia (13h UTC) -- antes do
+    # corte, bonus de 4 dias uteis a partir da propria sexta. Nao precisa
+    # de nenhum tratamento especial pro fim de semana: somar_dias_uteis
+    # ja pula sabado/domingo sozinho ao contar a partir dali.
+    pago_em = datetime(2026, 11, 6, 13, 0, tzinfo=timezone.utc)
+    _marcar_pago_em(pedido["token"], pago_em)
+
+    previsoes = pedidos.previsoes_do_pedido(pedidos.obter_pedido(pedido["token"]))
+    assert previsoes["previsao_envio"].date().isoformat() == "2026-11-12"
 
 
 def test_previsoes_dias_producao_none_quando_pedido_ainda_nao_pago(monkeypatch, tmp_path):
