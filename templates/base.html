@@ -192,6 +192,48 @@
       {% endfor %}
     </div>
   </div>
+
+  <div class="imagem-modal" id="modal-ajuda-home" hidden>
+    <div class="imagem-modal-caixa imagem-modal-caixa-larga">
+      <button type="button" class="imagem-modal-fechar" id="btn-ajuda-home-fechar" aria-label="Fechar">×</button>
+      <h2 class="tabela-desconto-titulo">Como fazer seu pedido</h2>
+      <p class="tabela-desconto-intro">Duas formas de escolher sua medalha, entremeio ou chaveiro:</p>
+      <div class="ajuda-caminho">
+        <h3>🏛️ Catálogo pronto</h3>
+        <ol>
+          <li>Ache um santo pela busca ou role a página</li>
+          <li>Escolha o formato: medalha, entremeio ou chaveiro</li>
+          <li>Se for medalha, escolha o tamanho</li>
+          <li>Escolha a quantidade e adicione ao carrinho</li>
+        </ol>
+        <a class="botao-secundario" href="{{ url_for('catalogo_completo') }}">Ver catálogo completo</a>
+      </div>
+      <div class="ajuda-caminho">
+        <h3>✏️ Peça personalizada</h3>
+        <ol>
+          <li>Escolha o formato</li>
+          <li>Envie sua foto</li>
+          <li>Ajuste o recorte e veja a prévia</li>
+          <li>Escolha a quantidade e adicione ao carrinho</li>
+        </ol>
+        <a class="botao-secundario" href="{{ url_for('personalizada') }}">Criar personalizada</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="imagem-modal" id="modal-ajuda-produto" hidden>
+    <div class="imagem-modal-caixa imagem-modal-caixa-larga">
+      <button type="button" class="imagem-modal-fechar" id="btn-ajuda-produto-fechar" aria-label="Fechar">×</button>
+      <h2 class="tabela-desconto-titulo">Como pedir esse santo</h2>
+      <ol>
+        <li>Escolha um modelo (foto)</li>
+        <li>Escolha o formato: medalha, entremeio ou chaveiro</li>
+        <li>Se for medalha, escolha o tamanho (1,2 cm ou 1,6 cm)</li>
+        <li>Escolha a quantidade</li>
+        <li>Toque em "Adicionar ao carrinho"</li>
+      </ol>
+    </div>
+  </div>
   <script src="{{ url_for('static', filename='js/carrinho.js') }}"></script>
   <script src="{{ url_for('static', filename='js/modais_base.js') }}"></script>
   {% block script %}{% endblock %}

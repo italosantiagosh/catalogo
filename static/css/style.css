@@ -2001,6 +2001,94 @@ body.tem-barra-fixa-comprar main {
   color: var(--gold-texto-claro);
 }
 
+.ajuda-caminho {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 14px;
+  margin: 0 0 14px;
+}
+
+.ajuda-caminho h3 {
+  margin: 0 0 8px;
+  font-size: 0.95rem;
+}
+
+.ajuda-caminho ol {
+  margin: 0 0 12px;
+  padding-left: 20px;
+  font-size: 0.86rem;
+  color: var(--muted);
+}
+
+.ajuda-caminho li {
+  margin-bottom: 4px;
+}
+
+#modal-ajuda-produto ol {
+  padding-left: 20px;
+  font-size: 0.9rem;
+}
+
+#modal-ajuda-produto li {
+  margin-bottom: 6px;
+}
+
+.ajuda-botao {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: var(--accent);
+  border-radius: 999px;
+  padding: 6px 12px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  margin: 0 0 12px;
+}
+
+.popup-ajuda-inicial {
+  position: fixed;
+  left: 12px;
+  right: 12px;
+  bottom: 90px;
+  z-index: 60;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 14px;
+  box-shadow: 0 10px 30px -10px rgba(20, 34, 56, 0.35);
+  max-width: 420px;
+  margin: 0 auto;
+}
+
+.popup-ajuda-inicial p {
+  margin: 0 0 10px;
+  font-size: 0.88rem;
+  font-weight: 600;
+}
+
+.popup-ajuda-botoes {
+  display: flex;
+  gap: 8px;
+}
+
+.popup-ajuda-botoes button {
+  flex: 1;
+  padding: 9px 10px;
+  font-size: 0.82rem;
+}
+
+#popup-ajuda-sim {
+  border: none;
+  border-radius: 10px;
+  background: var(--accent);
+  color: #fff;
+  font-weight: 600;
+  cursor: pointer;
+}
+
 .link-guia-tamanhos {
   border: none;
   background: none;

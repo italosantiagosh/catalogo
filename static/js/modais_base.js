@@ -30,3 +30,9 @@ if (_abrirGuia) window.abrirGuiaTamanhos = _abrirGuia;
 
 const _abrirTabela = _configurarModalSimples('modal-tabela-desconto', 'btn-tabela-desconto-fechar');
 if (_abrirTabela) window.abrirTabelaDesconto = _abrirTabela;
+
+const _abrirAjudaHome = _configurarModalSimples('modal-ajuda-home', 'btn-ajuda-home-fechar');
+if (_abrirAjudaHome) window.abrirAjudaHome = _abrirAjudaHome;
+
+const _abrirAjudaProduto = _configurarModalSimples('modal-ajuda-produto', 'btn-ajuda-produto-fechar');
+if (_abrirAjudaProduto) window.abrirAjudaProduto = _abrirAjudaProduto;
