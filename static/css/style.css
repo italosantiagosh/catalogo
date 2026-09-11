@@ -50,6 +50,15 @@ body {
   font-family: var(--fonte-corpo);
   background: var(--bg);
   color: var(--ink);
+  /* trava o arrasto/scroll horizontal como rede de seguranca (ver
+     conversa) -- a causa raiz era um bug na sangria dos banners no
+     mobile empurrando .banner-uso-real 16px pra fora da tela (ja
+     corrigido, ver regra .hero-banner-wrap/.banner-atacado/.banner-uso-real
+     em @media max-width:640px). Overflow-x aqui SO no <body>, nunca no
+     <html> -- colocar no <html> tambem quebra o header sticky
+     (.topo-fixo), porque o <html> vira o "scroller" e o sticky perde a
+     referencia certa pra grudar no topo (testado e confirmado). */
+  overflow-x: hidden;
 }
 
 h1, h2, h3 {
@@ -2058,26 +2067,6 @@ body.tem-barra-fixa-comprar main {
   color: #6b4a12;
 }
 
-/* sangria no mobile pros 3 banners novos (hero/atacado/uso-real) --
-   o texto vem desenhado dentro da imagem (ver conversa), entao ganhar
-   os ~32px do padding lateral do <main> aumenta o texto de verdade em
-   vez de so a moldura. Sem sangria no desktop -- ali a imagem ja fica
-   bem grande dentro do max-width de 960px do <main>. */
-@media (max-width: 640px) {
-  .hero-banner-wrap,
-  .banner-atacado,
-  .banner-uso-real {
-    margin-left: -16px;
-    margin-right: -16px;
-    width: calc(100% + 32px);
-    border-radius: 0;
-  }
-
-  .hero-banner {
-    border-radius: 0;
-  }
-}
-
 .nossa-historia {
   max-width: 68ch;
   margin: 0 0 20px;
@@ -2179,6 +2168,31 @@ body.tem-barra-fixa-comprar main {
   width: 100%;
   height: auto;
   display: block;
+}
+
+/* sangria no mobile pros 3 banners novos (hero/atacado/uso-real) --
+   o texto vem desenhado dentro da imagem (ver conversa), entao ganhar
+   os ~32px do padding lateral do <main> aumenta o texto de verdade em
+   vez de so a moldura. Sem sangria no desktop -- ali a imagem ja fica
+   bem grande dentro do max-width de 960px do <main>. Precisa vir DEPOIS
+   das regras acima (.banner-uso-real base tem margin:0 0 20px, que
+   sobrescreveria margin-left/right daqui se essa regra viesse antes --
+   ver conversa: era exatamente essa ordem invertida que deixava o
+   banner-uso-real sangrando so de um lado, empurrando a pagina inteira
+   pra permitir arrasto horizontal). */
+@media (max-width: 640px) {
+  .hero-banner-wrap,
+  .banner-atacado,
+  .banner-uso-real {
+    margin-left: -16px;
+    margin-right: -16px;
+    width: calc(100% + 32px);
+    border-radius: 0;
+  }
+
+  .hero-banner {
+    border-radius: 0;
+  }
 }
 
 /* pagina /personalizada -- upload */
