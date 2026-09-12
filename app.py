@@ -2245,8 +2245,17 @@ def api_estimativa_frete_por_localizacao():
     so uma estimativa pra dar um numero antes da pessoa digitar
     qualquer coisa. Falha silenciosa em qualquer etapa -- devolve 204
     (sem corpo) se nao der pra estimar, o widget na pagina de produto
-    so nao aparece nesse caso."""
-    local = localizar_por_ip(request.remote_addr or "")
+    so nao aparece nesse caso.
+
+    O site roda atras do Cloudflare (ver conversa: "nao apareceu nem no
+    pc nem no iphone") -- CF-Connecting-IP e´ o header que o proprio
+    Cloudflare garante ter o IP real de quem esta acessando, sem
+    depender de contar quantos "pulos" de proxy existem entre o
+    Cloudflare e o container do Render pra bater com ProxyFix(x_for=1,
+    ver app.wsgi_app acima). Sem esse header (dev local, ou se o site um
+    dia sair de tras do Cloudflare), cai de volta pro remote_addr normal."""
+    ip_visitante = request.headers.get("CF-Connecting-IP") or request.remote_addr or ""
+    local = localizar_por_ip(ip_visitante)
     if local is None:
         return "", 204
 

@@ -175,8 +175,8 @@
 
     <div class="compartilhar-produto">
       <span class="compartilhar-titulo">Compartilhar:</span>
-      <a href="https://wa.me/?text={{ (produto.nome ~ ' — Nove de Julho: ' ~ request.url) | urlencode }}" target="_blank" rel="noopener" aria-label="Compartilhar no WhatsApp"><img class="icone-whatsapp-inline" src="{{ url_for('static', filename='img/icones/whatsapp.svg') }}" alt="">WhatsApp</a>
-      <a href="https://www.facebook.com/sharer/sharer.php?u={{ request.url | urlencode }}" target="_blank" rel="noopener" aria-label="Compartilhar no Facebook">📘 Facebook</a>
+      <a href="https://wa.me/?text={{ (produto.nome ~ ' — Nove de Julho: ' ~ request.url) | urlencode }}" target="_blank" rel="noopener" aria-label="Compartilhar no WhatsApp"><img class="icone-marca-inline" src="{{ url_for('static', filename='img/icones/whatsapp.svg') }}" alt="">WhatsApp</a>
+      <a href="https://www.facebook.com/sharer/sharer.php?u={{ request.url | urlencode }}" target="_blank" rel="noopener" aria-label="Compartilhar no Facebook"><img class="icone-marca-inline" src="{{ url_for('static', filename='img/icones/facebook.svg') }}" alt="">Facebook</a>
       <button type="button" class="compartilhar-copiar" data-copiar-link="{{ request.url }}">🔗 Copiar link</button>
     </div>
   </div>

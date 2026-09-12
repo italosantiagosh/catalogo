@@ -30,6 +30,16 @@ def test_sem_localizacao_devolve_204(client, monkeypatch):
     assert resposta.status_code == 204
 
 
+def test_usa_cf_connecting_ip_quando_presente(client, monkeypatch):
+    # ver conversa: o site roda atras do Cloudflare -- CF-Connecting-IP
+    # tem que ter prioridade sobre remote_addr (que pode ser so o IP do
+    # proprio Render/Cloudflare fazendo o proxy, nao o do visitante).
+    ip_recebido = []
+    monkeypatch.setattr(app_module, "localizar_por_ip", lambda ip: ip_recebido.append(ip) or None)
+    client.get("/api/frete/estimativa-por-localizacao", headers={"CF-Connecting-IP": "189.6.10.10"})
+    assert ip_recebido == ["189.6.10.10"]
+
+
 def test_sem_cotacao_disponivel_devolve_204(client, monkeypatch):
     monkeypatch.setattr(
         app_module, "localizar_por_ip", lambda ip: {"cidade": "Natal", "estado": "Rio Grande do Norte", "cep": "59000000"}
