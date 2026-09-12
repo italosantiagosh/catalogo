@@ -52,14 +52,6 @@
 
   <button type="button" class="ajuda-botao ajuda-botao-centralizado" onclick="abrirAjudaHome()">❓ Como funciona / Como pedir</button>
 
-  <div class="popup-ajuda-inicial" id="popup-ajuda-inicial" hidden>
-    <p>Quer ajuda pra fazer seu pedido?</p>
-    <div class="popup-ajuda-botoes">
-      <button type="button" id="popup-ajuda-sim">Sim, me ajuda</button>
-      <button type="button" id="popup-ajuda-nao" class="botao-secundario">Agora não</button>
-    </div>
-  </div>
-
   <div class="vantagens">
     <div class="vantagem">
       <span class="vantagem-icone">🚚</span>
@@ -236,6 +228,3 @@
 
 {% endblock %}
 
-{% block script %}
-  <script src="{{ url_for('static', filename='js/ajuda_popup_home.js') }}"></script>
-{% endblock %}

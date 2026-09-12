@@ -2256,27 +2256,10 @@ body.tem-barra-fixa-comprar main {
   margin: 0 auto 12px;
 }
 
-.popup-ajuda-inicial {
-  position: fixed;
-  left: 12px;
-  right: 12px;
-  bottom: 90px;
-  z-index: 60;
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: 14px;
-  padding: 14px;
-  box-shadow: 0 10px 30px -10px rgba(20, 34, 56, 0.35);
-  max-width: 420px;
-  margin: 0 auto;
-}
-
-.popup-ajuda-inicial p {
-  margin: 0 0 10px;
-  font-size: 0.88rem;
-  font-weight: 600;
-}
-
+/* usado pelo popup de upsell da cruz (base.html) -- era compartilhado
+   tambem com o popup "quer ajuda pra fazer seu pedido?" da home, ja
+   removido (ver conversa), mas essa classe generica de par de botoes
+   continua em uso aqui. */
 .popup-ajuda-botoes {
   display: flex;
   gap: 8px;
@@ -2286,15 +2269,6 @@ body.tem-barra-fixa-comprar main {
   flex: 1;
   padding: 9px 10px;
   font-size: 0.82rem;
-}
-
-#popup-ajuda-sim {
-  border: none;
-  border-radius: 10px;
-  background: var(--accent);
-  color: #fff;
-  font-weight: 600;
-  cursor: pointer;
 }
 
 .upsell-cruz-texto {
