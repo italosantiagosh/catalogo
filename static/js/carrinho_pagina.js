@@ -20,7 +20,6 @@
   const freteCepInput = document.getElementById('frete-cep');
   const btnCalcularFrete = document.getElementById('btn-calcular-frete');
   const freteResultadoEl = document.getElementById('frete-resultado');
-  const nudgeDescontoEl = document.getElementById('nudge-desconto');
   const tipoPessoaFisica = document.getElementById('tipo-pessoa-fisica');
   const tipoPessoaJuridica = document.getElementById('tipo-pessoa-juridica');
   const labelClienteDocumento = document.getElementById('label-cliente-documento');
@@ -518,30 +517,6 @@
       bloco.appendChild(texto);
       bloco.appendChild(barra);
       progressoGruposEl.appendChild(bloco);
-    }
-
-    // nudge de desconto perto do botao de finalizar -- reforca, no
-    // momento da decisao de fechar o pedido, quanto falta pro proximo
-    // preco por unidade (mesmo dado da barra de progresso acima, so
-    // repetido onde importa mais pra conversao).
-    if (nudgeDescontoEl) {
-      nudgeDescontoEl.innerHTML = '';
-      for (const nomeGrupo of Object.keys(dados.grupos)) {
-        const grupo = dados.grupos[nomeGrupo];
-        if (grupo.quantidade_total === 0 || !grupo.proxima_faixa) continue;
-        const nudge = document.createElement('p');
-        nudge.className = 'nudge-desconto';
-        let texto =
-          `💰 Faltam ${grupo.proxima_faixa.faltam} ${GRUPO_LABEL[nomeGrupo] || nomeGrupo} para o preço cair ` +
-          `para ${formatarPreco(grupo.proxima_faixa.preco)}/un`;
-        if (grupo.proxima_faixa.economia > 0) {
-          texto += ` — seu pedido economiza ${formatarPreco(grupo.proxima_faixa.economia)}!`;
-        } else {
-          texto += ' — adicione mais antes de finalizar!';
-        }
-        nudge.textContent = texto;
-        nudgeDescontoEl.appendChild(nudge);
-      }
     }
 
     // barra de progresso: frete gratis
