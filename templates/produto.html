@@ -37,19 +37,19 @@
     <span>›</span>
     <span aria-current="page">{{ produto.nome }}</span>
   </nav>
-  <h1>{{ produto.nome }}</h1>
+  <div class="cabecalho-produto">
+    <h1>{{ produto.nome }}</h1>
+    <button type="button" class="ajuda-botao" onclick="abrirAjudaProduto()">❓ Como pedir</button>
+  </div>
   {% if slug_artigo_relacionado %}
     <p class="link-blog-relacionado">
       📖 <a href="{{ url_for('blog_artigo', slug=slug_artigo_relacionado) }}">Conheça a história de {{ produto.nome }}</a>
     </p>
   {% endif %}
   <p class="instrucao">Escolha um modelo:</p>
-  <div class="linha-ajuda-vendas">
-    <button type="button" class="ajuda-botao" onclick="abrirAjudaProduto()">❓ Como pedir</button>
-    {% if vendas_recentes %}
-      <p class="vendas-recentes-produto">🔥 <strong>{{ vendas_recentes }}</strong> vendidas nos últimos 30 dias</p>
-    {% endif %}
-  </div>
+  {% if vendas_recentes %}
+    <p class="vendas-recentes-produto">🔥 <strong>{{ vendas_recentes }}</strong> vendidas nos últimos 30 dias</p>
+  {% endif %}
 
   <p class="aviso-preco-atacado" id="aviso-preco-atacado" hidden></p>
   <p class="aviso-frete-estimativa" id="aviso-frete-estimativa" hidden></p>
