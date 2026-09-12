@@ -211,7 +211,21 @@ function logoTransportadoraHtml(nomeTransportadora) {
   const nomeNormalizado = (nomeTransportadora || '').toLowerCase().replace(/[^a-z0-9]/g, '');
   const chave = Object.keys(LOGO_POR_TRANSPORTADORA).find((c) => nomeNormalizado.includes(c));
   if (!chave) return '';
-  return `<img class="frete-opcao-logo" src="/static/img/transportadoras/${LOGO_POR_TRANSPORTADORA[chave]}" alt="">`;
+  // alt leva o nome (a logo ja diz visualmente quem e, mas o nome
+  // continua "no ar" pra leitor de tela/acessibilidade -- ver conversa:
+  // tirar o nome repetido do texto visivel, sem perder ele de vez).
+  return `<img class="frete-opcao-logo" src="/static/img/transportadoras/${LOGO_POR_TRANSPORTADORA[chave]}" alt="${nomeTransportadora || ''}">`;
+}
+
+// Nome da transportadora + modalidade (ex: "SEDEX"), sem repetir o nome
+// em texto quando ja tem logo -- a logo ja "fala" o nome (ver conversa:
+// "a logo ja e o nome, ficava repetido"). Sem logo cadastrada, mostra o
+// nome por extenso mesmo (unico jeito de identificar a transportadora
+// nesse caso).
+function nomeTransportadoraComLogoHtml(nomeTransportadora, servico) {
+  const logo = logoTransportadoraHtml(nomeTransportadora);
+  const nomeVisivel = logo ? '' : `${nomeTransportadora} — `;
+  return `${logo}${nomeVisivel}${servico}`;
 }
 
 function _percentualBarra(atual, inicioFaixa, alvo) {

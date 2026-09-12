@@ -8,10 +8,14 @@
   const el = document.getElementById('aviso-frete-estimativa');
   if (!el) return;
 
+  // com logo, o nome so fica no alt (a logo ja "fala" a transportadora
+  // visualmente -- ver conversa: repetir o nome do lado ficava
+  // redundante); sem logo cadastrada, mostra o nome por extenso mesmo,
+  // unico jeito de identificar a transportadora nesse caso.
   function nomeComLogo(opcao) {
-    const logo = opcao.logo ? `<img class="frete-opcao-logo" src="${opcao.logo}" alt="">` : '';
-    const servico = opcao.servico ? ` ${opcao.servico}` : '';
-    return `${logo}${opcao.transportadora}${servico}`;
+    const logo = opcao.logo ? `<img class="frete-opcao-logo" src="${opcao.logo}" alt="${opcao.transportadora}">` : '';
+    const nomeVisivel = logo ? '' : `${opcao.transportadora} `;
+    return `${logo}${nomeVisivel}${opcao.servico || ''}`;
   }
 
   fetch('/api/frete/estimativa-por-localizacao')

@@ -938,7 +938,7 @@
           : `<span class="frete-opcao-por">Por ${formatarPreco(opcao.preco_final)}</span>`;
         botao.innerHTML = `
           <div>
-            <div class="frete-opcao-nome">${logoTransportadoraHtml(opcao.transportadora)}${opcao.transportadora} — ${opcao.servico}</div>
+            <div class="frete-opcao-nome">${nomeTransportadoraComLogoHtml(opcao.transportadora, opcao.servico)}</div>
             <div class="frete-opcao-prazo">${prazo}</div>
             ${avisoMiniEnvios(opcao)}
           </div>
@@ -982,7 +982,7 @@
           : `<span class="frete-opcao-por">Por ${formatarPreco(opcao.preco_final)}</span>`;
         botao.innerHTML = `
           <div>
-            <div class="frete-opcao-nome">${logoTransportadoraHtml(opcao.transportadora)}${opcao.transportadora} — ${opcao.servico}</div>
+            <div class="frete-opcao-nome">${nomeTransportadoraComLogoHtml(opcao.transportadora, opcao.servico)}</div>
             <div class="frete-opcao-prazo">${prazo}</div>
             ${avisoMiniEnvios(opcao)}
           </div>
@@ -1013,7 +1013,7 @@
       const prazo = opcao.prazo_dias ? `${opcao.prazo_dias} dia(s) úteis${textoPrazoComProducao(opcao.prazo_dias)}` : '';
       botao.innerHTML = `
         <div>
-          <div class="frete-opcao-nome">${logoTransportadoraHtml(opcao.transportadora)}${opcao.transportadora} — ${opcao.servico}</div>
+          <div class="frete-opcao-nome">${nomeTransportadoraComLogoHtml(opcao.transportadora, opcao.servico)}</div>
           <div class="frete-opcao-prazo">${prazo}</div>
           ${avisoMiniEnvios(opcao)}
         </div>
