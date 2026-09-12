@@ -504,7 +504,7 @@
         // so a quantidade que falta, sem o "X / Y" antes -- ver conversa:
         // esse numero total (X) confundia mais do que ajudava.
         texto.textContent =
-          `faltam ${grupo.proxima_faixa.faltam} ${GRUPO_LABEL[nomeGrupo] || nomeGrupo} para o próximo desconto ` +
+          `Faltam ${grupo.proxima_faixa.faltam} ${GRUPO_LABEL[nomeGrupo] || nomeGrupo} para o próximo desconto ` +
           `(${formatarPreco(grupo.proxima_faixa.preco)}/un)`;
         preenchimento.style.width =
           _percentualBarra(grupo.quantidade_total, grupo.faixa_atual_inicio, grupo.proxima_faixa.quantidade) + '%';

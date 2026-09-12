@@ -268,7 +268,7 @@ function _blocoBarraGrupo(nomeGrupo, grupo, itensDoGrupo) {
   if (grupo.proxima_faixa) {
     // so a quantidade que falta, sem o "X / Y" antes -- ver conversa:
     // esse numero total (X) confundia mais do que ajudava.
-    texto = `faltam ${grupo.proxima_faixa.faltam} ${label} para o próximo desconto (${formatarPreco(grupo.proxima_faixa.preco)}/un)`;
+    texto = `Faltam ${grupo.proxima_faixa.faltam} ${label} para o próximo desconto (${formatarPreco(grupo.proxima_faixa.preco)}/un)`;
     percentual = _percentualBarra(grupo.quantidade_total, grupo.faixa_atual_inicio, grupo.proxima_faixa.quantidade);
   } else {
     const precoAtual = itensDoGrupo[0] ? itensDoGrupo[0].preco_unitario : 0;
