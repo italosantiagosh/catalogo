@@ -1287,7 +1287,13 @@
         const resposta = await fetch('/api/pedido/criar', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ itens: ultimosItens, frete: freteEscolhido, cliente, endereco }),
+          body: JSON.stringify({
+            itens: ultimosItens,
+            frete: freteEscolhido,
+            cliente,
+            endereco,
+            origem: window.obterOrigemVisita ? window.obterOrigemVisita() : null,
+          }),
         });
         const dados = await resposta.json();
         if (!resposta.ok || dados.erro) {
@@ -1317,7 +1323,13 @@
         const resposta = await fetch('/api/pedido/criar-boleto', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ itens: ultimosItens, frete: freteEscolhido, cliente, endereco }),
+          body: JSON.stringify({
+            itens: ultimosItens,
+            frete: freteEscolhido,
+            cliente,
+            endereco,
+            origem: window.obterOrigemVisita ? window.obterOrigemVisita() : null,
+          }),
         });
         const dados = await resposta.json();
         if (!resposta.ok || dados.erro) {
@@ -1392,6 +1404,7 @@
             itens: ultimosItens,
             frete: freteEscolhido || {},
             cep_informado: freteCepInput ? freteCepInput.value.trim() : '',
+            origem: window.obterOrigemVisita ? window.obterOrigemVisita() : null,
           }),
         });
         const dados = await resposta.json();

@@ -149,6 +149,16 @@
     <a class="voltar" href="{{ url_for('admin_pedido_csv', token=pedido.token) }}">⬇ Baixar CSV pra produção</a>
   </div>
 
+  {% if pedido.origem_classificada %}
+    <div class="bloco">
+      <h2>Origem</h2>
+      <p>
+        {{ pedido.origem_classificada }}{% if pedido.origem_dispositivo %} · {{ pedido.origem_dispositivo }}{% endif %}
+        {%- if pedido.origem_bruta %} <span style="color:#888;font-size:0.85em;">({{ pedido.origem_bruta }})</span>{% endif %}
+      </p>
+    </div>
+  {% endif %}
+
   {% if pedido.status != 'whatsapp' %}
     <div class="bloco">
       <h2>Cliente</h2>

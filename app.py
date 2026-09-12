@@ -2086,6 +2086,65 @@ def _itens_com_descricao_do_corpo(dados: dict) -> list[dict]:
     return itens_validos
 
 
+def _classificar_dispositivo(user_agent: str) -> str:
+    """Heuristica simples (sem biblioteca) a partir do User-Agent --
+    suficiente pra distinguir celular/tablet/computador no painel admin
+    (ver conversa: "tem como ver origem do comprador? mobile, desktop").
+    """
+    ua = (user_agent or "").lower()
+    if "ipad" in ua or "tablet" in ua:
+        return "Tablet"
+    if "mobi" in ua or "android" in ua or "iphone" in ua:
+        return "Celular"
+    return "Computador"
+
+
+def _classificar_origem_pedido(origem: dict | None) -> tuple[str, str]:
+    """(classificacao legivel, texto bruto) a partir do referrer/utm_*
+    capturados no navegador na primeira pagina da visita (ver
+    static/js/origem_visita.js) -- primeiro toque, guardado ate o
+    pedido ser criado. Nunca falha: origem ausente/invalida vira
+    ("Direto", "")."""
+    if not isinstance(origem, dict):
+        return "Direto", ""
+    referrer = str(origem.get("referrer") or "")
+    utm_source = str(origem.get("utm_source") or "")
+    utm_medium = str(origem.get("utm_medium") or "")
+    utm_campaign = str(origem.get("utm_campaign") or "")
+    bruto = " | ".join(v for v in (referrer, utm_source, utm_medium, utm_campaign) if v)
+    texto = f"{referrer} {utm_source} {utm_medium} {utm_campaign}".lower()
+
+    if "chatgpt" in texto or "openai" in texto:
+        return "ChatGPT", bruto
+    if "instagram" in texto:
+        return "Instagram", bruto
+    if "l.facebook" in texto or "facebook" in texto or "fb.com" in texto:
+        return "Facebook", bruto
+    if "wa.me" in texto or "whatsapp" in texto:
+        return "WhatsApp", bruto
+    if "google" in texto:
+        if utm_medium.lower() in ("cpc", "ppc", "paidsearch", "ads"):
+            return "Google Ads", bruto
+        return "Google (busca)", bruto
+    if not referrer and not utm_source:
+        return "Direto", bruto
+    return "Outro", bruto
+
+
+def _origem_do_pedido(dados: dict) -> dict:
+    """kwargs prontos pra passar em criar_pedido(**...) -- centraliza a
+    leitura de `dados.get("origem")` (mandado pelo navegador, ver
+    static/js/carrinho_pagina.js) + User-Agent da propria requisicao
+    pros 3 pontos que criam pedido vindos do carrinho (pix/cartao,
+    boleto, whatsapp)."""
+    classificada, bruta = _classificar_origem_pedido(dados.get("origem"))
+    return {
+        "origem_dispositivo": _classificar_dispositivo(request.headers.get("User-Agent", "")),
+        "origem_classificada": classificada,
+        "origem_bruta": bruta,
+    }
+
+
 def _cliente_valido(dados: dict) -> dict | None:
     cliente = dados.get("cliente") or {}
     nome = str(cliente.get("nome", "")).strip()
@@ -2366,6 +2425,7 @@ def api_pedido_criar():
         frete_prazo_dias=frete_prazo_dias,
         cliente=cliente,
         endereco=endereco,
+        **_origem_do_pedido(dados),
     )
 
     resultado = _gerar_link_pagamento_para_pedido(pedido, cliente, endereco)
@@ -2454,6 +2514,7 @@ def api_pedido_criar_boleto():
         frete_prazo_dias=frete_prazo_dias,
         cliente=cliente,
         endereco=endereco,
+        **_origem_do_pedido(dados),
     )
 
     resultado = emitir_boleto(seu_numero=pedido["codigo"], valor=pedido["total"], cliente=cliente, endereco=endereco)
@@ -2538,6 +2599,7 @@ def api_pedido_criar_whatsapp():
         cliente={},
         endereco={},
         status_inicial="whatsapp",
+        **_origem_do_pedido(dados),
     )
 
     enviar_notificacao_push(

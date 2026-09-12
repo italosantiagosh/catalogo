@@ -213,6 +213,16 @@ _COLUNAS_ADICIONAIS: list[tuple[str, str]] = [
     ("email_recompra_60_erro", "TEXT"),
     ("email_recompra_90_enviado", "INTEGER NOT NULL DEFAULT 0"),
     ("email_recompra_90_erro", "TEXT"),
+    # De onde veio o pedido (ver conversa: "tem como ver origem do
+    # comprador?") -- capturado no navegador na primeira pagina que a
+    # pessoa abre (static/js/origem_visita.js, referrer + utm_*) e
+    # classificado no servidor na hora de criar o pedido (ver app.py:
+    # _classificar_origem/_classificar_dispositivo). origem_bruta guarda
+    # o referrer/utm cru, pra conferir manualmente quando a classificacao
+    # cair em "Outro".
+    ("origem_dispositivo", "TEXT"),
+    ("origem_classificada", "TEXT"),
+    ("origem_bruta", "TEXT"),
 ]
 
 # Fluxo de status depois de "pago" -- alteravel manualmente pelo painel
@@ -344,6 +354,9 @@ def criar_pedido(
     endereco: dict,
     status_inicial: str = "pendente",
     frete_prazo_dias: int | None = None,
+    origem_dispositivo: str | None = None,
+    origem_classificada: str | None = None,
+    origem_bruta: str | None = None,
 ) -> dict:
     """`status_inicial="whatsapp"` e´ usado pelo lead criado ao clicar
     "Finalizar pelo WhatsApp" (ver app.py:api_pedido_criar_whatsapp) --
@@ -411,6 +424,11 @@ def criar_pedido(
                 agora,
             ),
         )
+        if origem_dispositivo or origem_classificada or origem_bruta:
+            conexao.execute(
+                "UPDATE pedidos SET origem_dispositivo = ?, origem_classificada = ?, origem_bruta = ? WHERE token = ?",
+                (origem_dispositivo, origem_classificada, origem_bruta, token),
+            )
     return obter_pedido(token)
 
 
