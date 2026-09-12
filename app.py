@@ -2262,7 +2262,13 @@ def api_estimativa_frete_por_localizacao():
 
     def _opcao_com_data(opcao: dict) -> dict:
         data_entrega = somar_dias_uteis(previsao_envio, int(opcao["prazo_dias"]))
-        return {"transportadora": opcao["transportadora"], "data": data_entrega.strftime("%d/%m")}
+        arquivo_logo = logo_transportadora(opcao["transportadora"])
+        return {
+            "transportadora": opcao["transportadora"],
+            "servico": opcao.get("servico", ""),
+            "logo": url_for("static", filename=f"img/transportadoras/{arquivo_logo}") if arquivo_logo else None,
+            "data": data_entrega.strftime("%d/%m"),
+        }
 
     return jsonify(
         cidade=local["cidade"],

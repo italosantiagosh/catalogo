@@ -58,6 +58,9 @@ def test_com_localizacao_e_cotacao_devolve_economico_e_expresso(client, monkeypa
     assert dados["estado"] == "Rio Grande do Norte"
     assert dados["economico"]["transportadora"] == "Correios"  # a mais barata (PAC)
     assert dados["expresso"]["transportadora"] == "Correios"  # a mais rapida (SEDEX)
+    assert dados["economico"]["servico"] == "PAC"
+    assert dados["expresso"]["servico"] == "SEDEX"
+    assert "correios.svg" in dados["economico"]["logo"]  # ver services/frete.py:LOGO_POR_TRANSPORTADORA
     assert re.fullmatch(r"\d{2}/\d{2}", dados["economico"]["data"])
     assert re.fullmatch(r"\d{2}/\d{2}", dados["expresso"]["data"])
 
