@@ -219,7 +219,7 @@
       <a href="{{ url_for('meus_pedidos') }}">👤 Meus pedidos</a>
       <a href="{{ url_for('pagina_atendimento', slug='quem-somos') }}">🙏 Quem somos</a>
       <a href="{{ url_for('pagina_atendimento', slug='perguntas-frequentes') }}">❓ Perguntas frequentes</a>
-      <a href="https://wa.me/{{ whatsapp_number }}" target="_blank" rel="noopener">💬 Falar no WhatsApp</a>
+      <a href="https://wa.me/{{ whatsapp_number }}" target="_blank" rel="noopener"><img class="icone-whatsapp-inline" src="{{ url_for('static', filename='img/icones/whatsapp.svg') }}" alt="">Falar no WhatsApp</a>
     </nav>
   </div>
 

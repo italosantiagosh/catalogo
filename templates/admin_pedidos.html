@@ -245,7 +245,7 @@
 
     <div class="filtros">
       <a href="{{ url_for('admin_pedidos') }}" class="{{ 'ativo' if not status_filtro else '' }}">Todos</a>
-      <a href="{{ url_for('admin_pedidos', status='whatsapp') }}" class="{{ 'ativo' if status_filtro == 'whatsapp' else '' }}">💬 WhatsApp</a>
+      <a href="{{ url_for('admin_pedidos', status='whatsapp') }}" class="{{ 'ativo' if status_filtro == 'whatsapp' else '' }}"><img class="logo-transportadora-admin" src="{{ url_for('static', filename='img/icones/whatsapp.svg') }}" alt="">WhatsApp</a>
       <a href="{{ url_for('admin_pedidos', status='pendente') }}" class="{{ 'ativo' if status_filtro == 'pendente' else '' }}">Pendentes</a>
       <a href="{{ url_for('admin_pedidos', status='pago') }}" class="{{ 'ativo' if status_filtro == 'pago' else '' }}">Pagos</a>
       <a href="{{ url_for('admin_pedidos', status='faturado') }}" class="{{ 'ativo' if status_filtro == 'faturado' else '' }}">Faturados</a>

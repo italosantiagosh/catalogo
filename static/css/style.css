@@ -3036,6 +3036,16 @@ input[type="file"] {
   opacity: 0.8;
 }
 
+/* logo do WhatsApp em linha com texto (menu lateral, admin, compartilhar
+   da pagina de produto) -- ver conversa: era emoji generico de balao
+   (💬), trocado pela logo de verdade. */
+.icone-whatsapp-inline {
+  height: 14px;
+  width: auto;
+  vertical-align: -2px;
+  margin-right: 3px;
+}
+
 .rodape-marca p {
   margin: 0;
   font-size: 0.82rem;

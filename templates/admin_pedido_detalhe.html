@@ -155,7 +155,7 @@
       <p>{{ pedido.cliente_nome }} — {{ pedido.cliente_email }}</p>
       <p>
         {% if pedido.cliente_telefone %}
-          <a href="https://wa.me/{{ pedido.cliente_telefone | whatsapp }}{% if mensagem_whatsapp_cliente %}?text={{ mensagem_whatsapp_cliente | urlencode }}{% endif %}" target="_blank" rel="noopener">{{ pedido.cliente_telefone }} 💬</a>
+          <a href="https://wa.me/{{ pedido.cliente_telefone | whatsapp }}{% if mensagem_whatsapp_cliente %}?text={{ mensagem_whatsapp_cliente | urlencode }}{% endif %}" target="_blank" rel="noopener">{{ pedido.cliente_telefone }} <img src="{{ url_for('static', filename='img/icones/whatsapp.svg') }}" alt="" style="height:14px;width:auto;vertical-align:-2px;"></a>
         {% else %}
           {{ pedido.cliente_telefone }}
         {% endif %}
@@ -180,7 +180,7 @@
         <p>
           Destinatário: {{ pedido.endereco_destinatario_nome }}{% if pedido.endereco_destinatario_documento %} ({{ pedido.endereco_destinatario_documento }}){% endif %}
           {%- if pedido.endereco_destinatario_telefone %} —
-            <a href="https://wa.me/{{ pedido.endereco_destinatario_telefone | whatsapp }}{% if mensagem_whatsapp_cliente %}?text={{ mensagem_whatsapp_cliente | urlencode }}{% endif %}" target="_blank" rel="noopener">{{ pedido.endereco_destinatario_telefone }} 💬</a>
+            <a href="https://wa.me/{{ pedido.endereco_destinatario_telefone | whatsapp }}{% if mensagem_whatsapp_cliente %}?text={{ mensagem_whatsapp_cliente | urlencode }}{% endif %}" target="_blank" rel="noopener">{{ pedido.endereco_destinatario_telefone }} <img src="{{ url_for('static', filename='img/icones/whatsapp.svg') }}" alt="" style="height:14px;width:auto;vertical-align:-2px;"></a>
           {%- endif %}
         </p>
       {% endif %}
