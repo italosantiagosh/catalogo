@@ -164,6 +164,36 @@ def logo_transportadora(nome: str) -> str | None:
     )
 
 
+# Nomes EXATOS que a cotacao (Frenet/Melhor Envio) realmente devolve pra
+# cada transportadora -- usado so por descricao_sem_nome_transportadora
+# abaixo, pra saber removedor o nome do INICIO de frete_descricao com
+# seguranca (esse campo e´ salvo pronto desde a criacao do pedido, no
+# formato "{transportadora} {servico} — {preco}", sempre o mesmo jeito,
+# ver static/js/carrinho_pagina.js). Mais especifico primeiro (ex: "Azul
+# Cargo Express" antes de so "Azul") nao importa aqui porque quem chama
+# ja ordena por tamanho.
+_NOMES_TRANSPORTADORA_CONHECIDOS = [
+    "Correios", "Azul Cargo Express", "Azul Express", "LATAM Cargo",
+    "J&T Express", "Loggi", "Jadlog", "Total Express",
+]
+
+
+def descricao_sem_nome_transportadora(frete_descricao: str) -> str | None:
+    """Remove o nome da transportadora do INICIO de `frete_descricao`
+    (ex.: "Correios SEDEX — R$25,90" -> "SEDEX — R$25,90") -- pra usar
+    do lado da logo sem repetir o nome (ver conversa: "realmente me
+    incomoda a repeticao"). So mexe quando reconhece um nome EXATO
+    conhecido bem no comeco da string; qualquer formato que nao bata
+    (retirada no local, texto editado a mao, transportadora nova ainda
+    nao mapeada aqui) devolve None -- quem chama mostra o texto
+    original completo nesse caso, nunca corta errado."""
+    texto = (frete_descricao or "").strip()
+    for nome in sorted(_NOMES_TRANSPORTADORA_CONHECIDOS, key=len, reverse=True):
+        if texto.startswith(nome + " "):
+            return texto[len(nome):].strip()
+    return None
+
+
 # Margem de dias uteis somada em CIMA do prazo que a Frenet/Melhor Envio
 # cotam -- pedido do usuario 2026-09: na pratica a encomenda as vezes so
 # e´ efetivamente encaminhada pela transportadora no dia UTIL SEGUINTE

@@ -325,8 +325,11 @@
                 </td>
                 <td data-rotulo="Frete">
                   {% set logo = logo_transportadora(pedido.frete_descricao) %}
-                  {% if logo %}<img class="logo-transportadora-admin" src="{{ url_for('static', filename='img/transportadoras/' ~ logo) }}" alt="">{% endif %}
-                  {{ pedido.frete_descricao or "—" }}
+                  {% if logo %}
+                    <img class="logo-transportadora-admin" src="{{ url_for('static', filename='img/transportadoras/' ~ logo) }}" alt="{{ pedido.frete_descricao }}">{{ descricao_sem_nome_transportadora(pedido.frete_descricao) or pedido.frete_descricao }}
+                  {% else %}
+                    {{ pedido.frete_descricao or "—" }}
+                  {% endif %}
                 </td>
                 <td data-rotulo="Tiny">
                   {% if not pedido.tiny_sincronizado %}

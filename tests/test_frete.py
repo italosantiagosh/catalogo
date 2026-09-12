@@ -594,3 +594,18 @@ def test_opcoes_frete_estimativa_combina_e_ordena_por_preco(monkeypatch):
 
     assert [o["preco"] for o in opcoes] == [20.70, 45.00]
     assert opcoes[0]["prazo_dias"] > opcoes[1]["prazo_dias"]  # a mais barata (PAC) e mais lenta que o SEDEX
+
+
+def test_descricao_sem_nome_transportadora_remove_so_o_nome_conhecido():
+    # ver conversa: admin tambem nao devia repetir o nome do lado da
+    # logo -- so remove quando reconhece um nome exato conhecido.
+    assert frete.descricao_sem_nome_transportadora("Correios SEDEX — R$25,90") == "SEDEX — R$25,90"
+    assert frete.descricao_sem_nome_transportadora("Azul Cargo Express Rodoviário — R$30,00") == "Rodoviário — R$30,00"
+    assert frete.descricao_sem_nome_transportadora("J&T Express Rodoviário — Grátis") == "Rodoviário — Grátis"
+
+
+def test_descricao_sem_nome_transportadora_sem_nome_conhecido_devolve_none():
+    assert frete.descricao_sem_nome_transportadora("Retirada no local") is None
+    assert frete.descricao_sem_nome_transportadora("") is None
+    assert frete.descricao_sem_nome_transportadora(None) is None
+    assert frete.descricao_sem_nome_transportadora("Transportadora nova ainda nao mapeada — R$10,00") is None
