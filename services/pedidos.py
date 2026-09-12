@@ -31,7 +31,8 @@ import re
 import secrets
 import sqlite3
 from contextlib import contextmanager
-from datetime import datetime, timedelta, timezone
+from datetime import date, datetime, timedelta, timezone
+from functools import lru_cache
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
@@ -1403,18 +1404,65 @@ def marcar_tiny_sincronizado(token: str, *, numero_pedido: str | None, erro: str
     return obter_pedido(token)
 
 
+@lru_cache(maxsize=16)
+def _domingo_de_pascoa(ano: int) -> date:
+    """Algoritmo de Meeus/Jones/Butcher (calendario gregoriano) -- usado
+    so pra achar os feriados nacionais moveis (Sexta-feira Santa e
+    Corpus Christi, ver feriados_nacionais abaixo), sem depender de
+    biblioteca externa nem tabela fixa por ano."""
+    a = ano % 19
+    b = ano // 100
+    c = ano % 100
+    d = b // 4
+    e = b % 4
+    f = (b + 8) // 25
+    g = (b - f + 1) // 3
+    h = (19 * a + b - d - g + 15) % 30
+    i = c // 4
+    k = c % 4
+    l = (32 + 2 * e + 2 * i - h - k) % 7
+    m = (a + 11 * h + 22 * l) // 451
+    mes = (h + l - 7 * m + 114) // 31
+    dia = (h + l - 7 * m + 114) % 31 + 1
+    return date(ano, mes, dia)
+
+
+@lru_cache(maxsize=16)
+def feriados_nacionais(ano: int) -> frozenset[date]:
+    """Feriados nacionais fixos + moveis (baseados na Pascoa) -- usado
+    por somar_dias_uteis abaixo pra previsao de envio/entrega nao cair
+    num feriado (ver conversa: pedido postado numa sexta antes de um
+    07/09 numa segunda-feira, so foi de fato encaminhado na terca, mas o
+    site prometia entrega contando a segunda como dia util normal).
+    Feriados so MUNICIPAIS/ESTADUAIS continuam de fora -- variam por
+    cidade, sem base de dados unica confiavel pra isso hoje."""
+    pascoa = _domingo_de_pascoa(ano)
+    return frozenset(
+        {
+            date(ano, 1, 1),  # confraternizacao universal
+            pascoa - timedelta(days=2),  # sexta-feira santa
+            date(ano, 4, 21),  # tiradentes
+            date(ano, 5, 1),  # dia do trabalho
+            pascoa + timedelta(days=60),  # corpus christi
+            date(ano, 9, 7),  # independencia
+            date(ano, 10, 12),  # nossa senhora aparecida
+            date(ano, 11, 2),  # finados
+            date(ano, 11, 15),  # proclamacao da republica
+            date(ano, 11, 20),  # consciencia negra (nacional desde 2023)
+            date(ano, 12, 25),  # natal
+        }
+    )
+
+
 def somar_dias_uteis(data_inicio: datetime, dias: int) -> datetime:
-    """Soma `dias` dias UTEIS (pula sabado/domingo) a partir de
-    `data_inicio` -- usado pra calcular previsao de envio/entrega (ver
-    previsoes_do_pedido abaixo). Nao considera feriados (mesma
-    aproximacao ja usada na promessa de texto fixo "5 dias uteis" em
-    varias paginas -- calcular feriado municipal/estadual certo exigiria
-    uma base de dados de feriados que o site nao tem hoje)."""
+    """Soma `dias` dias UTEIS (pula sabado/domingo/feriado nacional) a
+    partir de `data_inicio` -- usado pra calcular previsao de
+    envio/entrega (ver previsoes_do_pedido abaixo)."""
     data = data_inicio
     restantes = dias
     while restantes > 0:
         data += timedelta(days=1)
-        if data.weekday() < 5:  # 0=segunda ... 4=sexta
+        if data.weekday() < 5 and data.date() not in feriados_nacionais(data.year):  # 0=segunda ... 4=sexta
             restantes -= 1
     return data
 
