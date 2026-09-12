@@ -18,6 +18,7 @@
     A partir de <strong>{{ preco_varejo | preco }}</strong> — desconto de atacado calculado
     automático pela quantidade do carrinho.
   </p>
+  <p class="aviso-frete-estimativa" id="aviso-frete-estimativa" hidden></p>
 
   <div class="passos-personalizada">
     <div class="passo-personalizada">
@@ -376,4 +377,5 @@
   <script src="{{ url_for('static', filename='js/personalizada.js') }}"></script>
   <script src="{{ url_for('static', filename='js/avaliacoes.js') }}"></script>
   <script src="{{ url_for('static', filename='js/tour_personalizada.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/frete_estimativa.js') }}"></script>
 {% endblock %}
