@@ -1538,20 +1538,30 @@ button.botao-carrinho:disabled {
   margin: 0 0 8px !important;
 }
 
+/* pilula unida (mesmo padrao do .stepper da pagina de produto) em vez
+   de 3 caixinhas soltas cada uma com cantinho proprio -- ver conversa:
+   "os botões de desktop tem uns feios... não é arredondado, é quadrado
+   simples". */
 .item-stepper {
   display: flex;
-  align-items: center;
-  gap: 10px;
+  align-items: stretch;
 }
 
 .item-stepper button {
   width: 32px;
   height: 32px;
   border: 1px solid var(--border);
-  border-radius: 8px;
   background: var(--bg);
   font-size: 1rem;
   cursor: pointer;
+}
+
+.item-stepper button:first-child {
+  border-radius: 8px 0 0 8px;
+}
+
+.item-stepper button:last-child {
+  border-radius: 0 8px 8px 0;
 }
 
 .item-stepper .item-qtd {
@@ -1562,7 +1572,8 @@ button.botao-carrinho:disabled {
   font-family: inherit;
   font-size: 1rem;
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-left: none;
+  border-right: none;
   background: var(--bg);
   color: inherit;
   -moz-appearance: textfield;
