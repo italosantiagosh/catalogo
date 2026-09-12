@@ -596,14 +596,41 @@ def _extensao_valida(nome_arquivo: str) -> bool:
 # sem pesar.
 _AVALIACAO_FOTO_LADO_MAXIMO = 1000
 
+# Mesmo limite de seguranca de _FOTO_PERSONALIZADA_MEGAPIXELS_MAXIMO
+# (definido mais abaixo, junto do resto do hardening de memoria da
+# personalizada) -- essa funcao fazia Image.open().convert("RGB") direto,
+# decodificando a foto em resolucao TOTAL antes do thumbnail() reduzir.
+# /api/avaliacoes e´ publico e aceita HEIC (fotos de iPhone, ate
+# 40-48MP), sem o mesmo cuidado que a personalizada ja tinha -- e´ a
+# causa mais provavel de uma queda real do Render por estourar os 512MB
+# (ver conversa 2026-09-12: "exceeded its memory limit" bem no horario
+# de uma avaliacao com foto).
+_AVALIACAO_FOTO_MEGAPIXELS_MAXIMO = 80_000_000
+
 
 def _foto_avaliacao_para_data_uri(arquivo: FileStorage) -> str:
-    imagem = Image.open(arquivo.stream)
-    imagem = imagem.convert("RGB")
-    imagem.thumbnail((_AVALIACAO_FOTO_LADO_MAXIMO, _AVALIACAO_FOTO_LADO_MAXIMO))
-    buffer = io.BytesIO()
-    imagem.save(buffer, format="JPEG", quality=78)
-    return "data:image/jpeg;base64," + base64.b64encode(buffer.getvalue()).decode("ascii")
+    """Reduz a foto ANTES de decodificar em resolucao total -- mesma
+    logica de _reduzir_temp_se_grande_demais (megapixel maximo + draft()
+    pra decodificar JPEG ja´ em escala menor) e mesmo semaforo
+    (_LIMITE_PROCESSAMENTO_IMAGEM_PESADO) que ja protege a personalizada,
+    pra 2 fotos pesadas (de endpoints diferentes) nao somarem o pico de
+    memoria ao mesmo tempo."""
+    if not _LIMITE_PROCESSAMENTO_IMAGEM_PESADO.acquire(timeout=_TIMEOUT_ESPERA_PROCESSAMENTO_SEGUNDOS):
+        raise TimeoutError("muita gente enviando foto agora, tenta de novo em instantes")
+    try:
+        imagem = Image.open(arquivo.stream)
+        largura, altura = imagem.size
+        if largura * altura > _AVALIACAO_FOTO_MEGAPIXELS_MAXIMO:
+            raise ValueError("foto grande demais pra processar")
+        imagem.draft("RGB", (_AVALIACAO_FOTO_LADO_MAXIMO, _AVALIACAO_FOTO_LADO_MAXIMO))
+        imagem = ImageOps.exif_transpose(imagem)
+        imagem = imagem.convert("RGB")
+        imagem.thumbnail((_AVALIACAO_FOTO_LADO_MAXIMO, _AVALIACAO_FOTO_LADO_MAXIMO))
+        buffer = io.BytesIO()
+        imagem.save(buffer, format="JPEG", quality=78)
+        return "data:image/jpeg;base64," + base64.b64encode(buffer.getvalue()).decode("ascii")
+    finally:
+        _LIMITE_PROCESSAMENTO_IMAGEM_PESADO.release()
 
 
 def _resolver_spec_id(formato: str, cor: str | None) -> str | None:
@@ -4555,6 +4582,8 @@ def api_avaliacoes_criar():
             return jsonify(erro="Formato de imagem inválido. Aceitos: " + ", ".join(IMAGE_EXTENSIONS)), 400
         try:
             foto_data_uri = _foto_avaliacao_para_data_uri(arquivo)
+        except TimeoutError:
+            return jsonify(erro="Muita gente enviando foto agora, tenta de novo em alguns segundos."), 503
         except Exception:
             return jsonify(erro="Não foi possível processar a foto enviada."), 400
 

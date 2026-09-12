@@ -237,6 +237,45 @@ def test_envio_com_foto_heic_do_iphone_funciona(client):
     assert resposta.get_json()["ok"] is True
 
 
+def test_envio_com_foto_grande_demais_retorna_erro(client, monkeypatch):
+    """Protecao de memoria (ver conversa 2026-09-12: queda real do Render
+    por "exceeded its memory limit") -- antes essa funcao decodificava a
+    foto em resolucao TOTAL antes de reduzir, sem limite nenhum. Baixa o
+    limite de megapixels bem abaixo do tamanho da foto de teste (10x10 =
+    100px) pra simular uma foto grande demais sem precisar gerar uma
+    imagem real de dezenas de MP no teste."""
+    import app as app_module
+
+    monkeypatch.setattr(app_module, "_AVALIACAO_FOTO_MEGAPIXELS_MAXIMO", 50)
+    resposta = client.post(
+        "/api/avaliacoes",
+        data={**_corpo_avaliacao(), "foto": _foto_teste()},
+        content_type="multipart/form-data",
+    )
+    assert resposta.status_code == 400
+
+
+def test_envio_com_foto_muita_gente_processando_ao_mesmo_tempo_retorna_503(client, monkeypatch):
+    """Mesmo semaforo que ja protegia a personalizada (_LIMITE_
+    PROCESSAMENTO_IMAGEM_PESADO) agora tambem serializa o processamento
+    da foto de avaliacao -- com o semaforo ja tomado (simulando outro
+    upload pesado em andamento) e o timeout de espera zerado, devolve
+    503 em vez de travar a requisicao."""
+    import app as app_module
+
+    monkeypatch.setattr(app_module, "_TIMEOUT_ESPERA_PROCESSAMENTO_SEGUNDOS", 0)
+    assert app_module._LIMITE_PROCESSAMENTO_IMAGEM_PESADO.acquire(blocking=False)
+    try:
+        resposta = client.post(
+            "/api/avaliacoes",
+            data={**_corpo_avaliacao(), "foto": _foto_teste()},
+            content_type="multipart/form-data",
+        )
+        assert resposta.status_code == 503
+    finally:
+        app_module._LIMITE_PROCESSAMENTO_IMAGEM_PESADO.release()
+
+
 def test_catalogo_sem_avaliacao_nao_mostra_estrelas(client):
     """Ver conversa: produto sem nenhuma avaliacao aprovada fica sem a
     estrelinha no card (nao mostra 5 estrelas cinza -- pareceria nota
