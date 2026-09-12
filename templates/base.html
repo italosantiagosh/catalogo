@@ -75,17 +75,19 @@
   </div>
   <div class="topo-fixo">
     <header class="topo">
-      <button type="button" class="menu-lateral-botao" onclick="abrirMenuLateral()" aria-label="Abrir menu">☰</button>
-      <a class="marca" href="{{ url_for('index') }}">
-        <picture>
-          <source type="image/webp" srcset="{{ url_for('static', filename='img/logo-icone.webp') }}">
-          <img class="marca-logo" src="{{ url_for('static', filename='img/logo-icone.png') }}" alt="" width="34" height="40">
-        </picture>
-        <span class="marca-texto">
-          <span class="marca-nome">Nove de Julho</span>
-          <span class="marca-sub">Medalhas católicas</span>
-        </span>
-      </a>
+      <div class="topo-esquerda">
+        <button type="button" class="menu-lateral-botao" onclick="abrirMenuLateral()" aria-label="Abrir menu">☰</button>
+        <a class="marca" href="{{ url_for('index') }}">
+          <picture>
+            <source type="image/webp" srcset="{{ url_for('static', filename='img/logo-icone.webp') }}">
+            <img class="marca-logo" src="{{ url_for('static', filename='img/logo-icone.png') }}" alt="" width="34" height="40">
+          </picture>
+          <span class="marca-texto">
+            <span class="marca-nome">Nove de Julho</span>
+            <span class="marca-sub">Medalhas católicas</span>
+          </span>
+        </a>
+      </div>
       <div class="topo-acoes">
         <a class="link-icone-topo" href="{{ url_for('meus_pedidos') }}" aria-label="Meus pedidos">👤</a>
         <a class="link-carrinho" href="{{ url_for('carrinho') }}">

@@ -134,6 +134,12 @@ header.topo {
   gap: 12px;
 }
 
+.topo-esquerda {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
 .barra-persistente {
   background: var(--card);
   border-bottom: 1px solid var(--border);
@@ -309,10 +315,11 @@ a.link-carrinho #contador-carrinho {
    input/dropdown com busca ao vivo da home (.busca-wrap-home,
    static/js/home_busca.js), mesmo tamanho de campo tambem (ver
    conversa: a versao compacta anterior ficava pequena demais, sem
-   necessidade real de espaco). */
+   necessidade real de espaco). Sem max-width/margin:auto de proposito
+   -- pedido do usuario pra essa barra ir de ponta a ponta da tela,
+   igual o cabecalho logo acima, em vez de ficar encaixotada no meio
+   como o resto do conteudo (dentro de <main>, max-width:960px). */
 .busca-wrap-topo {
-  max-width: 960px;
-  margin: 0 auto;
   padding: 10px 16px 12px;
   background: var(--card);
   border-bottom: 1px solid var(--border);
