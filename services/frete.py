@@ -41,6 +41,7 @@ Regras de negocio (pedidas pelo usuario):
 from __future__ import annotations
 
 import re
+import unicodedata
 
 import requests
 
@@ -176,6 +177,29 @@ _NOMES_TRANSPORTADORA_CONHECIDOS = [
     "Correios", "Azul Cargo Express", "Azul Express", "LATAM Cargo",
     "J&T Express", "Loggi", "Jadlog", "Total Express",
 ]
+
+
+# Deteccao dos Correios pro aviso da greve + logo oficial no link de
+# acompanhamento do cliente (templates/pedido.html, pedido do usuario
+# 2026-09-12) -- cobre tanto o nome escrito por extenso ("Correios")
+# quanto uma modalidade digitada sozinha A MAO no admin, sem a palavra
+# "Correios" no meio (Mini Envios, PAC, Sedex). Usa \b (limite de
+# palavra) em vez do mesmo criterio de substring de logo_transportadora
+# acima porque "pac" e curto demais pra isso -- bateria por engano
+# dentro de palavras como "espaco" (sem acento).
+_PADRAO_CORREIOS = re.compile(r"\b(correios|mini\s*envios|pac|sedex)\b", re.IGNORECASE)
+
+
+def _sem_acentos(texto: str) -> str:
+    return "".join(c for c in unicodedata.normalize("NFD", texto) if unicodedata.category(c) != "Mn")
+
+
+def eh_correios(*textos: str | None) -> bool:
+    """True se qualquer um dos textos passados (transportadora,
+    frete_descricao, ...) mencionar os Correios -- pelo nome ou por uma
+    das modalidades deles (Mini Envios/PAC/Sedex), mesmo digitado a mao
+    no admin sem a palavra "Correios" junto."""
+    return any(texto and _PADRAO_CORREIOS.search(_sem_acentos(texto)) for texto in textos)
 
 
 def descricao_sem_nome_transportadora(frete_descricao: str) -> str | None:

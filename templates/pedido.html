@@ -119,8 +119,14 @@
         </p>
       {% endif %}
     {% endif %}
+    {% set correios_detectado = eh_correios(pedido.transportadora, pedido.frete_descricao) %}
+    {% set logo = logo_transportadora('correios') if correios_detectado else logo_transportadora(pedido.transportadora) %}
     {% if pedido.transportadora %}
-      <p class="pedido-linha">Transportadora: <strong>{{ pedido.transportadora }}</strong></p>
+      <p class="pedido-linha">
+        Transportadora:
+        {% if logo %}<img src="{{ url_for('static', filename='img/transportadoras/' ~ logo) }}" alt="" class="logo-transportadora-pedido">{% endif %}
+        <strong>{{ pedido.transportadora }}</strong>
+      </p>
     {% endif %}
     {% if pedido.codigo_rastreio %}
       <p class="pedido-linha">
@@ -137,6 +143,13 @@
       <p class="pedido-aviso-transportadora">
         ⚠️ Esse envio é pelo Mini Envios, que não tem rastreamento detalhado — o código só mostra
         "postado" e atualiza de novo quando sair pra entrega. Não é sinal de que o pedido parou.
+      </p>
+    {% endif %}
+    {% if correios_detectado %}
+      <p class="aviso-greve-correios">
+        ⚠️ Os Correios aumentaram o prazo de entrega deles momentaneamente por causa da greve — mesmo esse
+        prazo maior pode atrasar além do previsto. Pedimos a sua compreensão; qualquer dúvida sobre o seu
+        pedido, fale com a gente no WhatsApp.
       </p>
     {% endif %}
   {% elif pedido.status == 'entregue' %}

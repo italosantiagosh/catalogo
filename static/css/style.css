@@ -3709,6 +3709,22 @@ input[type="file"] {
   word-break: break-all;
 }
 
+.logo-transportadora-pedido {
+  height: 16px;
+  width: auto;
+  vertical-align: -3px;
+  margin-right: 4px;
+}
+
+.aviso-greve-correios {
+  background: var(--gold-soft);
+  color: var(--gold-texto-claro);
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 0.85rem;
+  margin: 0 0 14px;
+}
+
 .botao-copiar {
   margin-left: 8px;
   padding: 4px 10px;

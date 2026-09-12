@@ -609,3 +609,28 @@ def test_descricao_sem_nome_transportadora_sem_nome_conhecido_devolve_none():
     assert frete.descricao_sem_nome_transportadora("") is None
     assert frete.descricao_sem_nome_transportadora(None) is None
     assert frete.descricao_sem_nome_transportadora("Transportadora nova ainda nao mapeada — R$10,00") is None
+
+
+def test_eh_correios_detecta_pelo_nome_ou_pela_modalidade():
+    # ver conversa: aviso da greve + logo oficial no link de
+    # acompanhamento tambem quando o admin digita so a modalidade a mao,
+    # sem escrever "Correios" no meio.
+    assert frete.eh_correios("Correios") is True
+    assert frete.eh_correios("Correios SEDEX — R$25,90") is True
+    assert frete.eh_correios(None, "PAC — R$18,00") is True
+    assert frete.eh_correios("Mini Envios — Grátis") is True
+    assert frete.eh_correios("mini   envios") is True
+    assert frete.eh_correios("SEDEX 10") is True
+    assert frete.eh_correios("Correios", None) is True  # basta um dos textos bater
+
+
+def test_eh_correios_nao_da_falso_positivo_em_palavras_parecidas():
+    # "pac"/"sedex" sao curtos demais pra bater por substring -- so
+    # conta como palavra inteira (\b), pra nao confundir com "espaço",
+    # "impacto" etc.
+    assert frete.eh_correios("Espaço reservado") is False
+    assert frete.eh_correios("Embalagem compacta") is False
+    assert frete.eh_correios("Azul Cargo Express") is False
+    assert frete.eh_correios("Retirada no local") is False
+    assert frete.eh_correios(None, "") is False
+    assert frete.eh_correios() is False

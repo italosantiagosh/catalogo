@@ -143,7 +143,7 @@ from services.email import (
     enviar_pedido_recompra,
 )
 from services.documentos import cpf_valido, documento_valido, numero_whatsapp, telefone_valido
-from services.frete import calcular_frete, descricao_sem_nome_transportadora, logo_transportadora, opcoes_frete_estimativa
+from services.frete import calcular_frete, descricao_sem_nome_transportadora, eh_correios, logo_transportadora, opcoes_frete_estimativa
 from services.geolocalizacao import localizar_por_ip
 from services.infinitepay import criar_link_pagamento
 from services.pedidos import (
@@ -580,6 +580,7 @@ app.jinja_env.filters["whatsapp"] = numero_whatsapp
 app.jinja_env.globals["previsoes_do_pedido"] = previsoes_do_pedido
 app.jinja_env.globals["logo_transportadora"] = logo_transportadora
 app.jinja_env.globals["descricao_sem_nome_transportadora"] = descricao_sem_nome_transportadora
+app.jinja_env.globals["eh_correios"] = eh_correios
 
 
 def _extensao_valida(nome_arquivo: str) -> bool:
