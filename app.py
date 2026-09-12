@@ -44,6 +44,7 @@ import re
 import secrets
 import tempfile
 import threading
+import time
 import zipfile
 from datetime import datetime, timedelta, timezone
 from zoneinfo import ZoneInfo
@@ -142,7 +143,8 @@ from services.email import (
     enviar_pedido_recompra,
 )
 from services.documentos import cpf_valido, documento_valido, numero_whatsapp, telefone_valido
-from services.frete import calcular_frete, logo_transportadora
+from services.frete import calcular_frete, logo_transportadora, opcoes_frete_estimativa
+from services.geolocalizacao import localizar_por_ip
 from services.infinitepay import criar_link_pagamento
 from services.pedidos import (
     ESTAGIOS_RECOMPRA_DIAS,
@@ -193,6 +195,7 @@ from services.pedidos import (
     reativar_pedido_cancelado,
     resumo_vendas_periodo,
     salvar_dados_boleto_inter,
+    somar_dias_uteis,
     taxa_cancelamento,
     taxa_clientes_recorrentes,
     formas_pagamento_periodo,
@@ -2210,6 +2213,63 @@ def api_calcular_frete():
         resumo_carrinho["desconto_frete_atacado"],
     )
     return jsonify(resultado)
+
+
+# Cache das cotacoes de frete por CEP (nao por IP -- varios visitantes
+# da mesma cidade batem no mesmo CEP aproximado, e cotacao de frete nao
+# muda de minuto a minuto) -- evita bater a Frenet/Melhor Envio de novo
+# a cada carregamento de pagina de produto, ja que isso roda sozinho
+# (sem a pessoa pedir), ao contrario do calculo do carrinho. So em
+# memoria (reinicia a cada deploy), suficiente pra esse uso.
+_CACHE_ESTIMATIVA_FRETE_POR_CEP: dict[str, tuple[float, list[dict]]] = {}
+_TTL_CACHE_ESTIMATIVA_FRETE_SEGUNDOS = 6 * 60 * 60
+
+
+def _opcoes_frete_estimativa_cacheadas(cep: str) -> list[dict]:
+    agora = time.monotonic()
+    em_cache = _CACHE_ESTIMATIVA_FRETE_POR_CEP.get(cep)
+    if em_cache and agora - em_cache[0] < _TTL_CACHE_ESTIMATIVA_FRETE_SEGUNDOS:
+        return em_cache[1]
+    opcoes = opcoes_frete_estimativa(cep)
+    _CACHE_ESTIMATIVA_FRETE_POR_CEP[cep] = (agora, opcoes)
+    return opcoes
+
+
+@app.route("/api/frete/estimativa-por-localizacao", methods=["GET"])
+@limiter.limit("30 per minute")
+def api_estimativa_frete_por_localizacao():
+    """Estimativa de prazo (mais barato + mais rapido) pra pagina de
+    produto, a partir do IP de quem esta acessando -- ver
+    services/geolocalizacao.py. NAO substitui o calculo por CEP do
+    carrinho (services/frete.py:calcular_frete, sempre exato): aqui e´
+    so uma estimativa pra dar um numero antes da pessoa digitar
+    qualquer coisa. Falha silenciosa em qualquer etapa -- devolve 204
+    (sem corpo) se nao der pra estimar, o widget na pagina de produto
+    so nao aparece nesse caso."""
+    local = localizar_por_ip(request.remote_addr or "")
+    if local is None:
+        return "", 204
+
+    opcoes = _opcoes_frete_estimativa_cacheadas(local["cep"])
+    if not opcoes:
+        return "", 204
+
+    mais_barata = opcoes[0]
+    mais_rapida = min(opcoes, key=lambda o: o["prazo_dias"])
+
+    agora = datetime.now()
+    previsao_envio = somar_dias_uteis(agora, PRODUCAO_DIAS_UTEIS)
+
+    def _opcao_com_data(opcao: dict) -> dict:
+        data_entrega = somar_dias_uteis(previsao_envio, int(opcao["prazo_dias"]))
+        return {"transportadora": opcao["transportadora"], "data": data_entrega.strftime("%d/%m")}
+
+    return jsonify(
+        cidade=local["cidade"],
+        estado=local["estado"],
+        economico=_opcao_com_data(mais_barata),
+        expresso=_opcao_com_data(mais_rapida),
+    )
 
 
 @app.route("/api/pedido/criar", methods=["POST"])

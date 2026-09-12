@@ -1805,6 +1805,17 @@ input[readonly] {
   color: var(--ink);
 }
 
+.aviso-frete-estimativa {
+  background: var(--gold-soft);
+  border: 1px solid var(--border);
+  color: var(--ink);
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 0.82rem;
+  line-height: 1.4;
+  margin: 0 0 12px;
+}
+
 .gatilho-producao {
   background: var(--gold-soft);
   color: #7a5c1f;

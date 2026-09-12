@@ -565,3 +565,32 @@ def test_calcular_frete_correios_pode_aparecer_das_duas_fontes(monkeypatch):
 
     assert [o["transportadora"] for o in resultado["opcoes"]] == ["Correios", "Correios"]
     assert {o["preco"] for o in resultado["opcoes"]} == {20.70, 25.90}
+
+
+def test_opcoes_frete_estimativa_combina_e_ordena_por_preco(monkeypatch):
+    # ver conversa "loja mensageiros": estimativa por localizacao na
+    # pagina de produto usa peso/subtotal genericos, mas as mesmas fontes
+    # (Frenet + Melhor Envio) e a mesma ordenacao por preco do calculo
+    # de verdade do carrinho.
+    monkeypatch.setattr(frete, "FRENET_TOKEN", "token-fake")
+    monkeypatch.setattr(frete, "CEP_ORIGEM", "59000000")
+    monkeypatch.setattr(frete, "MELHOR_ENVIO_TOKEN", "token-me-fake")
+
+    def post_fake(url, **kwargs):
+        if url == frete.FRENET_URL:
+            return _resposta_frenet_fake(
+                {"Carrier": "Correios", "ServiceDescription": "SEDEX", "ShippingPrice": "45.00",
+                 "DeliveryTime": 3, "Error": False},
+            )
+        if url == frete.MELHOR_ENVIO_URL:
+            return _resposta_melhor_envio_fake([
+                {"name": "PAC", "price": "20.70", "delivery_time": 8,
+                 "company": {"name": "Correios"}, "error": None},
+            ])
+        raise AssertionError(f"URL inesperada: {url}")
+
+    with patch("services.frete.requests.post", side_effect=post_fake):
+        opcoes = frete.opcoes_frete_estimativa("20040020")
+
+    assert [o["preco"] for o in opcoes] == [20.70, 45.00]
+    assert opcoes[0]["prazo_dias"] > opcoes[1]["prazo_dias"]  # a mais barata (PAC) e mais lenta que o SEDEX

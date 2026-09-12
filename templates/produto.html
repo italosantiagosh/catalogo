@@ -61,6 +61,7 @@
     🛠️ Peça sob encomenda, não é pronta entrega: produção em até
     <strong>{{ producao_dias_uteis }} dias úteis</strong> após o pagamento confirmado, antes do envio.
   </p>
+  <p class="aviso-frete-estimativa" id="aviso-frete-estimativa" hidden></p>
   <p class="aviso-simulacao">📷 Fotos meramente ilustrativas — cor e brilho da peça real podem variar
   um pouco conforme iluminação e tela do aparelho.</p>
 
@@ -298,4 +299,5 @@
   </script>
   <script src="{{ url_for('static', filename='js/produto.js') }}"></script>
   <script src="{{ url_for('static', filename='js/avaliacoes.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/frete_estimativa.js') }}"></script>
 {% endblock %}

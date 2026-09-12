@@ -479,3 +479,27 @@ def calcular_frete(
         return _resultado_desconto_atacado(opcoes, desconto_frete_atacado)
 
     return {"frete_gratis": False, "opcoes": opcoes}
+
+
+# Peso/subtotal genericos usados SO na estimativa por localizacao da
+# pagina de produto (services/geolocalizacao.py + app.py) -- antes da
+# pessoa escolher formato/quantidade nao ha carrinho de verdade pra
+# calcular o peso real, entao usa a menor caixa padrao (PESOS_PADRAO_KG)
+# como representativa de um pedido tipico de 1 produto. Nunca usado pro
+# calculo de verdade do carrinho (calcular_frete acima, que sempre usa o
+# peso real dos itens).
+PESO_KG_ESTIMATIVA_GENERICA = PESOS_PADRAO_KG[0]
+SUBTOTAL_ESTIMATIVA_GENERICA = 100.0
+
+
+def opcoes_frete_estimativa(cep_destino: str) -> list[dict]:
+    """Mesmas fontes (Frenet + Melhor Envio) do calculo exato do
+    carrinho, com peso/subtotal genericos -- sem frete gratis nem
+    desconto de atacado (nao fazem sentido fora de um carrinho de
+    verdade). Lista vazia em qualquer falha (CEP invalido, APIs fora do
+    ar, nenhuma cotacao) -- quem chama decide o que mostrar nesse caso."""
+    resultado = consultar_frenet(cep_destino, PESO_KG_ESTIMATIVA_GENERICA, SUBTOTAL_ESTIMATIVA_GENERICA)
+    opcoes = list(resultado.get("opcoes", []))
+    opcoes += consultar_melhor_envio(cep_destino, PESO_KG_ESTIMATIVA_GENERICA, SUBTOTAL_ESTIMATIVA_GENERICA)
+    opcoes.sort(key=lambda o: o["preco"])
+    return opcoes
