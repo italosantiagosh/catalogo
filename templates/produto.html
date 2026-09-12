@@ -46,21 +46,10 @@
   <p class="instrucao">Escolha um modelo:</p>
   <button type="button" class="ajuda-botao" onclick="abrirAjudaProduto()">❓ Como pedir</button>
 
-  <p class="aviso-preco-atacado" id="aviso-preco-atacado">
-    A partir de <strong>{{ preco_varejo | preco }}</strong> — desconto de atacado calculado
-    automático pela quantidade do carrinho.
-  </p>
+  <p class="aviso-preco-atacado" id="aviso-preco-atacado" hidden></p>
   {% if vendas_recentes %}
     <p class="vendas-recentes-produto">🔥 <strong>{{ vendas_recentes }}</strong> vendidas nos últimos 30 dias</p>
   {% endif %}
-  <p class="aviso-formatos">
-    Disponível em <strong>medalha</strong> (1,2 ou 1,6 cm), <strong>entremeio</strong>
-    (prata ou ouro velho) e <strong>chaveiro</strong> — escolha após o modelo.
-  </p>
-  <p class="aviso-producao">
-    🛠️ Peça sob encomenda, não é pronta entrega: produção em até
-    <strong>{{ producao_dias_uteis }} dias úteis</strong> após o pagamento confirmado, antes do envio.
-  </p>
   <p class="aviso-frete-estimativa" id="aviso-frete-estimativa" hidden></p>
   <p class="aviso-simulacao">📷 Fotos meramente ilustrativas — cor e brilho da peça real podem variar
   um pouco conforme iluminação e tela do aparelho.</p>
@@ -167,9 +156,9 @@
       </div>
       <div class="selo-divisor"></div>
       <div class="selo-item">
-        <span class="selo-icone">🧾</span>
-        <strong>Nota fiscal</strong>
-        para CPF ou CNPJ
+        <span class="selo-icone">🛠️</span>
+        <strong>Produção</strong>
+        até {{ producao_dias_uteis }} dias úteis
       </div>
     </div>
 
