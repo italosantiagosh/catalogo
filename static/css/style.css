@@ -1516,7 +1516,9 @@ button.botao-carrinho:disabled {
   margin: 0 0 8px;
 }
 
-.variacao-tamanho-select {
+.variacao-tamanho-select,
+.variacao-cor-select,
+.variacao-cor-cruz-select {
   font: inherit;
   font-size: 0.8rem;
   font-weight: 700;
