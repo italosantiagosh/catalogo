@@ -133,7 +133,7 @@ def test_home_banners_usam_imagem_em_vez_de_texto(client):
 
 def test_rodape_icones_de_contato(client):
     resposta = client.get("/").get_data(as_text=True)
-    assert "img/icone-whatsapp.png" in resposta
+    assert "img/icones/whatsapp-branco.svg" in resposta
     assert "img/icone-instagram.png" in resposta
 
 

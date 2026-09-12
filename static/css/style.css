@@ -1780,18 +1780,27 @@ input[readonly] {
   width: 56px;
   height: 56px;
   border-radius: 50%;
-  display: block;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   overflow: hidden;
+  background: #25d366;
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
   z-index: 60;
   transition: transform 0.15s ease;
 }
 
+/* Circulo desenhado em CSS puro (nao mais uma imagem com o circulo
+   verde ja´ desenhado dentro) -- a imagem antiga tinha a borda do
+   circulo anti-aliasada assumindo um fundo claro por baixo, o que
+   deixava uma auréola clara visivel quando o botao (fixed, sempre por
+   cima) passava sobre o fundo escuro do rodape ao rolar a pagina (ver
+   conversa). Sem imagem nenhuma na borda, nao tem o que falhar. */
 .whatsapp-flutuante img {
   display: block;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+  width: 60%;
+  height: 60%;
+  object-fit: contain;
 }
 
 .whatsapp-flutuante:hover {

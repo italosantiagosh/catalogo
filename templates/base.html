@@ -123,7 +123,7 @@
       <div class="rodape-coluna">
         <strong>Contato</strong>
         <a class="rodape-link-icone" href="https://wa.me/{{ whatsapp_number }}" target="_blank" rel="noopener">
-          <img src="{{ url_for('static', filename='img/icone-whatsapp.png') }}" alt="" width="18" height="18" loading="lazy" decoding="async"> WhatsApp
+          <img src="{{ url_for('static', filename='img/icones/whatsapp-branco.svg') }}" alt="" width="18" height="18" loading="lazy" decoding="async"> WhatsApp
         </a>
         <a class="rodape-link-icone" href="{{ instagram_url }}" target="_blank" rel="noopener">
           <img src="{{ url_for('static', filename='img/icone-instagram.png') }}" alt="" width="18" height="18" loading="lazy" decoding="async"> Instagram
@@ -178,7 +178,7 @@
   {% if request.endpoint != 'carrinho' %}
     <a class="whatsapp-flutuante" href="https://wa.me/{{ whatsapp_number }}" target="_blank"
        rel="noopener" aria-label="Falar no WhatsApp">
-      <img src="{{ url_for('static', filename='img/whatsapp-icone.png') }}" alt="" width="56" height="56">
+      <img src="{{ url_for('static', filename='img/icones/whatsapp-branco.svg') }}" alt="" width="56" height="56">
     </a>
 
     {# Balaozinho de video de apresentacao tirado TEMPORARIAMENTE (ver
