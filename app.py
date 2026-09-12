@@ -766,6 +766,23 @@ def _thumbnail_mini(caminho_imagem: str) -> str:
     return caminho_imagem
 
 
+def _webp_se_existir(caminho_imagem: str) -> str | None:
+    """Caminho do .webp irmao de `caminho_imagem` (mesma pasta, mesmo
+    nome-base), se ele ja tiver sido gerado -- senao None, pra template
+    so desenhar <picture>/<source> quando o arquivo webp existe de
+    verdade (um <source> apontando pra webp inexistente NAO cai de volta
+    pro <img> sozinho, quebraria a imagem em vez de so ficar sem o
+    ganho extra)."""
+    caminho_webp = str(Path(caminho_imagem).with_suffix(".webp"))
+    if (Path(app.root_path) / "static" / caminho_webp).is_file():
+        return caminho_webp
+    return None
+
+
+def _url_for_static_se_existir(caminho_imagem: str | None) -> str | None:
+    return url_for("static", filename=caminho_imagem) if caminho_imagem else None
+
+
 def _montar_destaques(produtos: list[dict], itens_por_id: dict) -> list[dict]:
     """Monta os grupos de destaques da home (DESTAQUES_HOME em config.py)
     a partir dos itens ja carregados -- ids que nao existirem mais no
@@ -786,7 +803,8 @@ def _montar_destaques(produtos: list[dict], itens_por_id: dict) -> list[dict]:
                         "id": produto["id"],
                         "nome": f"{produto['nome']} — {modelo['nome']}",
                         "thumbnail": modelo["imagem"],
-                        "thumbnail_mini": _thumbnail_mini(modelo["imagem"]),
+                        "thumbnail_mini": (mini := _thumbnail_mini(modelo["imagem"])),
+                        "thumbnail_webp": _webp_se_existir(mini),
                     }
                     for modelo in produto["modelos"]
                 ]
@@ -794,11 +812,14 @@ def _montar_destaques(produtos: list[dict], itens_por_id: dict) -> list[dict]:
                 else []
             )
         else:
-            produtos_grupo = [
-                {**itens_por_id[pid], "thumbnail_mini": _thumbnail_mini(itens_por_id[pid]["thumbnail"])}
-                for pid in grupo["produtos"]
-                if pid in itens_por_id
-            ]
+            produtos_grupo = []
+            for pid in grupo["produtos"]:
+                if pid not in itens_por_id:
+                    continue
+                mini = _thumbnail_mini(itens_por_id[pid]["thumbnail"])
+                produtos_grupo.append(
+                    {**itens_por_id[pid], "thumbnail_mini": mini, "thumbnail_webp": _webp_se_existir(mini)}
+                )
         if produtos_grupo:
             destaques.append({"chave": grupo.get("chave", ""), "titulo": grupo["titulo"], "produtos": produtos_grupo})
     return destaques
@@ -1069,6 +1090,7 @@ def _itens_personalizados_do_grid() -> list[dict]:
             "nome": p["nome"],
             "categoria": CATEGORIA_PERSONALIZADOS,
             "thumbnail": p["thumbnail"],
+            "thumbnail_webp": _webp_se_existir(p["thumbnail"]),
             "thumbnail_chaveiro": p["thumbnail"],
             "personalizada_url": url_for("personalizada", formato=p["formato"]),
         }
@@ -1117,7 +1139,21 @@ def index():
     # unico -- um grupo sem produtos hoje (id removido do catalogo)
     # simplesmente some da home, sem quebrar nada.
     destaques_por_chave = {d["chave"]: d for d in destaques if d.get("chave")}
-    procurados = [itens_por_id[pid] for pid in PROCURADOS_HOME if pid in itens_por_id]
+    procurados = []
+    for pid in PROCURADOS_HOME:
+        if pid not in itens_por_id:
+            continue
+        mini = _thumbnail_mini(itens_por_id[pid]["thumbnail"])
+        mini_chaveiro = _thumbnail_mini(itens_por_id[pid]["thumbnail_chaveiro"])
+        procurados.append(
+            {
+                **itens_por_id[pid],
+                "thumbnail_mini": mini,
+                "thumbnail_webp": _webp_se_existir(mini),
+                "thumbnail_chaveiro_mini": mini_chaveiro,
+                "thumbnail_chaveiro_webp": _webp_se_existir(mini_chaveiro),
+            }
+        )
     categorias = categorias_com_slug(produtos)
     # "Ultima chance" antes da grade generica de santos, pra quem rolou a
     # home inteira e ainda nao achou o que queria (ver conversa) -- reusa
@@ -1217,33 +1253,35 @@ def _cores_cruz_terco() -> list[dict]:
     """3 cores da Cruz para Terco (ver cruz_para_terco/index abaixo) --
     fatorado numa funcao pra home e a pagina do produto usarem os MESMOS
     dados (preco sempre de precos.json via preco_varejo, nunca duplicado
-    a mao)."""
-    return [
-        {
-            "id": "prata",
-            "nome": "Prata",
-            "chave_preco": "cruz_terco_prata",
-            "preco": preco_varejo("cruz_terco_prata"),
-            "imagem_frente": url_for("static", filename="img/produtos/cruz_terco_prata_frente.jpg"),
-            "imagem_perfil": url_for("static", filename="img/produtos/cruz_terco_prata_perfil.jpg"),
-        },
-        {
-            "id": "ouro_velho",
-            "nome": "Ouro velho",
-            "chave_preco": "cruz_terco_ouro_velho",
-            "preco": preco_varejo("cruz_terco_ouro_velho"),
-            "imagem_frente": url_for("static", filename="img/produtos/cruz_terco_ouro_velho_frente.jpg"),
-            "imagem_perfil": url_for("static", filename="img/produtos/cruz_terco_ouro_velho_perfil.jpg"),
-        },
-        {
-            "id": "dourado",
-            "nome": "Dourado",
-            "chave_preco": "cruz_terco_dourado",
-            "preco": preco_varejo("cruz_terco_dourado"),
-            "imagem_frente": url_for("static", filename="img/produtos/cruz_terco_dourado_frente.jpg"),
-            "imagem_perfil": url_for("static", filename="img/produtos/cruz_terco_dourado_perfil.jpg"),
-        },
+    a mao).
+
+    "imagem_frente" fica em tamanho cheio (reusada como preview grande em
+    /cruz-para-terco, ate 220px CSS = ate 440px numa tela retina) --
+    "imagem_frente_mini" e´ so pro carrossel da home (.destaque-card,
+    108px fixo, ver _thumbnail_mini acima)."""
+    cores = [
+        ("prata", "Prata", "cruz_terco_prata"),
+        ("ouro_velho", "Ouro velho", "cruz_terco_ouro_velho"),
+        ("dourado", "Dourado", "cruz_terco_dourado"),
     ]
+    resultado = []
+    for id_, nome, chave_preco in cores:
+        caminho_frente = f"img/produtos/{chave_preco}_frente.jpg"
+        mini = _thumbnail_mini(caminho_frente)
+        resultado.append(
+            {
+                "id": id_,
+                "nome": nome,
+                "chave_preco": chave_preco,
+                "preco": preco_varejo(chave_preco),
+                "imagem_frente": url_for("static", filename=caminho_frente),
+                "imagem_frente_webp": _url_for_static_se_existir(_webp_se_existir(caminho_frente)),
+                "imagem_frente_mini": url_for("static", filename=mini),
+                "imagem_frente_mini_webp": _url_for_static_se_existir(_webp_se_existir(mini)),
+                "imagem_perfil": url_for("static", filename=f"img/produtos/{chave_preco}_perfil.jpg"),
+            }
+        )
+    return resultado
 
 
 @app.route("/cruz-para-terco", methods=["GET"])
