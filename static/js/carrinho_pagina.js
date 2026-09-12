@@ -1008,6 +1008,26 @@
     adicionarOpcaoRetirada();
   }
 
+  // Aviso temporario da greve dos Correios (ver conversa) -- so um
+  // <script>document.getElementById(...)</script> direto em vez do
+  // padrao _configurarModalSimples (modais_base.js), porque aqui tem 2
+  // jeitos de fechar (X e botao "Entendi") e o modal e´ especifico dessa
+  // pagina. Facil de remover inteiro (esse bloco + o markup em
+  // carrinho.html) quando a greve acabar.
+  const modalGreveCorreios = document.getElementById('modal-aviso-greve-correios');
+  const btnGreveCorreiosFechar = document.getElementById('btn-aviso-greve-correios-fechar');
+  const btnGreveCorreiosOk = document.getElementById('btn-aviso-greve-correios-ok');
+  function fecharAvisoGreveCorreios() {
+    if (modalGreveCorreios) modalGreveCorreios.hidden = true;
+  }
+  if (btnGreveCorreiosFechar) btnGreveCorreiosFechar.addEventListener('click', fecharAvisoGreveCorreios);
+  if (btnGreveCorreiosOk) btnGreveCorreiosOk.addEventListener('click', fecharAvisoGreveCorreios);
+  if (modalGreveCorreios) {
+    modalGreveCorreios.addEventListener('click', (evento) => {
+      if (evento.target === modalGreveCorreios) fecharAvisoGreveCorreios();
+    });
+  }
+
   if (btnCalcularFrete) {
     btnCalcularFrete.addEventListener('click', async () => {
       const cep = (freteCepInput.value || '').replace(/\D/g, '');
@@ -1015,6 +1035,7 @@
         freteResultadoEl.innerHTML = '<p class="frete-erro">Digite um CEP válido.</p>';
         return;
       }
+      if (modalGreveCorreios) modalGreveCorreios.hidden = false;
       btnCalcularFrete.disabled = true;
       btnCalcularFrete.textContent = 'Calculando...';
       await calcularFreteParaCep(cep);
