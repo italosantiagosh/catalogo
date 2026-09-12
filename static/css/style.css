@@ -899,11 +899,19 @@ h1 {
   font-size: 0.95rem;
 }
 
+.linha-ajuda-vendas {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px 16px;
+  margin: 0 0 16px;
+}
+
 .vendas-recentes-produto {
   color: var(--gold-texto-claro);
   font-size: 0.85rem;
   font-weight: 600;
-  margin: 0 0 16px;
+  margin: 0;
 }
 
 .aviso-info {

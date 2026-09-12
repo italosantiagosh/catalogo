@@ -44,12 +44,14 @@
     </p>
   {% endif %}
   <p class="instrucao">Escolha um modelo:</p>
-  <button type="button" class="ajuda-botao" onclick="abrirAjudaProduto()">❓ Como pedir</button>
+  <div class="linha-ajuda-vendas">
+    <button type="button" class="ajuda-botao" onclick="abrirAjudaProduto()">❓ Como pedir</button>
+    {% if vendas_recentes %}
+      <p class="vendas-recentes-produto">🔥 <strong>{{ vendas_recentes }}</strong> vendidas nos últimos 30 dias</p>
+    {% endif %}
+  </div>
 
   <p class="aviso-preco-atacado" id="aviso-preco-atacado" hidden></p>
-  {% if vendas_recentes %}
-    <p class="vendas-recentes-produto">🔥 <strong>{{ vendas_recentes }}</strong> vendidas nos últimos 30 dias</p>
-  {% endif %}
   <p class="aviso-frete-estimativa" id="aviso-frete-estimativa" hidden></p>
   <p class="aviso-simulacao">📷 Fotos meramente ilustrativas — cor e brilho da peça real podem variar
   um pouco conforme iluminação e tela do aparelho.</p>
