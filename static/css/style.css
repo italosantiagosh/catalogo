@@ -204,6 +204,18 @@ a.marca {
   color: var(--gold-texto-claro);
 }
 
+.topo-acoes {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.link-icone-topo {
+  font-size: 1.3rem;
+  line-height: 1;
+  text-decoration: none;
+}
+
 a.link-carrinho {
   color: var(--ink);
   text-decoration: none;
@@ -221,6 +233,23 @@ a.link-carrinho #contador-carrinho {
   color: white;
   font-size: 0.75rem;
   text-align: center;
+}
+
+/* busca fixa no topo (dentro de .topo-fixo, ver base.html) -- mesmo
+   input/dropdown com busca ao vivo da home (.busca-wrap-home,
+   static/js/home_busca.js), so com espacamento mais compacto pra caber
+   grudada no header em vez de solta no meio da pagina. */
+.busca-wrap-topo {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 8px 16px 10px;
+  background: var(--card);
+  border-bottom: 1px solid var(--border);
+}
+
+.busca-wrap-topo .busca-home-input {
+  padding: 9px 14px;
+  font-size: 0.88rem;
 }
 
 /* hero da home */

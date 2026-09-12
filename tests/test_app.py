@@ -110,10 +110,17 @@ def test_home_tem_uma_unica_busca_antes_dos_chips_de_categoria(client):
     # hero, outra mais embaixo) -- a de cima foi removida a pedido do
     # usuario, ficando so a de baixo (ligada em static/js/
     # home_busca.js por ".busca-wrap-home", nao mais por id fixo).
+    #
+    # Depois, uma busca fixa foi adicionada no topo.-fixo (base.html,
+    # ver conversa "loja mensageiros"), presente em TODA pagina -- por
+    # isso agora sao 2 ".busca-home-input" na home (a do topo + a do
+    # conteudo), mas so 1 com a classe exata da home (".busca-wrap
+    # busca-wrap-home"), que continua sendo a unica DENTRO do conteudo,
+    # antes dos chips de categoria.
     resposta = client.get("/").get_data(as_text=True)
     assert resposta.count('class="busca-wrap busca-wrap-home"') == 1
-    assert resposta.count('class="busca-home-input"') == 1
-    pos_busca = resposta.index("busca-wrap-home")
+    assert resposta.count('class="busca-home-input"') == 2
+    pos_busca = resposta.index('class="busca-wrap busca-wrap-home"')
     pos_filtros = resposta.index('id="filtros-categoria"')
     assert pos_busca < pos_filtros
 

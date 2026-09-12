@@ -69,11 +69,11 @@
   {% endif %}
 </head>
 <body>
+  <div class="faixa-topo">
+    <button type="button" class="faixa-topo-botao" onclick="abrirTabelaDesconto()">💰 Desconto progressivo automático — até 65% OFF no atacado</button>
+    <span>🚚 Frete grátis acima de R$ 300</span>
+  </div>
   <div class="topo-fixo">
-    <div class="faixa-topo">
-      <button type="button" class="faixa-topo-botao" onclick="abrirTabelaDesconto()">💰 Desconto progressivo automático — até 65% OFF no atacado</button>
-      <span>🚚 Frete grátis acima de R$ 300</span>
-    </div>
     <header class="topo">
       <a class="marca" href="{{ url_for('index') }}">
         <picture>
@@ -85,10 +85,17 @@
           <span class="marca-sub">Medalhas católicas</span>
         </span>
       </a>
-      <a class="link-carrinho" href="{{ url_for('carrinho') }}">
-        🛒 Carrinho <span id="contador-carrinho">0</span>
-      </a>
+      <div class="topo-acoes">
+        <a class="link-icone-topo" href="{{ url_for('meus_pedidos') }}" aria-label="Meus pedidos">👤</a>
+        <a class="link-carrinho" href="{{ url_for('carrinho') }}">
+          🛒 Carrinho <span id="contador-carrinho">0</span>
+        </a>
+      </div>
     </header>
+    <div class="busca-wrap-home busca-wrap-topo">
+      <input type="search" class="busca-home-input" placeholder="Qual santo você procura? (ex: José, Carlo, Fátima)" aria-label="Buscar santo ou devoção" autocomplete="off">
+      <div class="busca-resultados busca-home-resultados" hidden></div>
+    </div>
     <div class="barra-persistente" id="barra-persistente" hidden></div>
   </div>
   <main>
@@ -286,6 +293,7 @@
   <script src="{{ url_for('static', filename='js/modais_base.js') }}"></script>
   <script src="{{ url_for('static', filename='js/upsell_cruz.js') }}"></script>
   <script src="{{ url_for('static', filename='js/bloqueio_zoom.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/home_busca.js') }}"></script>
   {% block script %}{% endblock %}
 </body>
 </html>
