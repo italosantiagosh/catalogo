@@ -259,15 +259,31 @@ app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1)
 # contribuia pra imagem quebrada de forma intermitente (a mesma imagem
 # carregava normal se pedida sozinha, so falhava sob disputa por
 # atencao do processo -- resolvido em conjunto com "--threads 8" no
-# render.yaml). WhiteNoise serve o arquivo de forma mais leve e ja
-# manda Cache-Control -- curto pros arquivos daqui, que nao tem hash no
-# nome (nao dava pra usar cache longo/imutavel sem isso, senao um
-# deploy que troca o CONTEUDO de "logo-icone.png" mantendo o MESMO
-# nome ficaria servindo a versao antiga do cache do navegador por
-# muito tempo).
+# render.yaml). WhiteNoise serve o arquivo de forma mais leve.
+#
+# Cache-busting via ?v=<commit> em vez de hash no nome do arquivo (ver
+# conversa "PageSpeed Insights", ~10MB de economia estimada so´ de
+# cache curto): RENDER_GIT_COMMIT muda sozinho a cada deploy (variavel
+# padrao do Render), entao url_defaults injeta ?v=<commit> em TODO
+# url_for("static", ...) -- Python e Jinja, os dois usam a mesma
+# funcao. Isso deixa seguro marcar os arquivos como "immutable" (cache
+# de 10 anos): se o CONTEUDO de "logo-icone.png" mudar num deploy
+# novo, a URL muda junto (commit novo), entao o navegador busca a
+# versao nova sozinho -- nunca fica preso servindo cache velho.
+ASSET_VERSION = os.environ.get("RENDER_GIT_COMMIT", "dev")[:12]
+
+
+@app.url_defaults
+def _versionar_arquivo_estatico(endpoint: str, values: dict) -> None:
+    if endpoint == "static" or endpoint.endswith(".static"):
+        values.setdefault("v", ASSET_VERSION)
+
+
 from whitenoise import WhiteNoise  # noqa: E402
 
-app.wsgi_app = WhiteNoise(app.wsgi_app, root="static/", prefix="static/")
+app.wsgi_app = WhiteNoise(
+    app.wsgi_app, root="static/", prefix="static/", immutable_file_test=lambda path, url: True
+)
 
 
 @app.after_request
