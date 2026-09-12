@@ -18,6 +18,15 @@
   --gold-texto-escuro: #d4ac5c; /* texto dourado sobre fundo escuro/--accent (~6:1) */
   --border: #dde3ec;
 
+  /* consolida os varios tons de verde/vermelho quase iguais que foram
+     sendo escolhidos separadamente em conversas diferentes pro mesmo
+     significado (sucesso/erro) -- ver conversa: "site não estava
+     padronizado". Um so par de cada daqui pra frente. */
+  --sucesso-texto: #1e7a43;
+  --sucesso-fundo: #e3f6ea;
+  --erro-texto: #7a2118;
+  --erro-fundo: #fdecea;
+
   --fonte-titulo: 'Fraunces', Georgia, 'Times New Roman', serif;
   --fonte-corpo: 'Public Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 }
@@ -1349,7 +1358,7 @@ button.botao-carrinho:disabled {
 .aval-sucesso {
   margin-top: 14px;
   font-size: 0.86rem;
-  color: #1e7a43;
+  color: var(--sucesso-texto);
 }
 
 .prova-social {
@@ -1766,7 +1775,7 @@ input[readonly] {
 }
 
 .frete-opcao-gratis {
-  color: #1f7a4d;
+  color: var(--sucesso-texto);
 }
 
 .frete-opcao-por {
@@ -1783,13 +1792,13 @@ input[readonly] {
 }
 
 .frete-erro {
-  color: #7a2118;
+  color: var(--erro-texto);
   font-size: 0.85rem;
 }
 
 .aviso-minimo {
-  background: var(--error-bg, #fdecea);
-  color: #7a2118;
+  background: var(--erro-fundo);
+  color: var(--erro-texto);
   border-radius: 10px;
   padding: 10px 14px;
   font-size: 0.85rem;
@@ -1915,7 +1924,7 @@ input[readonly] {
 }
 
 .pix-copiado {
-  color: #1f7a4d;
+  color: var(--sucesso-texto);
   font-size: 0.8rem;
   font-weight: 600;
 }
@@ -2778,8 +2787,8 @@ input[type="file"] {
 }
 
 .erro {
-  background: #fdecea;
-  color: #7a2118;
+  background: var(--erro-fundo);
+  color: var(--erro-texto);
   border-radius: 10px;
   padding: 12px 14px;
   font-size: 0.9rem;
@@ -2888,7 +2897,7 @@ input[type="file"] {
 .campo-erro {
   margin: -8px 0 0;
   font-size: 0.78rem;
-  color: #a13a2a;
+  color: var(--erro-texto);
 }
 
 .cadastro-ie-opcoes {
@@ -2913,7 +2922,7 @@ input[type="file"] {
   margin-top: 16px;
   padding: 16px;
   border: none;
-  border-radius: 12px;
+  border-radius: 10px;
   background: var(--accent);
   color: white;
   font-size: 1rem;
@@ -2951,7 +2960,7 @@ input[type="file"] {
   width: 100%;
   padding: 16px;
   border: none;
-  border-radius: 12px;
+  border-radius: 10px;
   background: #25d366;
   color: white;
   font-size: 1rem;
@@ -2986,7 +2995,7 @@ input[type="file"] {
   width: 100%;
   padding: 13px;
   border: 1px solid var(--border);
-  border-radius: 12px;
+  border-radius: 10px;
   background: transparent;
   color: var(--ink);
   font-size: 0.9rem;
@@ -3389,8 +3398,8 @@ input[type="file"] {
 }
 
 .pedido-status-pago {
-  background: #e3f6ea;
-  color: #1e7a43;
+  background: var(--sucesso-fundo);
+  color: var(--sucesso-texto);
 }
 
 .pedido-status-faturado {
@@ -3404,13 +3413,13 @@ input[type="file"] {
 }
 
 .pedido-status-entregue {
-  background: #d9f2e3;
-  color: #14602f;
+  background: var(--sucesso-fundo);
+  color: var(--sucesso-texto);
 }
 
 .pedido-status-cancelado {
-  background: #fbe3e0;
-  color: #a13a2a;
+  background: var(--erro-fundo);
+  color: var(--erro-texto);
 }
 
 .pedido-timeline {
@@ -3512,8 +3521,8 @@ input[type="file"] {
 .pedido-envio-antecipado {
   margin: 0 0 14px;
   padding: 12px 16px;
-  background: #e3f6ea;
-  color: #1e7a43;
+  background: var(--sucesso-fundo);
+  color: var(--sucesso-texto);
   border-radius: 10px;
   font-size: 0.88rem;
 }
