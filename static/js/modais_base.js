@@ -25,6 +25,9 @@ function _configurarModalSimples(modalId, botaoFecharId) {
   };
 }
 
+const _abrirMenuLateral = _configurarModalSimples('modal-menu-lateral', 'btn-menu-lateral-fechar');
+if (_abrirMenuLateral) window.abrirMenuLateral = _abrirMenuLateral;
+
 const _abrirGuia = _configurarModalSimples('modal-guia-tamanhos', 'btn-guia-tamanhos-fechar');
 if (_abrirGuia) window.abrirGuiaTamanhos = _abrirGuia;
 
