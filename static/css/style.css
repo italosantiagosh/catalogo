@@ -273,6 +273,38 @@ a.link-carrinho #contador-carrinho {
   text-align: center;
 }
 
+/* o icone de "Meus pedidos" (.topo-acoes) tomou espaco extra do
+   cabecalho -- reduz marca/carrinho pra "Nove de Julho" e "Medalhas
+   Catolicas" caberem numa linha cada de novo, como antes desse icone
+   existir (ver conversa "loja mensageiros"). Precisa vir DEPOIS das
+   regras base acima (.marca-logo/.marca-nome/.marca-sub/.link-carrinho),
+   senao elas vencem por virem depois na cascata mesmo dentro do media
+   query (mesmo bug ja visto com .menu-lateral-overlay). */
+@media (max-width: 480px) {
+  header.topo {
+    gap: 8px;
+  }
+  .marca {
+    gap: 6px;
+  }
+  .marca-logo {
+    height: 34px;
+  }
+  .marca-nome {
+    font-size: 1.02rem;
+  }
+  .marca-sub {
+    font-size: 0.58rem;
+    letter-spacing: 0.04em;
+  }
+  .topo-acoes {
+    gap: 10px;
+  }
+  a.link-carrinho {
+    font-size: 0.8rem;
+  }
+}
+
 /* busca fixa no topo (dentro de .topo-fixo, ver base.html) -- mesmo
    input/dropdown com busca ao vivo da home (.busca-wrap-home,
    static/js/home_busca.js), so com espacamento mais compacto pra caber
