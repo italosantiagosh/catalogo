@@ -745,6 +745,27 @@ def _reduzir_temp_se_grande_demais(caminho: Path, box: "CropBox | None") -> "Cro
     return (x1 * fator, y1 * fator, x2 * fator, y2 * fator)
 
 
+# Miniaturas geradas so pros cards do carrossel de destaques da home
+# (.destaque-card, sempre 108px de largura em qualquer tela -- ver
+# style.css) -- os arquivos originais em static/img/produtos/ continuam
+# em resolucao maior porque sao REUSADOS na pagina do produto (grid de
+# modelos e preview, ate ~300px), entao nao da pra so encolher eles no
+# lugar. Gerado uma vez em static/img/produtos_mini/ (mesmo nome-base do
+# arquivo original); se a miniatura nao existir pra algum item novo, cai
+# de volta pro arquivo original em vez de quebrar a home.
+_DIR_PRODUTOS_MINI = Path(app.root_path) / "static" / "img" / "produtos_mini"
+_PRODUTOS_MINI_DISPONIVEIS = (
+    {p.name for p in _DIR_PRODUTOS_MINI.iterdir()} if _DIR_PRODUTOS_MINI.is_dir() else set()
+)
+
+
+def _thumbnail_mini(caminho_imagem: str) -> str:
+    nome = Path(caminho_imagem).name
+    if nome in _PRODUTOS_MINI_DISPONIVEIS:
+        return f"img/produtos_mini/{nome}"
+    return caminho_imagem
+
+
 def _montar_destaques(produtos: list[dict], itens_por_id: dict) -> list[dict]:
     """Monta os grupos de destaques da home (DESTAQUES_HOME em config.py)
     a partir dos itens ja carregados -- ids que nao existirem mais no
@@ -765,6 +786,7 @@ def _montar_destaques(produtos: list[dict], itens_por_id: dict) -> list[dict]:
                         "id": produto["id"],
                         "nome": f"{produto['nome']} — {modelo['nome']}",
                         "thumbnail": modelo["imagem"],
+                        "thumbnail_mini": _thumbnail_mini(modelo["imagem"]),
                     }
                     for modelo in produto["modelos"]
                 ]
@@ -772,7 +794,11 @@ def _montar_destaques(produtos: list[dict], itens_por_id: dict) -> list[dict]:
                 else []
             )
         else:
-            produtos_grupo = [itens_por_id[pid] for pid in grupo["produtos"] if pid in itens_por_id]
+            produtos_grupo = [
+                {**itens_por_id[pid], "thumbnail_mini": _thumbnail_mini(itens_por_id[pid]["thumbnail"])}
+                for pid in grupo["produtos"]
+                if pid in itens_por_id
+            ]
         if produtos_grupo:
             destaques.append({"chave": grupo.get("chave", ""), "titulo": grupo["titulo"], "produtos": produtos_grupo})
     return destaques

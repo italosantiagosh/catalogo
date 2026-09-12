@@ -238,7 +238,7 @@ def test_destaque_novidades_mostra_combos_2lados_prontos(client):
     resposta = client.get("/").get_data(as_text=True)
     assert "Santa Teresinha &amp; Sagrada Face" in resposta or "Santa Teresinha & Sagrada Face" in resposta
     assert 'href="/personalizada?formato=medalha_2lados&amp;combo=combo-teresinha-sagrada-face"' in resposta
-    assert "img/combo-faustina-misericordioso.jpg" in resposta
+    assert "img/produtos_mini/combo-faustina-misericordioso.jpg" in resposta
 
 
 def test_personalizada_combo_valido_preenche_formato_e_window_combo(client):

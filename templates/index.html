@@ -9,7 +9,7 @@
         <div class="destaques-linha">
           {% for produto in grupo.produtos %}
             <a class="destaque-card" href="{{ produto.personalizada_url or url_for('produto', produto_id=produto.id) }}">
-              <img src="{{ url_for('static', filename=produto.thumbnail) }}" alt="{{ produto.nome }}" loading="lazy" decoding="async" width="480" height="480">
+              <img src="{{ url_for('static', filename=produto.thumbnail_mini or produto.thumbnail) }}" alt="{{ produto.nome }}" loading="lazy" decoding="async" width="224" height="224">
               <span>{{ produto.nome }}</span>
             </a>
           {% endfor %}
@@ -67,16 +67,16 @@
       <span>Acima de R$ 300 em compras</span>
     </div>
     <div class="vantagem">
-      <img class="vantagem-icone vantagem-icone-img" src="{{ url_for('static', filename='img/icones/whatsapp.svg') }}" alt="">
+      <img class="vantagem-icone vantagem-icone-img" src="{{ url_for('static', filename='img/icones/whatsapp.svg') }}" alt="" width="26" height="26">
       <strong>Monte aqui, feche no WhatsApp</strong>
       <span>Escolha os produtos no site e finalizamos via WhatsApp</span>
     </div>
     <div class="vantagem">
       <span class="vantagem-icone vantagem-icone-duplo">
         <span class="vantagem-icone-chip-escuro">
-          <img src="{{ url_for('static', filename='img/pagamento/infinitepay.svg') }}" alt="InfinitePay">
+          <img src="{{ url_for('static', filename='img/pagamento/infinitepay.svg') }}" alt="InfinitePay" width="73" height="15">
         </span>
-        <img src="{{ url_for('static', filename='img/pagamento/banco-inter.svg') }}" alt="Banco Inter">
+        <img src="{{ url_for('static', filename='img/pagamento/banco-inter.svg') }}" alt="Banco Inter" width="59" height="15">
       </span>
       <strong>Pix, cartão ou boleto</strong>
       <span>Escolha a forma de pagamento que preferir (mais rápido)</span>
@@ -122,7 +122,7 @@
       <div class="destaques-linha">
         {% for cor in cores_cruz_terco %}
           <a class="destaque-card" href="{{ url_for('cruz_para_terco') }}">
-            <img src="{{ cor.imagem_frente }}" alt="Cruz para Terço — {{ cor.nome }}" loading="lazy" decoding="async" width="480" height="480">
+            <img src="{{ cor.imagem_frente }}" alt="Cruz para Terço — {{ cor.nome }}" loading="lazy" decoding="async" width="224" height="224">
             <span>{{ cor.nome }} — {{ cor.preco | preco }}</span>
           </a>
         {% endfor %}
