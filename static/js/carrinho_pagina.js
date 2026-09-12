@@ -501,9 +501,11 @@
       const preenchimento = document.createElement('div');
       preenchimento.className = 'barra-progresso-preenchimento';
       if (grupo.proxima_faixa) {
+        // so a quantidade que falta, sem o "X / Y" antes -- ver conversa:
+        // esse numero total (X) confundia mais do que ajudava.
         texto.textContent =
-          `${grupo.quantidade_total} / ${grupo.proxima_faixa.quantidade} ${GRUPO_LABEL[nomeGrupo] || nomeGrupo} — ` +
-          `faltam ${grupo.proxima_faixa.faltam} para o próximo desconto`;
+          `faltam ${grupo.proxima_faixa.faltam} ${GRUPO_LABEL[nomeGrupo] || nomeGrupo} para o próximo desconto ` +
+          `(${formatarPreco(grupo.proxima_faixa.preco)}/un)`;
         preenchimento.style.width =
           _percentualBarra(grupo.quantidade_total, grupo.faixa_atual_inicio, grupo.proxima_faixa.quantidade) + '%';
       } else {
