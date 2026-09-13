@@ -143,7 +143,16 @@ from services.email import (
     enviar_pedido_recompra,
 )
 from services.documentos import cpf_valido, documento_valido, numero_whatsapp, telefone_valido
-from services.frete import calcular_frete, descricao_sem_nome_transportadora, eh_correios, logo_transportadora, opcoes_frete_estimativa
+from services.frete import (
+    PESO_KG_ESTIMATIVA_GENERICA,
+    SUBTOTAL_ESTIMATIVA_GENERICA,
+    calcular_frete,
+    consultar_frenet,
+    descricao_sem_nome_transportadora,
+    eh_correios,
+    logo_transportadora,
+    opcoes_frete_estimativa,
+)
 from services.geolocalizacao import localizar_por_ip
 from services.infinitepay import criar_link_pagamento
 from services.pedidos import (
@@ -2363,14 +2372,22 @@ def api_estimativa_frete_por_localizacao():
         # geolocalizacao e cotacao testadas manualmente e funcionam
         # isoladas, precisa ver em producao qual das duas etapas falha
         # de verdade pra esse visitante) -- tirar depois de identificado.
-        app.logger.info("estimativa-frete: sem geolocalizacao pro IP %s", ip_visitante)
+        app.logger.warning("estimativa-frete: sem geolocalizacao pro IP %s", ip_visitante)
         return "", 204
 
     opcoes = _opcoes_frete_estimativa_cacheadas(local["cep"])
     if not opcoes:
-        app.logger.info(
-            "estimativa-frete: sem cotacao pro CEP %s (%s/%s, IP %s)",
+        # Chamada extra so pro log (nao cacheada) -- pega o "erro" real
+        # que consultar_frenet devolve (token invalido, CEP_ORIGEM
+        # faltando, erro de rede) e que opcoes_frete_estimativa descarta
+        # normalmente. So roda nesse caminho de falha, que agora expira
+        # do cache principal em 3 min (ver _TTL_CACHE_ESTIMATIVA_FRETE_
+        # VAZIA_SEGUNDOS), entao nao vira uma chamada extra constante.
+        diagnostico = consultar_frenet(local["cep"], PESO_KG_ESTIMATIVA_GENERICA, SUBTOTAL_ESTIMATIVA_GENERICA)
+        app.logger.warning(
+            "estimativa-frete: sem cotacao pro CEP %s (%s/%s, IP %s) -- frenet: %s",
             local["cep"], local["cidade"], local["estado"], ip_visitante,
+            diagnostico.get("erro", "sem erro reportado, so devolveu 0 opcoes"),
         )
         return "", 204
 
