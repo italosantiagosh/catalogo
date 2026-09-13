@@ -41,6 +41,7 @@ import hmac
 import io
 import os
 import re
+import resource
 import secrets
 import tempfile
 import threading
@@ -4884,6 +4885,14 @@ def admin_push_desinscrever():
     return jsonify(ok=True)
 
 
+def _memoria_atual_mb() -> float:
+    """Pico de memoria residente (RSS) do processo desde que comecou, em
+    MB -- so existe no Linux (ru_maxrss vem em KB la; em macOS seria
+    bytes, mas producao e´ sempre Linux/Render). Usado so pra log de
+    diagnostico, nunca pra decisao de negocio."""
+    return resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 1024
+
+
 @app.route("/api/personalizada/preview", methods=["POST"])
 @limiter.limit("15 per minute")
 def api_personalizada_preview():
@@ -4904,6 +4913,15 @@ def api_personalizada_preview():
     spec = MEDAL_SPECS[spec_id]
 
     box = _ler_box(request.form)
+    # Log temporario de diagnostico (ver conversa 2026-09-13: queda real
+    # do Render minutos depois de um teste de upload "chaveiro 2 lados" --
+    # a rota ja tem semaforo + limite de megapixels + draft(), sem gap
+    # obvio encontrado na revisao do codigo; precisa de numero real de
+    # memoria na proxima ocorrencia em vez de suspeita). Tirar depois de
+    # confirmar se essa rota e´ mesmo a causa ou so coincidencia de
+    # horario com o crescimento normal de memoria do processo (ja
+    # documentado, ver render.yaml:MALLOC_ARENA_MAX).
+    memoria_antes = _memoria_atual_mb()
     if not _LIMITE_PROCESSAMENTO_IMAGEM_PESADO.acquire(timeout=_TIMEOUT_ESPERA_PROCESSAMENTO_SEGUNDOS):
         return jsonify(erro="Muita gente enviando foto agora, tenta de novo em alguns segundos."), 503
     try:
@@ -4917,6 +4935,11 @@ def api_personalizada_preview():
                 return jsonify(erro=f"Erro ao gerar a simulação: {exc}"), 400
     finally:
         _LIMITE_PROCESSAMENTO_IMAGEM_PESADO.release()
+        memoria_depois = _memoria_atual_mb()
+        app.logger.warning(
+            "personalizada-preview: formato=%s arquivo=%s memoria_pico_mb=%.1f->%.1f (delta=%.1f)",
+            spec_id, arquivo.filename, memoria_antes, memoria_depois, memoria_depois - memoria_antes,
+        )
 
     nome_base = _sem_extensao(arquivo.filename)
     imagem_bytes = _imagem_para_bytes(resultado)
