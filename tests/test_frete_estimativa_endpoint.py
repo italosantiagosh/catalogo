@@ -27,6 +27,19 @@ def limpar_cache_estimativa():
     app_module._CACHE_LOCALIZACAO_POR_IP.clear()
 
 
+@pytest.fixture(autouse=True)
+def bloquear_chamada_de_diagnostico_de_rede(monkeypatch):
+    # quando a geolocalizacao falha, a rota faz uma segunda chamada
+    # crua so pra log de diagnostico (ver app.py) -- nunca deve bater na
+    # internet de verdade durante os testes. Cai no ramo de excecao do
+    # log (inofensivo, so muda o texto da mensagem), a resposta ao
+    # cliente continua 204 normalmente.
+    def _sem_rede_nos_testes(*args, **kwargs):
+        raise ConnectionError("chamada de rede real bloqueada nos testes")
+
+    monkeypatch.setattr(app_module.requests, "get", _sem_rede_nos_testes)
+
+
 def test_sem_localizacao_devolve_204(client, monkeypatch):
     monkeypatch.setattr(app_module, "localizar_por_ip", lambda ip: None)
     resposta = client.get("/api/frete/estimativa-por-localizacao")

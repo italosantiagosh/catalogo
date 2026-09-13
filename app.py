@@ -52,6 +52,7 @@ from pathlib import Path
 from urllib.parse import urlsplit
 from xml.sax.saxutils import escape as escapar_xml
 
+import requests
 from flask import Flask, Response, abort, jsonify, redirect, render_template, request, send_file, session, url_for
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
@@ -2399,7 +2400,19 @@ def api_estimativa_frete_por_localizacao():
         # geolocalizacao e cotacao testadas manualmente e funcionam
         # isoladas, precisa ver em producao qual das duas etapas falha
         # de verdade pra esse visitante) -- tirar depois de identificado.
-        app.logger.warning("estimativa-frete: sem geolocalizacao pro IP %s", ip_visitante)
+        # Essa segunda chamada crua (nao usa localizar_por_ip, so pra
+        # log) mostra o corpo/erro exato que o ipwho.is devolve pro IP
+        # do PROPRIO Render, ja que testado na mao (de outra maquina)
+        # sempre funciona pro mesmo IP -- suspeita de bloqueio/limite
+        # diario especifico do IP de saida do servidor.
+        try:
+            resposta_diagnostico = requests.get(f"https://ipwho.is/{ip_visitante}", timeout=4)
+            detalhe_diagnostico = f"status={resposta_diagnostico.status_code} corpo={resposta_diagnostico.text[:300]!r}"
+        except Exception as exc:
+            detalhe_diagnostico = f"excecao={type(exc).__name__}: {exc}"
+        app.logger.warning(
+            "estimativa-frete: sem geolocalizacao pro IP %s -- ipwho.is: %s", ip_visitante, detalhe_diagnostico
+        )
         return "", 204
 
     opcoes = _opcoes_frete_estimativa_cacheadas(local["cep"])
