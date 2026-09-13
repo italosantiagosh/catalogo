@@ -31,6 +31,30 @@ IPWHOIS_URL = "https://ipwho.is/{ip}"
 _TIMEOUT_SEGUNDOS = 4
 
 
+def _cep_normalizado(postal: str) -> str | None:
+    """O `postal` que o ipwho.is devolve e´ inconsistente: as vezes vem o
+    CEP completo (8 digitos, ex: "99010-041"), mas na MAIORIA dos IPs
+    testados vem so o PREFIXO da regiao (5 digitos, ex: "90020") -- e
+    quando esse prefixo comeca com zero (comum: varias faixas de Sao
+    Paulo comecam com 0), o zero a esquerda se perde (ex: "01002" volta
+    como "1002", 4 digitos), provavelmente porque o provedor trata o
+    campo como numero em algum ponto. O codigo original exigia 8 digitos
+    exatos e descartava qualquer coisa fora disso como "sem CEP conhecido"
+    -- na pratica isso rejeitava a maior parte dos visitantes brasileiros
+    (ver conversa: "a barra sumiu"), nao so casos raros.
+
+    Quando so temos o prefixo, completa com "000" -- e´ o sufixo GENERICO
+    de verdade que os Correios usam pra faixa de uma regiao sem numero de
+    rua especifico (ex: 01310-000 pra Av. Paulista), entao serve como CEP
+    de estimativa legitimo pra cotar frete pela regiao."""
+    digitos = re.sub(r"\D", "", postal or "")
+    if len(digitos) == 8:
+        return digitos
+    if 1 <= len(digitos) <= 5:
+        return digitos.zfill(5) + "000"
+    return None
+
+
 def localizar_por_ip(ip: str) -> dict | None:
     """{"cidade", "estado", "cep"} a partir do IP, ou None se nao for
     possivel estimar (IP nao-BR, sem CEP conhecido, servico fora do ar)."""
@@ -46,9 +70,9 @@ def localizar_por_ip(ip: str) -> dict | None:
     if not dados.get("success") or dados.get("country_code") != "BR":
         return None
 
-    cep = re.sub(r"\D", "", dados.get("postal") or "")
+    cep = _cep_normalizado(dados.get("postal") or "")
     cidade = dados.get("city") or ""
-    if len(cep) != 8 or not cidade:
+    if cep is None or not cidade:
         return None
 
     return {"cidade": cidade, "estado": dados.get("region") or "", "cep": cep}
