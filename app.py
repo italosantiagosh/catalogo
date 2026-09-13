@@ -2312,12 +2312,26 @@ def api_calcular_frete():
 _CACHE_ESTIMATIVA_FRETE_POR_CEP: dict[str, tuple[float, list[dict]]] = {}
 _TTL_CACHE_ESTIMATIVA_FRETE_SEGUNDOS = 6 * 60 * 60
 
+# Lista VAZIA (nenhuma cotacao veio da Frenet/Melhor Envio) fica so
+# alguns minutos em cache, nao as 6h normais -- uma lista vazia quase
+# sempre e´ um problema TRANSITORIO (timeout, erro de rede, instabilidade
+# pontual de uma das duas fontes), nao "essa regiao nao tem frete
+# nenhum". Sem isso, uma unica falha de rede na primeira consulta de um
+# CEP prende esse CEP em "sem estimativa" (barra escondida) pelas
+# proximas 6h pra TODO mundo daquela regiao, mesmo com as APIs ja
+# normais de novo (ver conversa: "ainda ficou sem aparecer" -- CEP
+# valido de Natal, testado manualmente e funciona).
+_TTL_CACHE_ESTIMATIVA_FRETE_VAZIA_SEGUNDOS = 3 * 60
+
 
 def _opcoes_frete_estimativa_cacheadas(cep: str) -> list[dict]:
     agora = time.monotonic()
     em_cache = _CACHE_ESTIMATIVA_FRETE_POR_CEP.get(cep)
-    if em_cache and agora - em_cache[0] < _TTL_CACHE_ESTIMATIVA_FRETE_SEGUNDOS:
-        return em_cache[1]
+    if em_cache:
+        idade, opcoes_em_cache = em_cache
+        ttl = _TTL_CACHE_ESTIMATIVA_FRETE_SEGUNDOS if opcoes_em_cache else _TTL_CACHE_ESTIMATIVA_FRETE_VAZIA_SEGUNDOS
+        if agora - idade < ttl:
+            return opcoes_em_cache
     opcoes = opcoes_frete_estimativa(cep)
     _CACHE_ESTIMATIVA_FRETE_POR_CEP[cep] = (agora, opcoes)
     return opcoes

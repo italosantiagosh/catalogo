@@ -91,3 +91,27 @@ def test_cotacao_e_cacheada_por_cep(client, monkeypatch):
     client.get("/api/frete/estimativa-por-localizacao")
 
     assert len(chamadas) == 1  # a segunda chamada usou o cache, nao bateu a Frenet/Melhor Envio de novo
+
+
+def test_cotacao_vazia_expira_do_cache_bem_mais_rapido(client, monkeypatch):
+    # ver conversa: "ainda ficou sem aparecer" -- lista vazia (falha
+    # transitoria da Frenet/Melhor Envio) nao pode prender esse CEP em
+    # "sem estimativa" pelas mesmas 6h de uma cotacao de verdade, senao
+    # 1 falha de rede esconde a barra pra regiao inteira por horas mesmo
+    # com as APIs ja normais de novo.
+    chamadas = []
+    relogio = [1000.0]
+
+    monkeypatch.setattr(
+        app_module, "localizar_por_ip", lambda ip: {"cidade": "Natal", "estado": "Rio Grande do Norte", "cep": "59000000"}
+    )
+    monkeypatch.setattr(app_module, "opcoes_frete_estimativa", lambda cep: chamadas.append(cep) or [])
+    monkeypatch.setattr(app_module.time, "monotonic", lambda: relogio[0])
+
+    client.get("/api/frete/estimativa-por-localizacao")
+    client.get("/api/frete/estimativa-por-localizacao")
+    assert len(chamadas) == 1  # ainda dentro do TTL curto da lista vazia, usa o cache
+
+    relogio[0] += app_module._TTL_CACHE_ESTIMATIVA_FRETE_VAZIA_SEGUNDOS + 1
+    client.get("/api/frete/estimativa-por-localizacao")
+    assert len(chamadas) == 2  # TTL curto ja expirou -- tenta de novo em vez de esperar as 6h de uma cotacao valida
