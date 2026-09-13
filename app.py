@@ -2359,10 +2359,19 @@ def api_estimativa_frete_por_localizacao():
     ip_visitante = request.headers.get("CF-Connecting-IP") or request.remote_addr or ""
     local = localizar_por_ip(ip_visitante)
     if local is None:
+        # Log temporario (ver conversa: "ainda ficou sem aparecer" --
+        # geolocalizacao e cotacao testadas manualmente e funcionam
+        # isoladas, precisa ver em producao qual das duas etapas falha
+        # de verdade pra esse visitante) -- tirar depois de identificado.
+        app.logger.info("estimativa-frete: sem geolocalizacao pro IP %s", ip_visitante)
         return "", 204
 
     opcoes = _opcoes_frete_estimativa_cacheadas(local["cep"])
     if not opcoes:
+        app.logger.info(
+            "estimativa-frete: sem cotacao pro CEP %s (%s/%s, IP %s)",
+            local["cep"], local["cidade"], local["estado"], ip_visitante,
+        )
         return "", 204
 
     mais_barata = opcoes[0]
