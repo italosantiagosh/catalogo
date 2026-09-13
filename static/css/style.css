@@ -1195,6 +1195,15 @@ button.botao-carrinho:disabled {
   margin-bottom: 4px;
 }
 
+/* Bandeira do Brasil como imagem, nao emoji -- no Windows (Chrome/Edge)
+   o emoji de bandeira 🇧🇷 nao tem glifo real e cai pro texto "BR" (ver
+   conversa: "no desktop nao aparece", so no mobile). */
+.selo-icone-brasil {
+  width: 16px;
+  height: auto;
+  border-radius: 2px;
+}
+
 .selo-divisor {
   width: 1px;
   height: 38px;
