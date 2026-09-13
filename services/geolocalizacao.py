@@ -55,16 +55,38 @@ def _cep_normalizado(postal: str) -> str | None:
     return None
 
 
-def localizar_por_ip(ip: str) -> dict | None:
-    """{"cidade", "estado", "cep"} a partir do IP, ou None se nao for
-    possivel estimar (IP nao-BR, sem CEP conhecido, servico fora do ar)."""
-    if not ip:
-        return None
+_TENTATIVAS = 2
+
+
+def _consultar_ipwhois(ip: str) -> dict | None:
+    """Uma tentativa crua (sem retry) -- None em qualquer falha de rede ou
+    resposta invalida."""
     try:
         resposta = requests.get(IPWHOIS_URL.format(ip=ip), timeout=_TIMEOUT_SEGUNDOS)
         resposta.raise_for_status()
-        dados = resposta.json()
+        return resposta.json()
     except (requests.RequestException, ValueError):
+        return None
+
+
+def localizar_por_ip(ip: str) -> dict | None:
+    """{"cidade", "estado", "cep"} a partir do IP, ou None se nao for
+    possivel estimar (IP nao-BR, sem CEP conhecido, servico fora do ar).
+
+    Chamado em TODA visita a pagina de produto (sem cache aqui -- ver
+    app.py:_localizacao_cacheada_por_ip pro cache real), entao um
+    timeout/erro de rede pontual do ipwho.is (inevitavel numa API gratis
+    sem SLA, ja visto em producao) esconderia a barra sem necessidade --
+    tenta de novo uma vez antes de desistir."""
+    if not ip:
+        return None
+
+    dados = None
+    for tentativa in range(_TENTATIVAS):
+        dados = _consultar_ipwhois(ip)
+        if dados is not None:
+            break
+    if dados is None:
         return None
 
     if not dados.get("success") or dados.get("country_code") != "BR":

@@ -17,11 +17,14 @@ def client():
 
 @pytest.fixture(autouse=True)
 def limpar_cache_estimativa():
-    # cada teste comeca com o cache de cotacao por CEP vazio, senao um
-    # teste anterior com o mesmo CEP fake contaminaria o resultado.
+    # cada teste comeca com os caches de cotacao por CEP e de
+    # geolocalizacao por IP vazios, senao um teste anterior com o mesmo
+    # CEP/IP fake contaminaria o resultado.
     app_module._CACHE_ESTIMATIVA_FRETE_POR_CEP.clear()
+    app_module._CACHE_LOCALIZACAO_POR_IP.clear()
     yield
     app_module._CACHE_ESTIMATIVA_FRETE_POR_CEP.clear()
+    app_module._CACHE_LOCALIZACAO_POR_IP.clear()
 
 
 def test_sem_localizacao_devolve_204(client, monkeypatch):
@@ -91,6 +94,49 @@ def test_cotacao_e_cacheada_por_cep(client, monkeypatch):
     client.get("/api/frete/estimativa-por-localizacao")
 
     assert len(chamadas) == 1  # a segunda chamada usou o cache, nao bateu a Frenet/Melhor Envio de novo
+
+
+def test_geolocalizacao_e_cacheada_por_ip(client, monkeypatch):
+    # ver conversa: log em producao mostrou geolocalizacao falhando pra
+    # um IP que respondia normal minutos depois testado na mao (blip de
+    # rede pontual do ipwho.is) -- sem cache, o MESMO visitante vendo 2
+    # produtos seguidos batia no servico 2 vezes, dobrando a chance de
+    # pegar um blip desses.
+    chamadas = []
+
+    monkeypatch.setattr(
+        app_module,
+        "localizar_por_ip",
+        lambda ip: chamadas.append(ip) or {"cidade": "Natal", "estado": "Rio Grande do Norte", "cep": "59000000"},
+    )
+    monkeypatch.setattr(
+        app_module,
+        "opcoes_frete_estimativa",
+        lambda cep: [{"transportadora": "Correios", "servico": "PAC", "preco": 20.70, "prazo_dias": 8}],
+    )
+
+    headers = {"CF-Connecting-IP": "186.236.197.50"}
+    client.get("/api/frete/estimativa-por-localizacao", headers=headers)
+    client.get("/api/frete/estimativa-por-localizacao", headers=headers)
+
+    assert len(chamadas) == 1  # a segunda chamada usou o cache, nao bateu o ipwho.is de novo
+
+
+def test_geolocalizacao_falha_expira_do_cache_rapido(client, monkeypatch):
+    chamadas = []
+    relogio = [1000.0]
+
+    monkeypatch.setattr(app_module, "localizar_por_ip", lambda ip: chamadas.append(ip) or None)
+    monkeypatch.setattr(app_module.time, "monotonic", lambda: relogio[0])
+
+    headers = {"CF-Connecting-IP": "186.236.197.50"}
+    client.get("/api/frete/estimativa-por-localizacao", headers=headers)
+    client.get("/api/frete/estimativa-por-localizacao", headers=headers)
+    assert len(chamadas) == 1  # ainda dentro do TTL curto da falha, usa o cache
+
+    relogio[0] += app_module._TTL_CACHE_LOCALIZACAO_FALHA_SEGUNDOS + 1
+    client.get("/api/frete/estimativa-por-localizacao", headers=headers)
+    assert len(chamadas) == 2  # TTL curto expirou -- tenta de novo em vez de esperar as 6h de uma localizacao valida
 
 
 def test_cotacao_vazia_expira_do_cache_bem_mais_rapido(client, monkeypatch):

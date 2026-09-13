@@ -2346,6 +2346,33 @@ def _opcoes_frete_estimativa_cacheadas(cep: str) -> list[dict]:
     return opcoes
 
 
+# Cache da geolocalizacao por IP (ver conversa: log em producao mostrou
+# "sem geolocalizacao pro IP X", mas o mesmo IP testado manualmente logo
+# depois respondia normal -- blip pontual de rede do ipwho.is, API
+# gratis sem SLA). Sem cache aqui, TODA visita a uma pagina de produto
+# batia no ipwho.is de novo, mesmo pro MESMO visitante vendo varios
+# produtos seguidos -- 1 falha pontual escondia a barra em toda pagina
+# subsequente daquele visitante ate ele mudar de IP. Mesmo criterio de
+# TTL curto pra falha (idem _TTL_CACHE_ESTIMATIVA_FRETE_VAZIA_SEGUNDOS
+# acima) pra nao prender um IP em "sem localizacao" por muito tempo.
+_CACHE_LOCALIZACAO_POR_IP: dict[str, tuple[float, dict | None]] = {}
+_TTL_CACHE_LOCALIZACAO_SEGUNDOS = 6 * 60 * 60
+_TTL_CACHE_LOCALIZACAO_FALHA_SEGUNDOS = 3 * 60
+
+
+def _localizacao_cacheada_por_ip(ip: str) -> dict | None:
+    agora = time.monotonic()
+    em_cache = _CACHE_LOCALIZACAO_POR_IP.get(ip)
+    if em_cache:
+        idade, local_em_cache = em_cache
+        ttl = _TTL_CACHE_LOCALIZACAO_SEGUNDOS if local_em_cache else _TTL_CACHE_LOCALIZACAO_FALHA_SEGUNDOS
+        if agora - idade < ttl:
+            return local_em_cache
+    local = localizar_por_ip(ip)
+    _CACHE_LOCALIZACAO_POR_IP[ip] = (agora, local)
+    return local
+
+
 @app.route("/api/frete/estimativa-por-localizacao", methods=["GET"])
 @limiter.limit("30 per minute")
 def api_estimativa_frete_por_localizacao():
@@ -2366,7 +2393,7 @@ def api_estimativa_frete_por_localizacao():
     ver app.wsgi_app acima). Sem esse header (dev local, ou se o site um
     dia sair de tras do Cloudflare), cai de volta pro remote_addr normal."""
     ip_visitante = request.headers.get("CF-Connecting-IP") or request.remote_addr or ""
-    local = localizar_por_ip(ip_visitante)
+    local = _localizacao_cacheada_por_ip(ip_visitante)
     if local is None:
         # Log temporario (ver conversa: "ainda ficou sem aparecer" --
         # geolocalizacao e cotacao testadas manualmente e funcionam

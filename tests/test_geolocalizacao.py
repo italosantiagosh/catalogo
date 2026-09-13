@@ -65,3 +65,26 @@ def test_localizar_por_ip_sem_cep_conhecido_devolve_none():
 def test_localizar_por_ip_com_falha_de_rede_devolve_none():
     with patch("services.geolocalizacao.requests.get", side_effect=requests.Timeout("timeout")):
         assert geolocalizacao.localizar_por_ip("1.2.3.4") is None
+
+
+def test_localizar_por_ip_tenta_de_novo_apos_falha_pontual_de_rede():
+    # ver conversa: falha real em producao pra um IP que, testado
+    # manualmente logo depois, respondia normal -- blip de rede pontual
+    # de uma API gratis sem SLA. 1a chamada falha, 2a funciona -- ainda
+    # devolve resultado em vez de desistir na primeira.
+    dados = {"success": True, "country_code": "BR", "region": "Rio Grande do Norte", "city": "Natal", "postal": "59030-350"}
+    with patch(
+        "services.geolocalizacao.requests.get",
+        side_effect=[requests.Timeout("timeout"), _resposta_mock(dados)],
+    ):
+        resultado = geolocalizacao.localizar_por_ip("186.236.197.50")
+    assert resultado == {"cidade": "Natal", "estado": "Rio Grande do Norte", "cep": "59030350"}
+
+
+def test_localizar_por_ip_desiste_apos_2_falhas_seguidas():
+    with patch(
+        "services.geolocalizacao.requests.get",
+        side_effect=[requests.Timeout("timeout"), requests.Timeout("timeout")],
+    ) as mock_get:
+        assert geolocalizacao.localizar_por_ip("1.2.3.4") is None
+    assert mock_get.call_count == 2  # nao fica tentando pra sempre
