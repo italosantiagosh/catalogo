@@ -129,6 +129,19 @@ def _botao(url: str, texto: str) -> str:
     )
 
 
+def _com_utm(url: str, campanha: str) -> str:
+    """UTM nos links dos e-mails -- sem isso o GA4 nao separa venda vinda
+    de e-mail de trafego direto (ver conversa "apurar campanhas de
+    e-mail"). Mesmo nome de campanha usado na tag do Brevo (ver
+    _enviar/tag= em cada enviar_*), pra cruzar facil os dois. So aplicado
+    em link do proprio site -- nunca em wa.me (_botao_whatsapp) nem em
+    link de fora (Instagram, nota fiscal de terceiro etc)."""
+    if not url:
+        return url
+    separador = "&" if "?" in url else "?"
+    return f"{url}{separador}utm_source=email&utm_medium=email&utm_campaign={campanha}"
+
+
 # Mesmo estilo do _botao() acima, so que verde/tema WhatsApp -- link
 # wa.me com a mensagem ja´ preenchida (ver _corpo_html_pedido_enviado,
 # caso "Retirada no local").
@@ -173,7 +186,7 @@ def _corpo_html_confirmacao(pedido: dict, url_pedido: str) -> str:
         f"<p><strong>Total: {_preco(pedido['total'])}</strong></p>"
         f"{previsao_html}"
         f"<p>Acompanhe seu pedido a qualquer momento:</p>"
-        f"{_botao(url_pedido, '🔎 Clique aqui e acompanhe')}"
+        f"{_botao(_com_utm(url_pedido, 'confirmacao_pedido'), '🔎 Clique aqui e acompanhe')}"
         f"<p>Qualquer dúvida, é só chamar no WhatsApp.</p>"
     )
 
@@ -185,10 +198,10 @@ def _corpo_html_link_pagamento(pedido: dict, url_pagamento: str, url_acompanhame
         f"{_itens_html(pedido)}"
         f"<p>Frete ({_esc(pedido.get('frete_descricao', ''))}): {_preco(pedido.get('frete_preco', 0))}</p>"
         f"<p><strong>Total: {_preco(pedido['total'])}</strong></p>"
-        f"{_botao(url_pagamento, '💳 Pagar agora (Pix ou cartão)')}"
+        f"{_botao(_com_utm(url_pagamento, 'link_pagamento'), '💳 Pagar agora (Pix ou cartão)')}"
         f"<p>Se esse link não abrir mais (expirou), é só acompanhar seu pedido "
         f"por aqui e gerar um novo:</p>"
-        f"{_botao(url_acompanhamento, '🔎 Clique aqui e acompanhe')}"
+        f"{_botao(_com_utm(url_acompanhamento, 'link_pagamento'), '🔎 Clique aqui e acompanhe')}"
         f"<p>Qualquer dúvida, é só chamar no WhatsApp.</p>"
     )
 
@@ -207,7 +220,7 @@ def _corpo_html_boleto_gerado(pedido: dict, url_acompanhamento: str) -> str:
         f"<p><strong>Total: {_preco(pedido['total'])}</strong></p>"
         f"{linha_html}"
         f"<p>Baixe o boleto (PDF) ou pague com o Pix embutido nele acompanhando seu pedido:</p>"
-        f"{_botao(url_acompanhamento, '🔎 Ver boleto e acompanhar pedido')}"
+        f"{_botao(_com_utm(url_acompanhamento, 'boleto_gerado'), '🔎 Ver boleto e acompanhar pedido')}"
         f'<p style="font-size:13px;color:#5b6b82;font-style:italic;">'
         "ℹ️ O pagamento do boleto é confirmado em até 2 dias úteis após você pagar -- "
         "o prazo de produção só começa depois dessa confirmação, não na hora em que você paga.</p>"
@@ -321,10 +334,10 @@ def _corpo_html_lembrete(pedido: dict, url_pagamento: str, url_acompanhamento: s
         f"<p><strong>Pedido #{pedido['codigo']}</strong></p>"
         f"{_itens_html(pedido)}"
         f"<p><strong>Total: {_preco(pedido['total'])}</strong></p>"
-        f"{_botao(url_pagamento, '💳 Pagar agora (Pix ou cartão)')}"
+        f"{_botao(_com_utm(url_pagamento, 'lembrete_pedido_pendente'), '💳 Pagar agora (Pix ou cartão)')}"
         f"<p>Alguma dúvida ou dificuldade pra pagar? É só chamar no WhatsApp que a gente ajuda.</p>"
         f"<p>Acompanhe seu pedido por aqui:</p>"
-        f"{_botao(url_acompanhamento, '🔎 Clique aqui e acompanhe')}"
+        f"{_botao(_com_utm(url_acompanhamento, 'lembrete_pedido_pendente'), '🔎 Clique aqui e acompanhe')}"
     )
 
 
@@ -366,7 +379,7 @@ def _corpo_html_carrinho_abandonado(carrinho: dict, url_carrinho: str) -> str:
         f"{_itens_carrinho_abandonado_html(carrinho.get('itens', []))}"
         f"<p>Ficou alguma dúvida no meio do caminho? Seu carrinho continua salvo, é só continuar "
         f"de onde parou:</p>"
-        f"{_botao(url_carrinho, '🛒 Continuar meu pedido')}"
+        f"{_botao(_com_utm(url_carrinho, 'lembrete_carrinho_abandonado'), '🛒 Continuar meu pedido')}"
         f"<p>Se preferir, também é só chamar no WhatsApp que a gente ajuda a fechar.</p>"
     )
 
@@ -405,7 +418,7 @@ def _corpo_html_pedido_enviado(
             f"<p>Chama a gente no WhatsApp pra combinar o melhor horário:</p>"
             f"{_botao_whatsapp(mensagem_whatsapp, '💬 Combinar retirada pelo WhatsApp')}"
             f"<p>Ou acompanhe os detalhes do pedido a qualquer momento:</p>"
-            f"{_botao(url_acompanhamento, '🔎 Ver detalhes do pedido')}"
+            f"{_botao(_com_utm(url_acompanhamento, 'pedido_enviado'), '🔎 Ver detalhes do pedido')}"
         )
 
     rastreio_html = (
@@ -422,7 +435,7 @@ def _corpo_html_pedido_enviado(
         f"{transportadora_html}"
         f"{rastreio_html}"
         f"<p>Acompanhe seu pedido a qualquer momento:</p>"
-        f"{_botao(url_acompanhamento, '🔎 Clique aqui e acompanhe')}"
+        f"{_botao(_com_utm(url_acompanhamento, 'pedido_enviado'), '🔎 Clique aqui e acompanhe')}"
         f"<p>Qualquer dúvida, é só chamar no WhatsApp.</p>"
     )
 
@@ -457,7 +470,7 @@ def _corpo_html_nota_fiscal_disponivel(pedido: dict, url_acompanhamento: str) ->
         f"<p><strong>Pedido #{pedido['codigo']}</strong></p>"
         f"{_botao(pedido.get('link_nota_fiscal', ''), '🧾 Baixar nota fiscal')}"
         f"<p>Acompanhe seu pedido a qualquer momento:</p>"
-        f"{_botao(url_acompanhamento, '🔎 Clique aqui e acompanhe')}"
+        f"{_botao(_com_utm(url_acompanhamento, 'nota_fiscal_disponivel'), '🔎 Clique aqui e acompanhe')}"
         f"<p>Qualquer dúvida, é só chamar no WhatsApp.</p>"
     )
 
@@ -489,8 +502,8 @@ def _corpo_html_pedido_cancelado(pedido: dict, url_reativar_pix: str, url_reativ
         f"<p>Mas as medalhas continuam esperando por você -- e o pedido continua montado do jeitinho que "
         f"você deixou (mesmas peças, mesma foto personalizada se tiver enviado uma). Escolha como prefere "
         f"fechar, sem precisar refazer nada:</p>"
-        f"{_botao(url_reativar_pix, '💳 Pagar com Pix ou cartão')}"
-        f"{_botao(url_reativar_boleto, '🧾 Gerar boleto')}"
+        f"{_botao(_com_utm(url_reativar_pix, 'pedido_cancelado'), '💳 Pagar com Pix ou cartão')}"
+        f"{_botao(_com_utm(url_reativar_boleto, 'pedido_cancelado'), '🧾 Gerar boleto')}"
         f"{_botao(url_whatsapp, '💬 Fechar pelo WhatsApp')}"
         f"<p>Qualquer dúvida, é só chamar. Deus abençoe! 🙏</p>"
     )
@@ -509,7 +522,7 @@ def _corpo_html_oportunidade_upsell(pedido: dict, oportunidades: list[dict], url
         f"pedido #{pedido['codigo']}.</p>"
         f"<p>Separamos uma oportunidade pro seu próximo pedido:</p>"
         f"<ul>{linhas_oportunidade}</ul>"
-        f"{_botao(url_catalogo, '👉 Ver o catálogo completo')}"
+        f"{_botao(_com_utm(url_catalogo, 'oportunidade_upsell'), '👉 Ver o catálogo completo')}"
         f"<p>Qualquer dúvida, é só chamar no WhatsApp.</p>"
     )
 
@@ -539,7 +552,7 @@ def _corpo_html_pedido_avaliacao(pedido: dict, url_avaliar: str) -> str:
         f"<p>Poderia contar pra gente como foi sua experiência? Leva menos de 1 minuto -- escolha o "
         f"produto, dê uma nota de 1 a 5 estrelas, e deixe uma foto (se quiser) e um comentário "
         f"(opcional).</p>"
-        f"{_botao(url_avaliar, '👉 Avaliar minha compra')}"
+        f"{_botao(_com_utm(url_avaliar, 'pedido_avaliacao'), '👉 Avaliar minha compra')}"
         f"<p>Sua avaliação ajuda outras pessoas a comprar com mais confiança. Muito obrigado!</p>"
         f"<p>E se tiver uma foto da peça, adoraríamos ver -- poste no Instagram marcando "
         f"<strong>@novedjulho</strong>! 📸</p>"
@@ -588,7 +601,7 @@ def _corpo_html_pedido_recompra(pedido: dict, dias: int, url_repetir_ou_catalogo
         texto_botao = "👉 Ver o catálogo completo"
     return (
         f"<p>Olá, {_esc(pedido.get('cliente_nome', ''))}! {intro}{convite}</p>"
-        f"{_botao(url_repetir_ou_catalogo, texto_botao)}"
+        f"{_botao(_com_utm(url_repetir_ou_catalogo, 'pedido_recompra'), texto_botao)}"
         f"<p>Qualquer dúvida ou pedido especial, é só chamar no WhatsApp.</p>"
     )
 
@@ -636,7 +649,7 @@ def _corpo_html_pedido_excluido(pedido: dict, motivo: str, url_catalogo: str) ->
         f"<p><strong>Motivo:</strong> {_esc(motivo)}</p>"
         f"<p>Se você já tinha pago e ainda não recebeu o reembolso, ou tiver qualquer dúvida "
         f"sobre isso, é só chamar no WhatsApp que a gente resolve.</p>"
-        f"{_botao(url_catalogo, '👉 Ver o catálogo e fazer um novo pedido')}"
+        f"{_botao(_com_utm(url_catalogo, 'pedido_excluido'), '👉 Ver o catálogo e fazer um novo pedido')}"
     )
 
 

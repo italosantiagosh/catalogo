@@ -90,6 +90,58 @@ def test_erro_de_rede(monkeypatch):
     assert "erro" in resultado
 
 
+def test_link_de_acompanhamento_tem_utm_de_email(monkeypatch):
+    """Ver conversa: sem isso o GA4 nao separa venda vinda de e-mail de
+    trafego direto -- mesmo nome de campanha usado na tag do Brevo."""
+    monkeypatch.setattr(email, "BREVO_API_KEY", "segredo")
+    resposta_mock = Mock()
+    resposta_mock.raise_for_status = Mock()
+    with patch("services.email.requests.post", return_value=resposta_mock) as post_mock:
+        email.enviar_confirmacao_pedido(_pedido_exemplo(), "https://site/pedido/token")
+    corpo = post_mock.call_args.kwargs["json"]["htmlContent"]
+    assert "https://site/pedido/token?utm_source=email&utm_medium=email&utm_campaign=confirmacao_pedido" in corpo
+
+
+def test_link_com_query_string_usa_e_comercial_no_utm(monkeypatch):
+    monkeypatch.setattr(email, "BREVO_API_KEY", "segredo")
+    resposta_mock = Mock()
+    resposta_mock.raise_for_status = Mock()
+    with patch("services.email.requests.post", return_value=resposta_mock) as post_mock:
+        email.enviar_lembrete_carrinho_abandonado(
+            {"nome": "Maria", "email": "maria@example.com", "itens": []},
+            "https://site/carrinho?restaurar=abc123",
+        )
+    corpo = post_mock.call_args.kwargs["json"]["htmlContent"]
+    assert "https://site/carrinho?restaurar=abc123&utm_source=email&utm_medium=email&utm_campaign=lembrete_carrinho_abandonado" in corpo
+
+
+def test_link_nota_fiscal_externo_nao_recebe_utm(monkeypatch):
+    """Link de terceiro (nota fiscal emitida por outro servico) nunca
+    ganha UTM -- so links do proprio site."""
+    monkeypatch.setattr(email, "BREVO_API_KEY", "segredo")
+    resposta_mock = Mock()
+    resposta_mock.raise_for_status = Mock()
+    pedido = _pedido_exemplo(link_nota_fiscal="https://nfe.exemplo.com/danfe/123")
+    with patch("services.email.requests.post", return_value=resposta_mock) as post_mock:
+        email.enviar_nota_fiscal_disponivel(pedido, "https://site/pedido/token")
+    corpo = post_mock.call_args.kwargs["json"]["htmlContent"]
+    assert 'href="https://nfe.exemplo.com/danfe/123"' in corpo
+    assert "https://site/pedido/token?utm_source=email" in corpo
+
+
+def test_notificacao_venda_nao_leva_utm(monkeypatch):
+    """E-mail interno pro dono da loja, nao pro cliente -- nao faz
+    sentido medir "canal de origem" de um clique do proprio admin."""
+    monkeypatch.setattr(email, "BREVO_API_KEY", "segredo")
+    monkeypatch.setattr(email, "EMAIL_NOTIFICACAO_VENDA", "loja@example.com")
+    resposta_mock = Mock()
+    resposta_mock.raise_for_status = Mock()
+    with patch("services.email.requests.post", return_value=resposta_mock) as post_mock:
+        email.enviar_notificacao_venda(_pedido_exemplo(), "https://site/admin/pedidos/token")
+    corpo = post_mock.call_args.kwargs["json"]["htmlContent"]
+    assert "utm_source" not in corpo
+
+
 def test_item_com_imagem_mostra_miniatura_no_email(monkeypatch):
     """Ver conversa: mesmo no plano gratuito do Brevo isso funciona --
     e´ so um <img src="URL completa"> no HTML, o e-mail busca direto no
