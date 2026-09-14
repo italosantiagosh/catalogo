@@ -86,6 +86,7 @@ from config import (
     GOOGLE_SITE_VERIFICATION,
     INSTAGRAM_URL,
     KIT_LIVRARIA_SHALOM,
+    LEMBRETE_CARRINHO_MINUTOS,
     LEMBRETE_MINUTOS,
     META_PIXEL_ID,
     PROCURADOS_HOME,
@@ -133,6 +134,7 @@ from services.email import (
     enviar_boleto_gerado,
     enviar_codigo_verificacao,
     enviar_confirmacao_pedido,
+    enviar_lembrete_carrinho_abandonado,
     enviar_lembrete_pedido_pendente,
     enviar_link_pagamento,
     enviar_nota_fiscal_disponivel,
@@ -154,6 +156,13 @@ from services.frete import (
     eh_correios,
     logo_transportadora,
     opcoes_frete_estimativa,
+)
+from services.carrinhos_abandonados import (
+    listar_para_lembrete as listar_carrinhos_abandonados_para_lembrete,
+    marcar_lembrete_enviado as marcar_lembrete_carrinho_abandonado_enviado,
+    marcar_recuperado_por_contato,
+    obter_por_token as obter_carrinho_abandonado_por_token,
+    salvar_ou_atualizar as salvar_carrinho_abandonado,
 )
 from services.geolocalizacao import localizar_por_ip
 from services.infinitepay import criar_link_pagamento
@@ -2536,6 +2545,7 @@ def api_pedido_criar():
         endereco=endereco,
         **_origem_do_pedido(dados),
     )
+    marcar_recuperado_por_contato(email=cliente["email"], telefone=cliente["telefone"])
 
     resultado = _gerar_link_pagamento_para_pedido(pedido, cliente, endereco)
     if "erro" in resultado:
@@ -2625,6 +2635,7 @@ def api_pedido_criar_boleto():
         endereco=endereco,
         **_origem_do_pedido(dados),
     )
+    marcar_recuperado_por_contato(email=cliente["email"], telefone=cliente["telefone"])
 
     resultado = emitir_boleto(seu_numero=pedido["codigo"], valor=pedido["total"], cliente=cliente, endereco=endereco)
     if "erro" in resultado:
@@ -2719,6 +2730,46 @@ def api_pedido_criar_whatsapp():
     )
 
     return jsonify(ok=True, codigo=pedido["codigo"], token=pedido["token"])
+
+
+@app.route("/api/carrinho/abandonado", methods=["POST"])
+@limiter.limit("30 per minute")
+def api_carrinho_abandonado_salvar():
+    """Captura o carrinho assim que a pessoa preenche nome + pelo menos
+    um contato mas ainda nao finalizou (ver static/js/carrinho_pagina.js
+    -- disparado no blur do e-mail/telefone, via navigator.sendBeacon, e
+    services/carrinhos_abandonados.py). Best-effort de proposito: nunca
+    bloqueia nem atrapalha o preenchimento do formulario, so responde
+    200 mesmo se os dados vierem incompletos (sendBeacon nao le a
+    resposta mesmo)."""
+    dados = request.get_json(silent=True) or {}
+    token = str(dados.get("token", "")).strip()
+    nome = str(dados.get("nome", "")).strip()
+    email = str(dados.get("email", "")).strip()
+    telefone = str(dados.get("telefone", "")).strip()
+    itens = dados.get("itens")
+    if not token or not nome or not (email or telefone) or not isinstance(itens, list) or not itens:
+        return jsonify(ok=False), 200
+    try:
+        subtotal = float(dados.get("subtotal") or 0)
+    except (TypeError, ValueError):
+        subtotal = 0.0
+    salvar_carrinho_abandonado(
+        token=token, nome=nome, email=email, telefone=telefone, itens=itens, subtotal=subtotal
+    )
+    return jsonify(ok=True), 200
+
+
+@app.route("/api/carrinho/abandonado/<token>", methods=["GET"])
+def api_carrinho_abandonado_obter(token):
+    """Usado pelo link do e-mail de lembrete (?restaurar=<token> em
+    /carrinho, ver static/js/carrinho_pagina.js) pra repor os itens
+    salvos no carrinho local de quem abriu o link em um navegador/
+    dispositivo novo (sem o localStorage original)."""
+    carrinho_abandonado = obter_carrinho_abandonado_por_token(token)
+    if carrinho_abandonado is None:
+        return jsonify(erro="Não encontrado."), 404
+    return jsonify(itens=carrinho_abandonado["itens"])
 
 
 def _itens_pagamento_de_pedido(pedido: dict) -> list[dict]:
@@ -4992,6 +5043,27 @@ def _enviar_lembretes_pedidos_pendentes() -> None:
             marcar_email_lembrete_enviado(pedido["token"], erro=resultado_email.get("erro"))
 
 
+def _enviar_lembretes_carrinhos_abandonados() -> None:
+    """Job agendado (mesmo padrao de _enviar_lembretes_pedidos_pendentes
+    acima) -- roda a cada 10min, manda lembrete pra quem deixou nome +
+    contato salvo no carrinho ha´ mais de LEMBRETE_CARRINHO_MINUTOS sem
+    nunca ter criado um pedido (ver services/carrinhos_abandonados.py e
+    conversa "recuperacao de carrinho"). Sem CANONICAL_DOMAIN nao ha´
+    como montar o link de volta pro carrinho, entao nao faz nada."""
+    if not CANONICAL_DOMAIN:
+        return
+    candidatos = listar_carrinhos_abandonados_para_lembrete(LEMBRETE_CARRINHO_MINUTOS)
+    if not candidatos:
+        return
+    with app.test_request_context(base_url=f"https://{CANONICAL_DOMAIN}"):
+        for carrinho_abandonado in candidatos:
+            url_carrinho = url_for("carrinho", restaurar=carrinho_abandonado["token"], _external=True)
+            resultado_email = enviar_lembrete_carrinho_abandonado(carrinho_abandonado, url_carrinho)
+            marcar_lembrete_carrinho_abandonado_enviado(
+                carrinho_abandonado["token"], erro=resultado_email.get("erro")
+            )
+
+
 # Rotulo por grupo de atacado (ver services/pricing.py) -- mesmo texto
 # usado no nudge de desconto do carrinho (GRUPO_LABEL em
 # static/js/carrinho_pagina.js), so que reaproveitado aqui pro
@@ -5218,6 +5290,9 @@ def _limpar_imagens_pedidos_cancelados() -> None:
 def _iniciar_scheduler_jobs() -> None:
     scheduler = BackgroundScheduler(timezone="UTC")
     scheduler.add_job(_enviar_lembretes_pedidos_pendentes, "interval", minutes=10, id="lembretes_pedidos_pendentes")
+    scheduler.add_job(
+        _enviar_lembretes_carrinhos_abandonados, "interval", minutes=10, id="lembretes_carrinhos_abandonados"
+    )
     scheduler.add_job(_cancelar_pedidos_abandonados, "interval", minutes=10, id="cancelar_pedidos_abandonados")
     scheduler.add_job(_enviar_upsell_pedidos_pagos, "interval", minutes=10, id="upsell_pedidos_pagos")
     scheduler.add_job(

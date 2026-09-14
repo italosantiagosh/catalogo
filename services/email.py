@@ -270,6 +270,42 @@ def enviar_lembrete_pedido_pendente(pedido: dict, url_pagamento: str, url_acompa
     )
 
 
+def _itens_carrinho_abandonado_html(itens: list[dict]) -> str:
+    # Formato CRU do carrinho do navegador (ver static/js/carrinho.js),
+    # diferente do formato de um pedido ja´ persistido (_itens_html
+    # acima) -- mesmo fallback de nome ja usado no rastreamento GA4
+    # de add_to_cart, pra peca personalizada sem nome de produto.
+    return "".join(
+        f"<li>{_esc(item.get('produtoNome') or 'Medalha personalizada')} — {item.get('quantidade', 0)}x</li>"
+        for item in itens
+    )
+
+
+def _corpo_html_carrinho_abandonado(carrinho: dict, url_carrinho: str) -> str:
+    return (
+        f"<p>Olá, {_esc(carrinho.get('nome', ''))}! Vimos que você separou algumas peças "
+        f"mas não chegou a finalizar o pedido.</p>"
+        f"<ul>{_itens_carrinho_abandonado_html(carrinho.get('itens', []))}</ul>"
+        f"<p>Ficou alguma dúvida no meio do caminho? Seu carrinho continua salvo, é só continuar "
+        f"de onde parou:</p>"
+        f"{_botao(url_carrinho, '🛒 Continuar meu pedido')}"
+        f"<p>Se preferir, também é só chamar no WhatsApp que a gente ajuda a fechar.</p>"
+    )
+
+
+def enviar_lembrete_carrinho_abandonado(carrinho: dict, url_carrinho: str) -> dict:
+    """Disparado pelo job agendado (ver app.py) pra quem preencheu nome
+    + e-mail no carrinho mas nunca chegou a criar um pedido de verdade
+    -- ver services/carrinhos_abandonados.py. Devolve {"ok": True} ou
+    {"erro": "..."}."""
+    return _enviar(
+        email_cliente=carrinho.get("email", ""),
+        nome_cliente=carrinho.get("nome", ""),
+        assunto="Você deixou algo no carrinho 🛒",
+        corpo_html=_corpo_html_carrinho_abandonado(carrinho, url_carrinho),
+    )
+
+
 def _corpo_html_pedido_enviado(
     pedido: dict, codigo_rastreio: str, link_rastreio: str, url_acompanhamento: str, transportadora: str = ""
 ) -> str:

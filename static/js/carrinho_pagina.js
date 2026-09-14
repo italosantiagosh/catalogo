@@ -1145,6 +1145,48 @@
     });
   }
 
+  // Captura de carrinho abandonado -- ver services/carrinhos_
+  // abandonados.py e conversa "recuperacao de carrinho": assim que a
+  // pessoa preenche nome + pelo menos um contato (e-mail ou telefone)
+  // mas ainda nao clicou em pagar, salva no servidor via sendBeacon
+  // (nao bloqueia nem atrasa nada, e funciona mesmo se a aba fechar
+  // logo em seguida). Token por visita (mesmo padrao de
+  // freteEstimativaLocalizacao em frete_estimativa.js) garante que
+  // atualizacoes vao pra mesma linha, nunca duplicam.
+  const CHAVE_TOKEN_CARRINHO_ABANDONADO = 'carrinhoAbandonadoToken';
+
+  function obterOuCriarTokenCarrinhoAbandonado() {
+    let token = localStorage.getItem(CHAVE_TOKEN_CARRINHO_ABANDONADO);
+    if (!token) {
+      token = window.crypto && window.crypto.randomUUID
+        ? window.crypto.randomUUID()
+        : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+      localStorage.setItem(CHAVE_TOKEN_CARRINHO_ABANDONADO, token);
+    }
+    return token;
+  }
+
+  function capturarCarrinhoAbandonado() {
+    const nome = clienteNomeInput ? clienteNomeInput.value.trim() : '';
+    const email = clienteEmailInput ? clienteEmailInput.value.trim() : '';
+    const telefone = clienteTelefoneInput ? clienteTelefoneInput.value.trim() : '';
+    if (!nome || (!email && !telefone)) return;
+    const itens = carrinhoObterItens();
+    if (!itens.length) return;
+    const corpo = JSON.stringify({
+      token: obterOuCriarTokenCarrinhoAbandonado(),
+      nome,
+      email,
+      telefone,
+      itens,
+      subtotal: ultimoCalculo ? ultimoCalculo.subtotal_total : 0,
+    });
+    navigator.sendBeacon('/api/carrinho/abandonado', new Blob([corpo], { type: 'application/json' }));
+  }
+
+  if (clienteEmailInput) clienteEmailInput.addEventListener('blur', capturarCarrinhoAbandonado);
+  if (clienteTelefoneInput) clienteTelefoneInput.addEventListener('blur', capturarCarrinhoAbandonado);
+
   function atualizarLabelDocumentoDestinatario() {
     if (!labelDestinatarioDocumento) return;
     labelDestinatarioDocumento.textContent =
@@ -1466,5 +1508,26 @@
     });
   }
 
-  render();
+  // Restaura carrinho a partir do link do e-mail de lembrete de
+  // carrinho abandonado (?restaurar=<token>, ver services/carrinhos_
+  // abandonados.py e app.py:_enviar_lembretes_carrinhos_abandonados) --
+  // itens ja vem no formato que carrinhoAdicionarItem espera (guardados
+  // exatamente como estavam no momento da captura), sem conversao
+  // nenhuma. Cobre tambem quem abre o link num navegador/dispositivo
+  // novo, sem o localStorage original.
+  const tokenRestaurar = new URLSearchParams(window.location.search).get('restaurar');
+  if (tokenRestaurar) {
+    fetch(`/api/carrinho/abandonado/${encodeURIComponent(tokenRestaurar)}`)
+      .then((resposta) => (resposta.ok ? resposta.json() : null))
+      .then((dados) => {
+        if (dados && Array.isArray(dados.itens) && dados.itens.length) {
+          dados.itens.forEach((item) => carrinhoAdicionarItem(item));
+        }
+        window.history.replaceState({}, '', window.location.pathname);
+      })
+      .catch(() => {})
+      .then(render);
+  } else {
+    render();
+  }
 })();

@@ -188,6 +188,16 @@ CANCELAMENTO_MINUTOS_APOS_LEMBRETE = int(os.environ.get("CANCELAMENTO_MINUTOS_AP
 # proximo pedido) -- ver app.py:_enviar_upsell_pedidos_pagos.
 UPSELL_HORAS_APOS_PAGAMENTO = int(os.environ.get("UPSELL_HORAS_APOS_PAGAMENTO", "24"))
 
+# Quanto tempo esperar (carrinho com nome+contato salvo, mas sem pedido
+# criado) antes do lembrete de carrinho abandonado -- ver conversa
+# "recuperacao de carrinho": diferente do lembrete de pedido PENDENTE
+# acima (que so cobre quem ja clicou em pagar), esse cobre quem nem
+# chegou a clicar -- a maior fatia de quem desiste (services/
+# carrinhos_abandonados.py, app.py:_enviar_lembretes_carrinhos_
+# abandonados). 2h por padrao: tempo o bastante pra nao parecer
+# perseguicao, curto o bastante pra pessoa ainda lembrar do que queria.
+LEMBRETE_CARRINHO_MINUTOS = int(os.environ.get("LEMBRETE_CARRINHO_MINUTOS", "120"))
+
 # Pedido de avaliacao por e-mail (link pra um dos santos do pedido, ver
 # services/email.py:enviar_pedido_avaliacao) -- o 1o vai NA HORA que o
 # pedido vira "entregue" (ver app.py:admin_pedido_status), sem prazo de
