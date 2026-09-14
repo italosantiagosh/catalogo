@@ -1106,6 +1106,12 @@
   if (formaPagamentoRadios.length && cadastroClienteEl && whatsappFinalizarWrapEl) {
     formaPagamentoRadios.forEach((radio) => {
       radio.addEventListener('change', () => {
+        // Medicao do funil (ver conversa: "onde exatamente as pessoas
+        // desistem" -- de add_to_cart pro pedido criado, so existiam 3
+        // pontos medidos, com um buraco enorme no meio). So dispara pra
+        // quem realmente marcou a opcao (evita contar o evento nativo
+        // de radio que alguns navegadores disparam sem interacao real).
+        if (radio.checked) rastrearEventoGA4('forma_pagamento_selecionada', { forma: radio.value });
         // boleto usa o MESMO cadastro (nome/documento/endereco) que o
         // pagamento direto no site -- so troca qual botao final aparece.
         const vaiMostrarCadastro = radio.value === 'site' || radio.value === 'boleto';
@@ -1124,6 +1130,18 @@
           cadastroClienteEl.classList.add('destaque-revelado');
         }
       });
+    });
+  }
+
+  // Medicao do funil -- primeira interacao real com o formulario de
+  // cadastro, disparada so 1x por visita (delegado no container, pega
+  // qualquer campo sem precisar de listener em cada input).
+  if (cadastroClienteEl) {
+    let cadastroIniciadoJaDisparado = false;
+    cadastroClienteEl.addEventListener('input', () => {
+      if (cadastroIniciadoJaDisparado) return;
+      cadastroIniciadoJaDisparado = true;
+      rastrearEventoGA4('cadastro_iniciado', {});
     });
   }
 
@@ -1275,8 +1293,16 @@
 
   if (btnPagarAgora) {
     btnPagarAgora.addEventListener('click', async () => {
+      // Medicao do funil -- dispara pra TODO clique, mesmo que a
+      // validacao ou o servidor rejeitem depois (ver checkout_erro_*
+      // abaixo), pra separar "gente que tentou pagar" de "gente que
+      // conseguiu" (begin_checkout hoje so dispara nesse 2o caso).
+      rastrearEventoGA4('checkout_tentativa', { forma: 'site' });
       const dadosColetados = coletarClienteEEndereco();
-      if (!dadosColetados) return;
+      if (!dadosColetados) {
+        rastrearEventoGA4('checkout_erro_validacao', { forma: 'site' });
+        return;
+      }
       const { cliente, endereco } = dadosColetados;
 
       btnPagarAgora.disabled = true;
@@ -1295,12 +1321,14 @@
         });
         const dados = await resposta.json();
         if (!resposta.ok || dados.erro) {
+          rastrearEventoGA4('checkout_erro_servidor', { forma: 'site', motivo: dados.erro || 'desconhecido' });
           mostrarToast(`⚠️ ${dados.erro || 'Não foi possível gerar o pagamento agora.'}`);
           return;
         }
         rastrearEventoGA4('begin_checkout', { currency: 'BRL', value: ultimoCalculo.subtotal_total });
         window.location.href = dados.url;
       } catch (e) {
+        rastrearEventoGA4('checkout_erro_servidor', { forma: 'site', motivo: 'rede' });
         mostrarToast('⚠️ Não foi possível gerar o pagamento agora.');
       } finally {
         btnPagarAgora.disabled = false;
@@ -1311,8 +1339,12 @@
 
   if (btnGerarBoleto) {
     btnGerarBoleto.addEventListener('click', async () => {
+      rastrearEventoGA4('checkout_tentativa', { forma: 'boleto' });
       const dadosColetados = coletarClienteEEndereco();
-      if (!dadosColetados) return;
+      if (!dadosColetados) {
+        rastrearEventoGA4('checkout_erro_validacao', { forma: 'boleto' });
+        return;
+      }
       const { cliente, endereco } = dadosColetados;
 
       btnGerarBoleto.disabled = true;
@@ -1331,12 +1363,14 @@
         });
         const dados = await resposta.json();
         if (!resposta.ok || dados.erro) {
+          rastrearEventoGA4('checkout_erro_servidor', { forma: 'boleto', motivo: dados.erro || 'desconhecido' });
           mostrarToast(`⚠️ ${dados.erro || 'Não foi possível gerar o boleto agora.'}`);
           return;
         }
         rastrearEventoGA4('begin_checkout', { currency: 'BRL', value: ultimoCalculo.subtotal_total });
         window.location.href = `/pedido/${dados.token}`;
       } catch (e) {
+        rastrearEventoGA4('checkout_erro_servidor', { forma: 'boleto', motivo: 'rede' });
         mostrarToast('⚠️ Não foi possível gerar o boleto agora.');
       } finally {
         btnGerarBoleto.disabled = false;
