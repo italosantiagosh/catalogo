@@ -166,10 +166,11 @@ def enviar_boleto_gerado(pedido: dict, url_acompanhamento: str) -> dict:
         nome_cliente=pedido.get("cliente_nome", ""),
         assunto=f"Seu boleto está pronto — Pedido #{pedido['codigo']}",
         corpo_html=_corpo_html_boleto_gerado(pedido, url_acompanhamento),
+        tag="boleto_gerado",
     )
 
 
-def _enviar(*, email_cliente: str, nome_cliente: str, assunto: str, corpo_html: str) -> dict:
+def _enviar(*, email_cliente: str, nome_cliente: str, assunto: str, corpo_html: str, tag: str = "") -> dict:
     if not BREVO_API_KEY:
         return {"erro": "Envio de e-mail não configurado (falta BREVO_API_KEY)."}
     if not email_cliente:
@@ -187,6 +188,13 @@ def _enviar(*, email_cliente: str, nome_cliente: str, assunto: str, corpo_html: 
         "subject": assunto,
         "htmlContent": corpo_html,
     }
+    if tag:
+        # Sem isso, todo envio transacional aparece igual no Brevo (so´ da
+        # pra ver o total, nunca separar lembrete de recompra de
+        # confirmacao) -- ver conversa "apurar campanhas de e-mail": a
+        # tag e´ o que deixa filtrar/comparar abertura e clique POR TIPO
+        # de e-mail no painel do Brevo (Estatisticas > Transacional).
+        payload["tags"] = [tag]
     try:
         resposta = requests.post(
             API_URL,
@@ -219,6 +227,7 @@ def enviar_codigo_verificacao(email_cliente: str, codigo: str) -> dict:
         nome_cliente="",
         assunto="Seu código de acesso — Nove de Julho",
         corpo_html=_corpo_html_codigo_verificacao(codigo),
+        tag="codigo_verificacao",
     )
 
 
@@ -230,6 +239,7 @@ def enviar_confirmacao_pedido(pedido: dict, url_pedido: str) -> dict:
         nome_cliente=pedido.get("cliente_nome", ""),
         assunto=f"Pagamento confirmado — Pedido #{pedido['codigo']}",
         corpo_html=_corpo_html_confirmacao(pedido, url_pedido),
+        tag="confirmacao_pedido",
     )
 
 
@@ -242,6 +252,7 @@ def enviar_link_pagamento(pedido: dict, url_pagamento: str, url_acompanhamento: 
         nome_cliente=pedido.get("cliente_nome", ""),
         assunto=f"Finalize seu pagamento — Pedido #{pedido['codigo']}",
         corpo_html=_corpo_html_link_pagamento(pedido, url_pagamento, url_acompanhamento),
+        tag="link_pagamento",
     )
 
 
@@ -267,6 +278,7 @@ def enviar_lembrete_pedido_pendente(pedido: dict, url_pagamento: str, url_acompa
         nome_cliente=pedido.get("cliente_nome", ""),
         assunto=f"Seu pedido ainda não foi pago — Pedido #{pedido['codigo']}",
         corpo_html=_corpo_html_lembrete(pedido, url_pagamento, url_acompanhamento),
+        tag="lembrete_pedido_pendente",
     )
 
 
@@ -303,6 +315,7 @@ def enviar_lembrete_carrinho_abandonado(carrinho: dict, url_carrinho: str) -> di
         nome_cliente=carrinho.get("nome", ""),
         assunto="Você deixou algo no carrinho 🛒",
         corpo_html=_corpo_html_carrinho_abandonado(carrinho, url_carrinho),
+        tag="lembrete_carrinho_abandonado",
     )
 
 
@@ -367,6 +380,7 @@ def enviar_pedido_enviado(
         corpo_html=_corpo_html_pedido_enviado(
             pedido, codigo_rastreio, link_rastreio, url_acompanhamento, transportadora
         ),
+        tag="pedido_enviado",
     )
 
 
@@ -394,6 +408,7 @@ def enviar_nota_fiscal_disponivel(pedido: dict, url_acompanhamento: str) -> dict
         nome_cliente=pedido.get("cliente_nome", ""),
         assunto=f"Nota fiscal disponível — Pedido #{pedido['codigo']}",
         corpo_html=_corpo_html_nota_fiscal_disponivel(pedido, url_acompanhamento),
+        tag="nota_fiscal_disponivel",
     )
 
 
@@ -447,6 +462,7 @@ def enviar_oportunidade_upsell(pedido: dict, oportunidades: list[dict], url_cata
         nome_cliente=pedido.get("cliente_nome", ""),
         assunto="Uma oportunidade pro seu próximo pedido — Nove de Julho",
         corpo_html=_corpo_html_oportunidade_upsell(pedido, oportunidades, url_catalogo),
+        tag="oportunidade_upsell",
     )
 
 
@@ -481,6 +497,7 @@ def enviar_pedido_avaliacao(pedido: dict, url_avaliar: str) -> dict:
         nome_cliente=pedido.get("cliente_nome", ""),
         assunto="O que você achou da sua compra?",
         corpo_html=_corpo_html_pedido_avaliacao(pedido, url_avaliar),
+        tag="pedido_avaliacao",
     )
 
 
@@ -525,6 +542,7 @@ def enviar_pedido_recompra(pedido: dict, dias: int, url_repetir_ou_catalogo: str
         nome_cliente=pedido.get("cliente_nome", ""),
         assunto="Bora fazer um novo pedido? — Nove de Julho",
         corpo_html=_corpo_html_pedido_recompra(pedido, dias, url_repetir_ou_catalogo, tem_repetir),
+        tag="pedido_recompra",
     )
 
 
@@ -541,6 +559,7 @@ def enviar_pedido_cancelado(pedido: dict, url_reativar_pix: str, url_reativar_bo
         nome_cliente=pedido.get("cliente_nome", ""),
         assunto=f"Seu pedido #{pedido['codigo']} foi cancelado -- mas ainda dá tempo",
         corpo_html=_corpo_html_pedido_cancelado(pedido, url_reativar_pix, url_reativar_boleto),
+        tag="pedido_cancelado",
     )
 
 
@@ -566,6 +585,7 @@ def enviar_pedido_excluido(pedido: dict, motivo: str, url_catalogo: str) -> dict
         nome_cliente=pedido.get("cliente_nome", ""),
         assunto=f"Seu pedido #{pedido['codigo']} foi cancelado",
         corpo_html=_corpo_html_pedido_excluido(pedido, motivo, url_catalogo),
+        tag="pedido_excluido",
     )
 
 
@@ -593,4 +613,5 @@ def enviar_notificacao_venda(pedido: dict, url_admin: str) -> dict:
         nome_cliente="",
         assunto=f"🎉 Nova venda — Pedido #{pedido['codigo']} ({_preco(pedido['total'])})",
         corpo_html=_corpo_html_notificacao_venda(pedido, url_admin),
+        tag="notificacao_venda",
     )

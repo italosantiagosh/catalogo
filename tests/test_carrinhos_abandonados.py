@@ -239,3 +239,25 @@ def test_listar_todos_ordena_mais_recente_primeiro(client):
     client.post("/api/carrinho/abandonado", json=_corpo(token="segundo"))
     lista = carrinhos_abandonados.listar_todos()
     assert [c["token"] for c in lista] == ["segundo", "primeiro"]
+
+
+def test_estatisticas_periodo_sem_nenhum_carrinho(client):
+    stats = carrinhos_abandonados.estatisticas_periodo(30)
+    assert stats == {"total": 0, "recuperados": 0, "taxa_pct": None}
+
+
+def test_estatisticas_periodo_calcula_taxa(client):
+    client.post("/api/carrinho/abandonado", json=_corpo(token="a", email="a@example.com"))
+    client.post("/api/carrinho/abandonado", json=_corpo(token="b", email="b@example.com"))
+    carrinhos_abandonados.marcar_recuperado_por_contato(email="a@example.com")
+
+    stats = carrinhos_abandonados.estatisticas_periodo(30)
+    assert stats == {"total": 2, "recuperados": 1, "taxa_pct": 50.0}
+
+
+def test_estatisticas_periodo_ignora_carrinho_fora_da_janela(client):
+    client.post("/api/carrinho/abandonado", json=_corpo(token="antigo"))
+    _envelhecer("antigo", 60 * 24 * 40)  # 40 dias atras
+
+    stats = carrinhos_abandonados.estatisticas_periodo(30)
+    assert stats == {"total": 0, "recuperados": 0, "taxa_pct": None}

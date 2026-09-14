@@ -152,6 +152,80 @@ def paginas_mais_vistas(dias: int, limite: int = 10) -> list[dict] | None:
     ]
 
 
+def sessoes_por_dispositivo(dias: int) -> dict[str, int] | None:
+    """Sessoes dos ultimos `dias` dias, separadas por deviceCategory do
+    GA4 ("mobile"/"desktop"/"tablet") -- pra cruzar com pedidos_pagos_
+    por_dispositivo (services/pedidos.py) e comparar taxa de conversao
+    mobile x desktop (ver conversa "dashboard perfeito")."""
+    cliente = _client()
+    if cliente is None:
+        return None
+    from google.analytics.data_v1beta.types import DateRange, Dimension, Metric, RunReportRequest
+
+    try:
+        resposta = cliente.run_report(
+            RunReportRequest(
+                property=f"properties/{GA4_PROPERTY_ID}",
+                date_ranges=[DateRange(start_date=f"{dias}daysAgo", end_date="today")],
+                dimensions=[Dimension(name="deviceCategory")],
+                metrics=[Metric(name="sessions")],
+            )
+        )
+    except Exception:
+        return None
+    return {
+        linha.dimension_values[0].value: int(linha.metric_values[0].value)
+        for linha in resposta.rows
+    }
+
+
+def contagem_evento_por_parametro(nome_evento: str, nome_parametro: str, dias: int) -> list[dict] | None:
+    """Quebra um evento por um dos seus parametros customizados (ex:
+    "checkout_erro_servidor" por "motivo") -- PRECISA que esse parametro
+    ja´ esteja registrado como "dimensao personalizada" no GA4 (Admin >
+    Definicoes personalizadas > Criar dimensoes personalizadas, escopo
+    "Evento", passo manual de 2 minutos, ver conversa "dashboard
+    perfeito"). Sem isso registrado, o GA4 devolve a consulta vazia (nao
+    erro) -- por isso devolve lista vazia em vez de None nesse caso
+    (None so´ quando o GA4 nem esta´ configurado), pra o painel poder
+    diferenciar "sem erro nenhum" de "GA4 fora do ar"."""
+    cliente = _client()
+    if cliente is None:
+        return None
+    from google.analytics.data_v1beta.types import (
+        DateRange,
+        Dimension,
+        Filter,
+        FilterExpression,
+        Metric,
+        OrderBy,
+        RunReportRequest,
+    )
+
+    try:
+        resposta = cliente.run_report(
+            RunReportRequest(
+                property=f"properties/{GA4_PROPERTY_ID}",
+                date_ranges=[DateRange(start_date=f"{dias}daysAgo", end_date="today")],
+                dimensions=[Dimension(name=f"customEvent:{nome_parametro}")],
+                metrics=[Metric(name="eventCount")],
+                dimension_filter=FilterExpression(
+                    filter=Filter(
+                        field_name="eventName",
+                        string_filter=Filter.StringFilter(value=nome_evento),
+                    )
+                ),
+                order_bys=[OrderBy(metric=OrderBy.MetricOrderBy(metric_name="eventCount"), desc=True)],
+            )
+        )
+    except Exception:
+        return []
+    return [
+        {"valor": linha.dimension_values[0].value, "contagem": int(linha.metric_values[0].value)}
+        for linha in resposta.rows
+    ]
+
+
 def _contagem_evento_periodo(nome_evento: str, inicio: str, fim: str) -> int | None:
     cliente = _client()
     if cliente is None:

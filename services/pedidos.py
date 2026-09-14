@@ -502,6 +502,27 @@ def contagem_pedidos_por_status(dias: int, status_lista: tuple[str, ...]) -> int
         ).fetchone()[0]
 
 
+def pedidos_pagos_por_dispositivo(dias: int) -> dict[str, int]:
+    """Quantos pedidos PAGOS (por pago_em) nos ultimos `dias` dias, por
+    tipo de aparelho (ver app.py:_classificar_dispositivo -- "Celular",
+    "Computador" ou "Tablet") -- usado pra cruzar com sessoes por
+    dispositivo do GA4 (services/analytics.py:sessoes_por_dispositivo)
+    e comparar taxa de conversao mobile x desktop (ver conversa)."""
+    inicializar_db()
+    limite = (datetime.now(timezone.utc) - timedelta(days=dias)).isoformat()
+    with _conexao() as conexao:
+        linhas = conexao.execute(
+            """
+            SELECT origem_dispositivo, COUNT(*) AS quantidade
+            FROM pedidos
+            WHERE pago_em >= ?
+            GROUP BY origem_dispositivo
+            """,
+            (limite,),
+        ).fetchall()
+    return {(linha["origem_dispositivo"] or "Desconhecido"): linha["quantidade"] for linha in linhas}
+
+
 def resumo_vendas_periodo(dias: int) -> dict:
     """Quantidade, faturamento total e ticket medio das vendas pagas
     (por pago_em) nos ultimos `dias` dias -- ver app.py:admin_analytics."""

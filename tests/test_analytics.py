@@ -156,6 +156,104 @@ def test_admin_analytics_mostra_funil_e_proporcoes_com_pedidos_reais(client, mon
     assert "R$ 60,00" in corpo  # unica venda paga
 
 
+def test_admin_analytics_mostra_conversao_por_dispositivo(client, monkeypatch):
+    """Ver conversa "dashboard perfeito": cruza sessoes por aparelho do
+    GA4 (mockado) com pedidos pagos de verdade (User-Agent de celular)
+    pra achar a taxa de conversao mobile."""
+    _preparar_admin(monkeypatch)
+
+    with patch("app.criar_link_pagamento", return_value={"url": "https://checkout.infinitepay.io/abc"}):
+        pago = client.post(
+            "/api/pedido/criar", json=_corpo_pedido_valido(),
+            headers={"User-Agent": "Mozilla/5.0 (iPhone; CPU iPhone OS) AppleWebKit"},
+        ).get_json()
+    with patch("app.criar_pedido_tiny", return_value={"erro": "não configurado"}), \
+         patch("app.enviar_confirmacao_pedido", return_value={"erro": "não configurado"}), \
+         patch("app.enviar_notificacao_venda", return_value={"ok": True}), \
+         patch("app.enviar_notificacao_push", return_value={"ok": True}):
+        client.post(
+            "/webhook/infinitepay",
+            json={"order_nsu": pago["token"], "paid_amount": 6000, "capture_method": "pix"},
+        )
+
+    with patch("app.analytics.configurado", return_value=True), \
+         patch("app.analytics.usuarios_ativos_agora", return_value=0), \
+         patch("app.analytics.resumo_ultimos_dias", return_value={"visitas": 100, "pessoas": 80, "visualizacoes": 200}), \
+         patch("app.analytics.paginas_mais_vistas", return_value=[]), \
+         patch("app.analytics.contagem_evento", return_value=0), \
+         patch("app.analytics.contagem_evento_tempo_real", return_value=0), \
+         patch("app.analytics.sessoes_por_dispositivo", return_value={"mobile": 50, "desktop": 30}), \
+         patch("app.analytics.contagem_evento_por_parametro", return_value=[]):
+        resposta = client.get("/admin/analytics", auth=("admin", "segredo123"))
+    corpo = resposta.get_data(as_text=True)
+
+    assert "Conversão por aparelho" in corpo
+    assert "Celular" in corpo
+    # 1 venda / 50 sessoes = 2.0%
+    assert "2.0%" in corpo
+    assert "Computador" in corpo
+    assert "0 vendas / 30 sessões" in corpo  # sessao sem nenhuma venda tambem aparece, com 0%
+    assert "Tablet" not in corpo  # sem sessao nem venda nenhuma -- fica fora da lista
+
+
+def test_admin_analytics_mostra_erros_checkout_por_motivo(client, monkeypatch):
+    _preparar_admin(monkeypatch)
+    with patch("app.analytics.configurado", return_value=True), \
+         patch("app.analytics.usuarios_ativos_agora", return_value=0), \
+         patch("app.analytics.resumo_ultimos_dias", return_value={"visitas": 100, "pessoas": 80, "visualizacoes": 200}), \
+         patch("app.analytics.paginas_mais_vistas", return_value=[]), \
+         patch("app.analytics.contagem_evento", return_value=0), \
+         patch("app.analytics.contagem_evento_tempo_real", return_value=0), \
+         patch("app.analytics.sessoes_por_dispositivo", return_value=None), \
+         patch("app.analytics.contagem_evento_por_parametro", return_value=[{"valor": "rede", "contagem": 5}]):
+        resposta = client.get("/admin/analytics", auth=("admin", "segredo123"))
+    corpo = resposta.get_data(as_text=True)
+
+    assert "Erros no checkout" in corpo
+    assert "rede" in corpo
+    assert ">5<" in corpo
+    assert "dimensão personalizada" not in corpo
+
+
+def test_admin_analytics_sem_dimensao_cadastrada_explica_o_passo_manual(client, monkeypatch):
+    """Lista vazia (nao None) de contagem_evento_por_parametro significa
+    "dimensao personalizada ainda nao cadastrada no GA4 OU sem erro
+    nenhum" -- o painel explica o passo manual em vez de so mostrar
+    "nada aqui", pra nao parecer que o recurso esta quebrado."""
+    _preparar_admin(monkeypatch)
+    with patch("app.analytics.configurado", return_value=True), \
+         patch("app.analytics.usuarios_ativos_agora", return_value=0), \
+         patch("app.analytics.resumo_ultimos_dias", return_value={"visitas": 100, "pessoas": 80, "visualizacoes": 200}), \
+         patch("app.analytics.paginas_mais_vistas", return_value=[]), \
+         patch("app.analytics.contagem_evento", return_value=0), \
+         patch("app.analytics.contagem_evento_tempo_real", return_value=0), \
+         patch("app.analytics.sessoes_por_dispositivo", return_value=None), \
+         patch("app.analytics.contagem_evento_por_parametro", return_value=[]):
+        resposta = client.get("/admin/analytics", auth=("admin", "segredo123"))
+    corpo = resposta.get_data(as_text=True)
+
+    assert "dimensão personalizada" in corpo
+    assert "checkout_erro_servidor" in corpo
+
+
+def test_admin_analytics_mostra_taxa_recuperacao_de_carrinho(client, monkeypatch):
+    _preparar_admin(monkeypatch)
+    client.post(
+        "/api/carrinho/abandonado",
+        json={"token": "t1", "nome": "Maria", "email": "maria@example.com", "telefone": "",
+              "itens": [{"produtoNome": "São José", "quantidade": 1}], "subtotal": 30.0},
+    )
+    carrinhos_abandonados.marcar_recuperado_por_contato(email="maria@example.com")
+
+    with patch("app.analytics.configurado", return_value=False):
+        resposta = client.get("/admin/analytics", auth=("admin", "segredo123"))
+    corpo = resposta.get_data(as_text=True)
+
+    assert "Taxa de recuperação de carrinho" in corpo
+    assert "100.0%" in corpo
+    assert "(1/1, 30 dias)" in corpo
+
+
 def test_admin_analytics_mostra_secao_de_vendas_com_pedidos_reais(client, monkeypatch):
     """Ver conversa: usuaria mandou print do dashboard da Yampi como
     referencia -- grafico por dia, pedidos por estado, formas de
@@ -239,6 +337,8 @@ def test_analytics_service_sem_config_devolve_none():
         assert analytics.contagem_evento("calculate_shipping", 7) is None
         assert analytics.contagem_evento_ontem("calculate_shipping") is None
         assert analytics.contagem_evento_tempo_real("calculate_shipping") is None
+        assert analytics.sessoes_por_dispositivo(7) is None
+        assert analytics.contagem_evento_por_parametro("checkout_erro_servidor", "motivo", 7) is None
     finally:
         analytics.GA4_SERVICE_ACCOUNT_JSON = modulo_original_json
         analytics.GA4_PROPERTY_ID = modulo_original_property

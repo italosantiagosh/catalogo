@@ -35,17 +35,23 @@
 
     .conteudo { max-width: 1080px; margin: 0 auto; padding: 0 clamp(16px, 4vw, 32px); position: relative; z-index: 1; }
 
-    h2.secao-titulo { font-family: 'Fraunces', Georgia, serif; font-size: 1.05rem; margin: 30px 0 14px; }
-    h2.secao-titulo:first-of-type { margin-top: 4px; }
-    .secao-nota { font-size: 0.78rem; color: var(--texto-suave); margin: -8px 0 16px; }
+    .intro-pagina { font-size: 0.88rem; color: var(--texto-suave); margin: 0 0 22px; line-height: 1.5; }
+
+    h2.secao-titulo {
+      font-family: 'Fraunces', Georgia, serif; font-size: 1.12rem; margin: 34px 0 14px;
+      display: flex; align-items: center; gap: 8px; padding-top: 18px; border-top: 1px solid var(--linha);
+    }
+    h2.secao-titulo:first-of-type { margin-top: 4px; padding-top: 0; border-top: none; }
+    .secao-nota { font-size: 0.8rem; color: var(--texto-suave); margin: -8px 0 16px; line-height: 1.5; }
 
     .stat-grade { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; }
-    .stat-cartao { background: var(--cartao); border-radius: 14px; padding: 14px 16px; box-shadow: 0 8px 20px -14px rgba(20, 51, 92, 0.35); border: 1px solid var(--linha); }
-    .stat-cartao .stat-numero { font-family: 'Fraunces', Georgia, serif; font-size: 1.5rem; font-weight: 700; color: var(--azul-escuro); line-height: 1.1; }
-    .stat-cartao .stat-rotulo { font-size: 0.76rem; color: var(--texto-suave); margin-top: 3px; font-weight: 600; }
+    .stat-cartao { background: var(--cartao); border-radius: 14px; padding: 16px 18px; box-shadow: 0 8px 20px -14px rgba(20, 51, 92, 0.35); border: 1px solid var(--linha); }
+    .stat-cartao .stat-numero { font-family: 'Fraunces', Georgia, serif; font-size: 1.65rem; font-weight: 700; color: var(--azul-escuro); line-height: 1.15; font-variant-numeric: tabular-nums; }
+    .stat-cartao .stat-rotulo { font-size: 0.78rem; color: var(--texto-suave); margin-top: 4px; font-weight: 600; line-height: 1.35; }
     .stat-cartao.ao-vivo .stat-numero { color: #1e7a43; }
     .stat-cartao.ao-vivo .stat-rotulo::before { content: "🟢 "; }
     .stat-cartao.alerta .stat-numero { color: #a1651f; }
+    .stat-cartao.destaque .stat-numero { color: #1e7a43; }
 
     .bloco { background: var(--cartao); border-radius: 14px; padding: 18px 20px; margin: 0 0 18px; border: 1px solid var(--linha); box-shadow: 0 8px 20px -16px rgba(20, 51, 92, 0.3); }
     .bloco h3 { font-size: 0.9rem; margin: 0 0 14px; font-weight: 700; }
@@ -138,7 +144,9 @@
   </header>
 
   <div class="conteudo">
-    <h2 class="secao-titulo">Vendas (30 dias)</h2>
+    <p class="intro-pagina">Um raio-x de como o site está vendendo, atualizado a cada visita a esta página.</p>
+
+    <h2 class="secao-titulo">💰 Vendas (30 dias)</h2>
     <div class="stat-grade">
       <div class="stat-cartao">
         <div class="stat-numero">{{ vendas_30d.valor_total | preco }}</div>
@@ -166,9 +174,13 @@
           <div class="stat-rotulo">Carrinhos abandonados aguardando contato →</div>
         </a>
       </div>
+      <div class="stat-cartao destaque">
+        <div class="stat-numero">{{ (carrinhos_abandonados_30d.taxa_pct ~ "%") if carrinhos_abandonados_30d.taxa_pct is not none else "—" }}</div>
+        <div class="stat-rotulo">Taxa de recuperação de carrinho ({{ carrinhos_abandonados_30d.recuperados }}/{{ carrinhos_abandonados_30d.total }}, 30 dias)</div>
+      </div>
     </div>
 
-    <h2 class="secao-titulo">Vendas por dia (30 dias)</h2>
+    <h2 class="secao-titulo">📅 Vendas por dia (30 dias)</h2>
     <div class="bloco">
       {% set maior_dia = vendas_por_dia_30d | map(attribute='valor') | max %}
       <div class="grafico-dias">
@@ -185,7 +197,7 @@
       <p class="secao-nota" style="margin: 10px 0 0;">Passe o mouse em cima de uma barra pra ver o valor do dia.</p>
     </div>
 
-    <h2 class="secao-titulo">Pedidos pagos por estado</h2>
+    <h2 class="secao-titulo">🗺️ Pedidos pagos por estado</h2>
     <div class="bloco">
       {% if pedidos_por_uf_30d %}
         {% set maior_uf = pedidos_por_uf_30d[0].quantidade %}
@@ -205,7 +217,7 @@
       {% endif %}
     </div>
 
-    <h2 class="secao-titulo">Formas de pagamento</h2>
+    <h2 class="secao-titulo">💳 Formas de pagamento</h2>
     <div class="bloco">
       {% if formas_pagamento_30d %}
         <table>
@@ -219,7 +231,7 @@
       {% endif %}
     </div>
 
-    <h2 class="secao-titulo">Produtos e materiais mais vendidos</h2>
+    <h2 class="secao-titulo">🏅 Produtos e materiais mais vendidos</h2>
     <div class="filtros">
       <a href="{{ url_for('admin_analytics', periodo='30d') }}" class="{{ 'ativo' if periodo_vendas == '30d' else '' }}">30 dias</a>
       <a href="{{ url_for('admin_analytics', periodo='6m') }}" class="{{ 'ativo' if periodo_vendas == '6m' else '' }}">6 meses</a>
@@ -280,7 +292,7 @@
         <code>GA4_PROPERTY_ID</code> no servidor.</p>
       </div>
     {% else %}
-      <h2 class="secao-titulo">Agora, hoje e ontem</h2>
+      <h2 class="secao-titulo">🟢 Agora, hoje e ontem</h2>
       <div class="stat-grade">
         <div class="stat-cartao ao-vivo">
           <div class="stat-numero">{{ ao_vivo if ao_vivo is not none else "—" }}</div>
@@ -314,7 +326,7 @@
         cartões 🟢 (agora) ou os de <strong>ontem</strong> (dia já fechado, número confiável).
       </p>
 
-      <h2 class="secao-titulo">Funil de conversão (7 dias)</h2>
+      <h2 class="secao-titulo">🔻 Funil de conversão (7 dias)</h2>
       <p class="secao-nota">De cada 100 visitas, quantas simularam frete, iniciaram um pedido e realmente compraram.</p>
       <div class="bloco">
         {% for etapa in funil_7d %}
@@ -333,7 +345,7 @@
         {% endfor %}
       </div>
 
-      <h2 class="secao-titulo">Proporções (7 dias)</h2>
+      <h2 class="secao-titulo">🧮 Proporções (7 dias)</h2>
       <div class="bloco">
         <div class="proporcoes-grade">
           <div class="proporcao-cartao">
@@ -359,7 +371,58 @@
         </div>
       </div>
 
-      <h2 class="secao-titulo">Páginas mais vistas (7 dias)</h2>
+      <h2 class="secao-titulo">📱 Conversão por aparelho (7 dias)</h2>
+      <p class="secao-nota">De quem visitou pelo celular/computador/tablet, quantos por cento viraram venda.</p>
+      <div class="bloco">
+        {% if conversao_por_dispositivo %}
+          {% for d in conversao_por_dispositivo %}
+            <div class="barra-lista-item">
+              <div class="barra-lista-topo">
+                <span class="barra-lista-pagina">
+                  {{ d.rotulo }}
+                  <span style="color: var(--texto-suave); font-weight: 500;">
+                    ({{ d.pedidos }} venda{{ 's' if d.pedidos != 1 else '' }} / {{ d.sessoes if d.sessoes is not none else "—" }} sessões)
+                  </span>
+                </span>
+                <span class="barra-lista-numero">{{ (d.pct ~ "%") if d.pct is not none else "—" }}</span>
+              </div>
+              <div class="barra-lista-trilho">
+                <div class="barra-lista-preenchido" style="width: {{ d.pct if d.pct is not none else 0 }}%;"></div>
+              </div>
+            </div>
+          {% endfor %}
+        {% else %}
+          <p class="secao-nota">Sem dados de sessão por aparelho ainda nesse período.</p>
+        {% endif %}
+      </div>
+
+      <h2 class="secao-titulo">⚠️ Erros no checkout, por motivo (7 dias)</h2>
+      <div class="bloco">
+        {% if checkout_erros_por_motivo_7d %}
+          {% set maior_erro = checkout_erros_por_motivo_7d[0].contagem %}
+          {% for e in checkout_erros_por_motivo_7d %}
+            <div class="barra-lista-item">
+              <div class="barra-lista-topo">
+                <span class="barra-lista-pagina">{{ e.valor }}</span>
+                <span class="barra-lista-numero">{{ e.contagem }}</span>
+              </div>
+              <div class="barra-lista-trilho">
+                <div class="barra-lista-preenchido" style="width: {{ (e.contagem / maior_erro * 100) if maior_erro else 0 }}%;"></div>
+              </div>
+            </div>
+          {% endfor %}
+        {% else %}
+          <p class="secao-nota">
+            Nenhum erro registrado nesse período — ou o parâmetro "motivo" ainda não foi cadastrado como
+            dimensão personalizada no GA4 (Admin → Definições personalizadas → Criar dimensões
+            personalizadas → escopo "Evento", parâmetro <code>motivo</code>, evento
+            <code>checkout_erro_servidor</code>). Sem esse cadastro (passo único, leva 2 minutos), essa
+            lista fica sempre vazia mesmo que existam erros de verdade.
+          </p>
+        {% endif %}
+      </div>
+
+      <h2 class="secao-titulo">👀 Páginas mais vistas (7 dias)</h2>
       <div class="bloco">
         {% if paginas_7d %}
           {% set maior = paginas_7d[0].visualizacoes %}
@@ -383,7 +446,7 @@
         {% endif %}
       </div>
 
-      <h2 class="secao-titulo">Últimos 30 dias</h2>
+      <h2 class="secao-titulo">📊 Últimos 30 dias</h2>
       <div class="bloco">
         <table>
           <tr><td>Visitas</td><td>{{ resumo_30d.visitas if resumo_30d else "—" }}</td></tr>

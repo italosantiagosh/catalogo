@@ -127,6 +127,24 @@ def obter_por_token(token: str) -> dict | None:
     return _linha_para_dict(linha) if linha else None
 
 
+def estatisticas_periodo(dias: int) -> dict:
+    """Taxa de recuperacao (ver conversa: cartao no painel admin) --
+    quantos carrinhos abandonados nos ultimos `dias` dias viraram venda
+    de verdade (marcar_recuperado_por_contato), sem contar quem nao deu
+    tempo (ainda esta´ dentro do prazo do lembrete)."""
+    inicializar_db()
+    limite = (datetime.now(timezone.utc) - timedelta(days=dias)).isoformat()
+    with _conexao() as conexao:
+        total = conexao.execute(
+            "SELECT COUNT(*) FROM carrinhos_abandonados WHERE criado_em >= ?", (limite,)
+        ).fetchone()[0]
+        recuperados = conexao.execute(
+            "SELECT COUNT(*) FROM carrinhos_abandonados WHERE criado_em >= ? AND recuperado = 1", (limite,)
+        ).fetchone()[0]
+    taxa_pct = round(recuperados / total * 100, 1) if total else None
+    return {"total": total, "recuperados": recuperados, "taxa_pct": taxa_pct}
+
+
 def listar_todos(*, apenas_pendentes: bool = False, limite: int = 200) -> list[dict]:
     """Pra painel admin (ver app.py:admin_carrinhos_abandonados) -- quem
     vende poder entrar em contato na mao, sem depender so do e-mail

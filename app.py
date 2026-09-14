@@ -158,6 +158,7 @@ from services.frete import (
     opcoes_frete_estimativa,
 )
 from services.carrinhos_abandonados import (
+    estatisticas_periodo as estatisticas_carrinhos_abandonados_periodo,
     listar_para_lembrete as listar_carrinhos_abandonados_para_lembrete,
     listar_todos as listar_carrinhos_abandonados,
     marcar_lembrete_enviado as marcar_lembrete_carrinho_abandonado_enviado,
@@ -209,6 +210,7 @@ from services.pedidos import (
     marcar_tiny_sincronizado,
     numero_modelo_personalizada,
     obter_pedido,
+    pedidos_pagos_por_dispositivo,
     pedidos_por_uf,
     previsoes_do_pedido,
     produtos_mais_vendidos,
@@ -4812,6 +4814,7 @@ def admin_analytics():
         inicio_vendas=inicio_vendas_str,
         fim_vendas=fim_vendas_str,
         carrinhos_abandonados_pendentes=len(listar_carrinhos_abandonados(apenas_pendentes=True)),
+        carrinhos_abandonados_30d=estatisticas_carrinhos_abandonados_periodo(30),
     )
 
     if not analytics.configurado():
@@ -4830,6 +4833,31 @@ def admin_analytics():
     pedidos_pagos_7d = contagem_pedidos_por_status(7, ("pago",))
     vendas_7d = resumo_vendas_periodo(7)
     visitas_7d = resumo_7d["visitas"] if resumo_7d else None
+
+    # Conversao por tipo de aparelho (ver conversa "dashboard perfeito")
+    # -- cruza sessoes do GA4 (em ingles: mobile/desktop/tablet) com
+    # pedidos pagos de verdade no proprio banco (em portugues, ver
+    # app.py:_classificar_dispositivo) pra achar a taxa de conversao de
+    # cada um.
+    sessoes_dispositivo_7d = analytics.sessoes_por_dispositivo(7) or {}
+    pedidos_dispositivo_7d = pedidos_pagos_por_dispositivo(7)
+    conversao_por_dispositivo = [
+        {
+            "rotulo": rotulo,
+            "sessoes": sessoes_dispositivo_7d.get(chave_ga4),
+            "pedidos": pedidos_dispositivo_7d.get(rotulo, 0),
+            "pct": _percentual(pedidos_dispositivo_7d.get(rotulo, 0), sessoes_dispositivo_7d.get(chave_ga4)),
+        }
+        for chave_ga4, rotulo in (("mobile", "Celular"), ("desktop", "Computador"), ("tablet", "Tablet"))
+        if sessoes_dispositivo_7d.get(chave_ga4) or pedidos_dispositivo_7d.get(rotulo)
+    ]
+
+    # Erros no checkout, por motivo (ver static/js/carrinho_pagina.js --
+    # evento checkout_erro_servidor) -- SO aparece depois de registrar
+    # "motivo" como dimensao personalizada no GA4 (Admin > Definicoes
+    # personalizadas, escopo Evento -- passo manual, ver conversa
+    # "dashboard perfeito"); ate la´ vem lista vazia (nao erro).
+    checkout_erros_por_motivo_7d = analytics.contagem_evento_por_parametro("checkout_erro_servidor", "motivo", 7)
 
     return render_template(
         "admin_analytics.html",
@@ -4868,6 +4896,8 @@ def admin_analytics():
         proporcao_pedido_visita=_percentual(pedidos_iniciados_7d, visitas_7d),
         proporcao_venda_visita=_percentual(pedidos_pagos_7d, visitas_7d),
         proporcao_venda_simulacao=_percentual(pedidos_pagos_7d, fretes_simulados_7d),
+        conversao_por_dispositivo=conversao_por_dispositivo,
+        checkout_erros_por_motivo_7d=checkout_erros_por_motivo_7d,
     )
 
 
