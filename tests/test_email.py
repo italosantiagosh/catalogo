@@ -90,6 +90,103 @@ def test_erro_de_rede(monkeypatch):
     assert "erro" in resultado
 
 
+def test_item_com_imagem_mostra_miniatura_no_email(monkeypatch):
+    """Ver conversa: mesmo no plano gratuito do Brevo isso funciona --
+    e´ so um <img src="URL completa"> no HTML, o e-mail busca direto no
+    site, nao precisa o Brevo hospedar nada."""
+    monkeypatch.setattr(email, "BREVO_API_KEY", "segredo")
+    monkeypatch.setattr(email, "CANONICAL_DOMAIN", "lojanovedejulho.com.br")
+    resposta_mock = Mock()
+    resposta_mock.raise_for_status = Mock()
+    pedido = _pedido_exemplo(
+        itens=[{
+            "chave_preco": "16mm", "quantidade": 2, "descricao": "São José — Modelo 1",
+            "imagem": "/static/img/produtos/sao_jose_modelo_1_medalha.jpg",
+        }]
+    )
+    with patch("services.email.requests.post", return_value=resposta_mock) as post_mock:
+        email.enviar_confirmacao_pedido(pedido, "https://site/pedido/token")
+    corpo = post_mock.call_args.kwargs["json"]["htmlContent"]
+    assert '<img src="https://lojanovedejulho.com.br/static/img/produtos/sao_jose_modelo_1_medalha.jpg"' in corpo
+
+
+def test_item_sem_imagem_nao_quebra_e_nao_mostra_img(monkeypatch):
+    monkeypatch.setattr(email, "BREVO_API_KEY", "segredo")
+    monkeypatch.setattr(email, "CANONICAL_DOMAIN", "lojanovedejulho.com.br")
+    resposta_mock = Mock()
+    resposta_mock.raise_for_status = Mock()
+    with patch("services.email.requests.post", return_value=resposta_mock) as post_mock:
+        email.enviar_confirmacao_pedido(_pedido_exemplo(), "https://site/pedido/token")
+    corpo = post_mock.call_args.kwargs["json"]["htmlContent"]
+    assert "<img" not in corpo
+
+
+def test_item_com_placeholder_sem_foto_nao_mostra_img(monkeypatch):
+    """Peca personalizada sem foto enviada ainda usa um icone generico
+    (sem-foto.svg) -- mostrar isso como "foto do produto" confundiria
+    mais do que ajudaria."""
+    monkeypatch.setattr(email, "BREVO_API_KEY", "segredo")
+    monkeypatch.setattr(email, "CANONICAL_DOMAIN", "lojanovedejulho.com.br")
+    resposta_mock = Mock()
+    resposta_mock.raise_for_status = Mock()
+    pedido = _pedido_exemplo(
+        itens=[{"chave_preco": "16mm", "quantidade": 1, "descricao": "Personalizada", "imagem": "/static/img/sem-foto.svg"}]
+    )
+    with patch("services.email.requests.post", return_value=resposta_mock) as post_mock:
+        email.enviar_confirmacao_pedido(pedido, "https://site/pedido/token")
+    corpo = post_mock.call_args.kwargs["json"]["htmlContent"]
+    assert "<img" not in corpo
+
+
+def test_item_sem_canonical_domain_nao_mostra_img_quebrada(monkeypatch):
+    monkeypatch.setattr(email, "BREVO_API_KEY", "segredo")
+    monkeypatch.setattr(email, "CANONICAL_DOMAIN", "")
+    resposta_mock = Mock()
+    resposta_mock.raise_for_status = Mock()
+    pedido = _pedido_exemplo(
+        itens=[{
+            "chave_preco": "16mm", "quantidade": 2, "descricao": "São José — Modelo 1",
+            "imagem": "/static/img/produtos/sao_jose_modelo_1_medalha.jpg",
+        }]
+    )
+    with patch("services.email.requests.post", return_value=resposta_mock) as post_mock:
+        email.enviar_confirmacao_pedido(pedido, "https://site/pedido/token")
+    corpo = post_mock.call_args.kwargs["json"]["htmlContent"]
+    assert "<img" not in corpo
+
+
+def test_item_imagem_ja_absoluta_nao_duplica_dominio(monkeypatch):
+    monkeypatch.setattr(email, "BREVO_API_KEY", "segredo")
+    monkeypatch.setattr(email, "CANONICAL_DOMAIN", "lojanovedejulho.com.br")
+    resposta_mock = Mock()
+    resposta_mock.raise_for_status = Mock()
+    pedido = _pedido_exemplo(
+        itens=[{
+            "chave_preco": "16mm", "quantidade": 1, "descricao": "São José",
+            "imagem": "https://outrocdn.com/foto.jpg",
+        }]
+    )
+    with patch("services.email.requests.post", return_value=resposta_mock) as post_mock:
+        email.enviar_confirmacao_pedido(pedido, "https://site/pedido/token")
+    corpo = post_mock.call_args.kwargs["json"]["htmlContent"]
+    assert '<img src="https://outrocdn.com/foto.jpg"' in corpo
+
+
+def test_carrinho_abandonado_mostra_miniatura(monkeypatch):
+    monkeypatch.setattr(email, "BREVO_API_KEY", "segredo")
+    monkeypatch.setattr(email, "CANONICAL_DOMAIN", "lojanovedejulho.com.br")
+    resposta_mock = Mock()
+    resposta_mock.raise_for_status = Mock()
+    carrinho = {
+        "nome": "Maria", "email": "maria@example.com",
+        "itens": [{"produtoNome": "São José", "quantidade": 1, "imagem": "/static/img/produtos/sao_jose.jpg"}],
+    }
+    with patch("services.email.requests.post", return_value=resposta_mock) as post_mock:
+        email.enviar_lembrete_carrinho_abandonado(carrinho, "https://site/carrinho?restaurar=abc")
+    corpo = post_mock.call_args.kwargs["json"]["htmlContent"]
+    assert '<img src="https://lojanovedejulho.com.br/static/img/produtos/sao_jose.jpg"' in corpo
+
+
 def test_notificacao_venda_nao_manda_name_vazio_pro_brevo(monkeypatch):
     """Ver conversa: o Brevo devolvia 400 Bad Request pra esse e-mail
     especifico -- causa era "name": "" no destinatario (aviso interno

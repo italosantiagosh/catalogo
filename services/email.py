@@ -25,6 +25,7 @@ import requests
 
 from config import (
     BREVO_API_KEY,
+    CANONICAL_DOMAIN,
     EMAIL_NOTIFICACAO_VENDA,
     EMAIL_REMETENTE,
     EMAIL_REMETENTE_NOME,
@@ -48,10 +49,68 @@ def _preco(valor: float) -> str:
     return f"R$ {valor:.2f}".replace(".", ",")
 
 
+# Placeholder de peca personalizada sem foto ainda (ver
+# static/js/personalizada.js e templates/pedido.html:IMAGEM_SEM_FOTO) --
+# mostrar esse icone generico como "foto do produto" no e-mail confundiria
+# mais do que ajudaria, entao esses itens ficam so com o texto mesmo.
+_IMAGEM_SEM_FOTO = "/static/img/sem-foto.svg"
+
+
+def _url_imagem_absoluta(caminho: str) -> str:
+    """E-mail nao tem "base" como o navegador -- precisa da URL completa
+    (com dominio) pra imagem aparecer, diferente de um <img src="/static/...">
+    que funciona direto no site. Sem CANONICAL_DOMAIN configurado (dev/teste)
+    devolve vazio -- melhor nenhuma miniatura do que uma quebrada."""
+    if not caminho or caminho == _IMAGEM_SEM_FOTO:
+        return ""
+    if caminho.startswith("http://") or caminho.startswith("https://"):
+        return caminho
+    if not CANONICAL_DOMAIN:
+        return ""
+    return f"https://{CANONICAL_DOMAIN}{caminho}"
+
+
+def _imagem_do_item(item: dict) -> str:
+    """Miniatura pro item -- prioriza imagemRecorte (preview final ja´
+    composto de peca personalizada) sobre a imagem crua; pecas de 2 lados
+    (ver app.py:_itens_com_descricao_do_corpo) so guardam imagemLado1/2,
+    sem "imagem" direto, entao cai nesse fallback."""
+    bruta = item.get("imagemRecorte") or item.get("imagem") or item.get("imagemLado1") or ""
+    return _url_imagem_absoluta(bruta)
+
+
+def _linha_item_html(descricao: str, imagem: str) -> str:
+    celula_imagem = (
+        f'<td style="width:56px;padding:0 12px 10px 0;vertical-align:top;">'
+        f'<img src="{_esc(imagem)}" width="44" height="44" alt="" '
+        f'style="width:44px;height:44px;object-fit:cover;border-radius:8px;'
+        f'border:1px solid #e2e7ee;display:block;"></td>'
+        if imagem
+        else ""
+    )
+    return (
+        f"<tr>{celula_imagem}"
+        f'<td style="padding:0 0 10px 0;vertical-align:middle;font-size:14px;">{descricao}</td></tr>'
+    )
+
+
+def _tabela_itens_html(linhas: list[str]) -> str:
+    return (
+        '<table role="presentation" cellpadding="0" cellspacing="0" style="width:100%;border-collapse:collapse;">'
+        + "".join(linhas)
+        + "</table>"
+    )
+
+
 def _itens_html(pedido: dict) -> str:
-    return "".join(
-        f"<li>{_esc(item.get('descricao') or item.get('chave_preco', ''))} — {item['quantidade']}x</li>"
-        for item in pedido["itens"]
+    return _tabela_itens_html(
+        [
+            _linha_item_html(
+                f"{_esc(item.get('descricao') or item.get('chave_preco', ''))} — {item['quantidade']}x",
+                _imagem_do_item(item),
+            )
+            for item in pedido["itens"]
+        ]
     )
 
 
@@ -109,7 +168,7 @@ def _corpo_html_confirmacao(pedido: dict, url_pedido: str) -> str:
     return (
         f"<p>Olá, {_esc(pedido.get('cliente_nome', ''))}! Recebemos seu pagamento. 🎉</p>"
         f"<p><strong>Pedido #{pedido['codigo']}</strong></p>"
-        f"<ul>{_itens_html(pedido)}</ul>"
+        f"{_itens_html(pedido)}"
         f"<p>Frete ({_esc(pedido.get('frete_descricao', ''))}): {_preco(pedido.get('frete_preco', 0))}</p>"
         f"<p><strong>Total: {_preco(pedido['total'])}</strong></p>"
         f"{previsao_html}"
@@ -123,7 +182,7 @@ def _corpo_html_link_pagamento(pedido: dict, url_pagamento: str, url_acompanhame
     return (
         f"<p>Olá, {_esc(pedido.get('cliente_nome', ''))}! Recebemos seu pedido, falta só o pagamento pra confirmar.</p>"
         f"<p><strong>Pedido #{pedido['codigo']}</strong></p>"
-        f"<ul>{_itens_html(pedido)}</ul>"
+        f"{_itens_html(pedido)}"
         f"<p>Frete ({_esc(pedido.get('frete_descricao', ''))}): {_preco(pedido.get('frete_preco', 0))}</p>"
         f"<p><strong>Total: {_preco(pedido['total'])}</strong></p>"
         f"{_botao(url_pagamento, '💳 Pagar agora (Pix ou cartão)')}"
@@ -143,7 +202,7 @@ def _corpo_html_boleto_gerado(pedido: dict, url_acompanhamento: str) -> str:
     return (
         f"<p>Olá, {_esc(pedido.get('cliente_nome', ''))}! Recebemos seu pedido -- seu boleto já está pronto.</p>"
         f"<p><strong>Pedido #{pedido['codigo']}</strong></p>"
-        f"<ul>{_itens_html(pedido)}</ul>"
+        f"{_itens_html(pedido)}"
         f"<p>Frete ({_esc(pedido.get('frete_descricao', ''))}): {_preco(pedido.get('frete_preco', 0))}</p>"
         f"<p><strong>Total: {_preco(pedido['total'])}</strong></p>"
         f"{linha_html}"
@@ -260,7 +319,7 @@ def _corpo_html_lembrete(pedido: dict, url_pagamento: str, url_acompanhamento: s
     return (
         f"<p>Olá, {_esc(pedido.get('cliente_nome', ''))}! Notamos que seu pedido ainda não foi pago.</p>"
         f"<p><strong>Pedido #{pedido['codigo']}</strong></p>"
-        f"<ul>{_itens_html(pedido)}</ul>"
+        f"{_itens_html(pedido)}"
         f"<p><strong>Total: {_preco(pedido['total'])}</strong></p>"
         f"{_botao(url_pagamento, '💳 Pagar agora (Pix ou cartão)')}"
         f"<p>Alguma dúvida ou dificuldade pra pagar? É só chamar no WhatsApp que a gente ajuda.</p>"
@@ -286,10 +345,17 @@ def _itens_carrinho_abandonado_html(itens: list[dict]) -> str:
     # Formato CRU do carrinho do navegador (ver static/js/carrinho.js),
     # diferente do formato de um pedido ja´ persistido (_itens_html
     # acima) -- mesmo fallback de nome ja usado no rastreamento GA4
-    # de add_to_cart, pra peca personalizada sem nome de produto.
-    return "".join(
-        f"<li>{_esc(item.get('produtoNome') or 'Medalha personalizada')} — {item.get('quantidade', 0)}x</li>"
-        for item in itens
+    # de add_to_cart, pra peca personalizada sem nome de produto. Mesma
+    # miniatura de imagem de _itens_html (os campos imagem/imagemRecorte/
+    # imagemLado1 sao os mesmos nos dois formatos).
+    return _tabela_itens_html(
+        [
+            _linha_item_html(
+                f"{_esc(item.get('produtoNome') or 'Medalha personalizada')} — {item.get('quantidade', 0)}x",
+                _imagem_do_item(item),
+            )
+            for item in itens
+        ]
     )
 
 
@@ -297,7 +363,7 @@ def _corpo_html_carrinho_abandonado(carrinho: dict, url_carrinho: str) -> str:
     return (
         f"<p>Olá, {_esc(carrinho.get('nome', ''))}! Vimos que você separou algumas peças "
         f"mas não chegou a finalizar o pedido.</p>"
-        f"<ul>{_itens_carrinho_abandonado_html(carrinho.get('itens', []))}</ul>"
+        f"{_itens_carrinho_abandonado_html(carrinho.get('itens', []))}"
         f"<p>Ficou alguma dúvida no meio do caminho? Seu carrinho continua salvo, é só continuar "
         f"de onde parou:</p>"
         f"{_botao(url_carrinho, '🛒 Continuar meu pedido')}"
@@ -335,7 +401,7 @@ def _corpo_html_pedido_enviado(
             f"<p>Olá, {_esc(pedido.get('cliente_nome', ''))}! Seu pedido já está pronto pra "
             f"retirada. 🏬</p>"
             f"<p><strong>Pedido #{pedido['codigo']}</strong></p>"
-            f"<ul>{_itens_html(pedido)}</ul>"
+            f"{_itens_html(pedido)}"
             f"<p>Chama a gente no WhatsApp pra combinar o melhor horário:</p>"
             f"{_botao_whatsapp(mensagem_whatsapp, '💬 Combinar retirada pelo WhatsApp')}"
             f"<p>Ou acompanhe os detalhes do pedido a qualquer momento:</p>"
@@ -352,7 +418,7 @@ def _corpo_html_pedido_enviado(
     return (
         f"<p>Olá, {_esc(pedido.get('cliente_nome', ''))}! Seu pedido foi enviado. 📦</p>"
         f"<p><strong>Pedido #{pedido['codigo']}</strong></p>"
-        f"<ul>{_itens_html(pedido)}</ul>"
+        f"{_itens_html(pedido)}"
         f"{transportadora_html}"
         f"{rastreio_html}"
         f"<p>Acompanhe seu pedido a qualquer momento:</p>"
@@ -595,7 +661,7 @@ def _corpo_html_notificacao_venda(pedido: dict, url_admin: str) -> str:
         f"<p><strong>Pedido #{pedido['codigo']}</strong> -- {_preco(pedido['total'])} "
         f"({pedido.get('forma_pagamento', '')})</p>"
         f"<p>Cliente: {_esc(pedido.get('cliente_nome', ''))} -- {_esc(pedido.get('cliente_telefone', ''))}</p>"
-        f"<ul>{_itens_html(pedido)}</ul>"
+        f"{_itens_html(pedido)}"
         f"{_botao(url_admin, '👉 Ver pedido no painel')}"
     )
 
