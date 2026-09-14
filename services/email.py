@@ -242,6 +242,34 @@ def enviar_boleto_gerado(pedido: dict, url_acompanhamento: str) -> dict:
     )
 
 
+# Logo no topo de todo e-mail (ver conversa) -- mesmo brasao usado no
+# painel admin e na aba do site (static/img/logo-icone.png). PNG com
+# transparencia em vez do .webp usado no site: e-mail (Outlook em
+# particular) tem suporte inconsistente a webp, PNG funciona em qualquer
+# cliente. Some sozinho sem CANONICAL_DOMAIN (dev/teste), mesmo criterio
+# de _url_imagem_absoluta -- melhor sem cabecalho do que um <img> quebrado.
+def _cabecalho_html() -> str:
+    logo_url = _url_imagem_absoluta("/static/img/logo-icone.png")
+    if not logo_url:
+        return ""
+    return (
+        f'<div style="text-align:center;padding:20px 0 22px;">'
+        f'<img src="{logo_url}" alt="Nove de Julho" width="56" height="66" '
+        f'style="width:56px;height:66px;display:inline-block;">'
+        f"</div>"
+    )
+
+
+def _moldura_html(corpo_html: str) -> str:
+    return (
+        f'<div style="max-width:520px;margin:0 auto;font-family:Arial,Helvetica,sans-serif;'
+        f'font-size:15px;line-height:1.5;color:#142238;">'
+        f"{_cabecalho_html()}"
+        f"{corpo_html}"
+        f"</div>"
+    )
+
+
 def _enviar(*, email_cliente: str, nome_cliente: str, assunto: str, corpo_html: str, tag: str = "") -> dict:
     if not BREVO_API_KEY:
         return {"erro": "Envio de e-mail não configurado (falta BREVO_API_KEY)."}
@@ -258,7 +286,7 @@ def _enviar(*, email_cliente: str, nome_cliente: str, assunto: str, corpo_html: 
         "sender": {"name": EMAIL_REMETENTE_NOME, "email": EMAIL_REMETENTE},
         "to": [destinatario],
         "subject": assunto,
-        "htmlContent": corpo_html,
+        "htmlContent": _moldura_html(corpo_html),
     }
     if tag:
         # Sem isso, todo envio transacional aparece igual no Brevo (so´ da

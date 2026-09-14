@@ -142,6 +142,28 @@ def test_notificacao_venda_nao_leva_utm(monkeypatch):
     assert "utm_source" not in corpo
 
 
+def test_todo_email_mostra_o_logo_no_cabecalho(monkeypatch):
+    monkeypatch.setattr(email, "BREVO_API_KEY", "segredo")
+    monkeypatch.setattr(email, "CANONICAL_DOMAIN", "lojanovedejulho.com.br")
+    resposta_mock = Mock()
+    resposta_mock.raise_for_status = Mock()
+    with patch("services.email.requests.post", return_value=resposta_mock) as post_mock:
+        email.enviar_confirmacao_pedido(_pedido_exemplo(), "https://site/pedido/token")
+    corpo = post_mock.call_args.kwargs["json"]["htmlContent"]
+    assert '<img src="https://lojanovedejulho.com.br/static/img/logo-icone.png"' in corpo
+
+
+def test_sem_canonical_domain_nao_mostra_cabecalho_quebrado(monkeypatch):
+    monkeypatch.setattr(email, "BREVO_API_KEY", "segredo")
+    monkeypatch.setattr(email, "CANONICAL_DOMAIN", "")
+    resposta_mock = Mock()
+    resposta_mock.raise_for_status = Mock()
+    with patch("services.email.requests.post", return_value=resposta_mock) as post_mock:
+        email.enviar_confirmacao_pedido(_pedido_exemplo(), "https://site/pedido/token")
+    corpo = post_mock.call_args.kwargs["json"]["htmlContent"]
+    assert "<img" not in corpo
+
+
 def test_item_com_imagem_mostra_miniatura_no_email(monkeypatch):
     """Ver conversa: mesmo no plano gratuito do Brevo isso funciona --
     e´ so um <img src="URL completa"> no HTML, o e-mail busca direto no
@@ -170,7 +192,7 @@ def test_item_sem_imagem_nao_quebra_e_nao_mostra_img(monkeypatch):
     with patch("services.email.requests.post", return_value=resposta_mock) as post_mock:
         email.enviar_confirmacao_pedido(_pedido_exemplo(), "https://site/pedido/token")
     corpo = post_mock.call_args.kwargs["json"]["htmlContent"]
-    assert "<img" not in corpo
+    assert corpo.count("<img") == 1  # so o logo do cabecalho, nenhuma miniatura de item
 
 
 def test_item_com_placeholder_sem_foto_nao_mostra_img(monkeypatch):
@@ -187,7 +209,7 @@ def test_item_com_placeholder_sem_foto_nao_mostra_img(monkeypatch):
     with patch("services.email.requests.post", return_value=resposta_mock) as post_mock:
         email.enviar_confirmacao_pedido(pedido, "https://site/pedido/token")
     corpo = post_mock.call_args.kwargs["json"]["htmlContent"]
-    assert "<img" not in corpo
+    assert corpo.count("<img") == 1  # so o logo do cabecalho, nenhuma miniatura de item
 
 
 def test_item_sem_canonical_domain_nao_mostra_img_quebrada(monkeypatch):
