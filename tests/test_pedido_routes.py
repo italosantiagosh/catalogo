@@ -5,6 +5,7 @@ from unittest.mock import Mock, patch
 
 import pytest
 
+import services.carrinhos_abandonados as carrinhos_abandonados
 import services.pedidos as pedidos
 import services.tiny as tiny
 from app import app
@@ -12,7 +13,9 @@ from app import app
 
 @pytest.fixture
 def client(monkeypatch, tmp_path):
-    monkeypatch.setattr(pedidos, "DB_PATH", str(tmp_path / "pedidos.db"))
+    db_path = str(tmp_path / "pedidos.db")
+    monkeypatch.setattr(pedidos, "DB_PATH", db_path)
+    monkeypatch.setattr(carrinhos_abandonados, "DB_PATH", db_path)
     app.config["TESTING"] = True
     return app.test_client()
 

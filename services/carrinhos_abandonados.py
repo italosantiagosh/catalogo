@@ -127,6 +127,23 @@ def obter_por_token(token: str) -> dict | None:
     return _linha_para_dict(linha) if linha else None
 
 
+def listar_todos(*, apenas_pendentes: bool = False, limite: int = 200) -> list[dict]:
+    """Pra painel admin (ver app.py:admin_carrinhos_abandonados) -- quem
+    vende poder entrar em contato na mao, sem depender so do e-mail
+    automatico (nem todo mundo tem e-mail, so telefone por exemplo, ou
+    quer mandar mensagem antes de esperar o prazo do lembrete).
+    `apenas_pendentes` filtra fora quem ja recuperou (comprou) -- mais
+    recente primeiro."""
+    inicializar_db()
+    filtro = "WHERE recuperado = 0" if apenas_pendentes else ""
+    with _conexao() as conexao:
+        linhas = conexao.execute(
+            f"SELECT * FROM carrinhos_abandonados {filtro} ORDER BY criado_em DESC LIMIT ?",
+            (limite,),
+        ).fetchall()
+    return [_linha_para_dict(linha) for linha in linhas]
+
+
 def listar_para_lembrete(minutos: int) -> list[dict]:
     """Carrinhos com contato salvo ha´ mais de `minutos`, que ainda nao
     receberam lembrete e nao foram marcados como recuperados (ver

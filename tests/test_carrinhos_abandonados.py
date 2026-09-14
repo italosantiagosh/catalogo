@@ -192,3 +192,50 @@ def test_pedido_criado_marca_carrinho_abandonado_como_recuperado(client, monkeyp
     with patch("app.enviar_lembrete_carrinho_abandonado") as mock_email:
         _enviar_lembretes_carrinhos_abandonados()
     mock_email.assert_not_called()
+
+
+# ---- painel admin ----
+
+def _preparar_admin(monkeypatch):
+    import app as app_module
+
+    monkeypatch.setattr(app_module, "ADMIN_USER", "admin")
+    monkeypatch.setattr(app_module, "ADMIN_PASSWORD", "segredo123")
+
+
+def test_admin_carrinhos_abandonados_exige_autenticacao(client, monkeypatch):
+    _preparar_admin(monkeypatch)
+    resposta = client.get("/admin/carrinhos-abandonados")
+    assert resposta.status_code == 401
+
+
+def test_admin_carrinhos_abandonados_lista_pendentes_por_padrao(client, monkeypatch):
+    _preparar_admin(monkeypatch)
+    client.post("/api/carrinho/abandonado", json=_corpo())
+    client.post("/api/carrinho/abandonado", json=_corpo(token="token-recuperado", email="outra@example.com"))
+    carrinhos_abandonados.marcar_recuperado_por_contato(email="outra@example.com")
+
+    pagina = client.get("/admin/carrinhos-abandonados", auth=("admin", "segredo123")).get_data(as_text=True)
+    assert "Maria Teste" in pagina
+    assert "outra@example.com" not in pagina  # recuperado nao aparece no filtro padrao
+
+    pagina_todos = client.get(
+        "/admin/carrinhos-abandonados?status=todos", auth=("admin", "segredo123")
+    ).get_data(as_text=True)
+    assert "outra@example.com" in pagina_todos
+
+
+def test_admin_carrinhos_abandonados_mostra_link_whatsapp_e_email(client, monkeypatch):
+    _preparar_admin(monkeypatch)
+    client.post("/api/carrinho/abandonado", json=_corpo(email="maria@example.com", telefone="84999999999"))
+
+    pagina = client.get("/admin/carrinhos-abandonados", auth=("admin", "segredo123")).get_data(as_text=True)
+    assert "https://wa.me/5584999999999" in pagina
+    assert "mailto:maria@example.com" in pagina
+
+
+def test_listar_todos_ordena_mais_recente_primeiro(client):
+    client.post("/api/carrinho/abandonado", json=_corpo(token="primeiro"))
+    client.post("/api/carrinho/abandonado", json=_corpo(token="segundo"))
+    lista = carrinhos_abandonados.listar_todos()
+    assert [c["token"] for c in lista] == ["segundo", "primeiro"]

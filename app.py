@@ -159,6 +159,7 @@ from services.frete import (
 )
 from services.carrinhos_abandonados import (
     listar_para_lembrete as listar_carrinhos_abandonados_para_lembrete,
+    listar_todos as listar_carrinhos_abandonados,
     marcar_lembrete_enviado as marcar_lembrete_carrinho_abandonado_enviado,
     marcar_recuperado_por_contato,
     obter_por_token as obter_carrinho_abandonado_por_token,
@@ -4810,6 +4811,7 @@ def admin_analytics():
         periodo_vendas=periodo_vendas,
         inicio_vendas=inicio_vendas_str,
         fim_vendas=fim_vendas_str,
+        carrinhos_abandonados_pendentes=len(listar_carrinhos_abandonados(apenas_pendentes=True)),
     )
 
     if not analytics.configurado():
@@ -4817,6 +4819,13 @@ def admin_analytics():
 
     resumo_7d = analytics.resumo_ultimos_dias(7)
     fretes_simulados_7d = analytics.contagem_evento("calculate_shipping", 7)
+    # Passos NOVOS do funil (ver static/js/carrinho_pagina.js -- eventos
+    # instrumentados na conversa "funil de checkout"): sem eles, o salto
+    # de "simularam frete" pra "iniciaram pedido" escondia ONDE a pessoa
+    # desistia (se nem chegou a abrir o cadastro, se abriu mas nao
+    # terminou, ou se clicou em pagar e algo deu erro).
+    cadastros_iniciados_7d = analytics.contagem_evento("cadastro_iniciado", 7)
+    checkout_tentativas_7d = analytics.contagem_evento("checkout_tentativa", 7)
     pedidos_iniciados_7d = contagem_pedidos_por_status(7, ("pendente", "pago"))
     pedidos_pagos_7d = contagem_pedidos_por_status(7, ("pago",))
     vendas_7d = resumo_vendas_periodo(7)
@@ -4850,6 +4859,8 @@ def admin_analytics():
         funil_7d=[
             {"rotulo": "Visitas", "valor": visitas_7d, "pct": 100.0 if visitas_7d else None},
             {"rotulo": "Simularam frete", "valor": fretes_simulados_7d, "pct": _percentual(fretes_simulados_7d, visitas_7d)},
+            {"rotulo": "Começaram cadastro", "valor": cadastros_iniciados_7d, "pct": _percentual(cadastros_iniciados_7d, visitas_7d)},
+            {"rotulo": "Tentaram finalizar", "valor": checkout_tentativas_7d, "pct": _percentual(checkout_tentativas_7d, visitas_7d)},
             {"rotulo": "Iniciaram pedido", "valor": pedidos_iniciados_7d, "pct": _percentual(pedidos_iniciados_7d, visitas_7d)},
             {"rotulo": "Compraram", "valor": pedidos_pagos_7d, "pct": _percentual(pedidos_pagos_7d, visitas_7d)},
         ],
@@ -4857,6 +4868,25 @@ def admin_analytics():
         proporcao_pedido_visita=_percentual(pedidos_iniciados_7d, visitas_7d),
         proporcao_venda_visita=_percentual(pedidos_pagos_7d, visitas_7d),
         proporcao_venda_simulacao=_percentual(pedidos_pagos_7d, fretes_simulados_7d),
+    )
+
+
+@app.route("/admin/carrinhos-abandonados", methods=["GET"])
+def admin_carrinhos_abandonados():
+    """Quem vende poder ver e contatar na mao (WhatsApp/e-mail) quem
+    deixou nome+contato no carrinho mas nao chegou a comprar -- ver
+    services/carrinhos_abandonados.py e conversa "recuperacao de
+    carrinho": o lembrete automatico ja cobre uma parte, mas nem todo
+    mundo so tem e-mail (telefone sozinho nao recebe lembrete
+    automatico ainda), e as vezes vale a pena chamar antes do prazo."""
+    if not _autenticacao_admin_valida(request.authorization):
+        return Response(
+            "Autenticação necessária.", 401, {"WWW-Authenticate": 'Basic realm="Painel de carrinhos"'}
+        )
+    apenas_pendentes = request.args.get("status") != "todos"
+    carrinhos = listar_carrinhos_abandonados(apenas_pendentes=apenas_pendentes)
+    return render_template(
+        "admin_carrinhos_abandonados.html", carrinhos=carrinhos, apenas_pendentes=apenas_pendentes
     )
 
 

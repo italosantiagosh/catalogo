@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="robots" content="noindex, nofollow">
-  <title>Avaliações — Painel — Nove de Julho</title>
+  <title>Carrinhos abandonados — Painel — Nove de Julho</title>
   <link rel="icon" type="image/png" href="{{ url_for('static', filename='img/icon-192.png') }}">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -49,29 +49,35 @@
     .vazio { padding: 40px 24px; text-align: center; color: var(--texto-suave); background: var(--cartao); border-radius: 14px; }
     .cartoes { display: flex; flex-direction: column; gap: 14px; }
     .cartao {
-      background: var(--cartao); border-radius: 14px; padding: 16px; display: flex; gap: 14px;
+      background: var(--cartao); border-radius: 14px; padding: 16px;
       border: 1px solid var(--linha); box-shadow: 0 8px 20px -16px rgba(20, 51, 92, 0.35);
     }
-    .cartao img { width: 88px; height: 88px; object-fit: cover; border-radius: 10px; flex-shrink: 0; border: 1px solid var(--linha); }
-    .cartao-corpo { flex: 1; min-width: 0; }
     .cartao-topo { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; flex-wrap: wrap; }
     .cartao-nome { font-weight: 700; }
-    .cartao-nota { color: var(--dourado); font-weight: 700; letter-spacing: 1px; }
-    .cartao-produto { font-size: 0.8rem; color: var(--texto-suave); margin: 3px 0 10px; }
-    .cartao-texto { font-size: 0.88rem; margin: 0 0 12px; line-height: 1.5; }
+    .cartao-subtotal { color: var(--azul-escuro); font-weight: 700; }
+    .cartao-quando { font-size: 0.78rem; color: var(--texto-suave); margin: 3px 0 10px; }
+    .cartao-itens { margin: 0 0 12px; padding-left: 18px; font-size: 0.86rem; }
+    .cartao-itens li { margin-bottom: 2px; }
 
     .status { display: inline-flex; align-items: center; gap: 5px; padding: 3px 11px; border-radius: 999px; font-size: 0.72rem; font-weight: 700; margin-bottom: 9px; }
     .status::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
-    .status-pendente { background: #f4ecd8; color: #7a5c1f; }
-    .status-aprovada { background: #e3f6ea; color: #1e7a43; }
-    .status-recusada { background: #fbe3e0; color: #a13a2a; }
+    .status-aguardando { background: #f4ecd8; color: #7a5c1f; }
+    .status-lembrete-enviado { background: #e6eefc; color: #1c4a80; }
+    .status-recuperado { background: #e3f6ea; color: #1e7a43; }
 
-    .acoes form { display: inline; }
-    .acoes button { margin-right: 8px; padding: 8px 15px; border: none; border-radius: 8px; font-weight: 700; cursor: pointer; font-size: 0.82rem; }
-    .btn-aprovar { background: #1e7a43; color: #fff; }
-    .btn-aprovar:hover { background: #17632f; }
-    .btn-recusar { background: #a13a2a; color: #fff; }
-    .btn-recusar:hover { background: #8c2f22; }
+    .acoes { display: flex; flex-wrap: wrap; gap: 8px; }
+    .acoes a {
+      display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px; border-radius: 8px;
+      font-weight: 700; font-size: 0.82rem; text-decoration: none;
+    }
+    .btn-whatsapp { background: #1e7a43; color: #fff; }
+    .btn-whatsapp:hover { background: #17632f; }
+    .btn-email { background: var(--azul-escuro); color: #fff; }
+    .btn-email:hover { background: #0d233f; }
+    .btn-email.desabilitado, .btn-whatsapp.desabilitado {
+      background: #dbe2ea; color: var(--texto-suave); pointer-events: none;
+    }
+    .cartao-contato { font-size: 0.82rem; color: var(--texto-suave); margin: 0 0 10px; }
   </style>
 </head>
 <body>
@@ -79,66 +85,75 @@
     <div class="masthead-linha">
       <img src="{{ url_for('static', filename='img/icon-192.png') }}" alt="">
       <div class="masthead-titulos">
-        <h1>Avaliações</h1>
+        <h1>Carrinhos abandonados</h1>
         <p>Nove de Julho</p>
       </div>
     </div>
     <nav class="masthead-nav">
       <a href="{{ url_for('admin_pedidos') }}">📦 Pedidos</a>
-      <a href="{{ url_for('admin_carrinhos_abandonados') }}">🛒 Carrinhos</a>
+      <a href="{{ url_for('admin_avaliacoes') }}">⭐ Avaliações</a>
       <a href="{{ url_for('admin_analytics') }}">📊 Analytics</a>
     </nav>
   </header>
 
   <div class="conteudo">
-    <h2 class="secao-titulo">Avaliações <span class="contagem-pill">{{ avaliacoes | length }}</span></h2>
+    <h2 class="secao-titulo">Carrinhos abandonados <span class="contagem-pill">{{ carrinhos | length }}</span></h2>
+    <p class="cartao-contato" style="margin-bottom: 18px;">
+      Nome + contato salvos automaticamente quando a pessoa preenche o formulário do carrinho sem
+      finalizar. Depois de um tempo sem virar pedido, um e-mail de lembrete (sem desconto) é enviado
+      sozinho — aqui dá pra chamar antes disso, ou alcançar quem só deixou telefone.
+    </p>
 
     <div class="filtros">
-      <a href="{{ url_for('admin_avaliacoes') }}" class="{{ 'ativo' if not status_filtro else '' }}">Todas</a>
-      <a href="{{ url_for('admin_avaliacoes', status='pendente') }}" class="{{ 'ativo' if status_filtro == 'pendente' else '' }}">Pendentes</a>
-      <a href="{{ url_for('admin_avaliacoes', status='aprovada') }}" class="{{ 'ativo' if status_filtro == 'aprovada' else '' }}">Aprovadas</a>
-      <a href="{{ url_for('admin_avaliacoes', status='recusada') }}" class="{{ 'ativo' if status_filtro == 'recusada' else '' }}">Recusadas</a>
+      <a href="{{ url_for('admin_carrinhos_abandonados') }}" class="{{ 'ativo' if apenas_pendentes else '' }}">Pendentes</a>
+      <a href="{{ url_for('admin_carrinhos_abandonados', status='todos') }}" class="{{ 'ativo' if not apenas_pendentes else '' }}">Todos</a>
     </div>
 
-    {% if avaliacoes %}
+    {% if carrinhos %}
       <div class="cartoes">
-        {% for avaliacao in avaliacoes %}
+        {% for carrinho in carrinhos %}
           <div class="cartao">
-            {% if avaliacao.foto %}<img src="{{ avaliacao.foto }}" alt="">{% endif %}
-            <div class="cartao-corpo">
-              <span class="status status-{{ avaliacao.status }}">{{ avaliacao.status }}</span>
-              <div class="cartao-topo">
-                <span class="cartao-nome">{{ avaliacao.nome_cliente }}</span>
-                <span class="cartao-nota">{{ "★" * avaliacao.nota }}{{ "☆" * (5 - avaliacao.nota) }}</span>
-              </div>
-              <p class="cartao-produto">
-                Produto: {{ avaliacao.produto_id }}{% if avaliacao.formato %} — {{ avaliacao.formato }}{% endif %}
-                — {{ avaliacao.criado_em | data_hora_br }}
-              </p>
-              {% if avaliacao.texto %}<p class="cartao-texto">{{ avaliacao.texto }}</p>{% endif %}
-              {% if avaliacao.status == 'pendente' %}
-                <div class="acoes">
-                  <form method="post" action="{{ url_for('admin_avaliacao_aprovar', id_=avaliacao.id) }}">
-                    <button type="submit" class="btn-aprovar">Aprovar</button>
-                  </form>
-                  <form method="post" action="{{ url_for('admin_avaliacao_recusar', id_=avaliacao.id) }}">
-                    <button type="submit" class="btn-recusar">Recusar</button>
-                  </form>
-                </div>
-              {% elif avaliacao.status == 'aprovada' %}
-                <div class="acoes">
-                  <form method="post" action="{{ url_for('admin_avaliacao_recusar', id_=avaliacao.id) }}"
-                        onsubmit="return confirm('Excluir essa avaliação? Ela sai do site imediatamente.');">
-                    <button type="submit" class="btn-recusar">Excluir do site</button>
-                  </form>
-                </div>
+            {% if carrinho.recuperado %}
+              <span class="status status-recuperado">comprou</span>
+            {% elif carrinho.lembrete_enviado %}
+              <span class="status status-lembrete-enviado">lembrete enviado</span>
+            {% else %}
+              <span class="status status-aguardando">aguardando</span>
+            {% endif %}
+            <div class="cartao-topo">
+              <span class="cartao-nome">{{ carrinho.nome }}</span>
+              <span class="cartao-subtotal">{{ carrinho.subtotal | preco }}</span>
+            </div>
+            <p class="cartao-quando">{{ carrinho.criado_em | data_hora_br }}</p>
+            <p class="cartao-contato">
+              {% if carrinho.telefone %}📞 {{ carrinho.telefone }}{% endif %}
+              {% if carrinho.telefone and carrinho.email %} · {% endif %}
+              {% if carrinho.email %}✉️ {{ carrinho.email }}{% endif %}
+            </p>
+            <ul class="cartao-itens">
+              {% for item in carrinho.itens %}
+                <li>{{ item.produtoNome or 'Medalha personalizada' }} — {{ item.quantidade }}x</li>
+              {% endfor %}
+            </ul>
+            <div class="acoes">
+              {% if carrinho.telefone %}
+                <a class="btn-whatsapp"
+                   href="https://wa.me/{{ carrinho.telefone | whatsapp }}?text={{ ('Oi, ' ~ carrinho.nome ~ '! Vi que você separou algumas peças no site e não deu pra terminar — posso ajudar a fechar o pedido?') | urlencode }}"
+                   target="_blank" rel="noopener">💬 WhatsApp</a>
+              {% else %}
+                <span class="btn-whatsapp desabilitado">💬 sem telefone</span>
+              {% endif %}
+              {% if carrinho.email %}
+                <a class="btn-email" href="mailto:{{ carrinho.email }}">✉️ E-mail</a>
+              {% else %}
+                <span class="btn-email desabilitado">✉️ sem e-mail</span>
               {% endif %}
             </div>
           </div>
         {% endfor %}
       </div>
     {% else %}
-      <p class="vazio">Nenhuma avaliação por aqui.</p>
+      <p class="vazio">Nenhum carrinho abandonado por aqui.</p>
     {% endif %}
   </div>
 </body>

@@ -4,6 +4,7 @@ from unittest.mock import patch
 
 import pytest
 
+import services.carrinhos_abandonados as carrinhos_abandonados
 import services.pedidos as pedidos
 from app import app
 
@@ -11,9 +12,12 @@ from app import app
 @pytest.fixture
 def client(monkeypatch, tmp_path):
     # admin_analytics agora tambem cruza com o banco de pedidos (funil
-    # de conversao/proporcoes, ver conversa) -- isola num banco vazio
+    # de conversao/proporcoes, ver conversa) e com o de carrinhos
+    # abandonados (cartao "aguardando contato") -- isola num banco vazio
     # por teste, senao os testes leriam o data/pedidos.db real do repo.
-    monkeypatch.setattr(pedidos, "DB_PATH", str(tmp_path / "pedidos.db"))
+    db_path = str(tmp_path / "pedidos.db")
+    monkeypatch.setattr(pedidos, "DB_PATH", db_path)
+    monkeypatch.setattr(carrinhos_abandonados, "DB_PATH", db_path)
     app.config["TESTING"] = True
     return app.test_client()
 
