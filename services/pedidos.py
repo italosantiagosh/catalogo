@@ -461,20 +461,24 @@ def listar_pedidos(*, status: str | None = None, arquivados: bool = False, limit
 
 def estatisticas_hoje() -> dict:
     """Resumo rapido pro topo do painel (ver app.py:admin_pedidos) --
-    "hoje" aqui e´ o dia em UTC (mesmo criterio ja usado em todo o
-    resto do app pra criado_em/pago_em, ver conversa: nao ha conversao
-    de fuso em nenhum outro lugar do codigo, entao manter consistente
-    em vez de introduzir um criterio novo so pra essa tela). Pendentes
+    "hoje" aqui e´ o dia em horario de Brasilia (FUSO_BRASIL, mesmo
+    fuso ja usado pro corte de producao abaixo). Antes comparava com o
+    dia em UTC, que zera 3h ANTES da meia-noite local (21h Brasilia) --
+    o painel mostrava "0 pedidos hoje" ainda de noite mesmo com pedido
+    pago no dia (ver conversa: print as 22h08 ja zerado). Pendentes
     conta o total em aberto AGORA (nao so os de hoje), pra sempre
     mostrar quanto falta resolver."""
     inicializar_db()
-    hoje = datetime.now(timezone.utc).date().isoformat()
+    inicio_hoje_local = datetime.now(FUSO_BRASIL).replace(hour=0, minute=0, second=0, microsecond=0)
+    inicio_hoje = inicio_hoje_local.astimezone(timezone.utc).isoformat()
+    fim_hoje = (inicio_hoje_local + timedelta(days=1)).astimezone(timezone.utc).isoformat()
     with _conexao() as conexao:
         pedidos_hoje = conexao.execute(
-            "SELECT COUNT(*) FROM pedidos WHERE substr(criado_em, 1, 10) = ?", (hoje,)
+            "SELECT COUNT(*) FROM pedidos WHERE criado_em >= ? AND criado_em < ?", (inicio_hoje, fim_hoje)
         ).fetchone()[0]
         linha_pagos = conexao.execute(
-            "SELECT COUNT(*), COALESCE(SUM(total), 0) FROM pedidos WHERE substr(pago_em, 1, 10) = ?", (hoje,)
+            "SELECT COUNT(*), COALESCE(SUM(total), 0) FROM pedidos WHERE pago_em >= ? AND pago_em < ?",
+            (inicio_hoje, fim_hoje),
         ).fetchone()
         pendentes = conexao.execute(
             "SELECT COUNT(*) FROM pedidos WHERE status IN ('pendente', 'whatsapp')"

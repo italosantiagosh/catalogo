@@ -565,6 +565,31 @@ def test_estatisticas_hoje_conta_pendentes_e_whatsapp_independente_da_data(monke
     assert stats["pendentes"] == 2
 
 
+def test_estatisticas_hoje_usa_fuso_de_brasilia_nao_utc(monkeypatch, tmp_path):
+    """Ver conversa: painel mostrava "0 pedidos hoje" as 22h08 (Brasilia)
+    porque comparava com o dia em UTC, que ja tinha virado (21h
+    Brasilia = 00h UTC do dia seguinte). Fixa "agora" as 21h30 Brasilia
+    -- ainda "hoje" localmente, mas ja´ amanha em UTC -- e confirma que
+    um pedido criado 1h antes (20h30 Brasilia, mesmo dia local) continua
+    contando como "hoje"."""
+    _reapontar_db(monkeypatch, tmp_path)
+    pedido = pedidos.criar_pedido(**_pedido_exemplo())
+    criado_as_20h30_brasilia = datetime(2026, 9, 15, 23, 30, tzinfo=timezone.utc).isoformat()
+    with pedidos._conexao() as conexao:
+        conexao.execute("UPDATE pedidos SET criado_em = ? WHERE token = ?", (criado_as_20h30_brasilia, pedido["token"]))
+
+    class _DatetimeFixo(datetime):
+        @classmethod
+        def now(cls, tz=None):
+            agora_utc = datetime(2026, 9, 16, 0, 30, tzinfo=timezone.utc)  # 21h30 Brasilia
+            return agora_utc.astimezone(tz) if tz else agora_utc
+
+    monkeypatch.setattr(pedidos, "datetime", _DatetimeFixo)
+    stats = pedidos.estatisticas_hoje()
+
+    assert stats["pedidos_hoje"] == 1
+
+
 def test_vendas_por_dia_preenche_dias_sem_venda_com_zero(monkeypatch, tmp_path):
     _reapontar_db(monkeypatch, tmp_path)
     hoje_pago = pedidos.criar_pedido(**_pedido_exemplo(subtotal=100.0, frete_preco=0.0))
