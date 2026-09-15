@@ -18,6 +18,17 @@ function rastrearEventoGA4(nome, params) {
   if (typeof gtag === 'function') gtag('event', nome, params || {});
 }
 
+// Espelha o add_to_cart tambem pro Pixel do Meta (fbq so existe se
+// META_PIXEL_ID estiver configurado, ver base.html) -- ate agora so
+// PageView/Lead chegavam la´, entao o Meta nao tinha nenhum sinal de
+// quem colocou algo no carrinho (nem pra remarketing, nem pra otimizar
+// os anuncios). Sem `value`/`currency` porque o item ainda nao carrega
+// preco nesse ponto (calculado por faixa de quantidade no backend, ver
+// services/pricing.py) -- mesma limitacao que o evento GA4 acima.
+function rastrearEventoMeta(nome, params) {
+  if (typeof fbq === 'function') fbq('track', nome, params || {});
+}
+
 const CARRINHO_CHAVE = 'catalogo_medalhas_carrinho';
 const PEDIDO_ID_CHAVE = 'catalogo_medalhas_pedido_id';
 const PEDIDO_ID_CHARSET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // sem O/0, I/1 -- evita confusao ao ler em voz alta
@@ -79,6 +90,11 @@ function carrinhoAdicionarItem(novoItem) {
     item_id: novoItem.produtoId || novoItem.tipo,
     item_name: novoItem.produtoNome || 'Medalha personalizada',
     quantity: novoItem.quantidade,
+  });
+  rastrearEventoMeta('AddToCart', {
+    content_ids: [String(novoItem.produtoId || novoItem.tipo)],
+    content_name: novoItem.produtoNome || 'Medalha personalizada',
+    content_type: 'product',
   });
   return itens;
 }
