@@ -135,10 +135,20 @@
                 <li>{{ item.produtoNome or 'Medalha personalizada' }} — {{ item.quantidade }}x</li>
               {% endfor %}
             </ul>
+            {% set ns = namespace(itens_texto="") %}
+            {% for item in carrinho.itens %}
+              {% set ns.itens_texto = ns.itens_texto ~ "• " ~ (item.produtoNome or "Medalha personalizada") ~ " — " ~ item.quantidade ~ "x\n" %}
+            {% endfor %}
+            {% set url_retomar_carrinho = url_for('carrinho', restaurar=carrinho.token, _external=True) %}
+            {% set mensagem_whatsapp_carrinho =
+              "Oi, " ~ carrinho.nome ~ "! Vi que você separou essas peças no site e não deu pra terminar:\n\n"
+              ~ ns.itens_texto ~ "\nQuer continuar de onde parou? É só clicar aqui que o carrinho volta do jeitinho que estava:\n"
+              ~ url_retomar_carrinho ~ "\n\nPosso ajudar a fechar o pedido?"
+            %}
             <div class="acoes">
               {% if carrinho.telefone %}
                 <a class="btn-whatsapp"
-                   href="https://wa.me/{{ carrinho.telefone | whatsapp }}?text={{ ('Oi, ' ~ carrinho.nome ~ '! Vi que você separou algumas peças no site e não deu pra terminar — posso ajudar a fechar o pedido?') | urlencode }}"
+                   href="https://wa.me/{{ carrinho.telefone | whatsapp }}?text={{ mensagem_whatsapp_carrinho | urlencode }}"
                    target="_blank" rel="noopener">💬 WhatsApp</a>
               {% else %}
                 <span class="btn-whatsapp desabilitado">💬 sem telefone</span>

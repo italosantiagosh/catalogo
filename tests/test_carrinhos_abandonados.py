@@ -234,6 +234,22 @@ def test_admin_carrinhos_abandonados_mostra_link_whatsapp_e_email(client, monkey
     assert "mailto:maria@example.com" in pagina
 
 
+def test_admin_carrinhos_abandonados_mensagem_whatsapp_tem_itens_e_link_de_volta(client, monkeypatch):
+    """Ver conversa: msg do WhatsApp era generica (so nome), sem os
+    itens nem link pra voltar -- igual o e-mail ja fazia (ver
+    services/email.py:_corpo_html_carrinho_abandonado). Agora usa o
+    mesmo link de restauracao (?restaurar=<token>, ver static/js/
+    carrinho_pagina.js) pra o carrinho voltar do jeito que estava."""
+    _preparar_admin(monkeypatch)
+    client.post("/api/carrinho/abandonado", json=_corpo(token="token-xyz", telefone="84999999999"))
+
+    pagina = client.get("/admin/carrinhos-abandonados", auth=("admin", "segredo123")).get_data(as_text=True)
+    assert "https://wa.me/5584999999999?text=" in pagina
+    assert "S%C3%A3o%20Jos%C3%A9" in pagina  # nome do item, urlencoded
+    assert "3x" in pagina
+    assert "restaurar%3Dtoken-xyz" in pagina  # link de volta, urlencoded
+
+
 def test_listar_todos_ordena_mais_recente_primeiro(client):
     client.post("/api/carrinho/abandonado", json=_corpo(token="primeiro"))
     client.post("/api/carrinho/abandonado", json=_corpo(token="segundo"))
