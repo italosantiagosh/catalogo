@@ -32,6 +32,18 @@ def test_meus_pedidos_mostra_formulario_de_cpf_por_padrao(client):
     assert b"Seu CPF" in resposta.data
 
 
+def test_meus_pedidos_mostra_alternativa_de_whatsapp(client, monkeypatch):
+    """Sem SMS configurado, o WhatsApp e´ a alternativa pra quem nao
+    quer/nao consegue esperar o codigo por e-mail (ver conversa)."""
+    import app as app_module
+
+    monkeypatch.setattr(app_module, "WHATSAPP_NUMBER", "5584999999999")
+    resposta = client.get("/meus-pedidos")
+    assert resposta.status_code == 200
+    assert b"https://wa.me/5584999999999?text=" in resposta.data
+    assert "poss%C3%ADvel%20repeti%C3%A7%C3%A3o%20de%20pedido".encode() in resposta.data
+
+
 def test_enviar_codigo_com_cpf_invalido_volta_pro_formulario_com_erro(client):
     resposta = client.post("/meus-pedidos/enviar-codigo", data={"documento": "123"}, follow_redirects=True)
     assert resposta.status_code == 200

@@ -261,6 +261,25 @@ def test_carrinho_abandonado_mostra_miniatura(monkeypatch):
     assert '<img src="https://lojanovedejulho.com.br/static/img/produtos/sao_jose.jpg"' in corpo
 
 
+def test_upsell_de_cruz_manda_mensagem_de_whatsapp_com_quantidade(monkeypatch):
+    """Ver conversa "upsell de cruz durante producao" -- e-mail novo
+    oferece cruz (peca pronta) pra quem comprou entremeio sem cruz,
+    combinado pelo WhatsApp em vez de link pro catalogo."""
+    monkeypatch.setattr(email, "BREVO_API_KEY", "segredo")
+    monkeypatch.setattr(email, "WHATSAPP_NUMBER", "5584999999999")
+    resposta_mock = Mock()
+    resposta_mock.raise_for_status = Mock()
+    with patch("services.email.requests.post", return_value=resposta_mock) as post_mock:
+        resultado = email.enviar_oportunidade_upsell(_pedido_exemplo(), 12)
+
+    assert resultado == {"ok": True}
+    corpo = post_mock.call_args.kwargs["json"]
+    assert "cruz" in corpo["subject"].lower()
+    assert "12 entremeios" in corpo["htmlContent"]
+    assert "https://wa.me/5584999999999?text=" in corpo["htmlContent"]
+    assert "retirada no local" in corpo["htmlContent"].lower()
+
+
 def test_notificacao_venda_nao_manda_name_vazio_pro_brevo(monkeypatch):
     """Ver conversa: o Brevo devolvia 400 Bad Request pra esse e-mail
     especifico -- causa era "name": "" no destinatario (aviso interno

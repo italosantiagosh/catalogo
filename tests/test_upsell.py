@@ -52,23 +52,30 @@ def test_sem_canonical_domain_nao_faz_nada(client, monkeypatch):
     mock_email.assert_not_called()
 
 
-def test_manda_oportunidade_pro_pedido_antigo_e_marca_uma_vez(client, monkeypatch):
+def test_pedido_com_12_entremeios_sem_cruz_recebe_oportunidade_e_marca_uma_vez(client, monkeypatch):
+    """Ver conversa "upsell de cruz durante producao": cruz e´ peca
+    pronta, da´ pra somar ao pedido ainda em producao -- so oferece pra
+    quem comprou bastante entremeio (>= UPSELL_ENTREMEIOS_MINIMO) e
+    ainda nao tem cruz nenhuma no pedido."""
     import app as app_module
 
     monkeypatch.setattr(app_module, "CANONICAL_DOMAIN", "atacado.lojanovedejulho.com.br")
+    monkeypatch.setattr(app_module, "UPSELL_ENTREMEIOS_MINIMO", 12)
 
     with patch("app.criar_link_pagamento", return_value={"url": "https://checkout.infinitepay.io/abc"}):
-        criado = client.post("/api/pedido/criar", json=_corpo_valido()).get_json()
+        criado = client.post(
+            "/api/pedido/criar",
+            json=_corpo_valido(itens=[
+                {"chave_preco": "entremeio", "quantidade": 12, "produtoNome": "São José", "modeloNome": "Modelo 1"},
+            ]),
+        ).get_json()
     _pagar_e_envelhecer(criado["token"], 30)
 
     with patch("app.enviar_oportunidade_upsell", return_value={"ok": True}) as mock_email:
         _enviar_upsell_pedidos_pagos()
 
     assert mock_email.call_count == 1
-    oportunidades = mock_email.call_args.args[1]
-    assert oportunidades[0]["label"] == "medalhas/entremeios"
-    assert oportunidades[0]["faltam"] == 10
-    assert oportunidades[0]["preco"] == 4.5
+    assert mock_email.call_args.args[1] == 12  # quantidade_entremeios
 
     pedido = pedidos.obter_pedido(criado["token"])
     assert pedido["email_upsell_enviado"] == 1
@@ -79,16 +86,17 @@ def test_manda_oportunidade_pro_pedido_antigo_e_marca_uma_vez(client, monkeypatc
     mock_email2.assert_not_called()
 
 
-def test_pedido_ja_na_melhor_faixa_nao_manda_email_mas_marca_processado(client, monkeypatch):
+def test_pedido_com_menos_de_12_entremeios_nao_recebe_mas_marca_processado(client, monkeypatch):
     import app as app_module
 
     monkeypatch.setattr(app_module, "CANONICAL_DOMAIN", "atacado.lojanovedejulho.com.br")
+    monkeypatch.setattr(app_module, "UPSELL_ENTREMEIOS_MINIMO", 12)
 
     with patch("app.criar_link_pagamento", return_value={"url": "https://checkout.infinitepay.io/abc"}):
         criado = client.post(
             "/api/pedido/criar",
             json=_corpo_valido(itens=[
-                {"chave_preco": "16mm", "quantidade": 2000, "produtoNome": "São José", "modeloNome": "Modelo 1"}
+                {"chave_preco": "entremeio", "quantidade": 11, "produtoNome": "São José", "modeloNome": "Modelo 1"},
             ]),
         ).get_json()
     _pagar_e_envelhecer(criado["token"], 30)
@@ -101,13 +109,87 @@ def test_pedido_ja_na_melhor_faixa_nao_manda_email_mas_marca_processado(client, 
     assert pedido["email_upsell_enviado"] == 1
 
 
-def test_pedido_recente_nao_recebe_oportunidade_ainda(client, monkeypatch):
+def test_pedido_com_cruz_nao_recebe_mesmo_com_bastante_entremeio(client, monkeypatch):
+    """Ja tem cruz -- nao ha´ nada pra "completar", nao faz sentido
+    oferecer de novo."""
+    import app as app_module
+
+    monkeypatch.setattr(app_module, "CANONICAL_DOMAIN", "atacado.lojanovedejulho.com.br")
+    monkeypatch.setattr(app_module, "UPSELL_ENTREMEIOS_MINIMO", 12)
+
+    with patch("app.criar_link_pagamento", return_value={"url": "https://checkout.infinitepay.io/abc"}):
+        criado = client.post(
+            "/api/pedido/criar",
+            json=_corpo_valido(itens=[
+                {"chave_preco": "entremeio", "quantidade": 12, "produtoNome": "São José", "modeloNome": "Modelo 1"},
+                {"chave_preco": "cruz_terco_prata", "quantidade": 1, "produtoNome": "Cruz"},
+            ]),
+        ).get_json()
+    _pagar_e_envelhecer(criado["token"], 30)
+
+    with patch("app.enviar_oportunidade_upsell") as mock_email:
+        _enviar_upsell_pedidos_pagos()
+    mock_email.assert_not_called()
+
+    pedido = pedidos.obter_pedido(criado["token"])
+    assert pedido["email_upsell_enviado"] == 1
+
+
+def test_medalha_sozinha_nao_recebe_upsell_de_cruz(client, monkeypatch):
+    """Pedido sem nenhum entremeio (so medalha) nunca se qualifica --
+    nao tem o que "completar" com cruz."""
     import app as app_module
 
     monkeypatch.setattr(app_module, "CANONICAL_DOMAIN", "atacado.lojanovedejulho.com.br")
 
     with patch("app.criar_link_pagamento", return_value={"url": "https://checkout.infinitepay.io/abc"}):
         criado = client.post("/api/pedido/criar", json=_corpo_valido()).get_json()
+    _pagar_e_envelhecer(criado["token"], 30)
+
+    with patch("app.enviar_oportunidade_upsell") as mock_email:
+        _enviar_upsell_pedidos_pagos()
+    mock_email.assert_not_called()
+
+    pedido = pedidos.obter_pedido(criado["token"])
+    assert pedido["email_upsell_enviado"] == 1
+
+
+def test_entremeio_2lados_soma_junto_pro_minimo(client, monkeypatch):
+    import app as app_module
+
+    monkeypatch.setattr(app_module, "CANONICAL_DOMAIN", "atacado.lojanovedejulho.com.br")
+    monkeypatch.setattr(app_module, "UPSELL_ENTREMEIOS_MINIMO", 12)
+
+    with patch("app.criar_link_pagamento", return_value={"url": "https://checkout.infinitepay.io/abc"}):
+        criado = client.post(
+            "/api/pedido/criar",
+            json=_corpo_valido(itens=[
+                {"chave_preco": "entremeio", "quantidade": 8, "produtoNome": "São José", "modeloNome": "Modelo 1"},
+                {"chave_preco": "entremeio_2lados", "quantidade": 4, "produtoNome": "Personalizada"},
+            ]),
+        ).get_json()
+    _pagar_e_envelhecer(criado["token"], 30)
+
+    with patch("app.enviar_oportunidade_upsell", return_value={"ok": True}) as mock_email:
+        _enviar_upsell_pedidos_pagos()
+
+    assert mock_email.call_count == 1
+    assert mock_email.call_args.args[1] == 12
+
+
+def test_pedido_recente_nao_recebe_oportunidade_ainda(client, monkeypatch):
+    import app as app_module
+
+    monkeypatch.setattr(app_module, "CANONICAL_DOMAIN", "atacado.lojanovedejulho.com.br")
+    monkeypatch.setattr(app_module, "UPSELL_ENTREMEIOS_MINIMO", 12)
+
+    with patch("app.criar_link_pagamento", return_value={"url": "https://checkout.infinitepay.io/abc"}):
+        criado = client.post(
+            "/api/pedido/criar",
+            json=_corpo_valido(itens=[
+                {"chave_preco": "entremeio", "quantidade": 12, "produtoNome": "São José", "modeloNome": "Modelo 1"},
+            ]),
+        ).get_json()
     client.post(
         "/webhook/infinitepay",
         json={"order_nsu": criado["token"], "paid_amount": 6000, "capture_method": "pix", "transaction_nsu": "tx-abc"},
@@ -119,6 +201,9 @@ def test_pedido_recente_nao_recebe_oportunidade_ainda(client, monkeypatch):
 
 
 def test_pagina_de_obrigado_mostra_oportunidade(client):
+    """Nudge de faixa de atacado na pagina de obrigado -- NAO mudou,
+    continua usando _oportunidades_upsell_do_pedido direto (so o
+    e-mail agendado mudou de logica, ver testes acima)."""
     with patch("app.criar_link_pagamento", return_value={"url": "https://checkout.infinitepay.io/abc"}):
         criado = client.post("/api/pedido/criar", json=_corpo_valido()).get_json()
     client.post(

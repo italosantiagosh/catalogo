@@ -537,38 +537,37 @@ def _corpo_html_pedido_cancelado(pedido: dict, url_reativar_pix: str, url_reativ
     )
 
 
-def _corpo_html_oportunidade_upsell(pedido: dict, oportunidades: list[dict], url_catalogo: str) -> str:
-    linhas_oportunidade = "".join(
-        f"<li>Em <strong>{o['label']}</strong>: peça mais <strong>{o['faltam']}</strong> peças no seu "
-        f"próximo pedido e o preço cai pra <strong>{_preco(o['preco'])}/un</strong>"
-        + (f" — economia de até <strong>{_preco(o['economia'])}</strong>!" if o["economia"] > 0 else "!")
-        + "</li>"
-        for o in oportunidades
+def _corpo_html_oportunidade_upsell(pedido: dict, quantidade_entremeios: int) -> str:
+    mensagem_whatsapp = (
+        f"Oi! Vi que dá pra completar meu pedido #{pedido['codigo']} com cruzes pro terço "
+        f"antes de enviar. Queria fazer esse pedido extra."
     )
     return (
-        f"<p>Olá, {_esc(pedido.get('cliente_nome', ''))}! Esperamos que esteja aproveitando as peças do "
-        f"pedido #{pedido['codigo']}.</p>"
-        f"<p>Separamos uma oportunidade pro seu próximo pedido:</p>"
-        f"<ul>{linhas_oportunidade}</ul>"
-        f"{_botao(_com_utm(url_catalogo, 'oportunidade_upsell'), '👉 Ver o catálogo completo')}"
-        f"<p>Qualquer dúvida, é só chamar no WhatsApp.</p>"
+        f"<p>Olá, {_esc(pedido.get('cliente_nome', ''))}! Vimos que seu pedido #{pedido['codigo']} tem "
+        f"{quantidade_entremeios} entremeios, mas nenhuma cruz pra completar o terço. 📿</p>"
+        f"<p>Como a cruz já é peça pronta (sem produção), ainda dá tempo de somar ao seu pedido, que "
+        f"continua em produção -- sem atrasar nada.</p>"
+        f"<p>É só fazer um pedido novo só com as cruzes (a partir de R$ 2,50 cada) e escolher "
+        f"<strong>retirada no local</strong> -- a gente junta tudo antes de enviar pra você.</p>"
+        f"{_botao_whatsapp(mensagem_whatsapp, '💬 Combinar pelo WhatsApp')}"
+        f"<p>Se preferir não, sem problema -- seu pedido segue normal do jeitinho que está.</p>"
     )
 
 
-def enviar_oportunidade_upsell(pedido: dict, oportunidades: list[dict], url_catalogo: str) -> dict:
-    """Disparado pelo job agendado (ver app.py) algumas horas depois do
-    pagamento confirmado -- empurrao pra proxima faixa de desconto de
-    atacado no PROXIMO pedido. `oportunidades` vem de
-    app.py:_oportunidades_upsell_do_pedido (lista de
-    {"label", "faltam", "preco", "economia"}, uma por grupo de atacado
-    com item nesse pedido). So chamado quando ja´ existe pelo menos 1
-    oportunidade real -- nunca com lista vazia. Devolve {"ok": True} ou
-    {"erro": "..."}."""
+def enviar_oportunidade_upsell(pedido: dict, quantidade_entremeios: int) -> dict:
+    """Disparado pelo job agendado (ver app.py) UPSELL_HORAS_APOS_
+    PAGAMENTO horas depois do pagamento confirmado -- so pra quem
+    comprou pelo menos UPSELL_ENTREMEIOS_MINIMO entremeios e NENHUMA
+    cruz no mesmo pedido (ver app.py:_pedido_elegivel_upsell_cruz e
+    conversa "upsell de cruz durante producao"). Cruz e´ peca pronta
+    (sem producao propria), da´ pra somar ao pedido AINDA em producao --
+    diferente do upsell generico antigo (empurrava pro PROXIMO pedido,
+    sem aproveitar essa janela). Devolve {"ok": True} ou {"erro": "..."}."""
     return _enviar(
         email_cliente=pedido.get("cliente_email", ""),
         nome_cliente=pedido.get("cliente_nome", ""),
-        assunto="Uma oportunidade pro seu próximo pedido — Nove de Julho",
-        corpo_html=_corpo_html_oportunidade_upsell(pedido, oportunidades, url_catalogo),
+        assunto="Falta só a cruz pro seu terço — Nove de Julho",
+        corpo_html=_corpo_html_oportunidade_upsell(pedido, quantidade_entremeios),
         tag="oportunidade_upsell",
     )
 

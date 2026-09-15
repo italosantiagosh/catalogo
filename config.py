@@ -184,9 +184,18 @@ LEMBRETE_MINUTOS = int(os.environ.get("LEMBRETE_MINUTOS", "720"))
 CANCELAMENTO_MINUTOS_APOS_LEMBRETE = int(os.environ.get("CANCELAMENTO_MINUTOS_APOS_LEMBRETE", "720"))
 
 # Quanto tempo esperar depois do PAGAMENTO confirmado antes de mandar o
-# e-mail de oportunidade (empurrao pra proxima faixa de desconto no
-# proximo pedido) -- ver app.py:_enviar_upsell_pedidos_pagos.
+# e-mail de oportunidade de cruz (ver app.py:_enviar_upsell_pedidos_pagos)
+# -- ainda dentro da janela de producao, pra dar tempo real de somar a
+# cruz ao pedido antes dele ser enviado.
 UPSELL_HORAS_APOS_PAGAMENTO = int(os.environ.get("UPSELL_HORAS_APOS_PAGAMENTO", "24"))
+
+# Minimo de entremeios (sem nenhuma cruz no mesmo pedido) pra disparar
+# esse e-mail -- ver app.py:_pedido_elegivel_upsell_cruz e conversa
+# "upsell de cruz durante producao". Cruz e´ peca pronta (sem producao
+# propria), da´ pra somar ao pedido AINDA em producao sem atrasar nada;
+# esse minimo existe porque uma cruz por entremeio, nesse volume, ja
+# fecha o pedido minimo do site sozinho (12 x R$2,50 = R$30).
+UPSELL_ENTREMEIOS_MINIMO = int(os.environ.get("UPSELL_ENTREMEIOS_MINIMO", "12"))
 
 # Quanto tempo esperar (carrinho com nome+contato salvo, mas sem pedido
 # criado) antes do lembrete de carrinho abandonado -- ver conversa

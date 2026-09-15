@@ -96,6 +96,7 @@ from config import (
     PROVA_SOCIAL,
     RETENCAO_IMAGENS_PEDIDO_CANCELADO_DIAS,
     SECRET_KEY,
+    UPSELL_ENTREMEIOS_MINIMO,
     UPSELL_HORAS_APOS_PAGAMENTO,
     VENDAS_RECENTES_DIAS,
     VENDAS_RECENTES_MINIMO_PARA_EXIBIR,
@@ -5156,27 +5157,44 @@ def _oportunidades_upsell_do_pedido(pedido: dict) -> list[dict]:
     return oportunidades
 
 
+def _pedido_elegivel_upsell_cruz(pedido: dict) -> int:
+    """Quantidade de entremeios do pedido, SE ele for elegivel pro
+    upsell de cruz (ver enviar_oportunidade_upsell) -- pelo menos
+    UPSELL_ENTREMEIOS_MINIMO entremeios ("entremeio" ou "entremeio_2lados")
+    e NENHUMA cruz ("cruz_terco_*") no mesmo pedido, ja que cruz e´ peca
+    pronta e da´ pra somar ao pedido ainda em producao (ver conversa
+    "upsell de cruz durante producao"). Devolve 0 quando nao elegivel --
+    tambem serve como bool (pedido com cruz ou com poucos entremeios)."""
+    quantidade_entremeios = 0
+    for item in pedido["itens"]:
+        chave = item.get("chave_preco", "")
+        if chave in ("entremeio", "entremeio_2lados"):
+            quantidade_entremeios += item["quantidade"]
+        elif chave.startswith("cruz_terco_"):
+            return 0
+    return quantidade_entremeios if quantidade_entremeios >= UPSELL_ENTREMEIOS_MINIMO else 0
+
+
 def _enviar_upsell_pedidos_pagos() -> None:
     """Job agendado (ver _iniciar_scheduler_jobs abaixo) -- roda a cada
-    10min, manda o e-mail de oportunidade (empurrao pra proxima faixa
-    de desconto no PROXIMO pedido) UPSELL_HORAS_APOS_PAGAMENTO horas
-    depois do pagamento confirmado. So manda quando ha´ oportunidade
-    real (ver _oportunidades_upsell_do_pedido) -- senao so marca como
-    processado, sem mandar e-mail vazio."""
+    10min, oferece a cruz pronta (ver _pedido_elegivel_upsell_cruz) pra
+    quem comprou bastante entremeio sem nenhuma cruz no mesmo pedido,
+    UPSELL_HORAS_APOS_PAGAMENTO horas depois do pagamento confirmado --
+    ainda dentro da janela de producao, da´ tempo real de somar ao
+    pedido. So manda quando elegivel -- senao so marca como processado,
+    sem mandar e-mail vazio."""
     if not CANONICAL_DOMAIN:
         return
     candidatos = listar_pedidos_pagos_para_upsell(UPSELL_HORAS_APOS_PAGAMENTO)
     if not candidatos:
         return
-    with app.test_request_context(base_url=f"https://{CANONICAL_DOMAIN}"):
-        url_catalogo = url_for("catalogo_completo", _external=True)
-        for pedido in candidatos:
-            oportunidades = _oportunidades_upsell_do_pedido(pedido)
-            if not oportunidades:
-                marcar_email_upsell_enviado(pedido["token"], erro=None)
-                continue
-            resultado_email = enviar_oportunidade_upsell(pedido, oportunidades, url_catalogo)
-            marcar_email_upsell_enviado(pedido["token"], erro=resultado_email.get("erro"))
+    for pedido in candidatos:
+        quantidade_entremeios = _pedido_elegivel_upsell_cruz(pedido)
+        if not quantidade_entremeios:
+            marcar_email_upsell_enviado(pedido["token"], erro=None)
+            continue
+        resultado_email = enviar_oportunidade_upsell(pedido, quantidade_entremeios)
+        marcar_email_upsell_enviado(pedido["token"], erro=resultado_email.get("erro"))
 
 
 def _enviar_email_avaliacao(token: str) -> str | None:
