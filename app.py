@@ -239,7 +239,7 @@ from services.pix import gerar_copia_cola, gerar_qr_data_uri
 from services.tiny import buscar_contatos_tiny, criar_pedido_tiny, erro_e_duplicidade
 from services.gerador.compositor import auto_cover_box, compose_medal, crop_to_box, load_rgba
 from services.gerador.config import IMAGE_EXTENSIONS, MEDAL_SPECS
-from services.pricing import CHAVES_PRECO, calcular_carrinho, preco_varejo, tabela_de_faixas
+from services.pricing import CHAVES_PRECO, calcular_carrinho, pedido_minimo_reais, preco_varejo, tabela_de_faixas
 
 app = Flask(__name__)
 app.config["MAX_CONTENT_LENGTH"] = 60 * 1024 * 1024  # 60MB no total do upload
@@ -534,6 +534,7 @@ def _injetar_globais_de_template():
         "dados_organizacao": _dados_organizacao(),
         "dados_website": _dados_website(),
         "tabelas_desconto": _tabelas_desconto_para_template(),
+        "pedido_minimo_reais": pedido_minimo_reais(),
     }
 
 

@@ -261,6 +261,39 @@ def test_carrinho_abandonado_mostra_miniatura(monkeypatch):
     assert '<img src="https://lojanovedejulho.com.br/static/img/produtos/sao_jose.jpg"' in corpo
 
 
+def test_carrinho_abandonado_abaixo_do_minimo_mostra_aviso(monkeypatch):
+    """Ver conversa: sem isso a pessoa clicava no link, voltava pro
+    carrinho, e so descobria no checkout que faltava completar o
+    pedido minimo -- agora avisa quanto falta ja na mensagem."""
+    monkeypatch.setattr(email, "BREVO_API_KEY", "segredo")
+    carrinho = {
+        "nome": "Maria", "email": "maria@example.com", "subtotal": 18.0,
+        "itens": [{"produtoNome": "São José", "quantidade": 2}],
+    }
+    resposta_mock = Mock()
+    resposta_mock.raise_for_status = Mock()
+    with patch("services.email.requests.post", return_value=resposta_mock) as post_mock:
+        email.enviar_lembrete_carrinho_abandonado(carrinho, "https://site/carrinho?restaurar=abc")
+    corpo = post_mock.call_args.kwargs["json"]["htmlContent"]
+    assert "R$ 18,00" in corpo
+    assert "R$ 30,00" in corpo  # pedido minimo (data/precos.json)
+    assert "R$ 12,00" in corpo  # falta
+
+
+def test_carrinho_abandonado_acima_do_minimo_nao_mostra_aviso(monkeypatch):
+    monkeypatch.setattr(email, "BREVO_API_KEY", "segredo")
+    carrinho = {
+        "nome": "Maria", "email": "maria@example.com", "subtotal": 120.0,
+        "itens": [{"produtoNome": "São José", "quantidade": 10}],
+    }
+    resposta_mock = Mock()
+    resposta_mock.raise_for_status = Mock()
+    with patch("services.email.requests.post", return_value=resposta_mock) as post_mock:
+        email.enviar_lembrete_carrinho_abandonado(carrinho, "https://site/carrinho?restaurar=abc")
+    corpo = post_mock.call_args.kwargs["json"]["htmlContent"]
+    assert "pedido mínimo" not in corpo
+
+
 def test_upsell_de_cruz_manda_mensagem_de_whatsapp_com_quantidade(monkeypatch):
     """Ver conversa "upsell de cruz durante producao" -- e-mail novo
     oferece cruz (peca pronta) pra quem comprou entremeio sem cruz,

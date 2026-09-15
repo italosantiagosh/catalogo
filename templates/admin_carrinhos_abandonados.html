@@ -140,9 +140,15 @@
               {% set ns.itens_texto = ns.itens_texto ~ "• " ~ (item.produtoNome or "Medalha personalizada") ~ " — " ~ item.quantidade ~ "x\n" %}
             {% endfor %}
             {% set url_retomar_carrinho = url_for('carrinho', restaurar=carrinho.token, _external=True) %}
+            {% set falta_pro_minimo = (pedido_minimo_reais - carrinho.subtotal) | round(2) %}
+            {% set aviso_minimo =
+              ("\n⚠️ Seu carrinho está em " ~ (carrinho.subtotal | preco) ~ " -- o pedido mínimo do site é "
+               ~ (pedido_minimo_reais | preco) ~ ". Falta só " ~ (falta_pro_minimo | preco) ~ " em produtos pra conseguir finalizar.\n")
+              if falta_pro_minimo > 0 else ""
+            %}
             {% set mensagem_whatsapp_carrinho =
               "Oi, " ~ carrinho.nome ~ "! Vi que você separou essas peças no site e não deu pra terminar:\n\n"
-              ~ ns.itens_texto ~ "\nQuer continuar de onde parou? É só clicar aqui que o carrinho volta do jeitinho que estava:\n"
+              ~ ns.itens_texto ~ aviso_minimo ~ "\nQuer continuar de onde parou? É só clicar aqui que o carrinho volta do jeitinho que estava:\n"
               ~ url_retomar_carrinho ~ "\n\nPosso ajudar a fechar o pedido?"
             %}
             <div class="acoes">

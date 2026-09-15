@@ -250,6 +250,26 @@ def test_admin_carrinhos_abandonados_mensagem_whatsapp_tem_itens_e_link_de_volta
     assert "restaurar%3Dtoken-xyz" in pagina  # link de volta, urlencoded
 
 
+def test_admin_carrinhos_abandonados_avisa_quando_abaixo_do_minimo(client, monkeypatch):
+    _preparar_admin(monkeypatch)
+    client.post("/api/carrinho/abandonado", json=_corpo(
+        token="token-baixo", telefone="84999999999", subtotal=18.0,
+    ))
+
+    pagina = client.get("/admin/carrinhos-abandonados", auth=("admin", "segredo123")).get_data(as_text=True)
+    assert "Falta%20s%C3%B3%20R%24%2012%2C00" in pagina  # falta, urlencoded
+
+
+def test_admin_carrinhos_abandonados_sem_aviso_quando_atinge_minimo(client, monkeypatch):
+    _preparar_admin(monkeypatch)
+    client.post("/api/carrinho/abandonado", json=_corpo(
+        token="token-ok", telefone="84999999999", subtotal=45.0,
+    ))
+
+    pagina = client.get("/admin/carrinhos-abandonados", auth=("admin", "segredo123")).get_data(as_text=True)
+    assert "pedido%20m%C3%ADnimo" not in pagina
+
+
 def test_listar_todos_ordena_mais_recente_primeiro(client):
     client.post("/api/carrinho/abandonado", json=_corpo(token="primeiro"))
     client.post("/api/carrinho/abandonado", json=_corpo(token="segundo"))

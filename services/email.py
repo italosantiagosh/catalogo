@@ -33,6 +33,7 @@ from config import (
     WHATSAPP_NUMBER,
 )
 from services.pedidos import previsoes_do_pedido
+from services.pricing import pedido_minimo_reais
 
 API_URL = "https://api.brevo.com/v3/smtp/email"
 
@@ -400,11 +401,29 @@ def _itens_carrinho_abandonado_html(itens: list[dict]) -> str:
     )
 
 
+def _aviso_abaixo_do_minimo_html(subtotal: float) -> str:
+    """Aviso extra (ver conversa) quando o carrinho abandonado nem
+    chega no pedido minimo do site (services.pricing.pedido_minimo_reais)
+    -- sem isso a pessoa podia voltar, clicar no botao, e so descobrir
+    no checkout que falta completar o pedido. Vazio quando ja atinge o
+    minimo (a maioria dos carrinhos)."""
+    minimo = pedido_minimo_reais()
+    falta = round(minimo - subtotal, 2)
+    if falta <= 0:
+        return ""
+    return (
+        f"<p>⚠️ Seu carrinho está em {_preco(subtotal)} -- o pedido mínimo do site é "
+        f"{_preco(minimo)}. Falta só {_preco(falta)} em produtos pra conseguir finalizar.</p>"
+    )
+
+
 def _corpo_html_carrinho_abandonado(carrinho: dict, url_carrinho: str) -> str:
+    subtotal = carrinho.get("subtotal", 0) or 0
     return (
         f"<p>Olá, {_esc(carrinho.get('nome', ''))}! Vimos que você separou algumas peças "
         f"mas não chegou a finalizar o pedido.</p>"
         f"{_itens_carrinho_abandonado_html(carrinho.get('itens', []))}"
+        f"{_aviso_abaixo_do_minimo_html(subtotal)}"
         f"<p>Ficou alguma dúvida no meio do caminho? Seu carrinho continua salvo, é só continuar "
         f"de onde parou:</p>"
         f"{_botao(_com_utm(url_carrinho, 'lembrete_carrinho_abandonado'), '🛒 Continuar meu pedido')}"
