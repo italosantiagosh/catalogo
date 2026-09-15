@@ -54,6 +54,62 @@ def test_criar_pedido_frete_real_passa(client):
     assert resposta.status_code == 200
 
 
+def test_criar_pedido_frete_gratis_com_transportadora_paga_zerada_e_bloqueado(client):
+    """Ver conversa "PAC grátis errado": pedido ja atingiu frete gratis,
+    a mais barata (Jadlog) sai Gratis de verdade, mas Correios PAC ainda
+    e´ "Por R$ 10,13" -- um bug no front mandava preco:0 pra QUALQUER
+    transportadora escolhida nesse caso (so o visual diferenciava). Essa
+    reconferencia no servidor tem que barrar isso mesmo que o preco
+    mandado bata com o piso generico (que e´ sempre 0 quando ha´ frete
+    gratis, ja que a mais barata zera)."""
+    corpo = _corpo_valido(frete={"texto": "Correios PAC — Grátis", "preco": 0.0})
+    with patch("app.calcular_frete", return_value={
+        "frete_gratis": True,
+        "opcoes": [
+            {"transportadora": "Jadlog", "servico": "Package", "prazo_dias": 3,
+             "preco_original": 19.70, "preco_final": 0.0, "gratis": True},
+            {"transportadora": "Correios", "servico": "PAC", "prazo_dias": 11,
+             "preco_original": 10.13, "preco_final": 10.13, "gratis": False},
+        ],
+    }):
+        resposta = client.post("/api/pedido/criar", json=corpo)
+    assert resposta.status_code == 400
+    assert "frete" in resposta.get_json()["erro"].lower()
+
+
+def test_criar_pedido_frete_gratis_com_transportadora_paga_preco_certo_passa(client):
+    corpo = _corpo_valido(frete={"texto": "Correios PAC — R$ 10,13", "preco": 10.13})
+    with patch("app.calcular_frete", return_value={
+        "frete_gratis": True,
+        "opcoes": [
+            {"transportadora": "Jadlog", "servico": "Package", "prazo_dias": 3,
+             "preco_original": 19.70, "preco_final": 0.0, "gratis": True},
+            {"transportadora": "Correios", "servico": "PAC", "prazo_dias": 11,
+             "preco_original": 10.13, "preco_final": 10.13, "gratis": False},
+        ],
+    }), patch("app.criar_link_pagamento", return_value={"url": "https://checkout.infinitepay.io/abc"}):
+        criado = client.post("/api/pedido/criar", json=corpo).get_json()
+
+    pedido = pedidos.obter_pedido(criado["token"])
+    assert pedido["frete_preco"] == 10.13
+    assert pedido["total"] == pedido["subtotal"] + 10.13
+
+
+def test_criar_pedido_frete_gratis_na_transportadora_mais_barata_continua_gratis(client):
+    corpo = _corpo_valido(frete={"texto": "Jadlog Package — Grátis", "preco": 0.0})
+    with patch("app.calcular_frete", return_value={
+        "frete_gratis": True,
+        "opcoes": [
+            {"transportadora": "Jadlog", "servico": "Package", "prazo_dias": 3,
+             "preco_original": 19.70, "preco_final": 0.0, "gratis": True},
+            {"transportadora": "Correios", "servico": "PAC", "prazo_dias": 11,
+             "preco_original": 10.13, "preco_final": 10.13, "gratis": False},
+        ],
+    }), patch("app.criar_link_pagamento", return_value={"url": "https://checkout.infinitepay.io/abc"}):
+        resposta = client.post("/api/pedido/criar", json=corpo)
+    assert resposta.status_code == 200
+
+
 def test_criar_pedido_com_desconto_de_frete_atacado_passa(client):
     """Ver conversa: 20 medalhas ja e´ atacado -> desconto no frete.
     O preco final (ja com o desconto abatido) tem que ser aceito na

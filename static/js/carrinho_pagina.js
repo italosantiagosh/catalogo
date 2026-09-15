@@ -924,7 +924,21 @@
             ${rotulo}
           </div>
         `;
-        const escolha = { texto: `${opcao.transportadora} ${opcao.servico} — Grátis`, preco: 0, prazo_dias: opcao.prazo_dias || null };
+        // BUG corrigido (ver conversa "PAC grátis errado"): antes toda
+        // opcao aqui saia com preco:0, mesmo as pagas ("Por R$X") --
+        // so o VISUAL (rotulo acima) diferenciava gratis de pago, o
+        // valor mandado pro backend na hora de pagar sempre zerava o
+        // frete, mesmo escolhendo uma transportadora que nao era a
+        // mais barata. Agora usa opcao.gratis pra decidir, igual o
+        // bloco de desconto de atacado logo abaixo (que sempre esteve
+        // certo).
+        const escolha = opcao.gratis
+          ? { texto: `${opcao.transportadora} ${opcao.servico} — Grátis`, preco: 0, prazo_dias: opcao.prazo_dias || null }
+          : {
+              texto: `${opcao.transportadora} ${opcao.servico} — ${formatarPreco(opcao.preco_final)}`,
+              preco: opcao.preco_final,
+              prazo_dias: opcao.prazo_dias || null,
+            };
         botao.addEventListener('click', () => selecionarOpcaoFrete(botao, escolha));
         freteResultadoEl.appendChild(botao);
         if (i === 0) selecionarOpcaoFrete(botao, escolha);
