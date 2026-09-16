@@ -1630,6 +1630,21 @@
         "imagem_medalha_2lados_prata": "img/produtos/nossa-senhora-do-rosario_modelo_1_medalha_2lados_prata.jpg",
         "imagem_medalha_2lados_ouro_velho": "img/produtos/nossa-senhora-do-rosario_modelo_1_medalha_2lados_ouro_velho.jpg",
         "imagem_chaveiro_2lados": "img/produtos/nossa-senhora-do-rosario_modelo_1_chaveiro_2lados.jpg"
+      },
+      {
+        "id": 2,
+        "nome": "Modelo 2",
+        "imagem": "img/produtos/nossa_senhora_do_rosario_modelo_2_medalha.jpg",
+        "tamanhos": [
+          "12mm",
+          "16mm"
+        ],
+        "imagem_entremeio_prata": "img/produtos/nossa_senhora_do_rosario_modelo_2_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/nossa_senhora_do_rosario_modelo_2_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/nossa_senhora_do_rosario_modelo_2_chaveiro.jpg",
+        "imagem_medalha_2lados_prata": "img/produtos/nossa-senhora-do-rosario_modelo_2_medalha_2lados_prata.jpg",
+        "imagem_medalha_2lados_ouro_velho": "img/produtos/nossa-senhora-do-rosario_modelo_2_medalha_2lados_ouro_velho.jpg",
+        "imagem_chaveiro_2lados": "img/produtos/nossa-senhora-do-rosario_modelo_2_chaveiro_2lados.jpg"
       }
     ],
     "categoria": "Nossa Senhora"
