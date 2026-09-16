@@ -375,8 +375,8 @@ def test_feed_produtos_sao_jose_tem_30_variacoes_agrupadas(client):
     itens_sao_jose = [
         item for item in raiz.findall("./channel/item") if item.find("g:id", ns).text.startswith("sao-jose-modelo")
     ]
-    # 6 modelos x 5 variacoes
-    assert len(itens_sao_jose) == 30
+    # 7 modelos x 5 variacoes
+    assert len(itens_sao_jose) == 35
     assert all(item.find("g:item_group_id", ns).text == "sao-jose" for item in itens_sao_jose)
 
     precos = {item.find("g:id", ns).text: item.find("g:price", ns).text for item in itens_sao_jose}

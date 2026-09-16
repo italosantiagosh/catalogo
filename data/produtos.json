@@ -3291,6 +3291,21 @@
         "imagem_medalha_2lados_prata": "img/produtos/santo-antonio_modelo_1_medalha_2lados_prata.jpg",
         "imagem_medalha_2lados_ouro_velho": "img/produtos/santo-antonio_modelo_1_medalha_2lados_ouro_velho.jpg",
         "imagem_chaveiro_2lados": "img/produtos/santo-antonio_modelo_1_chaveiro_2lados.jpg"
+      },
+      {
+        "id": 2,
+        "nome": "Modelo 2",
+        "imagem": "img/produtos/santo_antonio_modelo_2_medalha.jpg",
+        "tamanhos": [
+          "12mm",
+          "16mm"
+        ],
+        "imagem_entremeio_prata": "img/produtos/santo_antonio_modelo_2_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/santo_antonio_modelo_2_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/santo_antonio_modelo_2_chaveiro.jpg",
+        "imagem_medalha_2lados_prata": "img/produtos/santo-antonio_modelo_2_medalha_2lados_prata.jpg",
+        "imagem_medalha_2lados_ouro_velho": "img/produtos/santo-antonio_modelo_2_medalha_2lados_ouro_velho.jpg",
+        "imagem_chaveiro_2lados": "img/produtos/santo-antonio_modelo_2_chaveiro_2lados.jpg"
       }
     ],
     "categoria": "Santos"
@@ -3927,6 +3942,21 @@
         "imagem_medalha_2lados_prata": "img/produtos/sao-jose_modelo_7_medalha_2lados_prata.jpg",
         "imagem_medalha_2lados_ouro_velho": "img/produtos/sao-jose_modelo_7_medalha_2lados_ouro_velho.jpg",
         "imagem_chaveiro_2lados": "img/produtos/sao-jose_modelo_7_chaveiro_2lados.jpg"
+      },
+      {
+        "id": 8,
+        "nome": "Modelo 8",
+        "imagem": "img/produtos/sao_jose_modelo_8_medalha.jpg",
+        "tamanhos": [
+          "12mm",
+          "16mm"
+        ],
+        "imagem_entremeio_prata": "img/produtos/sao_jose_modelo_8_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/sao_jose_modelo_8_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/sao_jose_modelo_8_chaveiro.jpg",
+        "imagem_medalha_2lados_prata": "img/produtos/sao-jose_modelo_8_medalha_2lados_prata.jpg",
+        "imagem_medalha_2lados_ouro_velho": "img/produtos/sao-jose_modelo_8_medalha_2lados_ouro_velho.jpg",
+        "imagem_chaveiro_2lados": "img/produtos/sao-jose_modelo_8_chaveiro_2lados.jpg"
       }
     ],
     "categoria": "Santos"
@@ -4063,21 +4093,6 @@
       {
         "id": 1,
         "nome": "Modelo 1",
-        "imagem": "img/produtos/sao_jose_terror_dos_demonios_modelo_1_medalha.jpg",
-        "tamanhos": [
-          "12mm",
-          "16mm"
-        ],
-        "imagem_entremeio_prata": "img/produtos/sao_jose_terror_dos_demonios_modelo_1_entremeio_prata.jpg",
-        "imagem_entremeio_ouro_velho": "img/produtos/sao_jose_terror_dos_demonios_modelo_1_entremeio_ouro_velho.jpg",
-        "imagem_chaveiro": "img/produtos/sao_jose_terror_dos_demonios_modelo_1_chaveiro.jpg",
-        "imagem_medalha_2lados_prata": "img/produtos/sao-jose-terror-dos-demonios_modelo_1_medalha_2lados_prata.jpg",
-        "imagem_medalha_2lados_ouro_velho": "img/produtos/sao-jose-terror-dos-demonios_modelo_1_medalha_2lados_ouro_velho.jpg",
-        "imagem_chaveiro_2lados": "img/produtos/sao-jose-terror-dos-demonios_modelo_1_chaveiro_2lados.jpg"
-      },
-      {
-        "id": 2,
-        "nome": "Modelo 2",
         "imagem": "img/produtos/sao_jose_terror_dos_demonios_modelo_2_medalha.jpg",
         "tamanhos": [
           "12mm",
@@ -4091,19 +4106,19 @@
         "imagem_chaveiro_2lados": "img/produtos/sao-jose-terror-dos-demonios_modelo_2_chaveiro_2lados.jpg"
       },
       {
-        "id": 3,
-        "nome": "Modelo 3",
-        "imagem": "img/produtos/sao_jose_terror_dos_demonios_modelo_3_medalha.jpg",
+        "id": 2,
+        "nome": "Modelo 2",
+        "imagem": "img/produtos/sao_jose_terror_dos_demonios_modelo_1_medalha.jpg",
         "tamanhos": [
           "12mm",
           "16mm"
         ],
-        "imagem_entremeio_prata": "img/produtos/sao_jose_terror_dos_demonios_modelo_3_entremeio_prata.jpg",
-        "imagem_entremeio_ouro_velho": "img/produtos/sao_jose_terror_dos_demonios_modelo_3_entremeio_ouro_velho.jpg",
-        "imagem_chaveiro": "img/produtos/sao_jose_terror_dos_demonios_modelo_3_chaveiro.jpg",
-        "imagem_medalha_2lados_prata": "img/produtos/sao-jose-terror-dos-demonios_modelo_3_medalha_2lados_prata.jpg",
-        "imagem_medalha_2lados_ouro_velho": "img/produtos/sao-jose-terror-dos-demonios_modelo_3_medalha_2lados_ouro_velho.jpg",
-        "imagem_chaveiro_2lados": "img/produtos/sao-jose-terror-dos-demonios_modelo_3_chaveiro_2lados.jpg"
+        "imagem_entremeio_prata": "img/produtos/sao_jose_terror_dos_demonios_modelo_1_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/sao_jose_terror_dos_demonios_modelo_1_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/sao_jose_terror_dos_demonios_modelo_1_chaveiro.jpg",
+        "imagem_medalha_2lados_prata": "img/produtos/sao-jose-terror-dos-demonios_modelo_1_medalha_2lados_prata.jpg",
+        "imagem_medalha_2lados_ouro_velho": "img/produtos/sao-jose-terror-dos-demonios_modelo_1_medalha_2lados_ouro_velho.jpg",
+        "imagem_chaveiro_2lados": "img/produtos/sao-jose-terror-dos-demonios_modelo_1_chaveiro_2lados.jpg"
       }
     ],
     "categoria": "Santos"
@@ -4222,6 +4237,36 @@
         "imagem_medalha_2lados_prata": "img/produtos/sao-miguel_modelo_3_medalha_2lados_prata.jpg",
         "imagem_medalha_2lados_ouro_velho": "img/produtos/sao-miguel_modelo_3_medalha_2lados_ouro_velho.jpg",
         "imagem_chaveiro_2lados": "img/produtos/sao-miguel_modelo_3_chaveiro_2lados.jpg"
+      },
+      {
+        "id": 4,
+        "nome": "Modelo 4",
+        "imagem": "img/produtos/sao_miguel_modelo_4_medalha.jpg",
+        "tamanhos": [
+          "12mm",
+          "16mm"
+        ],
+        "imagem_entremeio_prata": "img/produtos/sao_miguel_modelo_4_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/sao_miguel_modelo_4_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/sao_miguel_modelo_4_chaveiro.jpg",
+        "imagem_medalha_2lados_prata": "img/produtos/sao-miguel_modelo_4_medalha_2lados_prata.jpg",
+        "imagem_medalha_2lados_ouro_velho": "img/produtos/sao-miguel_modelo_4_medalha_2lados_ouro_velho.jpg",
+        "imagem_chaveiro_2lados": "img/produtos/sao-miguel_modelo_4_chaveiro_2lados.jpg"
+      },
+      {
+        "id": 5,
+        "nome": "Modelo 5",
+        "imagem": "img/produtos/sao_miguel_modelo_5_medalha.jpg",
+        "tamanhos": [
+          "12mm",
+          "16mm"
+        ],
+        "imagem_entremeio_prata": "img/produtos/sao_miguel_modelo_5_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/sao_miguel_modelo_5_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/sao_miguel_modelo_5_chaveiro.jpg",
+        "imagem_medalha_2lados_prata": "img/produtos/sao-miguel_modelo_5_medalha_2lados_prata.jpg",
+        "imagem_medalha_2lados_ouro_velho": "img/produtos/sao-miguel_modelo_5_medalha_2lados_ouro_velho.jpg",
+        "imagem_chaveiro_2lados": "img/produtos/sao-miguel_modelo_5_chaveiro_2lados.jpg"
       }
     ],
     "categoria": "Anjos"
