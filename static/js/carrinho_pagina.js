@@ -1042,6 +1042,36 @@
     });
   }
 
+  // Popup de pedido minimo (ver conversa: "não seria bom um popup
+  // avisando novamente do mínimo") -- alem do aviso fixo na pagina
+  // (aviso-minimo, sempre visivel quando abaixo do minimo), esse popup
+  // interrompe a pessoa bem na hora que ela tenta pagar/mandar pelo
+  // WhatsApp, com um botao direto pro catalogo (em vez de só rolar a
+  // tela ate o aviso fixo). Mesmo padrao de modal simples do aviso da
+  // greve dos Correios acima (2 jeitos de fechar: X e botao).
+  const modalAvisoMinimo = document.getElementById('modal-aviso-minimo');
+  const avisoMinimoModalTexto = document.getElementById('aviso-minimo-modal-texto');
+  const btnAvisoMinimoFechar = document.getElementById('btn-aviso-minimo-fechar');
+  const btnAvisoMinimoContinuar = document.getElementById('btn-aviso-minimo-continuar');
+  function fecharAvisoMinimo() {
+    if (modalAvisoMinimo) modalAvisoMinimo.hidden = true;
+  }
+  function mostrarPopupAvisoMinimo(faltamParaMinimo, minimoReais) {
+    if (!modalAvisoMinimo || !avisoMinimoModalTexto) return;
+    avisoMinimoModalTexto.textContent =
+      `Faltam ${formatarPreco(faltamParaMinimo)} em produtos para o pedido mínimo de ` +
+      `${formatarPreco(minimoReais)} (o frete é à parte e não entra nessa conta). ` +
+      `Que tal dar uma olhada no catálogo pra completar?`;
+    modalAvisoMinimo.hidden = false;
+  }
+  if (btnAvisoMinimoFechar) btnAvisoMinimoFechar.addEventListener('click', fecharAvisoMinimo);
+  if (btnAvisoMinimoContinuar) btnAvisoMinimoContinuar.addEventListener('click', fecharAvisoMinimo);
+  if (modalAvisoMinimo) {
+    modalAvisoMinimo.addEventListener('click', (evento) => {
+      if (evento.target === modalAvisoMinimo) fecharAvisoMinimo();
+    });
+  }
+
   if (btnCalcularFrete) {
     btnCalcularFrete.addEventListener('click', async () => {
       const cep = (freteCepInput.value || '').replace(/\D/g, '');
@@ -1217,11 +1247,7 @@
 
     if (!ultimoCalculo.atinge_minimo) {
       const faltamParaMinimo = ultimoCalculo.pedido_minimo_reais - ultimoCalculo.subtotal_total;
-      mostrarToast(
-        `⚠️ Faltam ${formatarPreco(faltamParaMinimo)} em produtos para o pedido mínimo de ` +
-        `${formatarPreco(ultimoCalculo.pedido_minimo_reais)} (o frete é à parte).`
-      );
-      if (avisoMinimoEl) avisoMinimoEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      mostrarPopupAvisoMinimo(faltamParaMinimo, ultimoCalculo.pedido_minimo_reais);
       return null;
     }
     if (!freteEscolhido) {
@@ -1465,11 +1491,7 @@
       if (!ultimoCalculo) return;
       if (!ultimoCalculo.atinge_minimo) {
         const faltamParaMinimo = ultimoCalculo.pedido_minimo_reais - ultimoCalculo.subtotal_total;
-        mostrarToast(
-          `⚠️ Faltam ${formatarPreco(faltamParaMinimo)} em produtos para o pedido mínimo de ` +
-          `${formatarPreco(ultimoCalculo.pedido_minimo_reais)} (o frete é à parte).`
-        );
-        if (avisoMinimoEl) avisoMinimoEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        mostrarPopupAvisoMinimo(faltamParaMinimo, ultimoCalculo.pedido_minimo_reais);
         return;
       }
 

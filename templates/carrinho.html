@@ -250,6 +250,18 @@
       <button type="button" class="botao-secundario" id="btn-aviso-greve-correios-ok">Entendi</button>
     </div>
   </div>
+
+  <div class="imagem-modal" id="modal-aviso-minimo" hidden>
+    <div class="imagem-modal-caixa">
+      <button type="button" class="imagem-modal-fechar" id="btn-aviso-minimo-fechar" aria-label="Fechar">×</button>
+      <h2 class="tabela-desconto-titulo">🛒 Falta pouco para o pedido mínimo</h2>
+      <p id="aviso-minimo-modal-texto"></p>
+      <div class="popup-ajuda-botoes">
+        <a class="botao-pagar" href="{{ url_for('index') }}">Ver catálogo</a>
+        <button type="button" class="botao-secundario" id="btn-aviso-minimo-continuar">Continuar no carrinho</button>
+      </div>
+    </div>
+  </div>
 {% endblock %}
 
 {% block script %}
