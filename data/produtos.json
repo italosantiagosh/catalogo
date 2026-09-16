@@ -1039,6 +1039,21 @@
         "imagem_medalha_2lados_prata": "img/produtos/nossa-senhora-aparecida_modelo_2_medalha_2lados_prata.jpg",
         "imagem_medalha_2lados_ouro_velho": "img/produtos/nossa-senhora-aparecida_modelo_2_medalha_2lados_ouro_velho.jpg",
         "imagem_chaveiro_2lados": "img/produtos/nossa-senhora-aparecida_modelo_2_chaveiro_2lados.jpg"
+      },
+      {
+        "id": 3,
+        "nome": "Modelo 3",
+        "imagem": "img/produtos/nossa_senhora_aparecida_modelo_3_medalha.jpg",
+        "tamanhos": [
+          "12mm",
+          "16mm"
+        ],
+        "imagem_entremeio_prata": "img/produtos/nossa_senhora_aparecida_modelo_3_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/nossa_senhora_aparecida_modelo_3_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/nossa_senhora_aparecida_modelo_3_chaveiro.jpg",
+        "imagem_medalha_2lados_prata": "img/produtos/nossa-senhora-aparecida_modelo_3_medalha_2lados_prata.jpg",
+        "imagem_medalha_2lados_ouro_velho": "img/produtos/nossa-senhora-aparecida_modelo_3_medalha_2lados_ouro_velho.jpg",
+        "imagem_chaveiro_2lados": "img/produtos/nossa-senhora-aparecida_modelo_3_chaveiro_2lados.jpg"
       }
     ],
     "categoria": "Nossa Senhora"
