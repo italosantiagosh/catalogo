@@ -30,7 +30,7 @@
     </table>
   </div>
 
-  <p class="aviso-preco-atacado" id="aviso-preco-atacado"></p>
+  <p class="aviso-preco-atacado" id="aviso-preco-atacado" hidden></p>
   <p class="aviso-frete-estimativa" id="aviso-frete-estimativa" hidden></p>
 
   <div class="passos-personalizada">
@@ -56,26 +56,10 @@
     </div>
   </div>
 
-  <p class="nota-passos-2lados">
-    <strong>Escolheu um formato de 2 lados?</strong> Depois de aprovar o lado 1, você repete os
-    passos 2 e 3 pro lado 2 (pode repetir a mesma imagem ou enviar uma nova). A quantidade só é
-    escolhida no final, com os dois lados prontos.
-  </p>
-
   <div id="banner-erro" class="erro" hidden></div>
 
   <!-- 1) escolha de formato + foto -->
   <section id="view-upload" class="card-upload">
-    <p class="indicador-lado" id="indicador-lado" hidden></p>
-
-    <!-- so aparece no lado 2 de um item de 2 lados (ver
-         static/js/personalizada.js:atualizarIndicadorLado) -- atalho
-         pra quando os 2 lados sao a mesma imagem, sem repetir upload/
-         recorte/escolha do catalogo pro lado 2 (pedido do usuario). -->
-    <button type="button" class="botao-secundario" id="btn-lado-igual" hidden>
-      ✅ Lado 2 é igual ao lado 1 → ir direto pra prévia
-    </button>
-
     <fieldset class="formatos" id="sel-formatos">
       <legend>Formato *</legend>
       <label class="opcao-formato">
@@ -138,6 +122,16 @@
         <input type="radio" name="cor" value="ouro_velho"> Ouro velho
       </label>
     </fieldset>
+
+    <p class="indicador-lado" id="indicador-lado" hidden></p>
+
+    <!-- so aparece no lado 2 de um item de 2 lados (ver
+         static/js/personalizada.js:atualizarIndicadorLado) -- atalho
+         pra quando os 2 lados sao a mesma imagem, sem repetir upload/
+         recorte/escolha do catalogo pro lado 2 (pedido do usuario). -->
+    <button type="button" class="botao-secundario" id="btn-lado-igual" hidden>
+      ✅ Lado 2 é igual ao lado 1 → ir direto pra prévia
+    </button>
 
     <label class="dropzone" for="input-imagem" id="dropzone-imagem">
       <span class="icone">📷</span>

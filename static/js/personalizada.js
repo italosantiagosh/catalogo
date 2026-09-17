@@ -158,9 +158,13 @@
     }
     indicadorLado.hidden = false;
     if (ladoAtual === 1) {
-      indicadorLado.textContent = 'Lado 1 de 2 — escolha a foto (ou envie depois) desse lado.';
+      indicadorLado.textContent =
+        '📌 Escolha a imagem do lado 1, gere a prévia e aprove. Depois você escolhe a imagem do ' +
+        'lado 2 (ou marca a opção de repetir a do lado 1, que aparece aqui nessa hora).';
     } else {
-      indicadorLado.textContent = '✅ Lado 1 pronto! Agora o Lado 2 — escolha a foto (ou envie depois) desse lado.';
+      indicadorLado.textContent =
+        '✅ Lado 1 pronto! Agora escolha a imagem do lado 2 abaixo, ou marque a opção de repetir ' +
+        'a do lado 1.';
     }
   }
 
