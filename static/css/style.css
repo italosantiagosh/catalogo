@@ -1331,29 +1331,37 @@ h1 {
 
 .lado2-widget-escolhido {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 8px;
-  font-size: 0.8rem;
+  text-align: center;
+  gap: 2px;
 }
 
 .lado2-widget-escolhido img {
-  width: 40px;
-  height: 40px;
+  width: 72px;
+  height: 72px;
   border-radius: 50%;
   object-fit: cover;
-  flex-shrink: 0;
+  border: 2px solid var(--border);
+  display: block;
+}
+
+.lado2-widget-escolhido span {
+  display: block;
+  font-size: 0.7rem;
+  color: var(--muted);
+  max-width: 100px;
 }
 
 .lado2-widget-trocar {
   background: none;
   border: none;
   color: var(--accent);
-  font-size: 0.76rem;
+  font-size: 0.72rem;
   text-decoration: underline;
   cursor: pointer;
   padding: 0;
-  margin-left: auto;
-  flex-shrink: 0;
+  margin-top: 2px;
 }
 
 .lado2-widget-subselecao {
@@ -1644,6 +1652,11 @@ button.botao-carrinho:disabled {
   font-weight: 800;
   margin-bottom: 2px;
   color: var(--accent);
+}
+
+.selo-fininha {
+  font-size: 0.62rem;
+  opacity: 0.85;
 }
 
 .selo-icone {

@@ -90,6 +90,9 @@
           "entremeio_prata": url_for("static", filename=modelo.imagem_entremeio_prata),
           "entremeio_ouro_velho": url_for("static", filename=modelo.imagem_entremeio_ouro_velho),
           "chaveiro": url_for("static", filename=modelo.imagem_chaveiro),
+          "medalha_2lados_prata": (url_for("static", filename=modelo.get("imagem_medalha_2lados_prata")) if modelo.get("imagem_medalha_2lados_prata") else None),
+          "medalha_2lados_ouro_velho": (url_for("static", filename=modelo.get("imagem_medalha_2lados_ouro_velho")) if modelo.get("imagem_medalha_2lados_ouro_velho") else None),
+          "chaveiro_2lados": (url_for("static", filename=modelo.get("imagem_chaveiro_2lados")) if modelo.get("imagem_chaveiro_2lados") else None),
         } | tojson }}'
       >
         <img src="{{ url_for('static', filename=modelo.imagem) }}" alt="{{ produto.nome }} — {{ modelo.nome }}" loading="lazy" decoding="async">
@@ -222,9 +225,9 @@
       </div>
       <div class="selo-divisor"></div>
       <div class="selo-item">
-        <span class="selo-icone"><img src="{{ url_for('static', filename='img/icones/brasil.svg') }}" alt="" class="selo-icone-brasil"></span>
-        <strong>Envio</strong>
-        para todo o Brasil
+        <span class="selo-icone">💳</span>
+        <strong>Parcelamos</strong>
+        em 12x <span class="selo-fininha">(com juros)</span>
       </div>
       <div class="selo-divisor"></div>
       <div class="selo-item">
