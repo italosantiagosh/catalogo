@@ -1017,6 +1017,17 @@ h1 {
   line-height: 1.1;
 }
 
+.buybox-tag-desconto {
+  display: inline-block;
+  margin-top: 4px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--gold-soft);
+  color: var(--gold-texto-claro);
+  font-size: 0.66rem;
+  font-weight: 700;
+}
+
 .buybox-tabela {
   width: 100%;
   border-collapse: collapse;
@@ -1432,14 +1443,15 @@ h1 {
 
 .modelos-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 12px;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
   margin-bottom: 20px;
 }
 
 @media (min-width: 640px) {
   .modelos-grid {
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
   }
 }
 

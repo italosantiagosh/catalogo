@@ -374,3 +374,44 @@ def test_pagina_personalizada_mostra_avaliacao_aprovada_do_formato_certo(client,
     pagina = client.get("/personalizada").get_data(as_text=True)
     assert "Maria Teste" in pagina
     assert "★★★★★" in pagina
+
+
+def test_pagina_avaliacoes_sem_nenhuma_aprovada_mostra_vazio(client):
+    pagina = client.get("/avaliacoes").get_data(as_text=True)
+    assert pagina.count("avaliação") or "Ainda não há avaliações aprovadas" in pagina
+
+
+def test_pagina_avaliacoes_junta_catalogo_e_personalizada(client, monkeypatch):
+    """Pedido 2026-09-17: pagina "Opinião de quem já comprou" reune TODAS
+    as avaliacoes aprovadas do site (catalogo + personalizada) numa unica
+    lista, com o nome do produto de cada uma."""
+    _preparar_admin(monkeypatch)
+    produto_id = _produto_id_real()
+    from services.catalogo import buscar_produto
+    nome_produto = buscar_produto(produto_id)["nome"]
+
+    dados_catalogo = _corpo_avaliacao(produto_id=produto_id, nome_cliente="Cliente Catálogo")
+    client.post("/api/avaliacoes", data=dados_catalogo)
+    dados_personalizada = _corpo_avaliacao(produto_id=_produto_id_personalizado(), nome_cliente="Cliente Personalizada")
+    client.post("/api/avaliacoes", data=dados_personalizada)
+
+    for avaliacao in avaliacoes.listar_avaliacoes():
+        client.post(f"/admin/avaliacoes/{avaliacao['id']}/aprovar", auth=("admin", "segredo123"))
+
+    pagina = client.get("/avaliacoes").get_data(as_text=True)
+    assert "Cliente Catálogo" in pagina
+    assert "Cliente Personalizada" in pagina
+    assert nome_produto in pagina
+    assert f'href="/produto/{produto_id}"' in pagina
+
+
+def test_pagina_avaliacoes_nao_mostra_pendente(client, monkeypatch):
+    _preparar_admin(monkeypatch)
+    client.post("/api/avaliacoes", data=_corpo_avaliacao(nome_cliente="Ainda Pendente"))
+    pagina = client.get("/avaliacoes").get_data(as_text=True)
+    assert "Ainda Pendente" not in pagina
+
+
+def test_footer_tem_link_para_pagina_de_avaliacoes(client):
+    pagina = client.get("/").get_data(as_text=True)
+    assert 'href="/avaliacoes"' in pagina

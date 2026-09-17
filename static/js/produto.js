@@ -173,6 +173,7 @@
       duasFacesAtiva = !duasFacesAtiva;
       toggle2Lados.classList.toggle('ativo', duasFacesAtiva);
       if (lado2Widget) lado2Widget.hidden = !duasFacesAtiva;
+      atualizarVisibilidadeTamanho();
       if (duasFacesAtiva) {
         atualizar2LadosUI();
       } else {
@@ -502,9 +503,17 @@
     }
   }
 
+  // tamanho de 1 lado (12/16mm) some quando o toggle de 2 lados esta
+  // ligado -- o widget ja mostra o proprio tamanho (14/18mm, so faz
+  // sentido pra medalha) mais abaixo, ter os dois visiveis ao mesmo
+  // tempo confundia (ver conversa 2026-09-17).
+  function atualizarVisibilidadeTamanho() {
+    tamanhosFieldset.hidden = formatoAtual() !== 'medalha' || duasFacesAtiva;
+  }
+
   function atualizarSubSelecao() {
     const formato = formatoAtual();
-    tamanhosFieldset.hidden = formato !== 'medalha';
+    atualizarVisibilidadeTamanho();
     coresFieldset.hidden = formato !== 'entremeio';
     atualizarInfoFormato();
     atualizarAvisoPreco();

@@ -46,12 +46,16 @@
       📖 <a href="{{ url_for('blog_artigo', slug=slug_artigo_relacionado) }}">Conheça a história de {{ produto.nome }}</a>
     </p>
   {% endif %}
+  {% if vendas_recentes %}
+    <p class="vendas-recentes-produto">🔥 <strong>{{ vendas_recentes }}</strong> vendidas nos últimos 30 dias</p>
+  {% endif %}
   <div class="buybox">
     <div class="buybox-topo">
       <img src="{{ url_for('static', filename=produto.modelos[0].imagem) }}" alt="{{ produto.nome }}" class="buybox-img">
       <div class="buybox-precos">
         <span class="buybox-de">A partir de</span>
         <span><span class="buybox-riscado">R$ 7,00</span><span class="buybox-valor">{{ preco_varejo | preco }}</span></span>
+        <span class="buybox-tag-desconto">Desconto de até 65%</span>
       </div>
     </div>
     <table class="buybox-tabela">
@@ -60,22 +64,14 @@
       <tr><td>Medalha ou entremeio 2 lados</td><td><span class="riscado">R$ 10,00</span><span class="final">{{ preco_varejo_2lados | preco }}</span></td></tr>
       <tr><td>Chaveiro (1 ou 2 lados)</td><td><span class="riscado">R$ 20,00</span><span class="final">{{ preco_varejo_chaveiro | preco }}</span></td></tr>
     </table>
-    <div class="buybox-selos">
-      <span>🏅 <strong>+125 mil</strong> vendidas</span>
-      <span>💳 <strong>Parcelamos em 12x</strong> <span class="fininha">(com juros)</span></span>
-    </div>
-    <a href="#modelos-grid" class="buybox-cta">Escolher modelo e comprar</a>
   </div>
 
   <p class="instrucao">Escolha um modelo:</p>
-  {% if vendas_recentes %}
-    <p class="vendas-recentes-produto">🔥 <strong>{{ vendas_recentes }}</strong> vendidas nos últimos 30 dias</p>
-  {% endif %}
 
   <p class="aviso-preco-atacado" id="aviso-preco-atacado" hidden></p>
   <p class="aviso-frete-estimativa" id="aviso-frete-estimativa" hidden></p>
-  <p class="aviso-simulacao">📷 Fotos meramente ilustrativas — cor e brilho da peça real podem variar
-  um pouco conforme iluminação e tela do aparelho.</p>
+  <p class="aviso-simulacao">📷 Fotos meramente ilustrativas — pode haver uma pequena bolha na lateral
+  ou a imagem não ficar perfeitamente centralizada, limitações que podem ocorrer na peça real.</p>
 
   <div class="modelos-grid" id="modelos-grid" data-produto-id="{{ produto.id }}" data-produto-nome="{{ produto.nome }}">
     {% for modelo in produto.modelos %}

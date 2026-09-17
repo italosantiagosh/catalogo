@@ -120,6 +120,36 @@ def listar_avaliacoes_aprovadas(produto_id: str) -> list[dict]:
     return [dict(linha) for linha in linhas]
 
 
+def todas_avaliacoes_aprovadas(limite: int | None = None) -> list[dict]:
+    """Todas as avaliacoes aprovadas do site inteiro (qualquer produto_id,
+    catalogo ou personalizada), mais recentes primeiro -- usado na pagina
+    "Opinião de quem já comprou" (ver app.py:pagina_avaliacoes), que
+    junta tudo num lugar so em vez de espalhado por pagina de produto.
+    `limite` opcional corta a lista (None = todas)."""
+    inicializar_db()
+    consulta = "SELECT * FROM avaliacoes WHERE status = 'aprovada' ORDER BY criado_em DESC"
+    if limite is not None:
+        consulta += " LIMIT ?"
+    with _conexao() as conexao:
+        linhas = conexao.execute(consulta, (limite,) if limite is not None else ()).fetchall()
+    return [dict(linha) for linha in linhas]
+
+
+def media_e_total_todas_aprovadas() -> tuple[float | None, int]:
+    """(media, total) de TODAS as avaliacoes aprovadas do site (qualquer
+    produto) -- resumo geral no topo da pagina "Opinião de quem já
+    comprou", mesmo padrao de media_e_total_aprovadas so que sem
+    filtrar por produto_id."""
+    inicializar_db()
+    with _conexao() as conexao:
+        linha = conexao.execute(
+            "SELECT AVG(nota) AS media, COUNT(*) AS total FROM avaliacoes WHERE status = 'aprovada'"
+        ).fetchone()
+    total = linha["total"] or 0
+    media = round(linha["media"], 1) if linha["media"] is not None else None
+    return media, total
+
+
 def media_e_total_aprovadas(produto_id: str) -> tuple[float | None, int]:
     """(media, total) das avaliacoes aprovadas desse produto -- usado pro
     resumo na pagina e pro AggregateRating (ver app.py:produto).

@@ -123,7 +123,9 @@ from services.avaliacoes import (
     listar_avaliacoes,
     listar_avaliacoes_aprovadas,
     media_e_total_aprovadas,
+    media_e_total_todas_aprovadas,
     medias_e_totais_aprovadas,
+    todas_avaliacoes_aprovadas,
 )
 from services.push import (
     enviar_notificacao as enviar_notificacao_push,
@@ -1549,6 +1551,42 @@ def _produto_para_avaliar(produto_id: str) -> dict | None:
         if p["id"] == produto_id:
             return {"id": p["id"], "nome": p["nome"], "imagem": p["thumbnail"]}
     return None
+
+
+@app.route("/avaliacoes", methods=["GET"])
+def pagina_avaliacoes():
+    """"Confira a opinião de quem já comprou" -- todas as avaliacoes
+    aprovadas do site inteiro (catalogo + personalizada) juntas numa
+    unica pagina, mais recentes primeiro (ver services.avaliacoes.
+    todas_avaliacoes_aprovadas). Link no rodape/menu lateral e num botao
+    no final da home (pedido do usuario 2026-09-17). Reaproveita a mesma
+    resolucao catalogo/personalizada de _produto_para_avaliar, so que em
+    lote (uma consulta por tipo, nao uma por avaliacao)."""
+    media, total = media_e_total_todas_aprovadas()
+    avaliacoes_brutas = todas_avaliacoes_aprovadas()
+
+    produtos_por_id = {p["id"]: p for p in carregar_produtos()}
+    personalizados_por_id = {p["id"]: p for p in PRODUTOS_PERSONALIZADOS}
+
+    avaliacoes = []
+    for avaliacao in avaliacoes_brutas:
+        produto_id = avaliacao["produto_id"]
+        produto = produtos_por_id.get(produto_id)
+        if produto is not None:
+            nome_produto = produto["nome"]
+            link_produto = url_for("produto", produto_id=produto_id)
+        else:
+            personalizado = personalizados_por_id.get(produto_id)
+            nome_produto = personalizado["nome"] if personalizado else None
+            link_produto = url_for("personalizada", formato=personalizado["formato"]) if personalizado else None
+        avaliacoes.append({**avaliacao, "produto_nome": nome_produto, "produto_link": link_produto})
+
+    return render_template(
+        "avaliacoes.html",
+        avaliacoes=avaliacoes,
+        media_avaliacoes=media,
+        total_avaliacoes=total,
+    )
 
 
 @app.route("/avaliar", methods=["GET"])
