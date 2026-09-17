@@ -14,9 +14,20 @@ CONFIRMADO com pedido de teste real (pedido Tiny #1113, status "OK"):
   - `frete_por_conta="E"` e´ guardado como "Contratação do Frete por
     conta do Remetente (CIF)" -- exatamente "loja contrata o frete",
     como pretendido.
+`forma_pagamento`/`meio_pagamento` mandam SEMPRE "pix"/"Banco" agora,
+mesmo pra pedido pago no cartao (pedido explicito 2026-09-17: cai na
+mesma conta de qualquer forma, e o juros do parcelamento e´ da
+adquirente/InfinitePay -- nunca da loja -- entao nao entra na nota,
+ver Sumula 237 do STJ). `forma_envio`/`forma_frete`/`nome_transportador`
+(ver _envio_para_tiny) seguem os nomes EXATOS ja cadastrados na conta
+Tiny da usuaria (print de tela 2026-09-17) -- igual a regra ja seguida
+pros SKUs de material abaixo, nunca inventados.
+
 NAO confirmado ainda:
-  - `forma_pagamento="cartao_credito"` (mapeamento pra pagamento via
-    cartao na InfinitePay) -- so testamos Pix ate agora;
+  - `forma_envio`/`forma_frete`/`nome_transportador`/`data_pedido`
+    (adicionados 2026-09-17, sem pedido de teste real ainda -- se a
+    Tiny rejeitar esses valores especificos, os outros campos do
+    pedido continuam indo normal, ver criar_pedido_tiny);
   - o bloco `endereco_entrega` (nome dos campos), usado quando o
     cliente pede entrega num endereco diferente do proprio (ver
     criar_pedido_tiny) -- ainda sem pedido de teste real com isso
@@ -33,10 +44,12 @@ causa disso.
 from __future__ import annotations
 
 import json
+from datetime import datetime
 
 import requests
 
 from config import TINY_API_TOKEN
+from services.frete import eh_correios
 
 API_URL = "https://api.tiny.com.br/api2/pedido.incluir.php"
 BUSCA_CONTATOS_URL = "https://api.tiny.com.br/api2/contatos.pesquisa.php"
@@ -44,11 +57,6 @@ BUSCA_CONTATOS_URL = "https://api.tiny.com.br/api2/contatos.pesquisa.php"
 _TIPO_PESSOA_TINY_PARA_SITE = {"F": "fisica", "J": "juridica"}
 
 _TIPO_PESSOA = {"fisica": "F", "juridica": "J"}
-
-# capture_method (InfinitePay) -> forma_pagamento (Tiny) -- "pix"
-# confirmado com pedido de teste real, "cartao_credito" ainda nao (ver
-# aviso no topo do arquivo).
-_FORMA_PAGAMENTO = {"pix": "pix", "credit_card": "cartao_credito"}
 
 
 # Inscricao Estadual so faz sentido pra pessoa juridica (isento nunca
@@ -216,6 +224,77 @@ def _descricao_estoque_tiny(item: dict) -> str:
     return _DESCRICAO_MATERIAL_TINY.get(chave, chave)
 
 
+# Nome EXATO das transportadoras e das formas de frete ja cadastradas na
+# conta Tiny da usuaria (print de tela erp.olist.com/vendas#edit/... em
+# 2026-09-17, "Forma de envio"/"Forma de frete") -- nunca inventado aqui,
+# mesma regra ja seguida pros SKUs de material acima. Chave = trecho que
+# aparece em frete_descricao (case-insensitive) pra identificar qual
+# transportadora foi essa (Frenet devolve o nome dela no comeco da
+# descricao, ver services/frete.py:TRANSPORTADORAS_COM_LOGO).
+_TRANSPORTADORA_TINY = {
+    "loggi": {"nome_transportador": "Loggi via Frenet", "forma_frete": "Loggi"},
+    "jadlog": {"nome_transportador": "Jadlog via Frenet", "forma_frete": "Jadlog Package"},
+    "azul": {"nome_transportador": "Azul Cargo Express via Mercado Envios", "forma_frete": "e-commerce"},
+    "total express": {"nome_transportador": "Transportadora", "forma_frete": "Não definida"},
+}
+
+# Correios: "Forma de envio" fica sempre "Correios" (forma_envio="C", sem
+# nome_transportador -- so se usa esse campo quando forma_envio="T", ver
+# doc da API), mas a "Forma de frete" muda conforme o SERVICO escolhido
+# no site (contratos ja cadastrados na conta Tiny da usuaria, mesmo
+# print). Reaproveita services.frete.eh_correios (mesma deteccao ja
+# usada pro aviso de greve) em vez de duplicar a logica de identificar
+# Correios.
+_FORMA_FRETE_CORREIOS = (
+    ("mini", "CORREIOS MINI ENVIOS CTR AG (04227)"),
+    ("sedex", "SEDEX CONTRATO AG (03220)"),
+)
+_FORMA_FRETE_CORREIOS_PADRAO = "PAC CONTRATO AG (03298)"
+
+
+def _envio_para_tiny(frete_descricao: str) -> dict:
+    """`forma_envio`/`forma_frete`/`nome_transportador` a partir da
+    descricao de frete escolhida no site (ex: "Jadlog Package via Frenet
+    — R$ 12,90") -- devolve {} quando nao reconhece a transportadora (o
+    pedido ainda sincroniza, so sem esses 3 campos preenchidos; melhor
+    que travar o webhook por causa disso, ver aviso no topo do arquivo).
+    AINDA NAO CONFIRMADO com pedido de teste real (mesmo criterio dos
+    outros avisos aqui) -- `forma_frete`/`nome_transportador` so aceitam
+    valores JA CADASTRADOS na conta Tiny da usuaria; se o texto mandado
+    aqui nao bater exatamente com o cadastro, a Tiny pode rejeitar ou
+    ignorar so esses campos."""
+    descricao = (frete_descricao or "").lower()
+    if eh_correios(descricao):
+        forma_frete = next(
+            (valor for chave, valor in _FORMA_FRETE_CORREIOS if chave in descricao),
+            _FORMA_FRETE_CORREIOS_PADRAO,
+        )
+        return {"forma_envio": "C", "forma_frete": forma_frete}
+    for chave, dados in _TRANSPORTADORA_TINY.items():
+        if chave in descricao:
+            return {
+                "forma_envio": "T",
+                "nome_transportador": dados["nome_transportador"],
+                "forma_frete": dados["forma_frete"],
+            }
+    return {}
+
+
+def _data_pedido_tiny(pedido: dict) -> str | None:
+    """Data do PEDIDO (nao a de hoje/sincronizacao) no formato dd/mm/aaaa
+    que a Tiny espera -- `criado_em` e´ salvo em UTC (ver
+    services/pedidos.py:criar_pedido), a diferenca de fuso pra Brasil so
+    importaria pra pedidos feitos poucas horas antes/depois da meia-noite,
+    caso aceitavel pra um campo de DATA (sem hora)."""
+    bruto = pedido.get("criado_em")
+    if not bruto:
+        return None
+    try:
+        return datetime.fromisoformat(bruto).strftime("%d/%m/%Y")
+    except ValueError:
+        return None
+
+
 def _primeiro_registro(registros_bruto) -> dict:
     """`retorno.registros` da Tiny vem ora como lista (`[{"registro": {...}}]`),
     ora como um unico objeto (`{"registro": {...}}`) -- confirmado na
@@ -296,12 +375,20 @@ def criar_pedido_tiny(pedido: dict) -> dict:
         "situacao": "Aberto",
         "obs": " | ".join(observacoes),
         "valor_frete": f"{pedido.get('frete_preco', 0):.2f}",
-        "forma_frete": (pedido.get("frete_descricao") or "").split(" — ")[0],
         "frete_por_conta": "E",  # loja contrata o frete -- ver aviso no topo do arquivo
+        # forma_pagamento/meio_pagamento sempre "Pix"/"Banco" mesmo quando
+        # o cliente pagou de cartao (pedido explicito da usuaria
+        # 2026-09-17: o dinheiro cai na mesma conta de qualquer forma, e o
+        # juros do parcelamento e´ da adquirente/InfinitePay, nunca entra
+        # na nota -- ver conversa). Substitui o antigo mapeamento
+        # pix/cartao_credito de _FORMA_PAGAMENTO.
+        "forma_pagamento": "pix",
+        "meio_pagamento": "Banco",
     }
-    forma_pagamento = _FORMA_PAGAMENTO.get(pedido.get("forma_pagamento"))
-    if forma_pagamento:
-        corpo_pedido["forma_pagamento"] = forma_pagamento
+    corpo_pedido.update(_envio_para_tiny(pedido.get("frete_descricao", "")))
+    data_pedido = _data_pedido_tiny(pedido)
+    if data_pedido:
+        corpo_pedido["data_pedido"] = data_pedido
 
     # Endereco de entrega DIFERENTE do endereco do cliente (ver
     # conversa/services.pedidos._COLUNAS_ADICIONAIS) -- so manda esse

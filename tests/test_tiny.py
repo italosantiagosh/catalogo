@@ -474,12 +474,69 @@ def test_juridica_sem_ie_preenchida_nao_manda_ie_nem_contribuinte(monkeypatch):
     assert "contribuinte" not in pedido_json["cliente"]
 
 
-def test_forma_pagamento_desconhecida_nao_e_enviada(monkeypatch):
+def test_forma_pagamento_e_sempre_pix_mesmo_pago_no_cartao(monkeypatch):
+    """Pedido 2026-09-17: manda sempre Pix/Banco na Tiny, mesmo quando o
+    cliente pagou de cartão -- o dinheiro cai na mesma conta de qualquer
+    forma, e o juros do parcelamento (da adquirente/InfinitePay, nunca da
+    loja) não entra na nota (ver services/tiny.py:criar_pedido_tiny)."""
     monkeypatch.setattr(tiny, "TINY_API_TOKEN", "segredo123")
     with patch("services.tiny.requests.post", return_value=_resposta_ok()) as post_mock:
-        tiny.criar_pedido_tiny(_pedido_exemplo(forma_pagamento="boleto_bancario_desconhecido"))
+        tiny.criar_pedido_tiny(_pedido_exemplo(forma_pagamento="credit_card"))
     pedido_json = json.loads(post_mock.call_args.kwargs["data"]["pedido"])["pedido"]
-    assert "forma_pagamento" not in pedido_json
+    assert pedido_json["forma_pagamento"] == "pix"
+    assert pedido_json["meio_pagamento"] == "Banco"
+
+
+def test_envio_correios_pac_sedex_mini_envios(monkeypatch):
+    monkeypatch.setattr(tiny, "TINY_API_TOKEN", "segredo123")
+    casos = [
+        ("Correios PAC — R$ 10,00", "PAC CONTRATO AG (03298)"),
+        ("Correios SEDEX — R$ 25,00", "SEDEX CONTRATO AG (03220)"),
+        ("Correios Mini Envios — R$ 8,00", "CORREIOS MINI ENVIOS CTR AG (04227)"),
+    ]
+    for frete_descricao, forma_frete_esperada in casos:
+        with patch("services.tiny.requests.post", return_value=_resposta_ok()) as post_mock:
+            tiny.criar_pedido_tiny(_pedido_exemplo(frete_descricao=frete_descricao))
+        pedido_json = json.loads(post_mock.call_args.kwargs["data"]["pedido"])["pedido"]
+        assert pedido_json["forma_envio"] == "C"
+        assert pedido_json["forma_frete"] == forma_frete_esperada
+        assert "nome_transportador" not in pedido_json
+
+
+def test_envio_transportadora_reconhecida(monkeypatch):
+    monkeypatch.setattr(tiny, "TINY_API_TOKEN", "segredo123")
+    with patch("services.tiny.requests.post", return_value=_resposta_ok()) as post_mock:
+        tiny.criar_pedido_tiny(_pedido_exemplo(frete_descricao="Jadlog Package via Frenet — R$ 12,90"))
+    pedido_json = json.loads(post_mock.call_args.kwargs["data"]["pedido"])["pedido"]
+    assert pedido_json["forma_envio"] == "T"
+    assert pedido_json["nome_transportador"] == "Jadlog via Frenet"
+    assert pedido_json["forma_frete"] == "Jadlog Package"
+
+
+def test_envio_transportadora_desconhecida_nao_envia_campos(monkeypatch):
+    monkeypatch.setattr(tiny, "TINY_API_TOKEN", "segredo123")
+    with patch("services.tiny.requests.post", return_value=_resposta_ok()) as post_mock:
+        tiny.criar_pedido_tiny(_pedido_exemplo(frete_descricao="Transportadora nova — R$ 12,90"))
+    pedido_json = json.loads(post_mock.call_args.kwargs["data"]["pedido"])["pedido"]
+    assert "forma_envio" not in pedido_json
+    assert "forma_frete" not in pedido_json
+    assert "nome_transportador" not in pedido_json
+
+
+def test_data_pedido_vem_do_criado_em(monkeypatch):
+    monkeypatch.setattr(tiny, "TINY_API_TOKEN", "segredo123")
+    with patch("services.tiny.requests.post", return_value=_resposta_ok()) as post_mock:
+        tiny.criar_pedido_tiny(_pedido_exemplo(criado_em="2026-09-17T22:38:05.123456+00:00"))
+    pedido_json = json.loads(post_mock.call_args.kwargs["data"]["pedido"])["pedido"]
+    assert pedido_json["data_pedido"] == "17/09/2026"
+
+
+def test_sem_criado_em_nao_envia_data_pedido(monkeypatch):
+    monkeypatch.setattr(tiny, "TINY_API_TOKEN", "segredo123")
+    with patch("services.tiny.requests.post", return_value=_resposta_ok()) as post_mock:
+        tiny.criar_pedido_tiny(_pedido_exemplo())
+    pedido_json = json.loads(post_mock.call_args.kwargs["data"]["pedido"])["pedido"]
+    assert "data_pedido" not in pedido_json
 
 
 def test_resposta_com_erro_da_tiny(monkeypatch):
