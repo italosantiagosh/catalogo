@@ -19,6 +19,8 @@
     </p>
   {% endif %}
 
+  <a href="{{ url_for('avaliar_geral') }}" class="botao-secundario">Já comprou? Então deixe sua avaliação 🙂</a>
+
   {% if avaliacoes %}
     <div class="avaliacoes-lista">
       {% for avaliacao in avaliacoes %}

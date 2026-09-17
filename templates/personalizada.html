@@ -14,10 +14,23 @@
   <h1>Medalha Personalizada</h1>
   <p class="instrucao">Envie uma foto, ajuste o recorte e veja a simulação da sua peça antes de pedir.</p>
 
-  <p class="aviso-preco-atacado" id="aviso-preco-atacado">
-    A partir de <strong>{{ preco_varejo | preco }}</strong> — desconto de atacado calculado
-    automático pela quantidade do carrinho.
-  </p>
+  <div class="buybox">
+    <div class="buybox-topo">
+      <img src="{{ url_for('static', filename='img/personalizada-medalha-1lado.jpg') }}" alt="Medalha personalizada" class="buybox-img">
+      <div class="buybox-precos">
+        <span class="buybox-de">A partir de</span>
+        <span><span class="buybox-riscado">R$ 7,00</span><span class="buybox-valor">{{ preco_varejo | preco }}</span></span>
+        <span class="buybox-tag-desconto">Desconto de até 65%</span>
+      </div>
+    </div>
+    <table class="buybox-tabela">
+      <tr><td>Medalha ou entremeio (12 ou 16mm)</td><td><span class="riscado">R$ 7,00</span><span class="final">{{ preco_varejo | preco }}</span></td></tr>
+      <tr><td>Medalha ou entremeio 2 lados</td><td><span class="riscado">R$ 10,00</span><span class="final">{{ preco_varejo_2lados | preco }}</span></td></tr>
+      <tr><td>Chaveiro (1 ou 2 lados)</td><td><span class="riscado">R$ 20,00</span><span class="final">{{ preco_varejo_chaveiro | preco }}</span></td></tr>
+    </table>
+  </div>
+
+  <p class="aviso-preco-atacado" id="aviso-preco-atacado"></p>
   <p class="aviso-frete-estimativa" id="aviso-frete-estimativa" hidden></p>
 
   <div class="passos-personalizada">
