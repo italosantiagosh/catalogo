@@ -117,6 +117,18 @@ PAGINAS_ATENDIMENTO = {
             </details>
 
             <details class="acordeao">
+                <summary>O que não é considerado defeito</summary>
+                <p>Nossas peças são banhadas em resina artesanalmente, o que dá um
+                efeito de vidro sobre a foto/imagem -- por isso, <strong>uma pequena
+                bolha na lateral da peça, ou a imagem levemente fora do centro,
+                são características possíveis do processo</strong> e já são avisadas
+                antes da compra, não sendo consideradas defeito de fabricação pra
+                fins de troca por esse motivo. Isso não afeta o seu direito de
+                arrependimento (7 dias corridos, sem precisar de motivo) descrito
+                acima.</p>
+            </details>
+
+            <details class="acordeao">
                 <summary>Como solicitar</summary>
                 <p>Envie um e-mail para <strong>9djulho@gmail.com</strong> ou uma
                 mensagem para <strong>(84) 98127-6650</strong> informando:</p>
