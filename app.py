@@ -1520,6 +1520,7 @@ def produto(produto_id: str):
         relacionados=relacionados,
         preco_varejo=preco,
         preco_varejo_chaveiro=preco_varejo("chaveiro"),
+        preco_varejo_2lados=preco_varejo("medalha_2lados"),
         prova_social=PROVA_SOCIAL,
         descricoes_formato=DESCRICOES_FORMATO,
         dados_produto=dados_produto,
@@ -4581,6 +4582,30 @@ def _combo_2lados_para_js(combo_id: str) -> dict | None:
     return lados
 
 
+def _lado1_prefill_dinamico(produto_id: str, modelo_id: str) -> dict | None:
+    """Resolve um lado 1 vindo do toggle "acrescentar um segundo lado" da
+    pagina de produto normal (ver static/js/produto.js e templates/
+    produto.html:lado2-widget-personalizada) -- mesmo formato de saida de
+    _combo_2lados_para_js, mas pra QUALQUER produto/modelo escolhido na
+    hora (nao so os combos fixos pre-cadastrados em COMBOS_2LADOS_PRONTOS).
+    produto/modelo que nao existe (ou id vazio) retorna None -- personalizada
+    abre normal, sem pre-preencher."""
+    if not produto_id or not modelo_id:
+        return None
+    produto = buscar_produto(produto_id)
+    if produto is None:
+        return None
+    modelo = next((m for m in produto["modelos"] if str(m["id"]) == str(modelo_id)), None)
+    if modelo is None:
+        return None
+    return {
+        "produto_id": produto["id"],
+        "produto_nome": produto["nome"],
+        "modelo_id": modelo["id"],
+        "modelo_nome": modelo["nome"],
+    }
+
+
 def _avaliacoes_por_formato_personalizada() -> dict[str, dict]:
     """Media/total/lista de avaliacoes aprovadas de cada formato de
     personalizada (config.py:PRODUTOS_PERSONALIZADOS) -- cada formato
@@ -4608,13 +4633,35 @@ def personalizada():
     formato certo em vez de sempre abrir em "Medalha". `?combo=` (opcional,
     ver _itens_combos_do_grid/COMBOS_2LADOS_PRONTOS) pre-preenche os 2
     lados de uma dupla ja pronta -- forca formato_inicial pra
-    medalha_2lados quando um combo valido vem sem `?formato=` explicito."""
+    medalha_2lados quando um combo valido vem sem `?formato=` explicito.
+    `?lado1_produto_id=`/`?lado1_modelo_id=` (opcional, ver
+    _lado1_prefill_dinamico) vem do toggle "acrescentar um segundo lado"
+    da pagina de produto normal (templates/produto.html) -- mesma ideia
+    do combo fixo, so que resolvido na hora pra QUALQUER produto/modelo,
+    nao so os pre-cadastrados. Os dois mecanismos sao mutuamente
+    exclusivos na pratica (combo ja vem com os 2 lados prontos)."""
     combo_id = request.args.get("combo", "")
     combo_2lados = _combo_2lados_para_js(combo_id) if combo_id else None
 
+    lado1_prefill = _lado1_prefill_dinamico(
+        request.args.get("lado1_produto_id", ""),
+        request.args.get("lado1_modelo_id", ""),
+    )
+    if lado1_prefill:
+        # cor/tamanho sao atributo da PECA inteira (o bezel/base fisico),
+        # nao de cada lado -- se a pessoa ja tinha escolhido isso no
+        # toggle da pagina de produto, repete aqui em vez de perder a
+        # escolha (ver static/js/produto.js:linkPersonalizadaLado2).
+        cor_prefill = request.args.get("cor", "")
+        if cor_prefill in ("prata", "ouro_velho"):
+            lado1_prefill["cor"] = cor_prefill
+        tamanho_prefill = request.args.get("tamanho", "")
+        if tamanho_prefill in ("14mm", "18mm"):
+            lado1_prefill["tamanho"] = tamanho_prefill
+
     formato_inicial = request.args.get("formato", "")
     if formato_inicial not in _FORMATOS_PERSONALIZADA_VALIDOS:
-        formato_inicial = "medalha_2lados" if combo_2lados else "medalha"
+        formato_inicial = "medalha_2lados" if (combo_2lados or lado1_prefill) else "medalha"
     dados_breadcrumb = _dados_breadcrumb(
         [
             ("Catálogo", url_for("index", _external=True)),
@@ -4625,6 +4672,7 @@ def personalizada():
         "personalizada.html",
         formato_inicial=formato_inicial,
         combo_2lados=combo_2lados,
+        lado1_prefill=lado1_prefill,
         preco_varejo=preco_varejo(),
         preco_varejo_chaveiro=preco_varejo("chaveiro"),
         preco_varejo_2lados=preco_varejo("medalha_2lados"),

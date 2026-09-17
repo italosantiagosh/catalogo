@@ -905,7 +905,9 @@
     });
     rastrearEventoGA4('add_custom_to_cart', { formato: r.formato, quantity: quantidade, com_foto: true });
 
-    // upsell "Cruz para Terco" (ver static/js/upsell_cruz.js).
+    // upsell "Cruz para Terco" (ver static/js/upsell_cruz.js). So chega
+    // aqui pro caminho de 1 lado -- 2 lados retorna mais cedo (ver
+    // duasFacesAtual() acima) e tem o upsell equivalente em btnAdicionar2f.
     if (r.formato === 'entremeio' && (r.cor === 'prata' || r.cor === 'ouro_velho') && typeof ofertarUpsellCruz === 'function') {
       setTimeout(() => ofertarUpsellCruz(r.cor, quantidade), 500);
     }
@@ -1012,6 +1014,13 @@
       formato: formatoAtual(), quantity: quantidade, com_foto: !semFoto1 && !semFoto2,
     });
 
+    // upsell "Cruz para Terco" (ver static/js/upsell_cruz.js) -- entremeio
+    // de 2 lados tambem vai pro terco, igual o de 1 lado (gap encontrado
+    // em 2026-09-17: so o de 1 lado disparava o upsell).
+    if (formatoAtual() === 'entremeio_2lados' && (corAtual() === 'prata' || corAtual() === 'ouro_velho') && typeof ofertarUpsellCruz === 'function') {
+      setTimeout(() => ofertarUpsellCruz(corAtual(), quantidade), 500);
+    }
+
     const textoOriginal = 'Adicionar ao carrinho';
     btnAdicionar2f.textContent = 'Adicionado ✓';
     setTimeout(() => {
@@ -1028,4 +1037,35 @@
 
   atualizarSubSelecao();
   atualizarAvaliacoes();
+
+  // ---- lado 1 vindo do toggle "acrescentar um segundo lado" da pagina
+  // de produto normal (window.LADO1_PREFILL, ver app.py:personalizada e
+  // _lado1_prefill_dinamico) -- mesma ideia do COMBO_2LADOS acima, so que
+  // aqui so o lado 1 ja vem pronto (o lado 2 continua em aberto, a
+  // pessoa escolhe/envia normalmente). Pula direto pra tela de upload do
+  // lado 2 em vez da previa combinada (que so faz sentido com os 2 lados
+  // prontos). ----
+  if (window.LADO1_PREFILL && duasFacesAtual()) {
+    // cor/tamanho da peca inteira (nao por lado) -- se vieram junto (ver
+    // app.py:personalizada), aplica ANTES de resolver a imagem, senao
+    // chaveImagemCatalogoAtual()/chaveImagem cai no padrao (prata).
+    if (window.LADO1_PREFILL.cor) {
+      const inputCor = coresFieldset.querySelector(`input[name="cor"][value="${window.LADO1_PREFILL.cor}"]`);
+      if (inputCor) inputCor.checked = true;
+    }
+    if (window.LADO1_PREFILL.tamanho) {
+      const inputTamanho = tamanhosFieldset.querySelector(`input[name="tamanho"][value="${window.LADO1_PREFILL.tamanho}"]`);
+      if (inputTamanho) inputTamanho.checked = true;
+    }
+    buscarImagemModeloCatalogo(window.LADO1_PREFILL.produto_id, window.LADO1_PREFILL.modelo_id).then((url) => {
+      if (!url) return; // gabarito/cor sem imagem pronta -- deixa o fluxo normal (escolhe os 2 lados na mao)
+      resultadoLado1 = {
+        origem: 'catalogo', imagem: url,
+        produtoId: window.LADO1_PREFILL.produto_id, produtoNome: window.LADO1_PREFILL.produto_nome,
+        modeloId: window.LADO1_PREFILL.modelo_id, modeloNome: window.LADO1_PREFILL.modelo_nome,
+      };
+      ladoAtual = 2;
+      prepararProximoLado();
+    });
+  }
 })();

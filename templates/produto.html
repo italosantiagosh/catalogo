@@ -46,6 +46,27 @@
       📖 <a href="{{ url_for('blog_artigo', slug=slug_artigo_relacionado) }}">Conheça a história de {{ produto.nome }}</a>
     </p>
   {% endif %}
+  <div class="buybox">
+    <div class="buybox-topo">
+      <img src="{{ url_for('static', filename=produto.modelos[0].imagem) }}" alt="{{ produto.nome }}" class="buybox-img">
+      <div class="buybox-precos">
+        <span class="buybox-de">A partir de</span>
+        <span><span class="buybox-riscado">R$ 7,00</span><span class="buybox-valor">{{ preco_varejo | preco }}</span></span>
+      </div>
+    </div>
+    <table class="buybox-tabela">
+      <tr><td>Medalha (12 ou 16mm)</td><td><span class="riscado">R$ 7,00</span><span class="final">{{ preco_varejo | preco }}</span></td></tr>
+      <tr><td>Entremeio (para terço)</td><td><span class="riscado">R$ 7,00</span><span class="final">{{ preco_varejo | preco }}</span></td></tr>
+      <tr><td>Medalha ou entremeio 2 lados</td><td><span class="riscado">R$ 10,00</span><span class="final">{{ preco_varejo_2lados | preco }}</span></td></tr>
+      <tr><td>Chaveiro (1 ou 2 lados)</td><td><span class="riscado">R$ 20,00</span><span class="final">{{ preco_varejo_chaveiro | preco }}</span></td></tr>
+    </table>
+    <div class="buybox-selos">
+      <span>🏅 <strong>+125 mil</strong> vendidas</span>
+      <span>💳 <strong>Parcelamos em 12x</strong> <span class="fininha">(com juros)</span></span>
+    </div>
+    <a href="#modelos-grid" class="buybox-cta">Escolher modelo e comprar</a>
+  </div>
+
   <p class="instrucao">Escolha um modelo:</p>
   {% if vendas_recentes %}
     <p class="vendas-recentes-produto">🔥 <strong>{{ vendas_recentes }}</strong> vendidas nos últimos 30 dias</p>
@@ -99,6 +120,55 @@
         Chaveiro
       </label>
     </fieldset>
+
+    <div class="toggle-2lados" id="toggle-2lados">
+      <span class="toggle-2lados-texto">➕ Quero acrescentar um segundo lado
+        <span class="toggle-2lados-sub">Peça vira de 2 lados — muda um pouco o preço</span>
+      </span>
+      <span class="toggle-2lados-switch"></span>
+    </div>
+
+    <div class="lado2-widget" id="lado2-widget" hidden>
+      <p class="lado2-widget-titulo">Escolha o que vai no lado 2</p>
+      <div class="lado2-widget-linha">
+        <div class="lado2-widget-lado">
+          <img id="lado2-widget-imagem-lado1" src="" alt="Lado 1">
+          <span id="lado2-widget-nome-lado1"></span>
+        </div>
+        <span class="lado2-widget-mais">+</span>
+        <div class="lado2-widget-busca">
+          <div id="lado2-widget-escolhido" class="lado2-widget-escolhido" hidden>
+            <img id="lado2-widget-escolhido-imagem" src="" alt="">
+            <span id="lado2-widget-escolhido-nome"></span>
+            <button type="button" class="lado2-widget-trocar" id="lado2-widget-trocar">trocar</button>
+          </div>
+          <input type="search" id="lado2-widget-input" placeholder="🔍 Buscar santo pro lado 2" autocomplete="off">
+          <div class="lado2-widget-resultados" id="lado2-widget-resultados" hidden></div>
+          <div class="lado2-widget-modelos" id="lado2-widget-modelos" hidden></div>
+        </div>
+      </div>
+
+      <div class="lado2-widget-subselecao" id="lado2-widget-subselecao" hidden>
+        <fieldset class="lado2-widget-subselecao-grupo" id="lado2-widget-tamanho-grupo" hidden>
+          <legend>Tamanho (2 lados)</legend>
+          <div class="lado2-widget-subselecao-opcoes">
+            <label><input type="radio" name="tamanho-2lados" value="14mm" checked> 14mm</label>
+            <label><input type="radio" name="tamanho-2lados" value="18mm"> 18mm</label>
+          </div>
+        </fieldset>
+        <fieldset class="lado2-widget-subselecao-grupo" id="lado2-widget-cor-grupo" hidden>
+          <legend>Cor</legend>
+          <div class="lado2-widget-subselecao-opcoes">
+            <label><input type="radio" name="cor-2lados" value="prata" checked> Prata</label>
+            <label><input type="radio" name="cor-2lados" value="ouro_velho"> Ouro velho</label>
+          </div>
+        </fieldset>
+      </div>
+
+      <p class="lado2-widget-preco-nota" id="lado2-widget-preco-nota"></p>
+      <p class="lado2-widget-ou">ou</p>
+      <button type="button" class="lado2-widget-personalizada" id="lado2-widget-personalizada">📷 Prefiro colocar uma foto personalizada no lado 2 →</button>
+    </div>
 
     <div class="formato-info" id="formato-info-medalha">
       <p>{{ descricoes_formato.medalha }}</p>
@@ -287,6 +357,7 @@
   <script>
     window.PRECO_VAREJO_PADRAO = {{ preco_varejo | tojson }};
     window.PRECO_VAREJO_CHAVEIRO = {{ preco_varejo_chaveiro | tojson }};
+    window.PRECO_VAREJO_2LADOS = {{ preco_varejo_2lados | tojson }};
   </script>
   <script src="{{ url_for('static', filename='js/produto.js') }}"></script>
   <script src="{{ url_for('static', filename='js/avaliacoes.js') }}"></script>
