@@ -1732,6 +1732,54 @@ ARTIGOS_BLOG = {
             </div>
         """,
     },
+    "pier-giorgio-frassati-historia": {
+        "titulo": "Pier Giorgio Frassati: o santo alpinista que virou exemplo pros jovens",
+        "resumo": (
+            "Filho de família rica e influente, Pier Giorgio Frassati escolheu viver entre "
+            "os pobres de Turim e morreu aos 24 anos. Canonizado em 2025 ao lado de Carlo "
+            "Acutis, entenda por que ele virou referência pra juventude católica."
+        ),
+        "produto_relacionado_id": "sao-pier-giorgio-frassati",
+        "publicado_em": "2026-09-17",
+        "corpo_html": """
+            <p>Pier Giorgio Frassati nasceu em 1901 em Turim, na Itália, filho de Alfredo
+            Frassati -- fundador do jornal <em>La Stampa</em> e mais tarde embaixador
+            italiano na Alemanha. Cresceu numa família rica e pouco religiosa, mas desde
+            cedo tomou um caminho diferente do que se esperaria: aos poucos, passou a doar
+            seu próprio dinheiro, suas roupas e até seus sapatos aos pobres de Turim, muitas
+            vezes escondendo isso da própria família.</p>
+
+            <figure>
+              <img src="/static/img/artigos/pier-giorgio-frassati-historia.jpg" alt="Retrato de Pier Giorgio Frassati" loading="lazy" decoding="async">
+              <figcaption>Pier Giorgio Frassati (1901-1925).</figcaption>
+            </figure>
+
+            <h2>O alpinista que via Deus nas montanhas</h2>
+            <p>Frassati era um apaixonado por montanhismo -- reunia os amigos em excursões
+            aos Alpes que misturavam esporte, amizade e oração. É dele a frase que
+            resumiria sua espiritualidade, escrita no verso de uma fotografia poucos dias
+            antes de morrer: <strong>"Verso l'alto!"</strong> ("Rumo ao alto!"). Ao mesmo
+            tempo, era estudante de engenharia de minas, membro ativo da Ação Católica e da
+            Sociedade de São Vicente de Paulo, e viajava de terceira classe mesmo podendo
+            usar o carro da família -- só pra sobrar dinheiro que pudesse dar a quem
+            precisava.</p>
+
+            <h2>Uma morte que revelou uma vida inteira</h2>
+            <p>Em 1925, aos 24 anos, contraiu poliomielite -- muito provavelmente cuidando
+            de doentes nos bairros pobres de Turim -- e morreu em poucos dias. O funeral
+            surpreendeu sua própria família: as ruas se encheram de milhares de pessoas
+            simples, muitas delas desconhecidas dos Frassati, que só ali descobriram tudo
+            que o filho fazia em silêncio. São Papa João Paulo II o beatificou em 1990,
+            chamando-o de "o homem das oito bem-aventuranças". Em 7 de setembro de 2025, o
+            Papa Leão XIV o canonizou ao lado de outro jovem santo muito querido no Brasil:
+            <a href="/produto/carlo-acutis">Carlo Acutis</a>.</p>
+
+            <div class="cta-blog-produto">
+              <p>Leve Pier Giorgio Frassati com você</p>
+              <a href="__URL_PRODUTO__" class="botao-principal">Ver medalha, entremeio e chaveiro de Pier Giorgio Frassati →</a>
+            </div>
+        """,
+    },
 }
 
 

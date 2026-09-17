@@ -11,12 +11,16 @@
   // MutationObserver nas views (#view-cropper/#view-preview*) em vez
   // de aparecer tudo de uma vez.
   //
-  // "Pular tutorial" ou terminar o passo 4 grava uma flag no
-  // localStorage: nao aparece mais nesse navegador depois disso (ver
-  // conversa -- quem ja sabe usar nao precisa ver de novo a cada
-  // pedido novo).
+  // "Pular tutorial" ou terminar o passo 4 grava o horario no
+  // localStorage -- nao aparece de novo nesse navegador por 24h (ver
+  // conversa 2026-09-17: prazo mais curto que "pra sempre", pra quem
+  // volta depois de um tempo ainda ser lembrado dos passos). So no
+  // localStorage do PROPRIO navegador da pessoa -- nao grava nada no
+  // servidor/Render, entao nao ocupa memoria nenhuma la.
   const CHAVE_TOUR_VISTO = 'catalogo_medalhas_tour_personalizada_visto';
-  if (localStorage.getItem(CHAVE_TOUR_VISTO)) return;
+  const TOUR_VISTO_VALIDADE_MS = 24 * 60 * 60 * 1000;
+  const vistoEm = Number(localStorage.getItem(CHAVE_TOUR_VISTO));
+  if (vistoEm && Date.now() - vistoEm < TOUR_VISTO_VALIDADE_MS) return;
 
   const secFormatos = document.getElementById('sel-formatos');
   const dropzone = document.getElementById('dropzone-imagem');
@@ -148,12 +152,12 @@
   function cancelarTour() {
     cancelado = true;
     esconderTour();
-    localStorage.setItem(CHAVE_TOUR_VISTO, '1');
+    localStorage.setItem(CHAVE_TOUR_VISTO, String(Date.now()));
   }
 
   function concluirTour() {
     esconderTour();
-    localStorage.setItem(CHAVE_TOUR_VISTO, '1');
+    localStorage.setItem(CHAVE_TOUR_VISTO, String(Date.now()));
   }
 
   // passos 3 e 4 so existem depois de uma acao real da pessoa (subiu
