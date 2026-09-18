@@ -3955,14 +3955,22 @@ def admin_pedido_editar_item_formato(token: str, indice: int):
 
 @app.route("/admin/pedidos/<token>/itens/<int:indice>/editar-imagem", methods=["POST"])
 def admin_pedido_editar_item_imagem(token: str, indice: int):
-    """Corrige a foto de um item de CATALOGO direto no pedido (ver
-    conversa 2026-09-18: produto com foto de 2 modelos trocada no
-    produtos.json -- o pedido guarda o caminho da imagem no momento da
-    compra, entao corrigir o catalogo depois NAO conserta pedido ja
-    feito). Uso raro (erro de cadastro no catalogo), por isso e´ so um
-    campo de texto com o caminho atual pre-preenchido, mesmo espirito
-    minimo de admin_pedido_editar_item_formato acima -- nao mexe em
-    quantidade nem no valor cobrado do cliente."""
+    """Corrige a foto de um item de CATALOGO direto no pedido -- o
+    pedido guarda o caminho RESOLVIDO da imagem (/static/... , ver
+    templates/pedido.html que renderiza item.imagem direto, sem passar
+    por url_for de novo) no momento da compra, entao corrigir o
+    catalogo depois NAO conserta pedido ja feito. Uso raro (erro de
+    cadastro no catalogo ou pedido antigo com imagem desatualizada),
+    por isso e´ so um campo de texto com o caminho atual pre-preenchido,
+    mesmo espirito minimo de admin_pedido_editar_item_formato acima --
+    nao mexe em quantidade nem no valor cobrado do cliente.
+
+    Aceita tanto o caminho "cru" igual ao produtos.json
+    (img/produtos/xxx.jpg, o formato mais intuitivo de colar) quanto o
+    caminho ja resolvido (/static/img/produtos/xxx.jpg) -- ver conversa
+    2026-09-18: colar o caminho cru sem normalizar deixou a foto em
+    branco na primeira tentativa (o navegador tentava buscar relativo a
+    /pedido/<token>, nao a raiz do site)."""
     if not _autenticacao_admin_valida(request.authorization):
         return Response(
             "Autenticação necessária.", 401, {"WWW-Authenticate": 'Basic realm="Painel de pedidos"'}
@@ -3976,6 +3984,8 @@ def admin_pedido_editar_item_imagem(token: str, indice: int):
     nova_imagem = str(request.form.get("imagem", "")).strip()
     if not nova_imagem:
         abort(400, description="Informe o caminho da imagem.")
+    if not nova_imagem.startswith(("/", "http://", "https://")):
+        nova_imagem = url_for("static", filename=nova_imagem)
 
     item = dict(pedido["itens"][indice])
     item["imagem"] = nova_imagem

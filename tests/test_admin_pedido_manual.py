@@ -280,12 +280,12 @@ def test_editar_formato_exige_autenticacao(client, monkeypatch):
     assert resposta.status_code == 401
 
 
-def test_editar_imagem_do_item_corrige_foto_de_catalogo_trocada(client, monkeypatch):
-    """ver conversa 2026-09-18: produto no catalogo com a foto do
-    Modelo 1 e do Modelo 2 trocadas no produtos.json -- corrigir o
-    catalogo depois NAO conserta pedido ja feito, porque o carrinho
-    guarda o caminho da imagem no momento da compra. Essa rota deixa o
-    admin corrigir a foto direto no pedido."""
+def test_editar_imagem_do_item_normaliza_caminho_cru_pro_formato_resolvido(client, monkeypatch):
+    """ver conversa 2026-09-18: colar o caminho "cru" igual ao
+    produtos.json (sem /static/ na frente) deixou a foto em branco na
+    primeira tentativa -- o pedido guarda o caminho RESOLVIDO
+    (item.imagem e´ renderizado direto em templates/pedido.html, sem
+    passar por url_for de novo). Essa rota normaliza sozinha."""
     _preparar_admin(monkeypatch)
     criado = client.post(
         "/admin/pedidos/novo-manual",
@@ -294,20 +294,38 @@ def test_editar_imagem_do_item_corrige_foto_de_catalogo_trocada(client, monkeypa
     )
     token = criado.headers["Location"].rsplit("/", 1)[-1]
     itens = pedidos.obter_pedido(token)["itens"]
-    itens[0]["imagem"] = "img/produtos/sao_jose_terror_dos_demonios_modelo_2_medalha.jpg"
+    itens[0]["imagem"] = "/static/img/produtos/sao_jose_terror_dos_demonios_modelo_1_medalha.jpg"
     with pedidos._conexao() as conexao:
         conexao.execute("UPDATE pedidos SET itens = ? WHERE token = ?", (json.dumps(itens), token))
 
     resposta = client.post(
         f"/admin/pedidos/{token}/itens/0/editar-imagem",
-        data={"imagem": "img/produtos/sao_jose_terror_dos_demonios_modelo_1_medalha.jpg"},
+        data={"imagem": "img/produtos/sao_jose_terror_dos_demonios_modelo_2_medalha.jpg"},
         auth=("admin", "segredo123"),
     )
     assert resposta.status_code == 302
     item = pedidos.obter_pedido(token)["itens"][0]
-    assert item["imagem"] == "img/produtos/sao_jose_terror_dos_demonios_modelo_1_medalha.jpg"
+    assert item["imagem"].startswith("/static/img/produtos/sao_jose_terror_dos_demonios_modelo_2_medalha.jpg")
     # nao mexe em quantidade/valor cobrado do cliente
     assert item["quantidade"] == 1
+
+
+def test_editar_imagem_do_item_aceita_caminho_ja_resolvido_sem_duplicar_prefixo(client, monkeypatch):
+    _preparar_admin(monkeypatch)
+    criado = client.post(
+        "/admin/pedidos/novo-manual",
+        data={"descricao": ["Item"], "quantidade": ["1"], "valor_unitario": ["5,00"]},
+        auth=("admin", "segredo123"),
+    )
+    token = criado.headers["Location"].rsplit("/", 1)[-1]
+    resposta = client.post(
+        f"/admin/pedidos/{token}/itens/0/editar-imagem",
+        data={"imagem": "/static/img/produtos/sao_jose_terror_dos_demonios_modelo_2_medalha.jpg"},
+        auth=("admin", "segredo123"),
+    )
+    assert resposta.status_code == 302
+    item = pedidos.obter_pedido(token)["itens"][0]
+    assert item["imagem"] == "/static/img/produtos/sao_jose_terror_dos_demonios_modelo_2_medalha.jpg"
 
 
 def test_editar_imagem_exige_caminho_nao_vazio(client, monkeypatch):

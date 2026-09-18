@@ -149,7 +149,7 @@
               <form method="post" action="{{ url_for('admin_pedido_editar_item_imagem', token=pedido.token, indice=loop.index0) }}">
                 <label for="imagem-{{ loop.index0 }}">Caminho da imagem</label>
                 <input type="text" id="imagem-{{ loop.index0 }}" name="imagem" value="{{ item.imagem }}">
-                <p style="font-size:0.8rem;color:#888;">Ex: img/produtos/nome-do-produto_modelo_1_medalha.jpg — não muda quantidade nem valor cobrado.</p>
+                <p style="font-size:0.8rem;color:#888;">Ex: img/produtos/nome-do-produto_modelo_1_medalha.jpg (cru, do jeito que aparece no produtos.json — normaliza sozinho) — não muda quantidade nem valor cobrado.</p>
                 <button type="submit">Salvar foto</button>
               </form>
             </details>
