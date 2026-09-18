@@ -64,6 +64,125 @@
   const boletoAviso2DiasEl = document.getElementById('boleto-aviso-2dias');
   if (!listaEl) return;
 
+  // ---- lembrar dados do cliente pra compra recorrente (ver conversa)
+  // -- mesma chave usada por templates/pedido.html (botao "Repetir esse
+  // pedido"), que semeia isso a partir do pedido ANTERIOR antes de
+  // redirecionar pra ca, cobrindo tambem quem abre o link do e-mail de
+  // recompra num aparelho novo, sem esse localStorage ainda. So
+  // nome/documento/telefone/email/endereco PROPRIO do comprador -- nunca
+  // o destinatario (entrega pra outra pessoa), que muda mais de pedido
+  // pra pedido e preencher errado geraria risco de mandar pro endereco
+  // errado. ----
+  const CHAVE_DADOS_CLIENTE_SALVOS = 'novedejulho_dados_cliente';
+
+  function salvarDadosClienteLocalStorage(cliente, endereco) {
+    try {
+      localStorage.setItem(CHAVE_DADOS_CLIENTE_SALVOS, JSON.stringify({
+        cliente: {
+          nome: cliente.nome, tipo_pessoa: cliente.tipo_pessoa,
+          documento: cliente.documento, telefone: cliente.telefone, email: cliente.email,
+        },
+        endereco: {
+          cep: endereco.cep, logradouro: endereco.logradouro, numero: endereco.numero,
+          complemento: endereco.complemento, bairro: endereco.bairro,
+          cidade: endereco.cidade, uf: endereco.uf,
+        },
+      }));
+    } catch (e) {
+      // localStorage pode falhar (aba anonima, cota cheia) -- nunca
+      // trava o pedido por causa disso, e´ so uma conveniencia.
+    }
+  }
+
+  // Limpa tanto o formulario quanto o localStorage -- usado pelo botao
+  // "Não é você?" do aviso abaixo (ver conversa: risco real de
+  // aparelho/navegador COMPARTILHADO entre clientes diferentes, precisa
+  // ser facil de reverter na hora, visivel, nao escondido).
+  function limparDadosClienteSalvos() {
+    try {
+      localStorage.removeItem(CHAVE_DADOS_CLIENTE_SALVOS);
+    } catch (e) {
+      // ignora -- pior caso e´ so nao limpar, sem quebrar nada
+    }
+    [
+      clienteNomeInput, clienteDocumentoInput, clienteTelefoneInput, clienteEmailInput,
+      freteCepInput, enderecoLogradouroInput, enderecoNumeroInput, enderecoComplementoInput,
+      enderecoBairroInput, enderecoCidadeInput, enderecoUfInput,
+    ].forEach((el) => { if (el) el.value = ''; });
+    if (tipoPessoaFisica) {
+      tipoPessoaFisica.checked = true;
+      atualizarLabelDocumento();
+    }
+  }
+
+  function mostrarAvisoDadosSalvos() {
+    if (!cadastroClienteEl || document.getElementById('aviso-dados-salvos')) return;
+    const aviso = document.createElement('div');
+    aviso.className = 'aviso-dados-salvos';
+    aviso.id = 'aviso-dados-salvos';
+    aviso.innerHTML =
+      '<span>🔄 Preenchemos com os dados da sua última compra neste navegador.</span>' +
+      '<button type="button" class="link-limpar-dados-salvos">Não é você? Limpar dados</button>';
+    cadastroClienteEl.prepend(aviso);
+    aviso.querySelector('.link-limpar-dados-salvos').addEventListener('click', () => {
+      limparDadosClienteSalvos();
+      aviso.remove();
+    });
+  }
+
+  function preencherDadosClienteSalvos() {
+    let dados = null;
+    try {
+      const bruto = localStorage.getItem(CHAVE_DADOS_CLIENTE_SALVOS);
+      if (bruto) dados = JSON.parse(bruto);
+    } catch (e) {
+      return;
+    }
+    if (!dados || !dados.cliente) return;
+    const { cliente, endereco } = dados;
+    let preencheuAlgo = false;
+
+    if (clienteNomeInput && !clienteNomeInput.value && cliente.nome) {
+      clienteNomeInput.value = cliente.nome;
+      preencheuAlgo = true;
+    }
+    if (cliente.tipo_pessoa === 'juridica' && tipoPessoaJuridica) {
+      tipoPessoaJuridica.checked = true;
+      atualizarLabelDocumento();
+    }
+    if (clienteDocumentoInput && !clienteDocumentoInput.value && cliente.documento) {
+      clienteDocumentoInput.value = cliente.documento;
+      preencheuAlgo = true;
+    }
+    if (clienteTelefoneInput && !clienteTelefoneInput.value && cliente.telefone) {
+      clienteTelefoneInput.value = cliente.telefone;
+      preencheuAlgo = true;
+    }
+    if (clienteEmailInput && !clienteEmailInput.value && cliente.email) {
+      clienteEmailInput.value = cliente.email;
+      preencheuAlgo = true;
+    }
+
+    if (endereco) {
+      if (freteCepInput && !freteCepInput.value && endereco.cep) {
+        freteCepInput.value = endereco.cep;
+        freteCepInput.dispatchEvent(new Event('input'));
+        preencheuAlgo = true;
+      }
+      if (enderecoLogradouroInput && !enderecoLogradouroInput.value && endereco.logradouro) {
+        enderecoLogradouroInput.value = endereco.logradouro;
+        preencheuAlgo = true;
+      }
+      if (enderecoNumeroInput && !enderecoNumeroInput.value && endereco.numero) enderecoNumeroInput.value = endereco.numero;
+      if (enderecoComplementoInput && !enderecoComplementoInput.value && endereco.complemento) enderecoComplementoInput.value = endereco.complemento;
+      if (enderecoBairroInput && !enderecoBairroInput.value && endereco.bairro) enderecoBairroInput.value = endereco.bairro;
+      if (enderecoCidadeInput && !enderecoCidadeInput.value && endereco.cidade) enderecoCidadeInput.value = endereco.cidade;
+      if (enderecoUfInput && !enderecoUfInput.value && endereco.uf) enderecoUfInput.value = endereco.uf;
+    }
+
+    if (preencheuAlgo) mostrarAvisoDadosSalvos();
+  }
+
   const TAMANHO_LABEL = { '12mm': '1,2 cm', '16mm': '1,6 cm', '14mm': '1,4 cm', '18mm': '1,8 cm' };
   const COR_LABEL = { prata: 'Prata', ouro_velho: 'Ouro velho', dourado: 'Dourado' };
   const FORMATO_LABEL = {
@@ -1370,6 +1489,7 @@
       }
     }
 
+    salvarDadosClienteLocalStorage(cliente, endereco);
     return { cliente, endereco };
   }
 
@@ -1543,6 +1663,8 @@
       abrirWhatsApp(mensagem);
     });
   }
+
+  preencherDadosClienteSalvos();
 
   // Restaura carrinho a partir do link do e-mail de lembrete de
   // carrinho abandonado (?restaurar=<token>, ver services/carrinhos_

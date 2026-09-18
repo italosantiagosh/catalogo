@@ -344,6 +344,41 @@
             quantidade: item.quantidade,
           });
         });
+        // Semeia o mesmo localStorage que static/js/carrinho_pagina.js
+        // usa pra pre-preencher o cadastro (ver conversa: cliente
+        // recorrente nao precisar digitar tudo de novo) -- cobre quem
+        // clica "Repetir esse pedido" (ou abre o link do e-mail de
+        // recompra) num aparelho/navegador novo, sem esse localStorage
+        // ainda. So os dados PROPRIOS do comprador, nunca o
+        // destinatario (entrega pra outra pessoa). Quando o pedido tem
+        // endereco de entrega DIFERENTE do proprio (ver conversa: nota
+        // fiscal no nome/endereco da paroquia, entrega na casa de outra
+        // pessoa), nao inclui o endereco proprio aqui nem escondido em
+        // script -- mesma regra que o resto desta pagina ja segue de
+        // nunca expor o endereco proprio quando os dois existem
+        // (quem abre esse link pode ser o destinatario, nao o comprador).
+        try {
+          localStorage.setItem('novedejulho_dados_cliente', JSON.stringify({
+            cliente: {
+              nome: {{ pedido.cliente_nome | tojson }},
+              tipo_pessoa: {{ pedido.cliente_tipo_pessoa | tojson }},
+              documento: {{ pedido.cliente_documento | tojson }},
+              telefone: {{ pedido.cliente_telefone | tojson }},
+              email: {{ pedido.cliente_email | tojson }},
+            },
+            {% if not pedido.endereco_destinatario_logradouro %}
+            endereco: {
+              cep: {{ pedido.endereco_cep | tojson }},
+              logradouro: {{ pedido.endereco_logradouro | tojson }},
+              numero: {{ pedido.endereco_numero | tojson }},
+              complemento: {{ pedido.endereco_complemento | tojson }},
+              bairro: {{ pedido.endereco_bairro | tojson }},
+              cidade: {{ pedido.endereco_cidade | tojson }},
+              uf: {{ pedido.endereco_uf | tojson }},
+            },
+            {% endif %}
+          }));
+        } catch (e) {}
         window.location.href = '{{ url_for("carrinho") }}';
       });
       // ?repetir=1 (link do e-mail de recompra 30/60/90 dias, ver

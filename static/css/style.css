@@ -938,6 +938,32 @@ h1 {
   margin: 0 0 12px;
 }
 
+.aviso-dados-salvos {
+  background: var(--gold-soft);
+  color: #7a5c1f;
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 0.82rem;
+  line-height: 1.4;
+  margin: 0 0 14px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 10px;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.aviso-dados-salvos .link-limpar-dados-salvos {
+  background: none;
+  border: none;
+  padding: 0;
+  color: #7a5c1f;
+  text-decoration: underline;
+  font-size: 0.82rem;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
 .aviso-formatos {
   background: #e7edf6;
   color: var(--accent);
