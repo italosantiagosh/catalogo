@@ -730,10 +730,17 @@ _TIMEOUT_ESPERA_PROCESSAMENTO_SEGUNDOS = 60
 # /api/personalizada/preview bem no pico). O canvas final da medalha
 # (services/gerador/assets/base_medalha.png etc.) e´ so 1254x1254px, com
 # a foto do cliente preenchendo um circulo de ~890px de diametro
-# (INNER_RADIUS_FRAC=0.355 em services/gerador/config.py) -- 1600px da´
-# bastante folga pra recorte/zoom manual sem nunca precisar de mais que
-# isso.
-_FOTO_PERSONALIZADA_LADO_MAXIMO = 1600
+# (INNER_RADIUS_FRAC=0.355 em services/gerador/config.py).
+#
+# Baixado de 1600 pra 1000 em 2026-09-18 depois de um teste visual real
+# (recorte apertado nos olhos, pipeline de producao de verdade, zoom
+# forte no resultado pra comparar lado a lado) -- perda de qualidade
+# imperceptivel mesmo nesse caso mais exigente, porque o circulo final
+# so tem ~890px pra usar mesmo. AINDA HA FOLGA: se aparecer outro pico
+# real de memoria no futuro, baixar esse numero de novo (pra 800-900,
+# por exemplo) continua sendo uma alavanca segura -- so refazer o mesmo
+# teste visual antes de decidir o quanto, nao adivinhar.
+_FOTO_PERSONALIZADA_LADO_MAXIMO = 1000
 
 # draft() (abaixo) so ajuda decoder de JPEG -- pra HEIC (padrao das
 # fotos de iPhone) nao tem atalho de decodificar ja´ em escala menor
