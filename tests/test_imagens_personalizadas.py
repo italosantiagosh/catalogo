@@ -241,9 +241,13 @@ def _png_bytes() -> bytes:
 
 
 def test_preview_personalizada_devolve_url_duravel_nao_data_uri(client):
+    """/api/personalizada/preview so gera a simulacao COM moldura/resina
+    (compose_medal) -- o recorte quadrado 1:1 mudou pra
+    /api/personalizada/recorte (ver conversa 2026-09-18: as duas imagens
+    pesadas eram geradas juntas em CADA "Gerar previa"/"Reposicionar",
+    mesmo o recorte nunca aparecendo na tela)."""
     imagem_resultado = Image.new("RGBA", (20, 20), (255, 0, 0, 255))
-    with patch("app.compose_medal", return_value=imagem_resultado), \
-         patch("app._crop_quadrada", return_value=imagem_resultado.convert("RGB")):
+    with patch("app.compose_medal", return_value=imagem_resultado):
         resposta = client.post(
             "/api/personalizada/preview",
             data={
@@ -256,30 +260,58 @@ def test_preview_personalizada_devolve_url_duravel_nao_data_uri(client):
     assert resposta.status_code == 200
     dados = resposta.get_json()
     assert dados["preview"].startswith("/imagem-personalizada/")
-    assert dados["crop"].startswith("/imagem-personalizada/")
     assert not dados["preview"].startswith("data:")
-    assert not dados["crop"].startswith("data:")
+    assert "crop" not in dados
+    assert "url_crop" not in dados
 
-    resposta_imagem = client.get(dados["crop"])
+    resposta_imagem = client.get(dados["preview"])
     assert resposta_imagem.status_code == 200
     assert resposta_imagem.mimetype == "image/png"
 
-    # url_preview/url_crop (botoes "baixar previa/recorte" da propria
-    # pagina /personalizada) usam o MESMO token, so com ?baixar=1 --
-    # antes existia um mecanismo separado guardado em memoria do
-    # processo pra isso (ver conversa: contribuiu pro servico estourar
-    # o limite de memoria do Render), unificado num so.
+    # url_preview (botao "baixar previa" da propria pagina /personalizada)
+    # usa o MESMO token, so com ?baixar=1 -- antes existia um mecanismo
+    # separado guardado em memoria do processo pra isso (ver conversa:
+    # contribuiu pro servico estourar o limite de memoria do Render),
+    # unificado num so.
     assert dados["url_preview"] == dados["preview"] + "?baixar=1"
-    assert dados["url_crop"] == dados["crop"] + "?baixar=1"
 
-    resposta_download = client.get(dados["url_crop"])
+    resposta_download = client.get(dados["url_preview"])
     assert resposta_download.status_code == 200
     assert resposta_download.mimetype == "application/octet-stream"
     assert "attachment" in resposta_download.headers["Content-Disposition"]
 
     # multi-leitura: baixar de novo (ou o <img> renderizar de novo)
     # continua funcionando, diferente do mecanismo antigo de uso unico.
-    assert client.get(dados["crop"]).status_code == 200
+    assert client.get(dados["preview"]).status_code == 200
+
+
+def test_recorte_personalizada_devolve_url_duravel_nao_data_uri(client):
+    """/api/personalizada/recorte -- gerado sob demanda (download direto
+    ou confirmacao no carrinho), separado do preview (ver teste acima)."""
+    imagem_resultado = Image.new("RGB", (20, 20), (255, 0, 0))
+    with patch("app._crop_quadrada", return_value=imagem_resultado):
+        resposta = client.post(
+            "/api/personalizada/recorte",
+            data={
+                "imagem": (io.BytesIO(_png_bytes()), "foto.png"),
+                "x1": "0", "y1": "0", "x2": "10", "y2": "10",
+            },
+            content_type="multipart/form-data",
+        )
+    assert resposta.status_code == 200
+    dados = resposta.get_json()
+    assert dados["crop"].startswith("/imagem-personalizada/")
+    assert not dados["crop"].startswith("data:")
+    assert dados["url_crop"] == dados["crop"] + "?baixar=1"
+
+    resposta_imagem = client.get(dados["crop"])
+    assert resposta_imagem.status_code == 200
+    assert resposta_imagem.mimetype == "image/png"
+
+    resposta_download = client.get(dados["url_crop"])
+    assert resposta_download.status_code == 200
+    assert resposta_download.mimetype == "application/octet-stream"
+    assert "attachment" in resposta_download.headers["Content-Disposition"]
 
 
 def test_preview_personalizada_com_foto_gigante_devolve_erro_tratavel(client):

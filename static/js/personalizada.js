@@ -784,9 +784,9 @@
       boxAnterior = box;
       ultimoResultado = {
         previewSrc: dados.preview,
-        cropSrc: dados.crop,
+        cropSrc: null, // so obtido sob demanda, ver obterRecorte() abaixo
         urlPreview: dados.url_preview,
-        urlCrop: dados.url_crop,
+        urlCrop: null,
         formato: formatoAtual(),
         tamanho: tamanhoAtual(),
         cor: corAtual(),
@@ -808,6 +808,28 @@
     gerarPreviaUnica(boxAtual());
   });
 
+  // ---- recorte quadrado 1:1 (nunca mostrado inline -- so usado pro
+  // botao "baixar recorte" e pro item de verdade no carrinho) -- gerado
+  // sob demanda em vez de junto com CADA "Gerar prévia" (ver conversa
+  // 2026-09-18: cliente reajustando o enquadramento varias vezes gerava
+  // as duas imagens pesadas a cada tentativa, e essa nunca aparecia na
+  // tela). Mesma imagem+box da ultima previa gerada (arquivoAtual/
+  // boxAnterior); cacheado em ultimoResultado pra nao buscar 2x se o
+  // download E o "Adicionar" acontecerem os dois. ----
+  async function obterRecorte() {
+    if (ultimoResultado.cropSrc && ultimoResultado.urlCrop) return ultimoResultado;
+    const fd = new FormData();
+    fd.append('imagem', arquivoAtual);
+    fd.append('x1', boxAnterior[0]); fd.append('y1', boxAnterior[1]);
+    fd.append('x2', boxAnterior[2]); fd.append('y2', boxAnterior[3]);
+    const resp = await fetch('/api/personalizada/recorte', { method: 'POST', body: fd });
+    const dados = await resp.json();
+    if (!resp.ok) throw new Error(dados.erro || 'Erro ao gerar o recorte.');
+    ultimoResultado.cropSrc = dados.crop;
+    ultimoResultado.urlCrop = dados.url_crop;
+    return ultimoResultado;
+  }
+
   // ---- resultado ----
 
   const previewImg = document.getElementById('preview-imagem');
@@ -824,7 +846,7 @@
   function renderizarPreview() {
     previewImg.src = ultimoResultado.previewSrc;
     linkBaixarPrevia.href = ultimoResultado.urlPreview;
-    linkBaixarRecorte.href = ultimoResultado.urlCrop;
+    linkBaixarRecorte.href = '#'; // recorte real so existe depois de obterRecorte() -- ver clique abaixo
     quantidadeInput.value = qtdFormInput.value;
 
     if (duasFacesAtual()) {
@@ -843,6 +865,26 @@
       btnAdicionar.textContent = 'Adicionar ao carrinho';
     }
   }
+
+  // Gera o recorte SO no clique de verdade (ver obterRecorte acima) --
+  // primeiro clique busca no servidor e dispara o download de novo
+  // sozinho assim que o href fica real; cliques seguintes (mesma previa)
+  // reaproveitam o que ja foi buscado.
+  linkBaixarRecorte.addEventListener('click', (ev) => {
+    if (ultimoResultado && ultimoResultado.urlCrop) return; // href ja real, deixa o navegador seguir normal
+    ev.preventDefault();
+    const textoOriginal = linkBaixarRecorte.textContent;
+    linkBaixarRecorte.textContent = 'Gerando...';
+    obterRecorte()
+      .then(() => {
+        linkBaixarRecorte.href = ultimoResultado.urlCrop;
+        linkBaixarRecorte.click();
+      })
+      .catch((err) => mostrarErro(err.message || String(err)))
+      .finally(() => {
+        linkBaixarRecorte.textContent = textoOriginal;
+      });
+  });
 
   function ajustarQuantidade(delta) {
     const atual = parseInt(quantidadeInput.value, 10) || 1;
@@ -883,8 +925,26 @@
     }
   }
 
-  btnAdicionar.addEventListener('click', () => {
+  btnAdicionar.addEventListener('click', async () => {
     if (!ultimoResultado) return;
+
+    // Recorte real (ver obterRecorte acima) so e´ buscado aqui, na
+    // confirmacao de verdade -- nao em cada "Gerar previa"/"Reposicionar".
+    const textoCarregando = 'Preparando...';
+    const textoAntesDeCarregar = btnAdicionar.textContent;
+    btnAdicionar.disabled = true;
+    btnAdicionar.textContent = textoCarregando;
+    try {
+      await obterRecorte();
+    } catch (err) {
+      mostrarErro(err.message || String(err));
+      btnAdicionar.disabled = false;
+      btnAdicionar.textContent = textoAntesDeCarregar;
+      return;
+    }
+    btnAdicionar.disabled = false;
+    btnAdicionar.textContent = textoAntesDeCarregar;
+
     const r = ultimoResultado;
 
     if (duasFacesAtual()) {

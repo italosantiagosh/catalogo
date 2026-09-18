@@ -5163,8 +5163,15 @@ def _reciclar_worker_se_memoria_alta(memoria_mb: float) -> None:
 @limiter.limit("15 per minute")
 def api_personalizada_preview():
     """Uma imagem + recorte (opcional, ver editor de recorte em
-    personalizada.js) + formato/cor -> previa da medalha (mostrada inline)
-    + links de download reais pra previa e pro recorte quadrado 1:1."""
+    personalizada.js) + formato/cor -> previa da medalha (mostrada inline).
+
+    So gera a simulacao COM moldura/resina (compose_medal) -- o recorte
+    quadrado 1:1 (usado so pro botao "baixar recorte" e pro pedido de
+    verdade, NUNCA mostrado inline) fica pra /api/personalizada/recorte,
+    chamado so quando de fato precisa (ver conversa 2026-09-18: cliente
+    ajustando o enquadramento varias vezes -- ate "Reposicionar" -- gerava
+    as DUAS imagens pesadas de novo a cada tentativa, e so a de cima
+    aparece na tela)."""
     arquivo = request.files.get("imagem")
     if not arquivo or not arquivo.filename:
         return jsonify(erro="Nenhuma imagem enviada."), 400
@@ -5179,14 +5186,9 @@ def api_personalizada_preview():
     spec = MEDAL_SPECS[spec_id]
 
     box = _ler_box(request.form)
-    # Log temporario de diagnostico (ver conversa 2026-09-13: queda real
-    # do Render minutos depois de um teste de upload "chaveiro 2 lados" --
-    # a rota ja tem semaforo + limite de megapixels + draft(), sem gap
-    # obvio encontrado na revisao do codigo; precisa de numero real de
-    # memoria na proxima ocorrencia em vez de suspeita). Tirar depois de
-    # confirmar se essa rota e´ mesmo a causa ou so coincidencia de
-    # horario com o crescimento normal de memoria do processo (ja
-    # documentado, ver render.yaml:MALLOC_ARENA_MAX).
+    # Log de diagnostico (ver conversa 2026-09-13/18: quedas reais do
+    # Render por memoria com essa rota no pico) + reciclagem preventiva
+    # do worker (_reciclar_worker_se_memoria_alta acima).
     memoria_antes = _memoria_atual_mb()
     if not _LIMITE_PROCESSAMENTO_IMAGEM_PESADO.acquire(timeout=_TIMEOUT_ESPERA_PROCESSAMENTO_SEGUNDOS):
         return jsonify(erro="Muita gente enviando foto agora, tenta de novo em alguns segundos."), 503
@@ -5196,7 +5198,6 @@ def api_personalizada_preview():
             try:
                 box = _reduzir_temp_se_grande_demais(caminho, box)
                 resultado = compose_medal(spec, caminho, crop_box=box)
-                recorte = _crop_quadrada(caminho, box)
             except Exception as exc:
                 return jsonify(erro=f"Erro ao gerar a simulação: {exc}"), 400
     finally:
@@ -5210,22 +5211,52 @@ def api_personalizada_preview():
 
     nome_base = _sem_extensao(arquivo.filename)
     imagem_bytes = _imagem_para_bytes(resultado)
-    recorte_bytes = _imagem_para_bytes(recorte)
 
     # Guardado de forma DURAVEL (ver services/imagens_personalizadas.py,
     # SQLite -- nao em memoria do processo) -- o que vai pro item do
-    # carrinho/pedido E pros botoes "baixar previa/recorte" desta
-    # pagina, um unico mecanismo pras duas coisas (antes disso existia
-    # um dict global em RAM so pro download, guardando previa+recorte
-    # de CADA simulacao gerada -- contribuiu pro servico estourar o
-    # limite de memoria do Render num pico de acessos, ver conversa).
+    # carrinho/pedido E pro botao "baixar previa" desta pagina, um unico
+    # mecanismo pras duas coisas (antes disso existia um dict global em
+    # RAM so pro download, guardando previa+recorte de CADA simulacao
+    # gerada -- contribuiu pro servico estourar o limite de memoria do
+    # Render num pico de acessos, ver conversa).
     chave_imagem = salvar_imagem(imagem_bytes, "image/png", f"{nome_base}_{spec_id}.png", tipo="preview")
-    chave_recorte = salvar_imagem(recorte_bytes, "image/png", f"{nome_base}_recorte.png", tipo="recorte")
 
     return jsonify(
         preview=url_for("servir_imagem_personalizada", token=chave_imagem),
-        crop=url_for("servir_imagem_personalizada", token=chave_recorte),
         url_preview=url_for("servir_imagem_personalizada", token=chave_imagem, baixar=1),
+    )
+
+
+@app.route("/api/personalizada/recorte", methods=["POST"])
+@limiter.limit("15 per minute")
+def api_personalizada_recorte():
+    """MESMA imagem + box ja usados em /api/personalizada/preview (ver
+    conversa 2026-09-18), so que devolvendo o recorte quadrado 1:1 puro
+    (sem moldura/resina, sem passar pelo compose_medal pesado) -- chamado
+    so quando de fato precisa: no download direto do botao "baixar
+    recorte", ou uma unica vez ao confirmar o item no carrinho (ver
+    personalizada.js:obterRecorte)."""
+    arquivo = request.files.get("imagem")
+    if not arquivo or not arquivo.filename:
+        return jsonify(erro="Nenhuma imagem enviada."), 400
+    if not _extensao_valida(arquivo.filename):
+        return jsonify(erro="Formato invalido. Aceitos: " + ", ".join(IMAGE_EXTENSIONS)), 400
+
+    box = _ler_box(request.form)
+    with _salvar_temp(arquivo) as tmp:
+        caminho = Path(tmp.name)
+        try:
+            box = _reduzir_temp_se_grande_demais(caminho, box)
+            recorte = _crop_quadrada(caminho, box)
+        except Exception as exc:
+            return jsonify(erro=f"Erro ao gerar o recorte: {exc}"), 400
+
+    nome_base = _sem_extensao(arquivo.filename)
+    recorte_bytes = _imagem_para_bytes(recorte)
+    chave_recorte = salvar_imagem(recorte_bytes, "image/png", f"{nome_base}_recorte.png", tipo="recorte")
+
+    return jsonify(
+        crop=url_for("servir_imagem_personalizada", token=chave_recorte),
         url_crop=url_for("servir_imagem_personalizada", token=chave_recorte, baixar=1),
     )
 
