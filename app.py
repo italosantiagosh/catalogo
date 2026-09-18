@@ -5223,6 +5223,20 @@ def api_personalizada_preview():
         with _salvar_temp(arquivo) as tmp:
             caminho = Path(tmp.name)
             try:
+                # So leitura de cabecalho (nao decodifica pixel nenhum,
+                # ver mesmo comentario em _reduzir_temp_se_grande_demais)
+                # -- log de diagnostico pra acumular numero real de
+                # megapixel dos uploads (ver conversa 2026-09-18: decidir
+                # se vale baixar _FOTO_PERSONALIZADA_MEGAPIXELS_MAXIMO
+                # com dado de verdade, nao achismo -- ate agora nunca foi
+                # registrado, so o pico de memoria).
+                with Image.open(caminho) as sonda:
+                    largura_original, altura_original = sonda.size
+                app.logger.warning(
+                    "personalizada-preview-tamanho-original: arquivo=%s dimensoes=%dx%d megapixels=%.1f",
+                    arquivo.filename, largura_original, altura_original,
+                    (largura_original * altura_original) / 1_000_000,
+                )
                 box = _reduzir_temp_se_grande_demais(caminho, box)
                 resultado = compose_medal(spec, caminho, crop_box=box)
             except Exception as exc:
