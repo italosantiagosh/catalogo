@@ -43,6 +43,7 @@ import os
 import re
 import resource
 import secrets
+import signal
 import tempfile
 import threading
 import time
@@ -5113,9 +5114,49 @@ def admin_push_desinscrever():
 def _memoria_atual_mb() -> float:
     """Pico de memoria residente (RSS) do processo desde que comecou, em
     MB -- so existe no Linux (ru_maxrss vem em KB la; em macOS seria
-    bytes, mas producao e´ sempre Linux/Render). Usado so pra log de
-    diagnostico, nunca pra decisao de negocio."""
+    bytes, mas producao e´ sempre Linux/Render). Alimenta o log de
+    diagnostico E a reciclagem preventiva abaixo (_reciclar_worker_se_memoria_alta)."""
     return resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 1024
+
+
+# Ver conversa 2026-09-18: queda real do Render por memoria (plano
+# Starter, 512MB) -- o log de diagnostico acima (memoria_pico_mb) pegou
+# um preview isolado indo de 91.3 pra 212.5MB (delta=121.2) alguns
+# segundos depois do worker reiniciar. O --max-requests do gunicorn
+# (ver render.yaml) recicla o worker por CONTAGEM de requisicoes, mas a
+# maioria das milhares de requisicoes por dia sao leves (imagens
+# estaticas, paginas) -- o worker demora requisicoes demais pra reciclar
+# mesmo levando varios picos pesados de personalizada pelo meio, porque
+# memoria que um pico desses usa nem sempre volta 100% pro SO depois
+# (fragmentacao do glibc, mesmo motivo do MALLOC_ARENA_MAX=2). Reciclar
+# direto pela memoria REAL (em vez de tentar adivinhar quantos previews
+# "cabem") ataca a causa raiz sem re-adicionar o trade-off de lentidao
+# que reciclar TODA requisicao com mais frequencia geraria (worker novo
+# precisa reimportar reportlab/PIL/boto3/apscheduler antes de aceitar
+# requisicao de novo).
+_MEMORIA_MB_LIMITE_RECICLAGEM_WORKER = 400  # limite de 512MB do plano Starter, com folga
+
+
+def _reciclar_worker_se_memoria_alta(memoria_mb: float) -> None:
+    """Chamado so depois de processamento pesado (personalizada/preview),
+    ponto onde memoria costuma saltar. SIGTERM no PROPRIO processo faz o
+    worker gthread terminar as requisicoes em andamento e sair -- o
+    arbiter do gunicorn detecta a saida e sobe um worker novo sozinho,
+    exatamente como o --max-requests ja faz por contagem (nao e´ um
+    shutdown da aplicacao inteira, so desse worker). Nunca dispara em
+    teste (app.testing) -- ali e´ o MESMO processo do pytest rodando
+    centenas de chamadas em sequencia (ver _pular_rate_limit_em_teste
+    acima pro mesmo motivo), sem gunicorn/arbiter pra subir um worker
+    novo depois: um SIGTERM ali mataria a suite inteira, nao so "um
+    worker"."""
+    if app.testing:
+        return
+    if memoria_mb >= _MEMORIA_MB_LIMITE_RECICLAGEM_WORKER:
+        app.logger.warning(
+            "reciclando worker: memoria_mb=%.1f >= limite=%.1f",
+            memoria_mb, _MEMORIA_MB_LIMITE_RECICLAGEM_WORKER,
+        )
+        os.kill(os.getpid(), signal.SIGTERM)
 
 
 @app.route("/api/personalizada/preview", methods=["POST"])
@@ -5165,6 +5206,7 @@ def api_personalizada_preview():
             "personalizada-preview: formato=%s arquivo=%s memoria_pico_mb=%.1f->%.1f (delta=%.1f)",
             spec_id, arquivo.filename, memoria_antes, memoria_depois, memoria_depois - memoria_antes,
         )
+        _reciclar_worker_se_memoria_alta(memoria_depois)
 
     nome_base = _sem_extensao(arquivo.filename)
     imagem_bytes = _imagem_para_bytes(resultado)
