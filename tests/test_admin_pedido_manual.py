@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import json
+
 import pytest
 
 import services.pedidos as pedidos
@@ -274,6 +276,83 @@ def test_editar_formato_exige_autenticacao(client, monkeypatch):
     resposta = client.post(
         f"/admin/pedidos/{token}/itens/0/editar-formato",
         data={"produto_nome": "X", "formato": "chaveiro"},
+    )
+    assert resposta.status_code == 401
+
+
+def test_editar_imagem_do_item_corrige_foto_de_catalogo_trocada(client, monkeypatch):
+    """ver conversa 2026-09-18: produto no catalogo com a foto do
+    Modelo 1 e do Modelo 2 trocadas no produtos.json -- corrigir o
+    catalogo depois NAO conserta pedido ja feito, porque o carrinho
+    guarda o caminho da imagem no momento da compra. Essa rota deixa o
+    admin corrigir a foto direto no pedido."""
+    _preparar_admin(monkeypatch)
+    criado = client.post(
+        "/admin/pedidos/novo-manual",
+        data={"descricao": ["Medalha São José"], "quantidade": ["1"], "valor_unitario": ["7,00"]},
+        auth=("admin", "segredo123"),
+    )
+    token = criado.headers["Location"].rsplit("/", 1)[-1]
+    itens = pedidos.obter_pedido(token)["itens"]
+    itens[0]["imagem"] = "img/produtos/sao_jose_terror_dos_demonios_modelo_2_medalha.jpg"
+    with pedidos._conexao() as conexao:
+        conexao.execute("UPDATE pedidos SET itens = ? WHERE token = ?", (json.dumps(itens), token))
+
+    resposta = client.post(
+        f"/admin/pedidos/{token}/itens/0/editar-imagem",
+        data={"imagem": "img/produtos/sao_jose_terror_dos_demonios_modelo_1_medalha.jpg"},
+        auth=("admin", "segredo123"),
+    )
+    assert resposta.status_code == 302
+    item = pedidos.obter_pedido(token)["itens"][0]
+    assert item["imagem"] == "img/produtos/sao_jose_terror_dos_demonios_modelo_1_medalha.jpg"
+    # nao mexe em quantidade/valor cobrado do cliente
+    assert item["quantidade"] == 1
+
+
+def test_editar_imagem_exige_caminho_nao_vazio(client, monkeypatch):
+    _preparar_admin(monkeypatch)
+    criado = client.post(
+        "/admin/pedidos/novo-manual",
+        data={"descricao": ["Item"], "quantidade": ["1"], "valor_unitario": ["5,00"]},
+        auth=("admin", "segredo123"),
+    )
+    token = criado.headers["Location"].rsplit("/", 1)[-1]
+    resposta = client.post(
+        f"/admin/pedidos/{token}/itens/0/editar-imagem",
+        data={"imagem": ""},
+        auth=("admin", "segredo123"),
+    )
+    assert resposta.status_code == 400
+
+
+def test_editar_imagem_indice_invalido_404(client, monkeypatch):
+    _preparar_admin(monkeypatch)
+    criado = client.post(
+        "/admin/pedidos/novo-manual",
+        data={"descricao": ["Item"], "quantidade": ["1"], "valor_unitario": ["5,00"]},
+        auth=("admin", "segredo123"),
+    )
+    token = criado.headers["Location"].rsplit("/", 1)[-1]
+    resposta = client.post(
+        f"/admin/pedidos/{token}/itens/9/editar-imagem",
+        data={"imagem": "img/produtos/x.jpg"},
+        auth=("admin", "segredo123"),
+    )
+    assert resposta.status_code == 404
+
+
+def test_editar_imagem_exige_autenticacao(client, monkeypatch):
+    _preparar_admin(monkeypatch)
+    criado = client.post(
+        "/admin/pedidos/novo-manual",
+        data={"descricao": ["Item"], "quantidade": ["1"], "valor_unitario": ["5,00"]},
+        auth=("admin", "segredo123"),
+    )
+    token = criado.headers["Location"].rsplit("/", 1)[-1]
+    resposta = client.post(
+        f"/admin/pedidos/{token}/itens/0/editar-imagem",
+        data={"imagem": "img/produtos/x.jpg"},
     )
     assert resposta.status_code == 401
 

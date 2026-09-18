@@ -1109,15 +1109,18 @@ def confirmar_venda_manual(
 
 
 def editar_item_formato(token: str, indice: int, *, item: dict) -> dict | None:
-    """Substitui o item no `indice` pelo dict `item` ja pronto (ver
-    app.py:admin_pedido_editar_item_formato) -- usado pra corrigir um
-    item criado pelo "Pedido manual" (ver admin_pedido_criar_manual),
+    """Substitui o item no `indice` pelo dict `item` ja pronto -- usado
+    por dois callers em app.py: admin_pedido_editar_item_formato (corrige
+    um item criado pelo "Pedido manual", ver admin_pedido_criar_manual,
     que salva chave_preco="" por nao saber o material de verdade digitado
-    a mao. Sem chave_preco valida (ver services/pricing.py:CHAVES_PRECO),
-    a Tiny recebe codigo/descricao em branco pro produto (ver
-    services/tiny.py:_chave_material) e a venda nao sincroniza direito.
-    So mexe no item indicado -- quantidade/valor_unitario continuam os
-    mesmos, o preco ja cobrado do cliente nao muda."""
+    a mao -- sem chave_preco valida, ver services/pricing.py:CHAVES_PRECO,
+    a Tiny recebe codigo/descricao em branco pro produto, ver
+    services/tiny.py:_chave_material, e a venda nao sincroniza direito) e
+    admin_pedido_editar_item_imagem (corrige a foto de um item de
+    catalogo quando o produtos.json tinha um erro de cadastro -- ver
+    conversa 2026-09-18). So mexe no item indicado -- quantidade/
+    valor_unitario continuam os mesmos, o preco ja cobrado do cliente
+    nao muda."""
     pedido = obter_pedido(token)
     if pedido is None or not (0 <= indice < len(pedido["itens"])):
         return None

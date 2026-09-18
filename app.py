@@ -3953,6 +3953,36 @@ def admin_pedido_editar_item_formato(token: str, indice: int):
     return redirect(url_for("admin_pedido_detalhe", token=token))
 
 
+@app.route("/admin/pedidos/<token>/itens/<int:indice>/editar-imagem", methods=["POST"])
+def admin_pedido_editar_item_imagem(token: str, indice: int):
+    """Corrige a foto de um item de CATALOGO direto no pedido (ver
+    conversa 2026-09-18: produto com foto de 2 modelos trocada no
+    produtos.json -- o pedido guarda o caminho da imagem no momento da
+    compra, entao corrigir o catalogo depois NAO conserta pedido ja
+    feito). Uso raro (erro de cadastro no catalogo), por isso e´ so um
+    campo de texto com o caminho atual pre-preenchido, mesmo espirito
+    minimo de admin_pedido_editar_item_formato acima -- nao mexe em
+    quantidade nem no valor cobrado do cliente."""
+    if not _autenticacao_admin_valida(request.authorization):
+        return Response(
+            "Autenticação necessária.", 401, {"WWW-Authenticate": 'Basic realm="Painel de pedidos"'}
+        )
+    pedido = obter_pedido(token)
+    if pedido is None or not (0 <= indice < len(pedido["itens"])):
+        abort(404)
+    if pedido["status"] in ("cancelado", "excluido"):
+        abort(400, description="Esse pedido não pode ter itens corrigidos por aqui.")
+
+    nova_imagem = str(request.form.get("imagem", "")).strip()
+    if not nova_imagem:
+        abort(400, description="Informe o caminho da imagem.")
+
+    item = dict(pedido["itens"][indice])
+    item["imagem"] = nova_imagem
+    editar_item_formato(token, indice, item=item)
+    return redirect(url_for("admin_pedido_detalhe", token=token))
+
+
 @app.route("/admin/pedidos/<token>/marcar-pago", methods=["POST"])
 def admin_pedido_marcar_pago(token: str):
     """Confirma manualmente um pedido "pendente" criado pelo site (Pix/
