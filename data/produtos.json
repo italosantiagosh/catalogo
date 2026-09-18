@@ -4093,21 +4093,6 @@
       {
         "id": 1,
         "nome": "Modelo 1",
-        "imagem": "img/produtos/sao_jose_terror_dos_demonios_modelo_1_medalha.jpg",
-        "tamanhos": [
-          "12mm",
-          "16mm"
-        ],
-        "imagem_entremeio_prata": "img/produtos/sao_jose_terror_dos_demonios_modelo_1_entremeio_prata.jpg",
-        "imagem_entremeio_ouro_velho": "img/produtos/sao_jose_terror_dos_demonios_modelo_1_entremeio_ouro_velho.jpg",
-        "imagem_chaveiro": "img/produtos/sao_jose_terror_dos_demonios_modelo_1_chaveiro.jpg",
-        "imagem_medalha_2lados_prata": "img/produtos/sao-jose-terror-dos-demonios_modelo_1_medalha_2lados_prata.jpg",
-        "imagem_medalha_2lados_ouro_velho": "img/produtos/sao-jose-terror-dos-demonios_modelo_1_medalha_2lados_ouro_velho.jpg",
-        "imagem_chaveiro_2lados": "img/produtos/sao-jose-terror-dos-demonios_modelo_1_chaveiro_2lados.jpg"
-      },
-      {
-        "id": 2,
-        "nome": "Modelo 2",
         "imagem": "img/produtos/sao_jose_terror_dos_demonios_modelo_2_medalha.jpg",
         "tamanhos": [
           "12mm",
@@ -4119,6 +4104,21 @@
         "imagem_medalha_2lados_prata": "img/produtos/sao-jose-terror-dos-demonios_modelo_2_medalha_2lados_prata.jpg",
         "imagem_medalha_2lados_ouro_velho": "img/produtos/sao-jose-terror-dos-demonios_modelo_2_medalha_2lados_ouro_velho.jpg",
         "imagem_chaveiro_2lados": "img/produtos/sao-jose-terror-dos-demonios_modelo_2_chaveiro_2lados.jpg"
+      },
+      {
+        "id": 2,
+        "nome": "Modelo 2",
+        "imagem": "img/produtos/sao_jose_terror_dos_demonios_modelo_1_medalha.jpg",
+        "tamanhos": [
+          "12mm",
+          "16mm"
+        ],
+        "imagem_entremeio_prata": "img/produtos/sao_jose_terror_dos_demonios_modelo_1_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/sao_jose_terror_dos_demonios_modelo_1_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/sao_jose_terror_dos_demonios_modelo_1_chaveiro.jpg",
+        "imagem_medalha_2lados_prata": "img/produtos/sao-jose-terror-dos-demonios_modelo_1_medalha_2lados_prata.jpg",
+        "imagem_medalha_2lados_ouro_velho": "img/produtos/sao-jose-terror-dos-demonios_modelo_1_medalha_2lados_ouro_velho.jpg",
+        "imagem_chaveiro_2lados": "img/produtos/sao-jose-terror-dos-demonios_modelo_1_chaveiro_2lados.jpg"
       }
     ],
     "categoria": "Santos"
