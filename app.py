@@ -37,6 +37,7 @@ from __future__ import annotations
 
 import base64
 import csv
+import ctypes
 import hmac
 import io
 import os
@@ -5119,6 +5120,25 @@ def _memoria_atual_mb() -> float:
     return resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 1024
 
 
+def _liberar_memoria_livre_para_o_so() -> None:
+    """malloc_trim(0) da glibc: devolve pro sistema operacional os blocos
+    de memoria que o Python/PIL ja liberaram internamente mas o alocador
+    ainda segura "reservados" pro processo (fragmentacao -- mesmo motivo
+    do MALLOC_ARENA_MAX=2 em render.yaml, mas esse so limita quantas
+    arenas NOVAS podem abrir; nao forca devolver as que ja existem). So
+    existe em Linux com glibc (producao e´ sempre isso); silenciosamente
+    vira no-op noutra plataforma. Chamado depois de todo processamento
+    pesado de imagem. Nao afeta ru_maxrss (_memoria_atual_mb) -- esse e´
+    um "recorde historico" que a glibc nunca reduz, entao nao aparece
+    diferenca no log de diagnostico nem na reciclagem por memoria; o
+    efeito real aparece no grafico de memoria do proprio Render, que
+    olha o uso REAL do processo, nao esse pico."""
+    try:
+        ctypes.CDLL("libc.so.6").malloc_trim(0)
+    except (OSError, AttributeError):
+        pass
+
+
 # Ver conversa 2026-09-18: queda real do Render por memoria (plano
 # Starter, 512MB) -- o log de diagnostico acima (memoria_pico_mb) pegou
 # um preview isolado indo de 91.3 pra 212.5MB (delta=121.2) alguns
@@ -5202,6 +5222,7 @@ def api_personalizada_preview():
                 return jsonify(erro=f"Erro ao gerar a simulação: {exc}"), 400
     finally:
         _LIMITE_PROCESSAMENTO_IMAGEM_PESADO.release()
+        _liberar_memoria_livre_para_o_so()
         memoria_depois = _memoria_atual_mb()
         app.logger.warning(
             "personalizada-preview: formato=%s arquivo=%s memoria_pico_mb=%.1f->%.1f (delta=%.1f)",
