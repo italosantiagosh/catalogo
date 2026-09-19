@@ -173,25 +173,11 @@
           {% for produto in procurados %}
             <a class="card-produto" href="{{ url_for('produto', produto_id=produto.id) }}">
               <div class="card-imagem-wrap">
-                {% if produto.thumbnail_webp %}
-                  <picture>
-                    <source type="image/webp" srcset="{{ url_for('static', filename=produto.thumbnail_webp) }}">
-                    <img src="{{ url_for('static', filename=produto.thumbnail_mini or produto.thumbnail) }}" alt="{{ produto.nome }}" loading="lazy" decoding="async" width="240" height="240">
-                  </picture>
-                {% else %}
-                  <img src="{{ url_for('static', filename=produto.thumbnail_mini or produto.thumbnail) }}" alt="{{ produto.nome }}" loading="lazy" decoding="async" width="240" height="240">
-                {% endif %}
+                <img src="{{ url_for('static', filename=produto.thumbnail) }}" alt="{{ produto.nome }}" loading="lazy" decoding="async">
                 {% if produto.vendas_recentes %}
                   <span class="badge-vendas">🔥 {{ produto.vendas_recentes }} vendidas nos últimos 30 dias</span>
                 {% endif %}
-                {% if produto.thumbnail_chaveiro_webp %}
-                  <picture>
-                    <source type="image/webp" srcset="{{ url_for('static', filename=produto.thumbnail_chaveiro_webp) }}">
-                    <img class="card-imagem-alt" src="{{ url_for('static', filename=produto.thumbnail_chaveiro_mini or produto.thumbnail_chaveiro) }}" alt="" loading="lazy" decoding="async" aria-hidden="true" width="240" height="240">
-                  </picture>
-                {% else %}
-                  <img class="card-imagem-alt" src="{{ url_for('static', filename=produto.thumbnail_chaveiro_mini or produto.thumbnail_chaveiro) }}" alt="" loading="lazy" decoding="async" aria-hidden="true" width="240" height="240">
-                {% endif %}
+                <img class="card-imagem-alt" src="{{ url_for('static', filename=produto.thumbnail_chaveiro) }}" alt="" loading="lazy" decoding="async" aria-hidden="true">
                 <span class="badge-formatos">Medalha · Entremeio · Chaveiro</span>
               </div>
               <div class="card-corpo">

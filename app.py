@@ -1222,21 +1222,12 @@ def index():
     # unico -- um grupo sem produtos hoje (id removido do catalogo)
     # simplesmente some da home, sem quebrar nada.
     destaques_por_chave = {d["chave"]: d for d in destaques if d.get("chave")}
-    procurados = []
-    for pid in PROCURADOS_HOME:
-        if pid not in itens_por_id:
-            continue
-        mini = _thumbnail_mini(itens_por_id[pid]["thumbnail"])
-        mini_chaveiro = _thumbnail_mini(itens_por_id[pid]["thumbnail_chaveiro"])
-        procurados.append(
-            {
-                **itens_por_id[pid],
-                "thumbnail_mini": mini,
-                "thumbnail_webp": _webp_se_existir(mini),
-                "thumbnail_chaveiro_mini": mini_chaveiro,
-                "thumbnail_chaveiro_webp": _webp_se_existir(mini_chaveiro),
-            }
-        )
+    # Resolucao cheia (nao a miniatura de 108px do carrossel de destaques
+    # acima) -- esse card e´ bem maior (grid de 2-4 colunas), a miniatura
+    # esticada ficava visivelmente pixelada em tela retina (ver conversa
+    # 2026-09-19: "so os da Home estao pixelados", comparado ao /catalogo,
+    # que ja usava a imagem cheia).
+    procurados = [itens_por_id[pid] for pid in PROCURADOS_HOME if pid in itens_por_id]
     categorias = categorias_com_slug(produtos)
     # "Ultima chance" antes da grade generica de santos, pra quem rolou a
     # home inteira e ainda nao achou o que queria (ver conversa) -- reusa

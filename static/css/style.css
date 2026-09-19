@@ -746,6 +746,19 @@ a.link-carrinho #contador-carrinho {
   background: var(--bg);
 }
 
+/* so a secao "Conheca alguns santos" da home (ver conversa 2026-09-19)
+   -- reduz visualmente o tamanho da foto dentro do card, mantendo nome/
+   preco/selos do mesmo jeito. O padding no wrap encolhe TANTO a foto
+   quanto os selos (position:absolute com inset:0 usa a borda do padding
+   como referencia, nao a borda do elemento) -- os dois acompanham juntos
+   sem precisar reposicionar nada a mais. Nao mexe no /catalogo, que
+   reusa as mesmas classes mas continua com a foto ocupando o card
+   inteiro. */
+.destaques-grupo .card-imagem-wrap {
+  padding: 14px;
+  background: var(--bg);
+}
+
 /* no hover (desktop), troca pra foto real do chaveiro daquele modelo --
    ja gerada em data/produtos.json, mostra "isso tambem vem em chaveiro"
    sem precisar de nenhuma imagem nova. */
