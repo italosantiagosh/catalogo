@@ -754,6 +754,21 @@ _FOTO_PERSONALIZADA_LADO_MAXIMO = 1000
 # gradual de 2+ uploads simultaneos que o semaforo acima ja cobre).
 _FOTO_PERSONALIZADA_MEGAPIXELS_MAXIMO = 80_000_000
 
+# IDEIA GUARDADA (ver conversa 2026-09-19), NAO implementada ainda --
+# PNG/HEIC nao tem o atalho do draft() (comentario acima), e converter
+# pra JPEG AQUI no servidor nao ajuda: pra converter precisa decodificar
+# o arquivo original inteiro primeiro, que e´ exatamente o custo caro
+# que a gente quer evitar (so muda o formato DEPOIS do pico de memoria
+# ja´ ter acontecido). A versao que funcionaria de verdade e´ converter
+# no NAVEGADOR do cliente, antes do upload (canvas.toBlob('image/jpeg')
+# no personalizada.js) -- quem decodifica a foto original (12-48MP) fica
+# sendo o aparelho do cliente, nao o servidor, e o que chega aqui ja´
+# vem pequeno e em JPEG (aproveitando o draft() na hora). Se acontecer
+# outro pico real de memoria no futuro e o teto de resize (ver
+# _FOTO_PERSONALIZADA_LADO_MAXIMO acima) ja´ estiver no limite razoavel,
+# essa e´ a proxima alavanca a considerar -- nao e´ so cortar mais o
+# teto de novo.
+
 
 def _reduzir_temp_se_grande_demais(caminho: Path, box: "CropBox | None") -> "CropBox | None":
     """Reduz o arquivo temporario ANTES do processamento pesado, se
