@@ -359,10 +359,10 @@ def test_criar_pedido_com_imagem_personalizada_marca_como_usada(client):
 
 
 def test_limpar_imagens_pedidos_cancelados_apaga_so_apos_o_prazo(client):
-    """ver app.py:_limpar_imagens_pedidos_cancelados -- so mexe em
-    pedido CANCELADO ha mais de RETENCAO_IMAGENS_PEDIDO_CANCELADO_DIAS
-    (config.py, default 7), pra dar tempo do e-mail de recuperacao
-    ainda funcionar (ver conversa)."""
+    """ver app.py:_limpar_imagens_pedidos_cancelados_ou_excluidos -- so
+    mexe em pedido CANCELADO ha mais de
+    RETENCAO_IMAGENS_PEDIDO_CANCELADO_DIAS (config.py, default 7), pra
+    dar tempo do e-mail de recuperacao ainda funcionar (ver conversa)."""
     import app as app_module
 
     token_preview = imagens_personalizadas.salvar_imagem(b"previa", "image/png", "previa.png")
@@ -379,7 +379,7 @@ def test_limpar_imagens_pedidos_cancelados_apaga_so_apos_o_prazo(client):
     pedidos.cancelar_pedido(criado["token"])
 
     # ainda dentro do prazo -- job nao mexe em nada
-    app_module._limpar_imagens_pedidos_cancelados()
+    app_module._limpar_imagens_pedidos_cancelados_ou_excluidos()
     assert imagens_personalizadas.obter_imagem(token_preview) is not None
     assert imagens_personalizadas.obter_imagem(token_recorte) is not None
 
@@ -388,13 +388,13 @@ def test_limpar_imagens_pedidos_cancelados_apaga_so_apos_o_prazo(client):
     with pedidos._conexao() as conexao:
         conexao.execute("UPDATE pedidos SET cancelado_em = ? WHERE token = ?", (passado, criado["token"]))
 
-    app_module._limpar_imagens_pedidos_cancelados()
+    app_module._limpar_imagens_pedidos_cancelados_ou_excluidos()
     assert imagens_personalizadas.obter_imagem(token_preview) is None
     assert imagens_personalizadas.obter_imagem(token_recorte) is None
     assert pedidos.obter_pedido(criado["token"])["imagens_pedido_apagadas"] == 1
 
     # roda de novo -- idempotente, nao quebra com token ja apagado
-    app_module._limpar_imagens_pedidos_cancelados()
+    app_module._limpar_imagens_pedidos_cancelados_ou_excluidos()
 
 
 def test_limpar_imagens_pedidos_cancelados_ignora_pedido_reativado(client):
@@ -420,9 +420,80 @@ def test_limpar_imagens_pedidos_cancelados_ignora_pedido_reativado(client):
         conexao.execute("UPDATE pedidos SET cancelado_em = ? WHERE token = ?", (passado, criado["token"]))
 
     pedidos.reativar_pedido_cancelado(criado["token"])
-    app_module._limpar_imagens_pedidos_cancelados()
+    app_module._limpar_imagens_pedidos_cancelados_ou_excluidos()
 
     assert imagens_personalizadas.obter_imagem(token_recorte) is not None
+
+
+def test_limpar_imagens_pedido_excluido_apaga_so_apos_o_prazo(client):
+    """ver conversa 2026-09-20: "sim, 1 dia mesmo" -- pedido EXCLUIDO
+    pelo admin agora entra na MESMA limpeza (e MESMO prazo) do
+    cancelado, mesmo prazo de RETENCAO_IMAGENS_PEDIDO_CANCELADO_DIAS."""
+    import app as app_module
+
+    token_recorte = imagens_personalizadas.salvar_imagem(b"recorte", "image/png", "recorte.png")
+    corpo = _corpo_valido(itens=[{
+        "chave_preco": "16mm", "quantidade": 10, "produtoNome": "Personalizada",
+        "formato": "medalha", "tamanho": "16mm",
+        "imagem": f"/imagem-personalizada/{token_recorte}",
+        "imagemRecorte": f"/imagem-personalizada/{token_recorte}",
+    }])
+    with patch("app.criar_link_pagamento", return_value={"url": "https://checkout.infinitepay.io/abc"}):
+        criado = client.post("/api/pedido/criar", json=corpo).get_json()
+
+    pedidos.excluir_pedido(criado["token"], motivo="teste")
+
+    # ainda dentro do prazo -- job nao mexe em nada
+    app_module._limpar_imagens_pedidos_cancelados_ou_excluidos()
+    assert imagens_personalizadas.obter_imagem(token_recorte) is not None
+
+    from datetime import datetime, timedelta, timezone
+    passado = (datetime.now(timezone.utc) - timedelta(days=8)).isoformat()
+    with pedidos._conexao() as conexao:
+        conexao.execute("UPDATE pedidos SET excluido_em = ? WHERE token = ?", (passado, criado["token"]))
+
+    app_module._limpar_imagens_pedidos_cancelados_ou_excluidos()
+    assert imagens_personalizadas.obter_imagem(token_recorte) is None
+    assert pedidos.obter_pedido(criado["token"])["imagens_pedido_apagadas"] == 1
+
+
+def test_limpar_recortes_pedidos_entregues_mantem_a_previa(client):
+    """ver conversa 2026-09-20: pedido ENTREGUE so tem o RECORTE
+    apagado depois de RETENCAO_RECORTES_PEDIDOS_ENTREGUES_DIAS (1 ano
+    por padrao) -- a previa (o que aparece no link de acompanhamento)
+    nunca e´ mexida aqui."""
+    import app as app_module
+
+    token_preview = imagens_personalizadas.salvar_imagem(b"previa", "image/png", "previa.png")
+    token_recorte = imagens_personalizadas.salvar_imagem(b"recorte", "image/png", "recorte.png")
+    corpo = _corpo_valido(itens=[{
+        "chave_preco": "16mm", "quantidade": 10, "produtoNome": "Personalizada",
+        "formato": "medalha", "tamanho": "16mm",
+        "imagem": f"/imagem-personalizada/{token_preview}",
+        "imagemRecorte": f"/imagem-personalizada/{token_recorte}",
+    }])
+    with patch("app.criar_link_pagamento", return_value={"url": "https://checkout.infinitepay.io/abc"}):
+        criado = client.post("/api/pedido/criar", json=corpo).get_json()
+    token = criado["token"]
+
+    pedidos.marcar_pago(token, forma_pagamento="pix", parcelas=None, valor_pago=1.0, transaction_nsu="tx")
+    pedidos.atualizar_status(token, "enviado")
+    pedidos.atualizar_status(token, "entregue")
+
+    # ainda dentro do prazo -- job nao mexe em nada
+    app_module._limpar_recortes_pedidos_entregues()
+    assert imagens_personalizadas.obter_imagem(token_preview) is not None
+    assert imagens_personalizadas.obter_imagem(token_recorte) is not None
+
+    from datetime import datetime, timedelta, timezone
+    passado = (datetime.now(timezone.utc) - timedelta(days=400)).isoformat()
+    with pedidos._conexao() as conexao:
+        conexao.execute("UPDATE pedidos SET entregue_em = ? WHERE token = ?", (passado, token))
+
+    app_module._limpar_recortes_pedidos_entregues()
+    assert imagens_personalizadas.obter_imagem(token_preview) is not None  # previa continua pra sempre
+    assert imagens_personalizadas.obter_imagem(token_recorte) is None
+    assert pedidos.obter_pedido(token)["recortes_pedido_apagados"] == 1
 
 
 def test_salvar_imagem_grava_hash_sha256(client):

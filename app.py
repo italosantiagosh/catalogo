@@ -97,6 +97,7 @@ from config import (
     PRODUTOS_TITULO_ANTIGO,
     PROVA_SOCIAL,
     RETENCAO_IMAGENS_PEDIDO_CANCELADO_DIAS,
+    RETENCAO_RECORTES_PEDIDOS_ENTREGUES_DIAS,
     SECRET_KEY,
     UPSELL_ENTREMEIOS_MINIMO,
     UPSELL_HORAS_APOS_PAGAMENTO,
@@ -191,7 +192,8 @@ from services.pedidos import (
     limpar_codigos_verificacao_expirados,
     listar_pedidos,
     listar_pedidos_boleto_pendentes,
-    listar_pedidos_cancelados_para_limpar_imagens,
+    listar_pedidos_cancelados_ou_excluidos_para_limpar_imagens,
+    listar_pedidos_entregues_para_limpar_recortes,
     listar_pedidos_entregues_para_recompra,
     listar_pedidos_entregues_para_seguimento_avaliacao,
     listar_pedidos_pagos_para_upsell,
@@ -212,6 +214,7 @@ from services.pedidos import (
     marcar_imagens_pedido_apagadas,
     marcar_notificacao_venda_enviada,
     marcar_pago,
+    marcar_recortes_pedido_apagados,
     marcar_tiny_sincronizado,
     numero_modelo_personalizada,
     obter_pedido,
@@ -2082,11 +2085,29 @@ _CAMPOS_IMAGEM_PERSONALIZADA_ITEM = (
 def _tokens_imagens_personalizadas_do_pedido(pedido: dict) -> list[str]:
     """Junta os tokens de TODAS as imagens personalizadas (previa e
     recorte, dos 2 lados se for duasFaces) referenciadas pelos itens de
-    um pedido -- usado por _limpar_imagens_pedidos_cancelados abaixo pra
-    saber exatamente o que apagar."""
+    um pedido -- usado por _limpar_imagens_pedidos_cancelados_ou_excluidos
+    abaixo pra saber exatamente o que apagar."""
     tokens = []
     for item in pedido["itens"]:
         for campo in _CAMPOS_IMAGEM_PERSONALIZADA_ITEM:
+            valor = str(item.get(campo) or "")
+            if valor.startswith(_PREFIXO_IMAGEM_PERSONALIZADA):
+                tokens.append(valor[len(_PREFIXO_IMAGEM_PERSONALIZADA):])
+    return tokens
+
+
+_CAMPOS_IMAGEM_RECORTE_ITEM = ("imagemRecorte", "imagemRecorteLado1", "imagemRecorteLado2")
+
+
+def _tokens_recortes_personalizados_do_pedido(pedido: dict) -> list[str]:
+    """MESMA ideia de _tokens_imagens_personalizadas_do_pedido acima, mas
+    so os campos de RECORTE (nunca a previa) -- usado por
+    _limpar_recortes_pedidos_entregues (ver conversa 2026-09-20: pedido
+    entregue so limpa o recorte pesado, a previa continua servindo o
+    link de acompanhamento pra sempre)."""
+    tokens = []
+    for item in pedido["itens"]:
+        for campo in _CAMPOS_IMAGEM_RECORTE_ITEM:
             valor = str(item.get(campo) or "")
             if valor.startswith(_PREFIXO_IMAGEM_PERSONALIZADA):
                 tokens.append(valor[len(_PREFIXO_IMAGEM_PERSONALIZADA):])
@@ -5726,21 +5747,38 @@ def _limpar_imagens_personalizadas_antigas() -> None:
     purgar_imagens_antigas(dias=7)
 
 
-def _limpar_imagens_pedidos_cancelados() -> None:
+def _limpar_imagens_pedidos_cancelados_ou_excluidos() -> None:
     """Job agendado (ver _iniciar_scheduler_jobs abaixo) -- roda de hora
     em hora (nao 1x por dia como as outras limpezas, ver comentario em
     config.py:RETENCAO_IMAGENS_PEDIDO_CANCELADO_DIAS), apaga as imagens
-    personalizadas (previa + recorte) de pedidos CANCELADOS ha´ mais de
-    RETENCAO_IMAGENS_PEDIDO_CANCELADO_DIAS (config.py) que ninguem
-    reativou (ver services/pedidos.py:reativar_pedido_cancelado, usado
-    pelo e-mail de recuperacao) -- depois desse prazo a chance de
-    recuperacao e´ baixa e a imagem so ocupa espaco a toa (ver
-    conversa)."""
-    for pedido in listar_pedidos_cancelados_para_limpar_imagens(RETENCAO_IMAGENS_PEDIDO_CANCELADO_DIAS):
+    personalizadas (previa + recorte) de pedidos CANCELADOS ou
+    EXCLUIDOS ha´ mais de RETENCAO_IMAGENS_PEDIDO_CANCELADO_DIAS
+    (config.py). Cancelado que ninguem reativou (ver
+    services/pedidos.py:reativar_pedido_cancelado, usado pelo e-mail de
+    recuperacao) -- depois desse prazo a chance de recuperacao e´ baixa
+    e a imagem so ocupa espaco a toa. Excluido nem tem reativacao
+    possivel (ver conversa 2026-09-20), entao nao faz sentido guardar a
+    imagem dele por MAIS tempo que a de um cancelado."""
+    for pedido in listar_pedidos_cancelados_ou_excluidos_para_limpar_imagens(RETENCAO_IMAGENS_PEDIDO_CANCELADO_DIAS):
         tokens = _tokens_imagens_personalizadas_do_pedido(pedido)
         if tokens:
             apagar_imagens(tokens)
         marcar_imagens_pedido_apagadas(pedido["token"])
+
+
+def _limpar_recortes_pedidos_entregues() -> None:
+    """Job agendado (ver _iniciar_scheduler_jobs abaixo) -- roda 1x por
+    dia, apaga so o RECORTE (1:1, o pesado) de pedidos ENTREGUES ha´
+    mais de RETENCAO_RECORTES_PEDIDOS_ENTREGUES_DIAS (config.py, 1 ano
+    por padrao -- ver conversa 2026-09-20: "os pedidos entregues, deixa
+    1 ano"). A PREVIA nunca e´ apagada aqui -- continua servindo o link
+    de acompanhamento do pedido pra sempre, so a imagem pesada de
+    producao some depois desse prazo bem folgado."""
+    for pedido in listar_pedidos_entregues_para_limpar_recortes(RETENCAO_RECORTES_PEDIDOS_ENTREGUES_DIAS):
+        tokens = _tokens_recortes_personalizados_do_pedido(pedido)
+        if tokens:
+            apagar_imagens(tokens)
+        marcar_recortes_pedido_apagados(pedido["token"])
 
 
 def _iniciar_scheduler_jobs() -> None:
@@ -5760,7 +5798,11 @@ def _iniciar_scheduler_jobs() -> None:
         _limpar_imagens_personalizadas_antigas, "interval", hours=24, id="limpar_imagens_personalizadas"
     )
     scheduler.add_job(
-        _limpar_imagens_pedidos_cancelados, "interval", hours=1, id="limpar_imagens_pedidos_cancelados"
+        _limpar_imagens_pedidos_cancelados_ou_excluidos, "interval", hours=1,
+        id="limpar_imagens_pedidos_cancelados_ou_excluidos",
+    )
+    scheduler.add_job(
+        _limpar_recortes_pedidos_entregues, "interval", hours=24, id="limpar_recortes_pedidos_entregues"
     )
     # Codigos de /meus-pedidos vencem em 10 minutos (ver services/pedidos.py:
     # _CODIGO_VERIFICACAO_VALIDADE_MINUTOS) -- limpa a cada hora pra tabela

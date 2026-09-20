@@ -678,7 +678,7 @@ def test_reativar_pedido_ja_pago_nao_mexe_em_nada(monkeypatch, tmp_path):
     assert resultado["status"] == "pago"
 
 
-def test_listar_pedidos_cancelados_para_limpar_imagens(monkeypatch, tmp_path):
+def test_listar_pedidos_cancelados_ou_excluidos_para_limpar_imagens(monkeypatch, tmp_path):
     _reapontar_db(monkeypatch, tmp_path)
     recente = pedidos.criar_pedido(**_pedido_exemplo())
     pedidos.cancelar_pedido(recente["token"])  # cancelado agora -- ainda dentro do prazo
@@ -695,8 +695,58 @@ def test_listar_pedidos_cancelados_para_limpar_imagens(monkeypatch, tmp_path):
         conexao.execute("UPDATE pedidos SET cancelado_em = ? WHERE token = ?", (passado, ja_limpo["token"]))
     pedidos.marcar_imagens_pedido_apagadas(ja_limpo["token"])
 
-    resultado = {p["token"] for p in pedidos.listar_pedidos_cancelados_para_limpar_imagens(7)}
-    assert resultado == {antigo["token"]}
+    excluido_antigo = pedidos.criar_pedido(**_pedido_exemplo())
+    pedidos.excluir_pedido(excluido_antigo["token"], motivo="teste")
+    with pedidos._conexao() as conexao:
+        conexao.execute("UPDATE pedidos SET excluido_em = ? WHERE token = ?", (passado, excluido_antigo["token"]))
+
+    excluido_recente = pedidos.criar_pedido(**_pedido_exemplo())
+    pedidos.excluir_pedido(excluido_recente["token"], motivo="teste")  # excluido agora -- ainda dentro do prazo
+
+    resultado = {p["token"] for p in pedidos.listar_pedidos_cancelados_ou_excluidos_para_limpar_imagens(7)}
+    assert resultado == {antigo["token"], excluido_antigo["token"]}
+
+
+def test_listar_pedidos_entregues_para_limpar_recortes(monkeypatch, tmp_path):
+    """ver conversa 2026-09-20: "os pedidos entregues, deixa 1 ano" --
+    prazo bem maior que cancelado/excluido, e so afeta status
+    'entregue' de verdade (pago/enviado nao entram, mesmo antigos)."""
+    _reapontar_db(monkeypatch, tmp_path)
+    passado = (datetime.now(timezone.utc) - timedelta(days=400)).isoformat()
+
+    entregue_antigo = pedidos.criar_pedido(**_pedido_exemplo())
+    pedidos.marcar_pago(
+        entregue_antigo["token"], forma_pagamento="pix", parcelas=None, valor_pago=120.0, transaction_nsu="tx1"
+    )
+    pedidos.atualizar_status(entregue_antigo["token"], "enviado")
+    pedidos.atualizar_status(entregue_antigo["token"], "entregue")
+    with pedidos._conexao() as conexao:
+        conexao.execute("UPDATE pedidos SET entregue_em = ? WHERE token = ?", (passado, entregue_antigo["token"]))
+
+    entregue_recente = pedidos.criar_pedido(**_pedido_exemplo())
+    pedidos.marcar_pago(
+        entregue_recente["token"], forma_pagamento="pix", parcelas=None, valor_pago=120.0, transaction_nsu="tx2"
+    )
+    pedidos.atualizar_status(entregue_recente["token"], "enviado")
+    pedidos.atualizar_status(entregue_recente["token"], "entregue")  # dentro do prazo
+
+    ainda_enviado = pedidos.criar_pedido(**_pedido_exemplo())
+    pedidos.marcar_pago(
+        ainda_enviado["token"], forma_pagamento="pix", parcelas=None, valor_pago=120.0, transaction_nsu="tx3"
+    )
+    pedidos.atualizar_status(ainda_enviado["token"], "enviado")  # nunca virou entregue -- fora, mesmo com pedido antigo
+    with pedidos._conexao() as conexao:
+        conexao.execute("UPDATE pedidos SET criado_em = ? WHERE token = ?", (passado, ainda_enviado["token"]))
+
+    resultado = {p["token"] for p in pedidos.listar_pedidos_entregues_para_limpar_recortes(365)}
+    assert resultado == {entregue_antigo["token"]}
+
+
+def test_marcar_recortes_pedido_apagados(monkeypatch, tmp_path):
+    _reapontar_db(monkeypatch, tmp_path)
+    criado = pedidos.criar_pedido(**_pedido_exemplo())
+    pedidos.marcar_recortes_pedido_apagados(criado["token"])
+    assert pedidos.obter_pedido(criado["token"])["recortes_pedido_apagados"] == 1
 
 
 def test_marcar_imagens_pedido_apagadas(monkeypatch, tmp_path):

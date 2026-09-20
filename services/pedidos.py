@@ -224,6 +224,16 @@ _COLUNAS_ADICIONAIS: list[tuple[str, str]] = [
     ("origem_dispositivo", "TEXT"),
     ("origem_classificada", "TEXT"),
     ("origem_bruta", "TEXT"),
+    # Marca que a limpeza do RECORTE (1:1, o pesado -- ver
+    # services/imagens_personalizadas.py) de pedido ENTREGUE ja rodou
+    # pra esse pedido (ver app.py:_limpar_recortes_pedidos_entregues) --
+    # mesmo raciocinio de imagens_pedido_apagadas acima, sem isso a
+    # query reprocessaria todo pedido entregue da historia a cada
+    # rodada. Diferente de imagens_pedido_apagadas: aqui so o recorte
+    # some, a PREVIA continua servindo o link de acompanhamento pra
+    # sempre (ver conversa 2026-09-20 -- pedido entregue nao e´
+    # excluido/cancelado, entao nao faz sentido apagar tudo).
+    ("recortes_pedido_apagados", "INTEGER NOT NULL DEFAULT 0"),
 ]
 
 # Fluxo de status depois de "pago" -- alteravel manualmente pelo painel
@@ -1338,23 +1348,33 @@ def reativar_pedido_cancelado(token: str) -> dict | None:
     return obter_pedido(token)
 
 
-def listar_pedidos_cancelados_para_limpar_imagens(dias: int) -> list[dict]:
-    """Pedidos "cancelado" ha´ pelo menos `dias` dias, cujas imagens
-    personalizadas (se tiver) ainda nao foram limpas -- usado pelo job
-    agendado (ver app.py:_limpar_imagens_pedidos_cancelados). Um pedido
-    REATIVADO (ver reativar_pedido_cancelado acima) sai do status
-    "cancelado" e some sozinho dessa lista, protegendo a imagem."""
+def listar_pedidos_cancelados_ou_excluidos_para_limpar_imagens(dias: int) -> list[dict]:
+    """Pedidos "cancelado" OU "excluido" ha´ pelo menos `dias` dias, cujas
+    imagens personalizadas (se tiver) ainda nao foram limpas -- usado
+    pelo job agendado (ver
+    app.py:_limpar_imagens_pedidos_cancelados_ou_excluidos). Um pedido
+    "cancelado" REATIVADO (ver reativar_pedido_cancelado acima) sai do
+    status "cancelado" e some sozinho dessa lista, protegendo a
+    imagem -- "excluido" nao tem essa opcao (excluir_pedido e´
+    definitivo, sem reativacao possivel), entao nem precisa dessa
+    protecao (ver conversa 2026-09-20: incluido aqui porque tratar a
+    imagem de um excluido com MAIS cuidado que a de um cancelado nao
+    fazia sentido nenhum -- cancelado_em/excluido_em sao colunas
+    diferentes, cada status confere so a sua)."""
     inicializar_db()
     limite = (datetime.now(timezone.utc) - timedelta(days=dias)).isoformat()
     with _conexao() as conexao:
         linhas = conexao.execute(
             """
             SELECT * FROM pedidos
-            WHERE status = 'cancelado' AND imagens_pedido_apagadas = 0
-                AND cancelado_em IS NOT NULL AND cancelado_em <= ?
-            ORDER BY cancelado_em ASC
+            WHERE imagens_pedido_apagadas = 0
+                AND (
+                    (status = 'cancelado' AND cancelado_em IS NOT NULL AND cancelado_em <= ?)
+                    OR (status = 'excluido' AND excluido_em IS NOT NULL AND excluido_em <= ?)
+                )
+            ORDER BY COALESCE(cancelado_em, excluido_em) ASC
             """,
-            (limite,),
+            (limite, limite),
         ).fetchall()
     pedidos = []
     for linha in linhas:
@@ -1367,6 +1387,40 @@ def listar_pedidos_cancelados_para_limpar_imagens(dias: int) -> list[dict]:
 def marcar_imagens_pedido_apagadas(token: str) -> None:
     with _conexao() as conexao:
         conexao.execute("UPDATE pedidos SET imagens_pedido_apagadas = 1 WHERE token = ?", (token,))
+
+
+def listar_pedidos_entregues_para_limpar_recortes(dias: int) -> list[dict]:
+    """Pedidos "entregue" ha´ pelo menos `dias` dias, cujo RECORTE (1:1,
+    o pesado -- ver services/imagens_personalizadas.py) ainda nao foi
+    limpo -- usado pelo job agendado (ver
+    app.py:_limpar_recortes_pedidos_entregues). So o recorte, NUNCA a
+    previa (que continua servindo o link de acompanhamento pra sempre,
+    ver conversa 2026-09-20: "os pedidos entregues, deixa 1 ano" --
+    prazo bem maior que o de cancelado/excluido de proposito, o pedido
+    entregue e´ uma venda de verdade, sem motivo pra pressa nenhuma)."""
+    inicializar_db()
+    limite = (datetime.now(timezone.utc) - timedelta(days=dias)).isoformat()
+    with _conexao() as conexao:
+        linhas = conexao.execute(
+            """
+            SELECT * FROM pedidos
+            WHERE status = 'entregue' AND recortes_pedido_apagados = 0
+                AND entregue_em IS NOT NULL AND entregue_em <= ?
+            ORDER BY entregue_em ASC
+            """,
+            (limite,),
+        ).fetchall()
+    pedidos = []
+    for linha in linhas:
+        pedido = dict(linha)
+        pedido["itens"] = json.loads(pedido["itens"])
+        pedidos.append(pedido)
+    return pedidos
+
+
+def marcar_recortes_pedido_apagados(token: str) -> None:
+    with _conexao() as conexao:
+        conexao.execute("UPDATE pedidos SET recortes_pedido_apagados = 1 WHERE token = ?", (token,))
 
 
 def excluir_pedido(token: str, *, motivo: str) -> dict | None:

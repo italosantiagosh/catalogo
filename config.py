@@ -253,6 +253,22 @@ R2_BUCKET_NAME = os.environ.get("R2_BUCKET_NAME", "catalogo-personalizadas")
 RETENCAO_IMAGENS_PEDIDO_CANCELADO_DIAS = int(
     os.environ.get("RETENCAO_IMAGENS_PEDIDO_CANCELADO_DIAS", "1")
 )
+# MESMO prazo acima, aplicado tambem a pedido EXCLUIDO pelo admin (ver
+# services/pedidos.py:listar_pedidos_cancelados_ou_excluidos_para_limpar_imagens)
+# -- excluido nem tem chance de reativar (diferente de cancelado), entao
+# nao faz sentido guardar a imagem dele por MAIS tempo que a de um
+# cancelado (ver conversa 2026-09-20).
+
+# Prazo BEM maior que o de cima -- so pro RECORTE (1:1, o pesado) de
+# pedido ENTREGUE, nunca a previa (ver
+# services/pedidos.py:listar_pedidos_entregues_para_limpar_recortes).
+# Pedido entregue e´ uma venda concluida de verdade, sem motivo pra
+# pressa -- 1 ano da´ folga de sobra pra qualquer reclamacao/reimpressao
+# antes do recorte sumir (ver conversa 2026-09-20: "deixa 1 ano, se ver
+# que extrapolou eu revejo").
+RETENCAO_RECORTES_PEDIDOS_ENTREGUES_DIAS = int(
+    os.environ.get("RETENCAO_RECORTES_PEDIDOS_ENTREGUES_DIAS", "365")
+)
 
 # Prazo de producao em DIAS UTEIS depois do pagamento confirmado, antes
 # do pedido ser enviado -- mesma promessa ja usada como texto fixo em
