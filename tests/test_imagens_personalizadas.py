@@ -425,6 +425,94 @@ def test_limpar_imagens_pedidos_cancelados_ignora_pedido_reativado(client):
     assert imagens_personalizadas.obter_imagem(token_recorte) is not None
 
 
+def test_salvar_imagem_grava_hash_sha256(client):
+    token = imagens_personalizadas.salvar_imagem(b"conteudo-teste", "image/png", "foto.png", tipo="recorte")
+    with imagens_personalizadas._conexao() as conexao:
+        linha = conexao.execute(
+            "SELECT hash_sha256 FROM imagens_personalizadas WHERE token = ?", (token,)
+        ).fetchone()
+    import hashlib
+    assert linha["hash_sha256"] == hashlib.sha256(b"conteudo-teste").hexdigest()
+
+
+def test_obter_hash_imagem_reconhece_conteudo_igual_em_tokens_diferentes(client):
+    token1 = imagens_personalizadas.salvar_imagem(b"foto-repetida", "image/png", "a.png", tipo="recorte")
+    token2 = imagens_personalizadas.salvar_imagem(b"foto-repetida", "image/png", "b.png", tipo="recorte")
+    token3 = imagens_personalizadas.salvar_imagem(b"foto-diferente", "image/png", "c.png", tipo="recorte")
+    assert imagens_personalizadas.obter_hash_imagem(token1) == imagens_personalizadas.obter_hash_imagem(token2)
+    assert imagens_personalizadas.obter_hash_imagem(token1) != imagens_personalizadas.obter_hash_imagem(token3)
+
+
+def test_obter_hash_imagem_calcula_e_grava_pra_linha_antiga_sem_hash(client):
+    """ver conversa 2026-09-20: linha salva ANTES dessa coluna existir
+    fica com hash_sha256 NULL -- obter_hash_imagem calcula na primeira
+    leitura (self-heal preguicoso) e grava, sem precisar de migracao
+    em lote nenhuma."""
+    token = imagens_personalizadas.salvar_imagem(b"foto-antiga", "image/png", "a.png", tipo="recorte")
+    with imagens_personalizadas._conexao() as conexao:
+        conexao.execute("UPDATE imagens_personalizadas SET hash_sha256 = NULL WHERE token = ?", (token,))
+
+    hash_calculado = imagens_personalizadas.obter_hash_imagem(token)
+    import hashlib
+    assert hash_calculado == hashlib.sha256(b"foto-antiga").hexdigest()
+
+    with imagens_personalizadas._conexao() as conexao:
+        linha = conexao.execute(
+            "SELECT hash_sha256 FROM imagens_personalizadas WHERE token = ?", (token,)
+        ).fetchone()
+    assert linha["hash_sha256"] == hash_calculado
+
+
+def test_obter_hash_imagem_token_inexistente_devolve_none(client):
+    assert imagens_personalizadas.obter_hash_imagem("token-que-nao-existe") is None
+
+
+def test_foto_repetida_em_lados_diferentes_ganha_o_mesmo_modelo_n(client, monkeypatch):
+    """ver conversa 2026-09-20: cliente reenvia a MESMA foto em varios
+    lados/itens (ex: 10 medalhas de 2 lados com o mesmo lado
+    personalizado repetido) -- antes virava "Modelo N" diferente pra
+    cada upload, mesmo sendo pixel a pixel identica. Agora reconhece
+    pelo hash e repete o numero."""
+    import app as app_module
+
+    monkeypatch.setattr(app_module, "ADMIN_USER", "admin")
+    monkeypatch.setattr(app_module, "ADMIN_PASSWORD", "segredo123")
+
+    token_repetida_1 = imagens_personalizadas.salvar_imagem(b"foto-repetida", "image/png", "a.png", tipo="recorte")
+    token_repetida_2 = imagens_personalizadas.salvar_imagem(b"foto-repetida", "image/png", "b.png", tipo="recorte")
+    token_santo = imagens_personalizadas.salvar_imagem(b"foto-do-santo", "image/png", "c.png", tipo="recorte")
+
+    corpo = _corpo_valido(itens=[{
+        "chave_preco": "medalha_2lados", "quantidade": 20, "produtoNome": "Personalizada",
+        "formato": "medalha_2lados", "cor": "prata", "tamanho": "18mm",
+        "duasFaces": True,
+        "lado1": {
+            "origem": "upload",
+            "imagem": f"/imagem-personalizada/{token_repetida_1}",
+            "imagemRecorte": f"/imagem-personalizada/{token_repetida_1}",
+        },
+        "lado2": {
+            "origem": "upload",
+            "imagem": f"/imagem-personalizada/{token_santo}",
+            "imagemRecorte": f"/imagem-personalizada/{token_santo}",
+        },
+    }, {
+        "chave_preco": "16mm", "quantidade": 20, "produtoNome": "Personalizada",
+        "formato": "medalha", "tamanho": "16mm",
+        "imagem": f"/imagem-personalizada/{token_repetida_2}",
+        "imagemRecorte": f"/imagem-personalizada/{token_repetida_2}",
+    }])
+    with patch("app.criar_link_pagamento", return_value={"url": "https://checkout.infinitepay.io/abc"}):
+        criado = client.post("/api/pedido/criar", json=corpo).get_json()
+
+    detalhe = client.get(f"/admin/pedidos/{criado['token']}", auth=("admin", "segredo123")).get_data(as_text=True)
+    # lado1 do item 1 e o item 2 inteiro sao a MESMA foto -> mesmo numero
+    assert "Lado 1: Personalizada — Modelo 1" in detalhe
+    assert "Modelo 1" in detalhe and detalhe.count('download="personalizada_modelo_1.png"') == 2
+    # lado2 (foto diferente) ganha numero proprio
+    assert "Lado 2: Personalizada — Modelo 2" in detalhe
+
+
 def test_carrinho_antigo_com_data_uri_continua_funcionando(client):
     """Compatibilidade com carrinho ja aberto no navegador de antes dessa
     mudanca (ver services/imagens_personalizadas.py) -- data URI direto

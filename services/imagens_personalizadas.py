@@ -35,6 +35,7 @@ busca no R2 quando encontra isso vazio.
 
 from __future__ import annotations
 
+import hashlib
 import os
 import secrets
 import sqlite3
@@ -92,22 +93,63 @@ def inicializar_db() -> None:
         # imagemLado1/imagemLado2 do pedido pra sempre.
         if "tipo" not in colunas_existentes:
             conexao.execute("ALTER TABLE imagens_personalizadas ADD COLUMN tipo TEXT NOT NULL DEFAULT 'preview'")
+        # hash_sha256 (ver conversa 2026-09-20): permite reconhecer duas
+        # fotos com o MESMO conteudo salvas em tokens diferentes (ex:
+        # cliente reenvia a mesma foto em varios itens/lados de um
+        # pedido de 2 lados) -- usado por
+        # app.py:_atribuir_numeros_modelo_personalizada pra dar o MESMO
+        # "Modelo N" pras duas, e pelo zip em massa pra baixar so uma
+        # vez. Linhas ja existentes ficam com NULL ate serem lidas de
+        # novo (ver obter_hash_imagem abaixo, calcula e grava na hora --
+        # sem migracao em lote, sem job agendado).
+        if "hash_sha256" not in colunas_existentes:
+            conexao.execute("ALTER TABLE imagens_personalizadas ADD COLUMN hash_sha256 TEXT")
 
 
 def salvar_imagem(dados: bytes, mimetype: str, nome_arquivo: str, tipo: str = "preview") -> str:
     inicializar_db()
     token = secrets.token_urlsafe(16)
+    hash_sha256 = hashlib.sha256(dados).hexdigest()
     dados_sqlite = dados
     if armazenamento_r2.configurado():
         armazenamento_r2.subir(token, dados, mimetype)
         dados_sqlite = b""
     with _conexao() as conexao:
         conexao.execute(
-            "INSERT INTO imagens_personalizadas (token, dados, mimetype, nome_arquivo, criado_em, tipo) "
-            "VALUES (?, ?, ?, ?, ?, ?)",
-            (token, dados_sqlite, mimetype, nome_arquivo, datetime.now(timezone.utc).isoformat(), tipo),
+            "INSERT INTO imagens_personalizadas "
+            "(token, dados, mimetype, nome_arquivo, criado_em, tipo, hash_sha256) "
+            "VALUES (?, ?, ?, ?, ?, ?, ?)",
+            (token, dados_sqlite, mimetype, nome_arquivo, datetime.now(timezone.utc).isoformat(), tipo, hash_sha256),
         )
     return token
+
+
+def obter_hash_imagem(token: str) -> str | None:
+    """Hash sha256 do conteudo salvo em `token`, pra reconhecer fotos
+    repetidas mesmo salvas em tokens diferentes (ver salvar_imagem e a
+    coluna hash_sha256 acima). Linha antiga sem hash ainda calcula e
+    grava na hora (self-heal preguicoso, sem migracao em lote) --
+    devolve None so se o token nem existir."""
+    inicializar_db()
+    with _conexao() as conexao:
+        linha = conexao.execute(
+            "SELECT dados, hash_sha256 FROM imagens_personalizadas WHERE token = ?", (token,)
+        ).fetchone()
+    if linha is None:
+        return None
+    if linha["hash_sha256"]:
+        return linha["hash_sha256"]
+    dados = linha["dados"]
+    if not dados and armazenamento_r2.configurado():
+        dados = armazenamento_r2.baixar(token)
+    if not dados:
+        return None
+    hash_sha256 = hashlib.sha256(dados).hexdigest()
+    with _conexao() as conexao:
+        conexao.execute(
+            "UPDATE imagens_personalizadas SET hash_sha256 = ? WHERE token = ?", (hash_sha256, token)
+        )
+    return hash_sha256
 
 
 def obter_imagem(token: str) -> tuple[bytes, str, str] | None:

@@ -222,8 +222,8 @@ def test_csv_total_ignora_token_inexistente(client, monkeypatch):
 # ---- Zip com personalizadas ----
 
 
-def _criar_pedido_com_personalizada(client) -> str:
-    token_imagem = imagens_personalizadas.salvar_imagem(b"fake-png-bytes", "image/png", "recorte.png", tipo="recorte")
+def _criar_pedido_com_personalizada(client, conteudo: bytes = b"fake-png-bytes") -> str:
+    token_imagem = imagens_personalizadas.salvar_imagem(conteudo, "image/png", "recorte.png", tipo="recorte")
     return _criar_pedido(
         client,
         itens=[{
@@ -249,8 +249,8 @@ def test_zip_personalizadas_sem_imagens_redireciona_sem_gerar_arquivo(client, mo
 
 def test_zip_personalizadas_inclui_recortes_dos_pedidos_selecionados(client, monkeypatch):
     _preparar_admin(monkeypatch)
-    token1 = _criar_pedido_com_personalizada(client)
-    token2 = _criar_pedido_com_personalizada(client)
+    token1 = _criar_pedido_com_personalizada(client, conteudo=b"foto-do-pedido-1")
+    token2 = _criar_pedido_com_personalizada(client, conteudo=b"foto-do-pedido-2")
     resposta = client.post(
         "/admin/pedidos/zip-personalizadas", data={"tokens": [token1, token2]}, auth=("admin", "segredo123")
     )
@@ -259,4 +259,21 @@ def test_zip_personalizadas_inclui_recortes_dos_pedidos_selecionados(client, mon
     arquivo = zipfile.ZipFile(io.BytesIO(resposta.data))
     nomes = sorted(arquivo.namelist())
     assert nomes == ["personalizada_modelo_1.png", "personalizada_modelo_2.png"]
-    assert arquivo.read("personalizada_modelo_1.png") == b"fake-png-bytes"
+    assert arquivo.read("personalizada_modelo_1.png") == b"foto-do-pedido-1"
+
+
+def test_zip_personalizadas_baixa_so_uma_vez_quando_a_foto_se_repete(client, monkeypatch):
+    """ver conversa 2026-09-20: pedido com a MESMA foto em varios
+    itens/lados/pedidos gravava a mesma imagem repetida no zip com
+    "modelos" diferentes -- agora reconhece pelo conteudo (hash) e
+    baixa uma vez so, repetindo o numero."""
+    _preparar_admin(monkeypatch)
+    token1 = _criar_pedido_com_personalizada(client, conteudo=b"foto-repetida")
+    token2 = _criar_pedido_com_personalizada(client, conteudo=b"foto-repetida")
+    resposta = client.post(
+        "/admin/pedidos/zip-personalizadas", data={"tokens": [token1, token2]}, auth=("admin", "segredo123")
+    )
+    assert resposta.status_code == 200
+    arquivo = zipfile.ZipFile(io.BytesIO(resposta.data))
+    assert arquivo.namelist() == ["personalizada_modelo_1.png"]
+    assert arquivo.read("personalizada_modelo_1.png") == b"foto-repetida"

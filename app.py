@@ -234,6 +234,7 @@ from services.pedidos import (
 from services.imagens_personalizadas import (
     apagar_imagens,
     marcar_imagem_usada,
+    obter_hash_imagem,
     obter_imagem,
     purgar_imagens_antigas,
     salvar_imagem,
@@ -3470,6 +3471,16 @@ def admin_pedidos():
     )
 
 
+def _hash_da_imagem_personalizada(url: str) -> str | None:
+    """Extrai o token de uma URL /imagem-personalizada/<token> e devolve
+    o hash do conteudo (ver services/imagens_personalizadas.py:
+    obter_hash_imagem) -- None se a URL nao for desse formato (ex:
+    imagem antiga servida de outro jeito) ou o token nao existir mais."""
+    if not url.startswith(_PREFIXO_IMAGEM_PERSONALIZADA):
+        return None
+    return obter_hash_imagem(url[len(_PREFIXO_IMAGEM_PERSONALIZADA):])
+
+
 def _atribuir_numeros_modelo_personalizada(pedido: dict) -> None:
     """Numera cada FOTO personalizada do pedido (ver services/pedidos.py:
     numero_modelo_personalizada) -- contador GLOBAL e sequencial (nunca
@@ -3492,20 +3503,32 @@ def _atribuir_numeros_modelo_personalizada(pedido: dict) -> None:
     Tudo isso e´ feito no dict do pedido em MEMORIA (nunca grava de
     volta no banco) -- so o numero em si e´ persistido, numa tabela
     separada por (pedido_token, item_index, lado), pra sempre devolver o
-    MESMO numero em toda visita futura a essa foto."""
+    MESMO numero em toda visita futura a essa foto.
+
+    Passa o hash do conteudo da foto (ver
+    services/imagens_personalizadas.py:obter_hash_imagem) pra
+    numero_modelo_personalizada -- so afeta fotos que AINDA NAO tem
+    numero (ver docstring la´): se outra foto identica (mesmo de outro
+    item/lado/pedido) ja tem numero, reaproveita em vez de tirar um
+    novo da fila. Foto ja numerada antes dessa mudanca existir NAO
+    muda -- so vale daqui pra frente (ver conversa 2026-09-20)."""
     for indice, item in enumerate(pedido["itens"]):
         if item.get("duasFaces"):
             if item.get("imagemRecorteLado1"):
                 item["numeroModeloPersonalizadaLado1"] = numero_modelo_personalizada(
-                    pedido["token"], indice, lado="lado1"
+                    pedido["token"], indice, lado="lado1",
+                    hash_imagem=_hash_da_imagem_personalizada(item["imagemRecorteLado1"]),
                 )
             if item.get("imagemRecorteLado2"):
                 item["numeroModeloPersonalizadaLado2"] = numero_modelo_personalizada(
-                    pedido["token"], indice, lado="lado2"
+                    pedido["token"], indice, lado="lado2",
+                    hash_imagem=_hash_da_imagem_personalizada(item["imagemRecorteLado2"]),
                 )
             continue
         if item.get("imagemRecorte"):
-            numero = numero_modelo_personalizada(pedido["token"], indice)
+            numero = numero_modelo_personalizada(
+                pedido["token"], indice, hash_imagem=_hash_da_imagem_personalizada(item["imagemRecorte"])
+            )
             item["modeloNome"] = f"Modelo {numero}"
             item["numeroModeloPersonalizada"] = numero
 
@@ -3776,6 +3799,10 @@ def admin_pedidos_zip_personalizadas():
 
     buffer = io.BytesIO()
     total_imagens = 0
+    numeros_ja_no_zip = set()  # ver conversa 2026-09-20: mesma foto em
+    # varios itens/lados agora cai no MESMO "Modelo N" (numero_modelo_
+    # personalizada com hash_imagem) -- evita gravar o mesmo arquivo
+    # repetido no zip quando isso acontece.
     with zipfile.ZipFile(buffer, "w", zipfile.ZIP_DEFLATED) as zip_arquivo:
         for token in tokens:
             pedido = obter_pedido(token)
@@ -3784,6 +3811,8 @@ def admin_pedidos_zip_personalizadas():
             _atribuir_numeros_modelo_personalizada(pedido)
             for item in pedido["itens"]:
                 for numero, url in _recortes_personalizados_do_item(item):
+                    if numero in numeros_ja_no_zip:
+                        continue
                     if not url.startswith(_PREFIXO_IMAGEM_PERSONALIZADA):
                         continue
                     entrada = obter_imagem(url[len(_PREFIXO_IMAGEM_PERSONALIZADA):])
@@ -3791,6 +3820,7 @@ def admin_pedidos_zip_personalizadas():
                         continue
                     dados, _mimetype, _nome_arquivo = entrada
                     zip_arquivo.writestr(f"personalizada_modelo_{numero}.png", dados)
+                    numeros_ja_no_zip.add(numero)
                     total_imagens += 1
 
     if total_imagens == 0:

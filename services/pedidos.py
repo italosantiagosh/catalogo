@@ -343,6 +343,19 @@ def inicializar_db() -> None:
                 )
                 """
             )
+            colunas_numeracao = {
+                linha[1] for linha in conexao.execute("PRAGMA table_info(numeros_modelo_personalizada)").fetchall()
+            }
+        # hash_imagem (ver conversa 2026-09-20): quando presente, deixa
+        # numero_modelo_personalizada reconhecer que outro item/lado (ou
+        # outro pedido) ja tem a MESMA foto e devolver o MESMO numero em
+        # vez de tirar um novo da fila -- resolve fotos repetidas (ex: 2
+        # lados com a mesma personalizada) virando "modelos" diferentes
+        # no CSV/zip de producao. So ADICIONA coluna, nunca apaga a
+        # tabela -- numero ja atribuido e´ dado real de pedido (pode ja
+        # estar impresso na producao), nunca pode mudar sozinho.
+        if "hash_imagem" not in colunas_numeracao:
+            conexao.execute("ALTER TABLE numeros_modelo_personalizada ADD COLUMN hash_imagem TEXT")
 
 
 def criar_pedido(
@@ -1715,7 +1728,9 @@ def email_para_documento(documento: str) -> str | None:
     return None
 
 
-def numero_modelo_personalizada(pedido_token: str, item_index: int, lado: str = "") -> int:
+def numero_modelo_personalizada(
+    pedido_token: str, item_index: int, lado: str = "", hash_imagem: str | None = None
+) -> int:
     """Numero sequencial (1, 2, 3...) dessa foto personalizada -- ver
     app.py:_atribuir_numeros_modelo_personalizada. `lado` e´ "" pra item
     de 1 lado (um numero so pra peca inteira) ou "lado1"/"lado2" pra
@@ -1724,7 +1739,15 @@ def numero_modelo_personalizada(pedido_token: str, item_index: int, lado: str = 
     que essa (pedido_token, item_index, lado) e´ pedida, atribui o
     PROXIMO numero da fila (MAX atual + 1) e grava; nas proximas vezes
     so devolve o mesmo numero ja gravado -- nunca muda depois de
-    atribuido, mesmo que o pedido seja visto de novo dias depois."""
+    atribuido, mesmo que o pedido seja visto de novo dias depois.
+
+    `hash_imagem` (ver conversa 2026-09-20, services/imagens_personalizadas.py:
+    obter_hash_imagem) e´ OPCIONAL -- quando informado e essa
+    (pedido_token, item_index, lado) ainda NAO tem numero, procura
+    primeiro se ALGUMA outra foto (mesmo de outro item/lado/pedido) com
+    o MESMO conteudo ja tem numero, e reaproveita em vez de tirar um
+    novo da fila -- so pra numeros AINDA NAO atribuidos, nunca troca um
+    numero que ja existia (poderia ja estar impresso na producao)."""
     inicializar_db()
     with _conexao() as conexao:
         linha = conexao.execute(
@@ -1733,11 +1756,24 @@ def numero_modelo_personalizada(pedido_token: str, item_index: int, lado: str = 
         ).fetchone()
         if linha is not None:
             return linha["numero"]
-        proximo = conexao.execute("SELECT COALESCE(MAX(numero), 0) + 1 FROM numeros_modelo_personalizada").fetchone()[0]
+        numero_existente = None
+        if hash_imagem:
+            linha_hash = conexao.execute(
+                "SELECT numero FROM numeros_modelo_personalizada WHERE hash_imagem = ? LIMIT 1",
+                (hash_imagem,),
+            ).fetchone()
+            if linha_hash is not None:
+                numero_existente = linha_hash["numero"]
+        proximo = numero_existente
+        if proximo is None:
+            proximo = conexao.execute(
+                "SELECT COALESCE(MAX(numero), 0) + 1 FROM numeros_modelo_personalizada"
+            ).fetchone()[0]
         conexao.execute(
-            "INSERT INTO numeros_modelo_personalizada (pedido_token, item_index, lado, numero, atribuido_em) "
-            "VALUES (?, ?, ?, ?, ?)",
-            (pedido_token, item_index, lado, proximo, datetime.now(timezone.utc).isoformat()),
+            "INSERT INTO numeros_modelo_personalizada "
+            "(pedido_token, item_index, lado, numero, atribuido_em, hash_imagem) "
+            "VALUES (?, ?, ?, ?, ?, ?)",
+            (pedido_token, item_index, lado, proximo, datetime.now(timezone.utc).isoformat(), hash_imagem),
         )
         return proximo
 
