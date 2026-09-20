@@ -294,7 +294,21 @@
             // clique nunca colidirem mesmo geradas no mesmo milissegundo.
             const chave = `personalizada-${Date.now()}-${indice}-${Math.random().toString(36).slice(2, 8)}`;
             if (item.duasFaces) {
-              const origemLado = (imagem) => (imagem === IMAGEM_SEM_FOTO ? 'sem_foto' : 'upload');
+              // ver conversa 2026-09-20: lado que veio do CATALOGO (nao
+              // upload/foto do cliente) precisa repetir como catalogo de
+              // novo -- senao perde qual santo era (so sobra a imagem,
+              // sem nome nenhum pra identificar na producao).
+              const construirLado = (sufixo) => {
+                const produtoNome = item[`produtoNome${sufixo}`];
+                const imagem = item[`imagem${sufixo}`];
+                if (produtoNome) {
+                  return { origem: 'catalogo', imagem, produtoNome, modeloNome: item[`modeloNome${sufixo}`] };
+                }
+                if (imagem === IMAGEM_SEM_FOTO) {
+                  return { origem: 'sem_foto', imagem };
+                }
+                return { origem: 'upload', imagem, imagemRecorte: item[`imagemRecorte${sufixo}`] };
+              };
               carrinhoAdicionarItem({
                 chave,
                 tipo: 'personalizada',
@@ -307,8 +321,8 @@
                 tamanho: item.tamanho,
                 quantidade: item.quantidade,
                 semImagem: item.imagemLado1 === IMAGEM_SEM_FOTO && item.imagemLado2 === IMAGEM_SEM_FOTO,
-                lado1: { origem: origemLado(item.imagemLado1), imagem: item.imagemLado1, imagemRecorte: item.imagemRecorteLado1 },
-                lado2: { origem: origemLado(item.imagemLado2), imagem: item.imagemLado2, imagemRecorte: item.imagemRecorteLado2 },
+                lado1: construirLado('Lado1'),
+                lado2: construirLado('Lado2'),
               });
             } else {
               carrinhoAdicionarItem({

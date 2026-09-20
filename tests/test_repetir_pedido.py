@@ -123,6 +123,50 @@ def test_itens_repetiveis_inclui_2lados_com_imagens(client):
     assert item["quantidade"] == 5
 
 
+def test_itens_repetiveis_2lados_preserva_lado_do_catalogo(client):
+    """ver conversa 2026-09-20: pedido real onde o lado 1 era uma foto
+    personalizada e o lado 2 um santo escolhido do catalogo -- ao
+    repetir, o lado 2 virava upload generico (so a imagem, sem nome),
+    perdendo qual santo era (so aparecia certo no link de
+    acompanhamento do pedido ORIGINAL, nunca no repetido). Repetir
+    precisa preservar produtoNome/modeloNome do lado que veio do
+    catalogo."""
+    token = _criar(client, itens=[
+        {"chave_preco": "medalha_2lados", "quantidade": 5, "cor": "prata", "tamanho": "14mm", "duasFaces": True,
+         "lado1": {"origem": "upload", "imagem": "/imagem-personalizada/lado1-preview",
+                    "imagemRecorte": "/imagem-personalizada/lado1-crop"},
+         "lado2": {"origem": "catalogo", "produtoId": "sao-jose", "produtoNome": "São José",
+                    "modeloId": "modelo-1", "modeloNome": "Modelo 1",
+                    "imagem": "/static/img/produtos/sao-jose_modelo_1_medalha_2lados_prata.jpg"}},
+    ])
+    pedido = pedidos.obter_pedido(token)
+    itens = app_module._itens_repetiveis_do_pedido(pedido)
+    assert len(itens) == 1
+    item = itens[0]
+    assert item["imagemLado1"] == "/imagem-personalizada/lado1-preview"
+    assert item["produtoNomeLado1"] == ""
+    assert item["produtoNomeLado2"] == "São José"
+    assert item["modeloNomeLado2"] == "Modelo 1"
+    assert item["imagemLado2"] == "/static/img/produtos/sao-jose_modelo_1_medalha_2lados_prata.jpg"
+
+
+def test_pagina_do_pedido_repetir_preserva_nome_do_santo_do_lado_catalogo(client):
+    """MESMO caso do teste acima, mas verificando o HTML/JS que o botao
+    "Repetir esse pedido" usa -- o nome do santo precisa estar embutido
+    no script (pra reconstruir origem: 'catalogo' no carrinho), nao so
+    a URL da imagem."""
+    token = _criar(client, itens=[
+        {"chave_preco": "medalha_2lados", "quantidade": 5, "cor": "prata", "tamanho": "14mm", "duasFaces": True,
+         "lado1": {"origem": "upload", "imagem": "/imagem-personalizada/lado1-preview",
+                    "imagemRecorte": "/imagem-personalizada/lado1-crop"},
+         "lado2": {"origem": "catalogo", "produtoId": "sao-jose", "produtoNome": "São José",
+                    "modeloId": "modelo-1", "modeloNome": "Modelo 1",
+                    "imagem": "/static/img/produtos/sao-jose_modelo_1_medalha_2lados_prata.jpg"}},
+    ])
+    pagina = client.get(f"/pedido/{token}").get_data(as_text=True)
+    assert "S\\u00e3o Jos\\u00e9" in pagina or "São José" in pagina
+
+
 def test_itens_repetiveis_deriva_formato_entremeio_e_chaveiro(client):
     token = _criar(client, itens=[
         {"chave_preco": "entremeio", "quantidade": 3, "produtoId": "sao-jose", "cor": "prata"},

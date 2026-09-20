@@ -3285,6 +3285,18 @@ def _itens_repetiveis_do_pedido(pedido: dict) -> list[dict]:
                     "imagemRecorteLado1": item.get("imagemRecorteLado1") or "",
                     "imagemLado2": imagem_lado2,
                     "imagemRecorteLado2": item.get("imagemRecorteLado2") or "",
+                    # ver conversa 2026-09-20: lado escolhido do catalogo
+                    # (nao upload) precisa repetir como catalogo de novo --
+                    # so tem nome/modelo guardado (nunca guardamos
+                    # produtoId/modeloId por lado, so o suficiente pra
+                    # producao reconhecer o santo, ver
+                    # _itens_com_descricao_do_corpo acima), mas ja basta
+                    # pra templates/pedido.html distinguir e nao tratar
+                    # como upload cru (perdendo qual santo era).
+                    "produtoNomeLado1": item.get("produtoNomeLado1") or "",
+                    "modeloNomeLado1": item.get("modeloNomeLado1") or "",
+                    "produtoNomeLado2": item.get("produtoNomeLado2") or "",
+                    "modeloNomeLado2": item.get("modeloNomeLado2") or "",
                 }
             )
             continue
