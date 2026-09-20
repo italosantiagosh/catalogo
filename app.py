@@ -3999,6 +3999,68 @@ def admin_pedido_editar_item_imagem(token: str, indice: int):
     return redirect(url_for("admin_pedido_detalhe", token=token))
 
 
+@app.route("/admin/pedidos/<token>/itens/<int:indice>/enviar-foto", methods=["POST"])
+def admin_pedido_enviar_foto(token: str, indice: int):
+    """Anexa a foto de verdade a um item PERSONALIZADO que o cliente
+    marcou "envio depois pelo WhatsApp" (ver conversa 2026-09-20).
+
+    NÃO gera simulação (sem compose_medal, sem semáforo de memória) --
+    o admin já recebe a foto cortada 1:1 de quem fez o pedido, então é
+    só um upload cru: salva o arquivo exatamente como veio e usa ele
+    tanto pra `imagem` quanto pra `imagemRecorte`. Isso foi decisão
+    explícita pra não gastar memória do Render nessa tela.
+
+    `lado` ("1" ou "2") so pra item de 2 lados -- atualiza so aquele
+    lado especifico (imagemLadoN/imagemRecorteLadoN), preservando o
+    outro lado como estava. Sem `lado`, atualiza imagem/imagemRecorte
+    do item inteiro (personalizada de 1 lado).
+
+    Depois de anexado, o numero "Modelo N" (ver
+    _atribuir_numeros_modelo_personalizada) passa a ser atribuido
+    sozinho no proximo carregamento da pagina -- nao precisa fazer
+    nada alem de subir a foto aqui."""
+    if not _autenticacao_admin_valida(request.authorization):
+        return Response(
+            "Autenticação necessária.", 401, {"WWW-Authenticate": 'Basic realm="Painel de pedidos"'}
+        )
+    pedido = obter_pedido(token)
+    if pedido is None or not (0 <= indice < len(pedido["itens"])):
+        abort(404)
+    if pedido["status"] in ("cancelado", "excluido"):
+        abort(400, description="Esse pedido não pode ter itens corrigidos por aqui.")
+
+    item = dict(pedido["itens"][indice])
+    lado = str(request.form.get("lado", "")).strip()
+    if lado not in ("", "1", "2"):
+        abort(400, description="Lado inválido.")
+    if lado and not item.get("duasFaces"):
+        abort(400, description="Esse item não é de 2 lados.")
+
+    arquivo = request.files.get("imagem")
+    if not arquivo or not arquivo.filename:
+        abort(400, description="Selecione uma foto.")
+    if not _extensao_valida(arquivo.filename):
+        abort(400, description="Formato inválido. Aceitos: " + ", ".join(IMAGE_EXTENSIONS))
+
+    dados = arquivo.read()
+    if not dados:
+        abort(400, description="Arquivo vazio.")
+
+    chave_imagem = salvar_imagem(dados, arquivo.mimetype or "image/png", arquivo.filename, tipo="recorte")
+    url_imagem = url_for("servir_imagem_personalizada", token=chave_imagem)
+
+    if lado:
+        item[f"imagemLado{lado}"] = url_imagem
+        item[f"imagemRecorteLado{lado}"] = url_imagem
+    else:
+        item["imagem"] = url_imagem
+        item["imagemRecorte"] = url_imagem
+        item["semImagem"] = False
+
+    editar_item_formato(token, indice, item=item)
+    return redirect(url_for("admin_pedido_detalhe", token=token))
+
+
 @app.route("/admin/pedidos/<token>/marcar-pago", methods=["POST"])
 def admin_pedido_marcar_pago(token: str):
     """Confirma manualmente um pedido "pendente" criado pelo site (Pix/

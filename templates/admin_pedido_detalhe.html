@@ -92,16 +92,46 @@
             {% elif item.imagemRecorteLado1 %}
               <br>Lado 1: Personalizada — Modelo {{ item.numeroModeloPersonalizadaLado1 }}
               <a href="{{ item.imagemRecorteLado1 }}" download="personalizada_modelo_{{ item.numeroModeloPersonalizadaLado1 }}.png">⬇ Baixar lado 1 (imagem 1:1)</a>
+            {% elif pedido.status not in ('cancelado', 'excluido') %}
+              <br>Lado 1: sem foto ainda
+              <details class="editar-item">
+                <summary>📤 enviar foto do lado 1</summary>
+                <form method="post" enctype="multipart/form-data" action="{{ url_for('admin_pedido_enviar_foto', token=pedido.token, indice=loop.index0) }}">
+                  <input type="hidden" name="lado" value="1">
+                  <input type="file" name="imagem" accept="image/*" required>
+                  <button type="submit">Anexar foto</button>
+                </form>
+              </details>
             {% endif %}
             {% if item.produtoNomeLado2 %}
               <br>Lado 2: {{ item.produtoNomeLado2 }} — {{ item.modeloNomeLado2 }} (catálogo)
             {% elif item.imagemRecorteLado2 %}
               <br>Lado 2: Personalizada — Modelo {{ item.numeroModeloPersonalizadaLado2 }}
               <a href="{{ item.imagemRecorteLado2 }}" download="personalizada_modelo_{{ item.numeroModeloPersonalizadaLado2 }}.png">⬇ Baixar lado 2 (imagem 1:1)</a>
+            {% elif pedido.status not in ('cancelado', 'excluido') %}
+              <br>Lado 2: sem foto ainda
+              <details class="editar-item">
+                <summary>📤 enviar foto do lado 2</summary>
+                <form method="post" enctype="multipart/form-data" action="{{ url_for('admin_pedido_enviar_foto', token=pedido.token, indice=loop.index0) }}">
+                  <input type="hidden" name="lado" value="2">
+                  <input type="file" name="imagem" accept="image/*" required>
+                  <button type="submit">Anexar foto</button>
+                </form>
+              </details>
             {% endif %}
           {% elif item.imagemRecorte %}
             <br>
             <a href="{{ item.imagemRecorte }}" download="personalizada_modelo_{{ item.numeroModeloPersonalizada }}.png">⬇ Baixar imagem 1:1</a>
+          {% elif item.produtoNome == "Personalizada" and pedido.status not in ('cancelado', 'excluido') %}
+            <br>
+            <details class="editar-item">
+              <summary>📤 enviar foto do cliente (sem foto ainda)</summary>
+              <form method="post" enctype="multipart/form-data" action="{{ url_for('admin_pedido_enviar_foto', token=pedido.token, indice=loop.index0) }}">
+                <input type="file" name="imagem" accept="image/*" required>
+                <p style="font-size:0.8rem;color:#888;">Envie a foto já cortada 1:1 — ela é salva do jeito que veio, sem gerar simulação.</p>
+                <button type="submit">Anexar foto</button>
+              </form>
+            </details>
           {% endif %}
           {% if pedido.status not in ('cancelado', 'excluido') and not item.duasFaces and not item.imagemRecorte %}
             <details class="editar-item">

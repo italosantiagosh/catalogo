@@ -1,9 +1,11 @@
 from __future__ import annotations
 
+import io
 import json
 
 import pytest
 
+import services.imagens_personalizadas as imagens_personalizadas
 import services.pedidos as pedidos
 from app import app
 
@@ -11,6 +13,7 @@ from app import app
 @pytest.fixture
 def client(monkeypatch, tmp_path):
     monkeypatch.setattr(pedidos, "DB_PATH", str(tmp_path / "pedidos.db"))
+    monkeypatch.setattr(imagens_personalizadas, "DB_PATH", str(tmp_path / "pedidos.db"))
     app.config["TESTING"] = True
     return app.test_client()
 
@@ -371,6 +374,136 @@ def test_editar_imagem_exige_autenticacao(client, monkeypatch):
     resposta = client.post(
         f"/admin/pedidos/{token}/itens/0/editar-imagem",
         data={"imagem": "img/produtos/x.jpg"},
+    )
+    assert resposta.status_code == 401
+
+
+def _criar_pedido_com_item_personalizada(client, monkeypatch, *, duas_faces=False):
+    _preparar_admin(monkeypatch)
+    criado = client.post(
+        "/admin/pedidos/novo-manual",
+        data={"descricao": ["Personalizada"], "quantidade": ["1"], "valor_unitario": ["20,00"]},
+        auth=("admin", "segredo123"),
+    )
+    token = criado.headers["Location"].rsplit("/", 1)[-1]
+    itens = pedidos.obter_pedido(token)["itens"]
+    itens[0]["produtoNome"] = "Personalizada"
+    itens[0]["semImagem"] = True
+    if duas_faces:
+        itens[0]["duasFaces"] = True
+    with pedidos._conexao() as conexao:
+        conexao.execute("UPDATE pedidos SET itens = ? WHERE token = ?", (json.dumps(itens), token))
+    return token
+
+
+def test_enviar_foto_do_item_anexa_imagem_sem_gerar_simulacao(client, monkeypatch):
+    """ver conversa 2026-09-20: o admin quer só subir a foto (já cortada
+    1:1 por quem fez o pedido, ou corrigida na mão fora do site) -- sem
+    gastar memória do Render gerando compose_medal/preview. A rota só
+    salva o arquivo enviado como veio e usa ele tanto pra `imagem`
+    quanto pra `imagemRecorte`."""
+    token = _criar_pedido_com_item_personalizada(client, monkeypatch)
+
+    resposta = client.post(
+        f"/admin/pedidos/{token}/itens/0/enviar-foto",
+        data={"imagem": (io.BytesIO(b"conteudo-fake-da-foto"), "foto.jpg")},
+        content_type="multipart/form-data",
+        auth=("admin", "segredo123"),
+    )
+    assert resposta.status_code == 302
+    item = pedidos.obter_pedido(token)["itens"][0]
+    assert item["semImagem"] is False
+    assert item["imagem"]
+    assert item["imagemRecorte"] == item["imagem"]
+
+    servida = client.get(item["imagem"])
+    assert servida.status_code == 200
+    assert servida.data == b"conteudo-fake-da-foto"
+
+
+def test_enviar_foto_lado_especifico_preserva_o_outro_lado(client, monkeypatch):
+    token = _criar_pedido_com_item_personalizada(client, monkeypatch, duas_faces=True)
+    itens = pedidos.obter_pedido(token)["itens"]
+    itens[0]["imagemLado2"] = "/imagem-personalizada/ja-existente"
+    itens[0]["imagemRecorteLado2"] = "/imagem-personalizada/ja-existente"
+    with pedidos._conexao() as conexao:
+        conexao.execute("UPDATE pedidos SET itens = ? WHERE token = ?", (json.dumps(itens), token))
+
+    resposta = client.post(
+        f"/admin/pedidos/{token}/itens/0/enviar-foto",
+        data={"lado": "1", "imagem": (io.BytesIO(b"foto-do-lado-1"), "lado1.png")},
+        content_type="multipart/form-data",
+        auth=("admin", "segredo123"),
+    )
+    assert resposta.status_code == 302
+    item = pedidos.obter_pedido(token)["itens"][0]
+    assert item["imagemLado1"]
+    assert item["imagemRecorteLado1"] == item["imagemLado1"]
+    # lado 2 nao foi mexido
+    assert item["imagemLado2"] == "/imagem-personalizada/ja-existente"
+
+
+def test_enviar_foto_lado_invalido_400(client, monkeypatch):
+    token = _criar_pedido_com_item_personalizada(client, monkeypatch, duas_faces=True)
+    resposta = client.post(
+        f"/admin/pedidos/{token}/itens/0/enviar-foto",
+        data={"lado": "3", "imagem": (io.BytesIO(b"x"), "foto.jpg")},
+        content_type="multipart/form-data",
+        auth=("admin", "segredo123"),
+    )
+    assert resposta.status_code == 400
+
+
+def test_enviar_foto_lado_em_item_de_1_lado_400(client, monkeypatch):
+    token = _criar_pedido_com_item_personalizada(client, monkeypatch, duas_faces=False)
+    resposta = client.post(
+        f"/admin/pedidos/{token}/itens/0/enviar-foto",
+        data={"lado": "1", "imagem": (io.BytesIO(b"x"), "foto.jpg")},
+        content_type="multipart/form-data",
+        auth=("admin", "segredo123"),
+    )
+    assert resposta.status_code == 400
+
+
+def test_enviar_foto_sem_arquivo_400(client, monkeypatch):
+    token = _criar_pedido_com_item_personalizada(client, monkeypatch)
+    resposta = client.post(
+        f"/admin/pedidos/{token}/itens/0/enviar-foto",
+        data={},
+        content_type="multipart/form-data",
+        auth=("admin", "segredo123"),
+    )
+    assert resposta.status_code == 400
+
+
+def test_enviar_foto_extensao_invalida_400(client, monkeypatch):
+    token = _criar_pedido_com_item_personalizada(client, monkeypatch)
+    resposta = client.post(
+        f"/admin/pedidos/{token}/itens/0/enviar-foto",
+        data={"imagem": (io.BytesIO(b"x"), "foto.exe")},
+        content_type="multipart/form-data",
+        auth=("admin", "segredo123"),
+    )
+    assert resposta.status_code == 400
+
+
+def test_enviar_foto_indice_invalido_404(client, monkeypatch):
+    token = _criar_pedido_com_item_personalizada(client, monkeypatch)
+    resposta = client.post(
+        f"/admin/pedidos/{token}/itens/9/enviar-foto",
+        data={"imagem": (io.BytesIO(b"x"), "foto.jpg")},
+        content_type="multipart/form-data",
+        auth=("admin", "segredo123"),
+    )
+    assert resposta.status_code == 404
+
+
+def test_enviar_foto_exige_autenticacao(client, monkeypatch):
+    token = _criar_pedido_com_item_personalizada(client, monkeypatch)
+    resposta = client.post(
+        f"/admin/pedidos/{token}/itens/0/enviar-foto",
+        data={"imagem": (io.BytesIO(b"x"), "foto.jpg")},
+        content_type="multipart/form-data",
     )
     assert resposta.status_code == 401
 
