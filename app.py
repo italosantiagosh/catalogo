@@ -269,7 +269,20 @@ app.secret_key = SECRET_KEY or secrets.token_urlsafe(32)
 # Se um dia isso mudar pra mais workers (processos, nao threads),
 # precisa trocar pra um storage compartilhado (Redis) senao cada
 # processo conta separado.
-limiter = Limiter(get_remote_address, app=app, storage_uri="memory://")
+#
+# default_limits (ver conversa 2026-09-22): alem dos limites por rota
+# acima, agora ha´ um teto GLOBAL por IP -- so pra cortar rajada de bot
+# malcomportado varrendo o site inteiro rapido demais (visto no Render:
+# ~250 requisicoes num intervalo curto, memoria e CPU no talo, instancia
+# derrubada por OOM -- plano Starter, 512MB, 1 worker so). 100/minuto e´
+# bem folgado pra visitante de verdade (nem clicando rapido chega perto)
+# e pra bot grande respeitavel (Googlebot etc, que reagem a 429 normal,
+# so desaceleram); so pega rajada de scraper/crawler generico tipo o que
+# causou a queda.
+limiter = Limiter(
+    get_remote_address, app=app, storage_uri="memory://",
+    default_limits=["100 per minute", "1500 per hour"],
+)
 
 
 @limiter.request_filter

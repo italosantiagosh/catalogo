@@ -117,6 +117,20 @@ def test_rate_limit_bloqueia_apos_muitas_chamadas(client, monkeypatch):
     assert 429 in codigos
 
 
+def test_rate_limit_global_bloqueia_rajada_de_paginas_normais(client, monkeypatch):
+    """ver conversa 2026-09-22: bot generico varreu o site inteiro (~250
+    requisicoes numa rajada curta) e derrubou a instancia por OOM (plano
+    Starter, 512MB, 1 worker) -- rotas de navegacao comum (produto,
+    catalogo etc.) nao tinham NENHUM limite, so as que chamam API
+    externa/mandam e-mail/geram imagem. Agora ha´ um teto global por IP
+    (default_limits) que corta esse tipo de rajada sem incomodar
+    navegacao normal."""
+    monkeypatch.setattr(app, "testing", False)
+    respostas = [client.get("/produto/sao-jose") for _ in range(105)]
+    codigos = [r.status_code for r in respostas]
+    assert 429 in codigos
+
+
 def test_webhook_infinitepay_exige_chave_quando_configurada(client, monkeypatch):
     import app as app_module
 
