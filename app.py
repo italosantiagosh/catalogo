@@ -3595,6 +3595,15 @@ def _mensagem_whatsapp_cliente(pedido: dict) -> str:
     frete = pedido.get("frete_descricao") or "a combinar"
     total = _formatar_preco(pedido["total"])
     link_pedido = url_for("ver_pedido", token=pedido["token"], _external=True)
+    # ver conversa 2026-09-22: o e-mail de "nota fiscal disponivel"
+    # dispara assim que o link e´ preenchido, em QUALQUER status (ver
+    # admin_pedido_status) -- mas essa mensagem so mencionava a nota
+    # dentro do bloco "faturado", entao se o admin preenchia o link com
+    # o pedido ja em "enviado"/"entregue" o wpp saia sem essa
+    # informacao que o e-mail ja tinha. Calculado uma vez aqui, cada
+    # bloco decide onde encaixar a linha.
+    link_nf_pedido = pedido.get("link_nota_fiscal") or ""
+    nf_texto_linha = f"Nota fiscal: {link_nf_pedido}\n" if link_nf_pedido else ""
 
     if pedido["status"] == "pendente":
         if pedido.get("inter_codigo_solicitacao"):
@@ -3642,9 +3651,10 @@ def _mensagem_whatsapp_cliente(pedido: dict) -> str:
     if pedido["status"] == "pago":
         previsao_envio = _formatar_data_br(previsoes_do_pedido(pedido).get("previsao_envio"))
         previsao_texto = f"Previsão de envio: até {previsao_envio}.\n" if previsao_envio else ""
+        producao_texto = "" if link_nf_pedido else " Em breve emitimos a nota fiscal."
         return (
-            f"Olá {nome}! Seu pedido #{codigo} está confirmado e já entrou em produção. Em breve "
-            f"emitimos a nota fiscal.\n"
+            f"Olá {nome}! Seu pedido #{codigo} está confirmado e já entrou em produção.{producao_texto}\n"
+            f"{nf_texto_linha}"
             f"{previsao_texto}"
             f"Pra acompanhar tudo: {link_pedido}"
             f"{_ASSINATURA_WHATSAPP_CLIENTE}"
@@ -3665,6 +3675,7 @@ def _mensagem_whatsapp_cliente(pedido: dict) -> str:
     if pedido["status"] == "enviado" and pedido.get("frete_descricao") == FRETE_RETIRADA_DESCRICAO:
         return (
             f"Olá {nome}! Seu pedido #{codigo} já está pronto pra retirada. 🏬\n"
+            f"{nf_texto_linha}"
             f"Como você prefere combinar a retirada?\n"
             f"Pra acompanhar: {link_pedido}"
             f"{_ASSINATURA_WHATSAPP_CLIENTE}"
@@ -3682,6 +3693,7 @@ def _mensagem_whatsapp_cliente(pedido: dict) -> str:
         return (
             f"Olá {nome}! Seu pedido #{codigo} já foi enviado{transportadora_texto}{rastreio_texto}.\n"
             f"{link_rastreio_texto}"
+            f"{nf_texto_linha}"
             f"{previsao_texto}"
             f"Pra acompanhar: {link_pedido}"
             f"{_ASSINATURA_WHATSAPP_CLIENTE}"
@@ -3691,6 +3703,7 @@ def _mensagem_whatsapp_cliente(pedido: dict) -> str:
         url_avaliar = url_for("avaliar_geral", _external=True)
         return (
             f"Olá {nome}! Que alegria saber que seu pedido #{codigo} já chegou! :)\n"
+            f"{nf_texto_linha}"
             f"Poderia avaliar sua compra? Leva menos de 1 minuto: {url_avaliar}"
             f"{_ASSINATURA_WHATSAPP_CLIENTE}"
         )

@@ -1191,8 +1191,11 @@ def atualizar_status(
     """Avanca o status manualmente (painel admin) ou automaticamente
     (futuro webhook da Tiny) -- as duas origens devem usar essa mesma
     funcao, nunca duplicar a logica. `codigo_rastreio`/`link_rastreio`/
-    `transportadora` so fazem sentido pra novo_status="enviado";
-    `link_nota_fiscal` so pra novo_status="faturado" (ver app.py)."""
+    `transportadora` so fazem sentido pra novo_status="enviado".
+    `link_nota_fiscal` pode ser preenchido com o pedido ainda em "pago"
+    (o dropdown do admin permite isso -- ver conversa 2026-09-22): por
+    isso e´ sempre persistido, mesmo quando novo_status nao tem coluna
+    de data propria."""
     if novo_status not in STATUS_VALIDOS:
         return None
     pedido = obter_pedido(token)
@@ -1213,7 +1216,10 @@ def atualizar_status(
                 (novo_status, agora, codigo_rastreio, link_rastreio, transportadora, link_nota_fiscal, token),
             )
         else:
-            conexao.execute("UPDATE pedidos SET status = ? WHERE token = ?", (novo_status, token))
+            conexao.execute(
+                "UPDATE pedidos SET status = ?, link_nota_fiscal = COALESCE(?, link_nota_fiscal) WHERE token = ?",
+                (novo_status, link_nota_fiscal, token),
+            )
     return obter_pedido(token)
 
 

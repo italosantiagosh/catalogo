@@ -173,6 +173,19 @@ def test_atualizar_status_entregue_preserva_rastreio_anterior(monkeypatch, tmp_p
     assert atualizado["codigo_rastreio"] == "BR123456789BR"
 
 
+def test_atualizar_status_pago_grava_link_da_nota_fiscal(monkeypatch, tmp_path):
+    """ver conversa 2026-09-22: o dropdown do admin permite deixar o
+    pedido em "Pago" e so preencher o link da nota fiscal (sem avancar
+    pra "faturado"). Como "pago" nao tem coluna de data propria, o
+    UPDATE caia no else generico e o link digitado pelo admin sumia
+    silenciosamente."""
+    _reapontar_db(monkeypatch, tmp_path)
+    pedido = pedidos.criar_pedido(**_pedido_exemplo())
+    atualizado = pedidos.atualizar_status(pedido["token"], "pago", link_nota_fiscal="https://nf.exemplo/999")
+    assert atualizado["status"] == "pago"
+    assert atualizado["link_nota_fiscal"] == "https://nf.exemplo/999"
+
+
 def test_atualizar_status_invalido_devolve_none(monkeypatch, tmp_path):
     _reapontar_db(monkeypatch, tmp_path)
     pedido = pedidos.criar_pedido(**_pedido_exemplo())

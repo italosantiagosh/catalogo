@@ -99,6 +99,46 @@ def test_faturado_menciona_link_da_nota_fiscal(client):
     assert "https://nf.exemplo/123" in mensagem
 
 
+def test_pago_menciona_link_da_nota_fiscal_quando_ja_preenchido(client):
+    """ver conversa 2026-09-22: o e-mail de "nota fiscal disponivel"
+    dispara assim que o link e´ preenchido, em QUALQUER status (ver
+    admin_pedido_status) -- mas o wpp so mencionava a nota dentro do
+    bloco "faturado". Se o admin cola o link de NF antes de avancar
+    pra faturado (pedido ainda "pago"), o wpp precisa mostrar o link
+    tambem, nao so dizer "em breve"."""
+    token = _criar(client)
+    pedidos.marcar_pago(token, forma_pagamento="pix", parcelas=None, valor_pago=78.65, transaction_nsu="tx")
+    pedidos.atualizar_status(token, "pago", link_nota_fiscal="https://nf.exemplo/999")
+    with app.test_request_context():
+        mensagem = app_module._mensagem_whatsapp_cliente(pedidos.obter_pedido(token))
+
+    assert "https://nf.exemplo/999" in mensagem
+    assert "em breve" not in mensagem.lower()
+
+
+def test_enviado_menciona_link_da_nota_fiscal_quando_ja_preenchido(client):
+    token = _criar(client)
+    pedidos.marcar_pago(token, forma_pagamento="pix", parcelas=None, valor_pago=78.65, transaction_nsu="tx")
+    pedidos.atualizar_status(
+        token, "enviado", transportadora="Loggi", codigo_rastreio="BR123",
+        link_nota_fiscal="https://nf.exemplo/777",
+    )
+    with app.test_request_context():
+        mensagem = app_module._mensagem_whatsapp_cliente(pedidos.obter_pedido(token))
+
+    assert "https://nf.exemplo/777" in mensagem
+
+
+def test_entregue_menciona_link_da_nota_fiscal_quando_ja_preenchido(client):
+    token = _criar(client)
+    pedidos.marcar_pago(token, forma_pagamento="pix", parcelas=None, valor_pago=78.65, transaction_nsu="tx")
+    pedidos.atualizar_status(token, "entregue", link_nota_fiscal="https://nf.exemplo/555")
+    with app.test_request_context():
+        mensagem = app_module._mensagem_whatsapp_cliente(pedidos.obter_pedido(token))
+
+    assert "https://nf.exemplo/555" in mensagem
+
+
 def test_enviado_menciona_transportadora_e_rastreio(client):
     token = _criar(client)
     pedidos.marcar_pago(token, forma_pagamento="pix", parcelas=None, valor_pago=78.65, transaction_nsu="tx")
