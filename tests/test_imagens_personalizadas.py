@@ -397,6 +397,47 @@ def test_limpar_imagens_pedidos_cancelados_apaga_so_apos_o_prazo(client):
     app_module._limpar_imagens_pedidos_cancelados_ou_excluidos()
 
 
+def test_limpar_imagens_pedidos_cancelados_preserva_token_reaproveitado_por_outro_pedido(client):
+    """ver conversa 2026-09-22: "Repetir esse pedido" (ver
+    app.py:_itens_repetiveis_do_pedido) reaproveita a MESMA
+    URL/token da imagem original em vez de copiar pra um token novo.
+    Se o pedido ORIGINAL (A) for cancelado e limpo depois do prazo, mas
+    o cliente ja tiver repetido pra um pedido NOVO (B) que ainda esta´
+    ativo, apagar o token aqui quebraria a imagem de B tambem -- bug
+    real reportado (imagem sumiu de um pedido sem nenhuma acao do
+    admin)."""
+    import app as app_module
+
+    token_recorte = imagens_personalizadas.salvar_imagem(b"recorte", "image/png", "recorte.png")
+    corpo = _corpo_valido(itens=[{
+        "chave_preco": "16mm", "quantidade": 10, "produtoNome": "Personalizada",
+        "formato": "medalha", "tamanho": "16mm",
+        "imagem": f"/imagem-personalizada/{token_recorte}",
+        "imagemRecorte": f"/imagem-personalizada/{token_recorte}",
+    }])
+    with patch("app.criar_link_pagamento", return_value={"url": "https://checkout.infinitepay.io/abc"}):
+        pedido_a = client.post("/api/pedido/criar", json=corpo).get_json()
+        # pedido_b "repete" o mesmo token (mesma imagem, sem passar pelo
+        # simulador de novo) -- exatamente o que _itens_repetiveis_do_pedido
+        # pre-preenche no carrinho do botao "Repetir esse pedido".
+        pedido_b = client.post("/api/pedido/criar", json=corpo).get_json()
+
+    pedidos.cancelar_pedido(pedido_a["token"])
+    from datetime import datetime, timedelta, timezone
+    passado = (datetime.now(timezone.utc) - timedelta(days=8)).isoformat()
+    with pedidos._conexao() as conexao:
+        conexao.execute("UPDATE pedidos SET cancelado_em = ? WHERE token = ?", (passado, pedido_a["token"]))
+
+    app_module._limpar_imagens_pedidos_cancelados_ou_excluidos()
+
+    # A imagem SOBREVIVE porque o pedido B (ativo) ainda referencia o
+    # mesmo token -- mesmo assim, A e´ marcado como "processado" (nao
+    # fica re-tentando pra sempre).
+    assert imagens_personalizadas.obter_imagem(token_recorte) is not None
+    assert pedidos.obter_pedido(pedido_a["token"])["imagens_pedido_apagadas"] == 1
+    assert pedidos.obter_pedido(pedido_b["token"])["itens"][0]["imagemRecorte"] == f"/imagem-personalizada/{token_recorte}"
+
+
 def test_limpar_imagens_pedidos_cancelados_ignora_pedido_reativado(client):
     """Reativar (ver services/pedidos.py:reativar_pedido_cancelado) tira
     o pedido do status "cancelado" -- some sozinho da lista de limpeza,

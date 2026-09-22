@@ -1398,6 +1398,37 @@ def marcar_imagens_pedido_apagadas(token: str) -> None:
         conexao.execute("UPDATE pedidos SET imagens_pedido_apagadas = 1 WHERE token = ?", (token,))
 
 
+def tokens_de_imagem_ainda_em_uso(tokens: list[str], ignorar_token: str) -> set[str]:
+    """Dos `tokens` de imagem personalizada informados, devolve o
+    subconjunto que ainda aparece nos itens de QUALQUER outro pedido
+    (nao importa o status dele -- nenhuma linha de pedido e´ apagada de
+    verdade, ver excluir_pedido/cancelar_pedido, entao se o token
+    aparece em outro pedido ele continua precisando dessa imagem pra
+    sempre). Usado antes de apagar a imagem de um pedido cancelado/
+    excluido (ver app.py:_limpar_imagens_pedidos_cancelados_ou_excluidos)
+    porque "Repetir esse pedido" (ver app.py:_itens_repetiveis_do_pedido)
+    reaproveita a MESMA URL/token da imagem original em vez de copiar
+    pra um token novo: se o pedido ORIGINAL for cancelado/excluido e
+    limpo, mas o cliente ja tiver repetido pra um pedido NOVO (pago, em
+    producao, etc.), apagar o token aqui quebraria a imagem desse outro
+    pedido que ainda esta´ ativo -- ver conversa 2026-09-22: imagem
+    personalizada sumiu de um pedido de verdade sem nenhuma acao do
+    admin."""
+    if not tokens:
+        return set()
+    inicializar_db()
+    em_uso = set()
+    with _conexao() as conexao:
+        for token_imagem in tokens:
+            linha = conexao.execute(
+                "SELECT 1 FROM pedidos WHERE token != ? AND itens LIKE ? LIMIT 1",
+                (ignorar_token, f"%{token_imagem}%"),
+            ).fetchone()
+            if linha is not None:
+                em_uso.add(token_imagem)
+    return em_uso
+
+
 def listar_pedidos_entregues_para_limpar_recortes(dias: int) -> list[dict]:
     """Pedidos "entregue" ha´ pelo menos `dias` dias, cujo RECORTE (1:1,
     o pesado -- ver services/imagens_personalizadas.py) ainda nao foi

@@ -230,6 +230,7 @@ from services.pedidos import (
     taxa_cancelamento,
     taxa_clientes_recorrentes,
     formas_pagamento_periodo,
+    tokens_de_imagem_ainda_em_uso,
     unidades_vendidas_por_produto,
     vendas_por_dia,
     verificar_codigo_documento,
@@ -5804,11 +5805,22 @@ def _limpar_imagens_pedidos_cancelados_ou_excluidos() -> None:
     recuperacao) -- depois desse prazo a chance de recuperacao e´ baixa
     e a imagem so ocupa espaco a toa. Excluido nem tem reativacao
     possivel (ver conversa 2026-09-20), entao nao faz sentido guardar a
-    imagem dele por MAIS tempo que a de um cancelado."""
+    imagem dele por MAIS tempo que a de um cancelado.
+
+    ANTES de apagar, confere se cada token ainda esta´ em uso por OUTRO
+    pedido (ver services/pedidos.py:tokens_de_imagem_ainda_em_uso) --
+    "Repetir esse pedido" reaproveita a MESMA imagem/token do pedido
+    original, entao um pedido cancelado/excluido pode compartilhar
+    token com um pedido novo (pago, em producao) que repetiu a mesma
+    foto. Sem essa checagem, a imagem some do pedido novo tambem (ver
+    conversa 2026-09-22, bug real reportado)."""
     for pedido in listar_pedidos_cancelados_ou_excluidos_para_limpar_imagens(RETENCAO_IMAGENS_PEDIDO_CANCELADO_DIAS):
         tokens = _tokens_imagens_personalizadas_do_pedido(pedido)
         if tokens:
-            apagar_imagens(tokens)
+            em_uso = tokens_de_imagem_ainda_em_uso(tokens, pedido["token"])
+            tokens_seguros = [t for t in tokens if t not in em_uso]
+            if tokens_seguros:
+                apagar_imagens(tokens_seguros)
         marcar_imagens_pedido_apagadas(pedido["token"])
 
 
