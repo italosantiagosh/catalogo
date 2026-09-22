@@ -876,9 +876,13 @@ def _montar_destaques(produtos: list[dict], itens_por_id: dict) -> list[dict]:
     catalogo sao ignorados silenciosamente, nao quebram a pagina.
 
     Um grupo normal lista "produtos" (ids diferentes, 1 card cada, foto do
-    modelo 1). Um grupo com "modelos_de" lista, em vez disso, os VARIOS
-    modelos de UM SO produto (cada card leva pra mesma pagina de produto,
-    so a foto/legenda mudam) -- usado no Ano Jubilar de Sao Francisco."""
+    modelo 1 -- a menos que "modelo_por_produto" (dict id -> numero do
+    modelo) diga pra usar outro modelo especifico daquele produto NESSE
+    grupo, sem afetar o modelo padrao usado no resto do site -- ver
+    "sagrados_coracoes"). Um grupo com "modelos_de" lista, em vez disso,
+    os VARIOS modelos de UM SO produto (cada card leva pra mesma pagina
+    de produto, so a foto/legenda mudam) -- usado no Ano Jubilar de Sao
+    Francisco."""
     produtos_por_id = {p["id"]: p for p in produtos}
     destaques = []
     for grupo in DESTAQUES_HOME:
@@ -899,8 +903,28 @@ def _montar_destaques(produtos: list[dict], itens_por_id: dict) -> list[dict]:
                 else []
             )
         else:
+            modelo_por_produto = grupo.get("modelo_por_produto", {})
             produtos_grupo = []
             for pid in grupo["produtos"]:
+                numero_modelo = modelo_por_produto.get(pid)
+                if numero_modelo is not None:
+                    produto = produtos_por_id.get(pid)
+                    modelo = next(
+                        (m for m in produto["modelos"] if m["id"] == numero_modelo), None
+                    ) if produto else None
+                    if modelo is None:
+                        continue
+                    mini = _thumbnail_mini(modelo["imagem"])
+                    produtos_grupo.append(
+                        {
+                            "id": produto["id"],
+                            "nome": f"{produto['nome']} - {modelo['nome']}",
+                            "thumbnail": modelo["imagem"],
+                            "thumbnail_mini": mini,
+                            "thumbnail_webp": _webp_se_existir(mini),
+                        }
+                    )
+                    continue
                 if pid not in itens_por_id:
                     continue
                 mini = _thumbnail_mini(itens_por_id[pid]["thumbnail"])

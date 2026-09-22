@@ -542,6 +542,17 @@ DESTAQUES_HOME = [
             "imaculado-coracao-de-maria",
             "castissimo-coracao-de-sao-jose",
         ],
+        # Sagrado Coracao de Jesus e Imaculado Coracao de Maria tem um
+        # Modelo 1 com a figura inteira (Jesus/Maria) e um Modelo 2 so
+        # com o coracao -- nessa colecao especifica o pedido foi mostrar
+        # SO coracoes nos cards, entao troca a foto (e o nome exibido)
+        # pro modelo 2 desses dois, sem mexer no modelo padrao (1) usado
+        # em todo o resto do site (grade do catalogo, busca etc.) --
+        # ver _montar_destaques em app.py.
+        "modelo_por_produto": {
+            "sagrado-coracao-de-jesus": 2,
+            "imaculado-coracao-de-maria": 2,
+        },
     },
 ]
 
