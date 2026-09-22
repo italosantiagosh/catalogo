@@ -2457,6 +2457,21 @@
         "imagem_medalha_2lados_prata": "img/produtos/sagrado-coracao-de-jesus_modelo_1_medalha_2lados_prata.jpg",
         "imagem_medalha_2lados_ouro_velho": "img/produtos/sagrado-coracao-de-jesus_modelo_1_medalha_2lados_ouro_velho.jpg",
         "imagem_chaveiro_2lados": "img/produtos/sagrado-coracao-de-jesus_modelo_1_chaveiro_2lados.jpg"
+      },
+      {
+        "id": 2,
+        "nome": "Modelo 2",
+        "imagem": "img/produtos/sagrado_coracao_de_jesus_modelo_2_medalha.jpg",
+        "tamanhos": [
+          "12mm",
+          "16mm"
+        ],
+        "imagem_entremeio_prata": "img/produtos/sagrado_coracao_de_jesus_modelo_2_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/sagrado_coracao_de_jesus_modelo_2_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/sagrado_coracao_de_jesus_modelo_2_chaveiro.jpg",
+        "imagem_medalha_2lados_prata": "img/produtos/sagrado_coracao_de_jesus_modelo_2_medalha_2lados_prata.jpg",
+        "imagem_medalha_2lados_ouro_velho": "img/produtos/sagrado_coracao_de_jesus_modelo_2_medalha_2lados_ouro_velho.jpg",
+        "imagem_chaveiro_2lados": "img/produtos/sagrado_coracao_de_jesus_modelo_2_chaveiro_2lados.jpg"
       }
     ],
     "categoria": "Jesus"
