@@ -249,6 +249,18 @@
           num_items: {{ pedido.itens | length }},
         });
       }
+      // Mesma logica pro Pixel do Meta -- ver conversa 2026-09-22: o
+      // Pixel so tinha PageView/AddToCart/Lead, nunca Purchase, entao
+      // NENHUMA campanha de Vendas (nem catalogo) no Meta Ads conseguia
+      // aprender o que e´ uma venda de verdade nem medir ROAS real.
+      if (typeof fbq === 'function') {
+        fbq('track', 'Purchase', {
+          value: {{ pedido.total | tojson }},
+          currency: 'BRL',
+          content_type: 'product',
+          num_items: {{ pedido.itens | length }},
+        });
+      }
     </script>
   {% endif %}
   <script>

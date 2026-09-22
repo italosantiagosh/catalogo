@@ -932,6 +932,28 @@ def test_obrigado_aparece_so_com_query_param_e_pedido_pago(client):
     assert "Obrigado pela sua compra!" not in sem_param
 
 
+def test_obrigado_dispara_purchase_no_pixel_do_meta_e_no_ga4(client):
+    """ver conversa 2026-09-22: o Pixel do Meta so tinha
+    PageView/AddToCart/Lead, nunca Purchase -- nenhuma campanha de
+    Vendas (nem catalogo) no Meta Ads conseguia aprender o que e´ uma
+    venda de verdade. Mesma logica/mesmo gatilho ja usado pro
+    gtag('event', 'purchase') do GA4 (so no primeiro retorno com
+    ?obrigado=1 e pedido pago de verdade)."""
+    with patch("app.criar_link_pagamento", return_value={"url": "https://checkout.infinitepay.io/abc"}):
+        criado = client.post("/api/pedido/criar", json=_corpo_valido()).get_json()
+    client.post(
+        "/webhook/infinitepay",
+        json={"order_nsu": criado["token"], "paid_amount": 6000, "capture_method": "pix", "transaction_nsu": "tx-abc"},
+    )
+
+    com_param = client.get(f"/pedido/{criado['token']}?obrigado=1").get_data(as_text=True)
+    assert "fbq('track', 'Purchase'" in com_param
+    assert "gtag('event', 'purchase'" in com_param
+
+    sem_param = client.get(f"/pedido/{criado['token']}").get_data(as_text=True)
+    assert "fbq('track', 'Purchase'" not in sem_param
+
+
 def test_obrigado_nao_aparece_se_pedido_nao_esta_pago(client):
     with patch("app.criar_link_pagamento", return_value={"url": "https://checkout.infinitepay.io/abc"}):
         criado = client.post("/api/pedido/criar", json=_corpo_valido()).get_json()
