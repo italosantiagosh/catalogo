@@ -32,10 +32,16 @@
     <div class="hero-banner-wrap" data-hero-carrossel>
       <div class="hero-slide hero-slide-ativo">
         <picture>
-          <source type="image/webp" srcset="{{ url_for('static', filename='img/banner-hero.webp') }}">
+          <source
+            type="image/webp"
+            srcset="{{ url_for('static', filename='img/banner-hero-640.webp') }} 640w, {{ url_for('static', filename='img/banner-hero.webp') }} 1200w"
+            sizes="(max-width: 640px) 100vw, 960px"
+          >
           <img
             class="hero-banner"
             src="{{ url_for('static', filename='img/banner-hero.jpg') }}"
+            srcset="{{ url_for('static', filename='img/banner-hero-640.jpg') }} 640w, {{ url_for('static', filename='img/banner-hero.jpg') }} 1200w"
+            sizes="(max-width: 640px) 100vw, 960px"
             alt="Nove de Julho — Medalhas que carregam histórias de fé. Mais de 130 santos e devoções, peças personalizadas e preço especial pra quem compra em quantidade. Encontre sua devoção ou crie a sua própria peça."
             width="1200" height="500" fetchpriority="high"
           >
@@ -43,10 +49,16 @@
       </div>
       <div class="hero-slide">
         <picture>
-          <source type="image/webp" srcset="{{ url_for('static', filename='img/banner-hero-slide2.webp') }}">
+          <source
+            type="image/webp"
+            srcset="{{ url_for('static', filename='img/banner-hero-slide2-640.webp') }} 640w, {{ url_for('static', filename='img/banner-hero-slide2.webp') }} 1200w"
+            sizes="(max-width: 640px) 100vw, 960px"
+          >
           <img
             class="hero-banner"
             src="{{ url_for('static', filename='img/banner-hero-slide2.jpg') }}"
+            srcset="{{ url_for('static', filename='img/banner-hero-slide2-640.jpg') }} 640w, {{ url_for('static', filename='img/banner-hero-slide2.jpg') }} 1200w"
+            sizes="(max-width: 640px) 100vw, 960px"
             alt="Tradição que atravessa gerações — mais do que medalhas, são símbolos de uma fé que permanece."
             width="1200" height="500" loading="lazy"
           >
@@ -54,10 +66,16 @@
       </div>
       <div class="hero-slide">
         <picture>
-          <source type="image/webp" srcset="{{ url_for('static', filename='img/banner-hero-slide3.webp') }}">
+          <source
+            type="image/webp"
+            srcset="{{ url_for('static', filename='img/banner-hero-slide3-640.webp') }} 640w, {{ url_for('static', filename='img/banner-hero-slide3.webp') }} 1200w"
+            sizes="(max-width: 640px) 100vw, 960px"
+          >
           <img
             class="hero-banner"
             src="{{ url_for('static', filename='img/banner-hero-slide3.jpg') }}"
+            srcset="{{ url_for('static', filename='img/banner-hero-slide3-640.jpg') }} 640w, {{ url_for('static', filename='img/banner-hero-slide3.jpg') }} 1200w"
+            sizes="(max-width: 640px) 100vw, 960px"
             alt="Santos que inspiram, todos os dias — modelos que aproximam você da vida dos santos e fortalecem a sua caminhada."
             width="1200" height="500" loading="lazy"
           >
