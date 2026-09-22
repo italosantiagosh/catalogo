@@ -4111,6 +4111,14 @@ def admin_pedido_enviar_foto(token: str, indice: int):
         abort(400, description="Arquivo vazio.")
 
     chave_imagem = salvar_imagem(dados, arquivo.mimetype or "image/png", arquivo.filename, tipo="recorte")
+    # BUG real corrigido 2026-09-22: faltava isso -- sem marcar como
+    # usada, o job diario purgar_imagens_antigas (7 dias, ver
+    # services/imagens_personalizadas.py) via o token com
+    # usada_em_pedido=0 (nunca setado) e apagava a foto de um pedido de
+    # verdade, mesmo ja anexada aqui. Rompia a previa/link de
+    # acompanhamento E o "Repetir esse pedido" (imagem quebrada, ver
+    # conversa).
+    marcar_imagem_usada(chave_imagem)
     url_imagem = url_for("servir_imagem_personalizada", token=chave_imagem)
 
     if lado:

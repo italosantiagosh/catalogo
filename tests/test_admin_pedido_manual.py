@@ -421,6 +421,33 @@ def test_enviar_foto_do_item_anexa_imagem_sem_gerar_simulacao(client, monkeypatc
     assert servida.data == b"conteudo-fake-da-foto"
 
 
+def test_enviar_foto_marca_imagem_usada_pra_sobreviver_a_limpeza_7_dias(client, monkeypatch):
+    """ver conversa 2026-09-22: faltava marcar_imagem_usada -- o job
+    diario purgar_imagens_antigas(dias=7) apagava a foto anexada aqui
+    depois de uma semana (usada_em_pedido nunca virava 1), quebrando a
+    imagem do pedido de verdade (link de acompanhamento e "Repetir
+    esse pedido")."""
+    token = _criar_pedido_com_item_personalizada(client, monkeypatch)
+    client.post(
+        f"/admin/pedidos/{token}/itens/0/enviar-foto",
+        data={"imagem": (io.BytesIO(b"conteudo-fake-da-foto"), "foto.jpg")},
+        content_type="multipart/form-data",
+        auth=("admin", "segredo123"),
+    )
+    item = pedidos.obter_pedido(token)["itens"][0]
+    token_imagem = item["imagem"].rsplit("/", 1)[-1]
+
+    with imagens_personalizadas._conexao() as conexao:
+        linha = conexao.execute(
+            "SELECT usada_em_pedido FROM imagens_personalizadas WHERE token = ?", (token_imagem,)
+        ).fetchone()
+    assert linha["usada_em_pedido"] == 1
+
+    removidas = imagens_personalizadas.purgar_imagens_antigas(dias=0)
+    assert removidas == 0
+    assert imagens_personalizadas.obter_imagem(token_imagem) is not None
+
+
 def test_enviar_foto_lado_especifico_preserva_o_outro_lado(client, monkeypatch):
     token = _criar_pedido_com_item_personalizada(client, monkeypatch, duas_faces=True)
     itens = pedidos.obter_pedido(token)["itens"]

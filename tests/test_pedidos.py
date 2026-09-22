@@ -551,6 +551,40 @@ def test_estatisticas_hoje_soma_faturamento_so_de_vendas_pagas_hoje(monkeypatch,
     assert stats["faturamento_hoje"] == 100.0
 
 
+def test_estatisticas_hoje_nao_conta_pedido_pago_e_excluido(monkeypatch, tmp_path):
+    """ver conversa 2026-09-22: cliente fez 2 pedidos, um foi pago e
+    depois excluido pelo admin (por engano/duplicado) -- o valor
+    continuava aparecendo nas vendas do dia, porque excluir_pedido
+    nunca mexe em pago_em (so muda o status), e essa consulta nao
+    conferia o status."""
+    _reapontar_db(monkeypatch, tmp_path)
+    pago_e_excluido = pedidos.criar_pedido(**_pedido_exemplo(subtotal=100.0, frete_preco=0.0))
+    pedidos.marcar_pago(
+        pago_e_excluido["token"], forma_pagamento="pix", parcelas=None, valor_pago=100.0, transaction_nsu="tx1"
+    )
+    pedidos.excluir_pedido(pago_e_excluido["token"], motivo="pedido duplicado")
+
+    pago_de_verdade = pedidos.criar_pedido(**_pedido_exemplo(subtotal=50.0, frete_preco=0.0))
+    pedidos.marcar_pago(
+        pago_de_verdade["token"], forma_pagamento="pix", parcelas=None, valor_pago=50.0, transaction_nsu="tx2"
+    )
+
+    stats = pedidos.estatisticas_hoje()
+    assert stats["vendas_hoje"] == 1
+    assert stats["faturamento_hoje"] == 50.0
+
+
+def test_resumo_vendas_periodo_nao_conta_pedido_excluido(monkeypatch, tmp_path):
+    _reapontar_db(monkeypatch, tmp_path)
+    excluido = pedidos.criar_pedido(**_pedido_exemplo(subtotal=100.0, frete_preco=0.0))
+    pedidos.marcar_pago(excluido["token"], forma_pagamento="pix", parcelas=None, valor_pago=100.0, transaction_nsu="tx1")
+    pedidos.excluir_pedido(excluido["token"], motivo="teste")
+
+    resumo = pedidos.resumo_vendas_periodo(30)
+    assert resumo["quantidade"] == 0
+    assert resumo["valor_total"] == 0
+
+
 def test_estatisticas_hoje_conta_pendentes_e_whatsapp_independente_da_data(monkeypatch, tmp_path):
     _reapontar_db(monkeypatch, tmp_path)
     pendente = pedidos.criar_pedido(**_pedido_exemplo())

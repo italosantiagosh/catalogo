@@ -500,7 +500,8 @@ def estatisticas_hoje() -> dict:
             "SELECT COUNT(*) FROM pedidos WHERE criado_em >= ? AND criado_em < ?", (inicio_hoje, fim_hoje)
         ).fetchone()[0]
         linha_pagos = conexao.execute(
-            "SELECT COUNT(*), COALESCE(SUM(total), 0) FROM pedidos WHERE pago_em >= ? AND pago_em < ?",
+            "SELECT COUNT(*), COALESCE(SUM(total), 0) FROM pedidos "
+            "WHERE pago_em >= ? AND pago_em < ? AND status != 'excluido'",
             (inicio_hoje, fim_hoje),
         ).fetchone()
         pendentes = conexao.execute(
@@ -542,7 +543,7 @@ def pedidos_pagos_por_dispositivo(dias: int) -> dict[str, int]:
             """
             SELECT origem_dispositivo, COUNT(*) AS quantidade
             FROM pedidos
-            WHERE pago_em >= ?
+            WHERE pago_em >= ? AND status != 'excluido'
             GROUP BY origem_dispositivo
             """,
             (limite,),
@@ -557,7 +558,8 @@ def resumo_vendas_periodo(dias: int) -> dict:
     limite = (datetime.now(timezone.utc) - timedelta(days=dias)).isoformat()
     with _conexao() as conexao:
         quantidade, valor_total = conexao.execute(
-            "SELECT COUNT(*), COALESCE(SUM(total), 0) FROM pedidos WHERE pago_em >= ?", (limite,)
+            "SELECT COUNT(*), COALESCE(SUM(total), 0) FROM pedidos WHERE pago_em >= ? AND status != 'excluido'",
+            (limite,),
         ).fetchone()
     ticket_medio = (valor_total / quantidade) if quantidade else 0.0
     return {"quantidade": quantidade, "valor_total": valor_total, "ticket_medio": ticket_medio}
@@ -573,7 +575,7 @@ def vendas_por_dia(dias: int) -> list[dict]:
     inicio = hoje - timedelta(days=dias - 1)
     with _conexao() as conexao:
         linhas = conexao.execute(
-            "SELECT pago_em, total FROM pedidos WHERE pago_em >= ?", (inicio.isoformat(),)
+            "SELECT pago_em, total FROM pedidos WHERE pago_em >= ? AND status != 'excluido'", (inicio.isoformat(),)
         ).fetchall()
     por_dia: dict[str, dict] = {}
     for linha in linhas:
@@ -605,7 +607,7 @@ def pedidos_por_uf(dias: int) -> list[dict]:
             """
             SELECT CASE WHEN endereco_destinatario_uf != '' THEN endereco_destinatario_uf ELSE endereco_uf END AS uf,
                    COUNT(*) AS quantidade
-            FROM pedidos WHERE pago_em >= ? AND uf != ''
+            FROM pedidos WHERE pago_em >= ? AND uf != '' AND status != 'excluido'
             GROUP BY uf ORDER BY quantidade DESC
             """,
             (limite,),
@@ -657,7 +659,7 @@ def formas_pagamento_periodo(dias: int) -> list[dict]:
     limite = (datetime.now(timezone.utc) - timedelta(days=dias)).isoformat()
     with _conexao() as conexao:
         linhas = conexao.execute(
-            "SELECT forma_pagamento, total FROM pedidos WHERE pago_em >= ?", (limite,)
+            "SELECT forma_pagamento, total FROM pedidos WHERE pago_em >= ? AND status != 'excluido'", (limite,)
         ).fetchall()
     agregados: dict[str, dict] = {}
     for linha in linhas:
@@ -688,7 +690,7 @@ def _itens_pagos_no_periodo(desde: datetime | None, ate: datetime | None) -> lis
     if ate is not None:
         condicoes.append("pago_em <= ?")
         parametros.append(ate.isoformat())
-    consulta = "SELECT itens FROM pedidos WHERE pago_em IS NOT NULL"
+    consulta = "SELECT itens FROM pedidos WHERE pago_em IS NOT NULL AND status != 'excluido'"
     if condicoes:
         consulta += " AND " + " AND ".join(condicoes)
     with _conexao() as conexao:
@@ -767,14 +769,15 @@ def taxa_clientes_recorrentes(dias: int) -> dict:
         documentos = [
             linha["cliente_documento"]
             for linha in conexao.execute(
-                "SELECT DISTINCT cliente_documento FROM pedidos WHERE pago_em >= ? AND cliente_documento != ''",
+                "SELECT DISTINCT cliente_documento FROM pedidos "
+                "WHERE pago_em >= ? AND cliente_documento != '' AND status != 'excluido'",
                 (limite,),
             ).fetchall()
         ]
         recorrentes = 0
         for documento in documentos:
             existe_antes = conexao.execute(
-                "SELECT 1 FROM pedidos WHERE cliente_documento = ? AND pago_em < ? LIMIT 1",
+                "SELECT 1 FROM pedidos WHERE cliente_documento = ? AND pago_em < ? AND status != 'excluido' LIMIT 1",
                 (documento, limite),
             ).fetchone()
             if existe_antes:
