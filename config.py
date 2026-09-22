@@ -531,6 +531,18 @@ DESTAQUES_HOME = [
             "sao-jose-moscatti",
         ],
     },
+    {
+        # ver conversa 2026-09-22 -- renderizado entre o banner do Kit
+        # Livraria Shalom e o aviso "precos podem mudar" (ver index.html).
+        "chave": "sagrados_coracoes",
+        "titulo": "❤️ Sagrados Corações",
+        "produtos": [
+            "tres-coracoes",
+            "sagrado-coracao-de-jesus",
+            "imaculado-coracao-de-maria",
+            "castissimo-coracao-de-sao-jose",
+        ],
+    },
 ]
 
 # Kit inicial sugerido "Livraria Shalom" (ver app.py:kit_livraria_shalom,

@@ -1247,6 +1247,7 @@ def index():
         destaque_mais_vendidos=destaques_por_chave.get("mais_vendidos"),
         destaque_ano_jubilar=destaques_por_chave.get("ano_jubilar"),
         destaque_novidades=destaques_por_chave.get("novidades"),
+        destaque_sagrados_coracoes=destaques_por_chave.get("sagrados_coracoes"),
         destaque_personalizados=destaque_personalizados,
         procurados=procurados,
         categorias=categorias,
