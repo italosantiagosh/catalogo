@@ -29,19 +29,45 @@
 {% block conteudo %}
   <section class="hero">
     <h1 class="sr-only">Medalhas que carregam histórias de fé — mais de 130 santos e devoções, peças personalizadas e preço especial pra quem compra em quantidade</h1>
-    <div class="hero-banner-wrap">
-      <picture>
-        <source type="image/webp" srcset="{{ url_for('static', filename='img/banner-hero.webp') }}">
-        <img
-          class="hero-banner"
-          src="{{ url_for('static', filename='img/banner-hero.jpg') }}"
-          alt="Nove de Julho — Medalhas que carregam histórias de fé. Mais de 130 santos e devoções, peças personalizadas e preço especial pra quem compra em quantidade. Encontre sua devoção ou crie a sua própria peça."
-          width="900" height="374" fetchpriority="high"
-        >
-      </picture>
-      <a class="hero-banner-area hero-banner-area-1" href="{{ url_for('catalogo_completo') }}" aria-label="Explorar catálogo"></a>
-      <a class="hero-banner-area hero-banner-area-2" href="{{ url_for('personalizada') }}" aria-label="Criar personalizada"></a>
-      <a class="hero-banner-area hero-banner-area-3" href="{{ url_for('catalogo_pdf') }}" target="_blank" aria-label="Baixar catálogo em PDF"></a>
+    <div class="hero-banner-wrap" data-hero-carrossel>
+      <a class="hero-slide hero-slide-ativo" href="{{ url_for('catalogo_completo') }}" aria-label="Explorar catálogo">
+        <picture>
+          <source type="image/webp" srcset="{{ url_for('static', filename='img/banner-hero.webp') }}">
+          <img
+            class="hero-banner"
+            src="{{ url_for('static', filename='img/banner-hero.jpg') }}"
+            alt="Nove de Julho — Medalhas que carregam histórias de fé. Mais de 130 santos e devoções, peças personalizadas e preço especial pra quem compra em quantidade. Encontre sua devoção ou crie a sua própria peça."
+            width="1200" height="500" fetchpriority="high"
+          >
+        </picture>
+      </a>
+      <a class="hero-slide" href="{{ url_for('catalogo_completo') }}" aria-label="Explorar catálogo">
+        <picture>
+          <source type="image/webp" srcset="{{ url_for('static', filename='img/banner-hero-slide2.webp') }}">
+          <img
+            class="hero-banner"
+            src="{{ url_for('static', filename='img/banner-hero-slide2.jpg') }}"
+            alt="Tradição que atravessa gerações — mais do que medalhas, são símbolos de uma fé que permanece."
+            width="1200" height="500" loading="lazy"
+          >
+        </picture>
+      </a>
+      <a class="hero-slide" href="{{ url_for('catalogo_completo') }}" aria-label="Explorar catálogo">
+        <picture>
+          <source type="image/webp" srcset="{{ url_for('static', filename='img/banner-hero-slide3.webp') }}">
+          <img
+            class="hero-banner"
+            src="{{ url_for('static', filename='img/banner-hero-slide3.jpg') }}"
+            alt="Santos que inspiram, todos os dias — modelos que aproximam você da vida dos santos e fortalecem a sua caminhada."
+            width="1200" height="500" loading="lazy"
+          >
+        </picture>
+      </a>
+      <div class="hero-dots" role="tablist" aria-label="Slides do banner principal">
+        <button type="button" class="hero-dot hero-dot-ativo" aria-label="Ver slide 1"></button>
+        <button type="button" class="hero-dot" aria-label="Ver slide 2"></button>
+        <button type="button" class="hero-dot" aria-label="Ver slide 3"></button>
+      </div>
     </div>
     <div class="hero-acoes-linha">
       <a class="hero-acao" href="{{ url_for('catalogo_completo') }}">🔍 Explorar catálogo</a>
@@ -104,7 +130,7 @@
   <button type="button" class="banner-atacado" onclick="abrirTabelaDesconto()">
     <picture>
       <source type="image/webp" srcset="{{ url_for('static', filename='img/banner-atacado.webp') }}">
-      <img src="{{ url_for('static', filename='img/banner-atacado.jpg') }}" alt="Preço de atacado automático: quanto mais medalhas e entremeios você adicionar ao carrinho — de qualquer santo, inclusive personalizada — menor o preço por unidade. Chaveiros têm tabela de atacado própria. O desconto é aplicado sozinho, sem cupom, assim que você adiciona os itens. Toque pra ver a tabela completa." loading="lazy" decoding="async" width="900" height="211">
+      <img src="{{ url_for('static', filename='img/banner-atacado.jpg') }}" alt="Preço de atacado automático: quanto mais medalhas e entremeios você adicionar ao carrinho — de qualquer santo, inclusive personalizada — menor o preço por unidade. Chaveiros têm tabela de atacado própria. O desconto é aplicado sozinho, sem cupom, assim que você adiciona os itens. Toque pra ver a tabela completa." loading="lazy" decoding="async" width="1200" height="600">
     </picture>
   </button>
 

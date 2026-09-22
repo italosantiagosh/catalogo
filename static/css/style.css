@@ -341,58 +341,74 @@ a.link-carrinho #contador-carrinho {
   text-align: center;
 }
 
+/* carrossel de 3 slides (ver conversa 2026-09-22) -- substituiu o
+   banner unico estatico com botoes desenhados dentro da imagem. Altura
+   fixada por aspect-ratio (os 3 slides tem exatamente a mesma
+   proporcao, 1200x500) pra nao pular de tamanho ao trocar de slide;
+   cada <a class="hero-slide"> fica empilhado por cima do outro
+   (position:absolute) e so o marcado com hero-slide-ativo fica visivel
+   -- ver static/js/hero_carrossel.js pro troca automatica/pelos pontos. */
 .hero-banner-wrap {
   position: relative;
   line-height: 0;
   margin: 0 0 20px;
+  aspect-ratio: 1200 / 500;
+  border-radius: 16px;
+  overflow: hidden;
+  background: var(--accent-dark);
+}
+
+.hero-slide {
+  position: absolute;
+  inset: 0;
+  display: block;
+  opacity: 0;
+  transition: opacity 0.6s ease;
+}
+
+.hero-slide-ativo {
+  opacity: 1;
+  z-index: 1;
 }
 
 .hero-banner {
   display: block;
   width: 100%;
-  height: auto;
-  max-width: 100%;
-  border-radius: 16px;
+  height: 100%;
+  object-fit: cover;
 }
 
-/* os 3 botoes ("Explorar catalogo"/"Criar personalizada"/"Baixar
-   catalogo em PDF") ja vem DESENHADOS dentro da imagem do banner (ver
-   conversa) -- essas 3 areas invisiveis por cima so reproduzem os
-   links de verdade nas posicoes aproximadas de cada botao na imagem.
-   Posicoes em % (nao px) pra continuar batendo com o botao desenhado
-   em qualquer largura de tela, ja que a imagem escala com width:100%. */
-.hero-banner-area {
+.hero-dots {
   position: absolute;
-  display: block;
+  z-index: 2;
+  bottom: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 8px;
 }
 
-.hero-banner-area-1 {
-  top: 64.5%;
-  left: 2.8%;
-  width: 17.1%;
-  height: 9%;
+.hero-dot {
+  width: 8px;
+  height: 8px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.5);
+  cursor: pointer;
 }
 
-.hero-banner-area-2 {
-  top: 64.5%;
-  left: 21%;
-  width: 16.6%;
-  height: 9%;
-}
-
-.hero-banner-area-3 {
-  top: 64.5%;
-  left: 37.9%;
-  width: 18.8%;
-  height: 9%;
+.hero-dot-ativo {
+  background: #fff;
 }
 
 /* linha de botoes de verdade (clicaveis, com texto legivel por leitor
-   de tela) logo abaixo do banner -- pedido do usuario: os 3 botoes ja
-   desenhados na imagem (hero-banner-area acima) continuam existindo
-   por enquanto, essa linha e´ redundante de proposito ate a imagem ser
-   refeita. Cabe em UMA linha ate no menor celular -- por isso o texto
-   mais curto ("Baixar PDF" em vez de "Baixar catálogo em PDF") e fonte
+   de tela) logo abaixo do banner -- desde que o carrossel de slides
+   (ver .hero-banner-wrap acima, conversa 2026-09-22) parou de desenhar
+   botao dentro da imagem, essa linha e´ a UNICA navegacao explicita
+   pros 3 destinos (catalogo/personalizada/PDF), nao mais redundante.
+   Cabe em UMA linha ate no menor celular -- por isso o texto mais
+   curto ("Baixar PDF" em vez de "Baixar catálogo em PDF") e fonte
    pequena, em vez do padrao .botao-hero-primario/secundario (grande
    demais pra 3 caberem lado a lado). */
 .hero-acoes-linha {
