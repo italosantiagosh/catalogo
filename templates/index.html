@@ -30,7 +30,7 @@
   <section class="hero">
     <h1 class="sr-only">Medalhas que carregam histórias de fé — mais de 130 santos e devoções, peças personalizadas e preço especial pra quem compra em quantidade</h1>
     <div class="hero-banner-wrap" data-hero-carrossel>
-      <a class="hero-slide hero-slide-ativo" href="{{ url_for('catalogo_completo') }}" aria-label="Explorar catálogo">
+      <div class="hero-slide hero-slide-ativo">
         <picture>
           <source type="image/webp" srcset="{{ url_for('static', filename='img/banner-hero.webp') }}">
           <img
@@ -40,8 +40,8 @@
             width="1200" height="500" fetchpriority="high"
           >
         </picture>
-      </a>
-      <a class="hero-slide" href="{{ url_for('catalogo_completo') }}" aria-label="Explorar catálogo">
+      </div>
+      <div class="hero-slide">
         <picture>
           <source type="image/webp" srcset="{{ url_for('static', filename='img/banner-hero-slide2.webp') }}">
           <img
@@ -51,8 +51,8 @@
             width="1200" height="500" loading="lazy"
           >
         </picture>
-      </a>
-      <a class="hero-slide" href="{{ url_for('catalogo_completo') }}" aria-label="Explorar catálogo">
+      </div>
+      <div class="hero-slide">
         <picture>
           <source type="image/webp" srcset="{{ url_for('static', filename='img/banner-hero-slide3.webp') }}">
           <img
@@ -62,7 +62,7 @@
             width="1200" height="500" loading="lazy"
           >
         </picture>
-      </a>
+      </div>
       <div class="hero-dots" role="tablist" aria-label="Slides do banner principal">
         <button type="button" class="hero-dot hero-dot-ativo" aria-label="Ver slide 1"></button>
         <button type="button" class="hero-dot" aria-label="Ver slide 2"></button>

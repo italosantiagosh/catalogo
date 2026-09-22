@@ -4,7 +4,15 @@
   // elemento nao estiver na pagina. Troca automatica a cada 6s, pausa
   // ao passar o mouse/focar (pra nao trocar embaixo de quem ta lendo
   // ou navegando por teclado), e os pontinhos deixam pular pra um
-  // slide especifico na hora.
+  // slide especifico na hora. Slides NAO sao clicaveis (so imagem +
+  // texto, sem link) -- a navegacao de verdade e´ a linha de botoes
+  // reais logo abaixo (.hero-acoes-linha).
+  //
+  // Deslizar no celular (touchstart/touchend, ver conversa) troca de
+  // slide com LOOP nos dois sentidos: deslizar pra esquerda no ultimo
+  // slide volta pro primeiro, deslizar pra direita no primeiro vai pro
+  // ultimo -- mesmo espirito do "proximo"/"%" abaixo, so que pro lado
+  // contrario tambem.
   const wrap = document.querySelector('[data-hero-carrossel]');
   if (!wrap) return;
 
@@ -28,6 +36,10 @@
     mostrar((indiceAtual + 1) % slides.length);
   }
 
+  function anterior() {
+    mostrar((indiceAtual - 1 + slides.length) % slides.length);
+  }
+
   function iniciarAutoplay() {
     parar();
     timer = setInterval(proximo, INTERVALO_MS);
@@ -49,6 +61,26 @@
   wrap.addEventListener('mouseleave', iniciarAutoplay);
   wrap.addEventListener('focusin', parar);
   wrap.addEventListener('focusout', iniciarAutoplay);
+
+  const LIMIAR_DESLIZE_PX = 40;
+  let inicioX = null;
+
+  wrap.addEventListener('touchstart', (evento) => {
+    inicioX = evento.touches[0].clientX;
+    parar();
+  }, { passive: true });
+
+  wrap.addEventListener('touchend', (evento) => {
+    if (inicioX === null) return;
+    const deltaX = evento.changedTouches[0].clientX - inicioX;
+    inicioX = null;
+    if (deltaX <= -LIMIAR_DESLIZE_PX) {
+      proximo();
+    } else if (deltaX >= LIMIAR_DESLIZE_PX) {
+      anterior();
+    }
+    iniciarAutoplay();
+  }, { passive: true });
 
   iniciarAutoplay();
 })();

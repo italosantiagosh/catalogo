@@ -345,9 +345,13 @@ a.link-carrinho #contador-carrinho {
    banner unico estatico com botoes desenhados dentro da imagem. Altura
    fixada por aspect-ratio (os 3 slides tem exatamente a mesma
    proporcao, 1200x500) pra nao pular de tamanho ao trocar de slide;
-   cada <a class="hero-slide"> fica empilhado por cima do outro
+   cada <div class="hero-slide"> (sem link -- navegacao de verdade e´
+   a linha de botoes abaixo) fica empilhado por cima do outro
    (position:absolute) e so o marcado com hero-slide-ativo fica visivel
-   -- ver static/js/hero_carrossel.js pro troca automatica/pelos pontos. */
+   -- ver static/js/hero_carrossel.js pro troca automatica/pontinhos/
+   deslize. touch-action: pan-y deixa o navegador so interceptar o
+   gesto HORIZONTAL pro JS (deslize entre slides), sem brigar com o
+   scroll vertical normal da pagina. */
 .hero-banner-wrap {
   position: relative;
   line-height: 0;
@@ -356,6 +360,7 @@ a.link-carrinho #contador-carrinho {
   border-radius: 16px;
   overflow: hidden;
   background: var(--accent-dark);
+  touch-action: pan-y;
 }
 
 .hero-slide {
