@@ -193,6 +193,35 @@ def test_purgar_recortes_usados_antigos_apaga_so_recorte_usado_e_velho(client):
     assert imagens_personalizadas.obter_imagem(preview_velha_usada) is not None
 
 
+def test_purgar_recortes_usados_antigos_preserva_token_usado_tambem_como_imagem_exibida(client):
+    """ver conversa 2026-09-22: bug real corrigido em
+    app.py:admin_pedido_enviar_foto -- a versao antiga usava o MESMO
+    token (tipo "recorte") tanto pra `imagem` (miniatura da pagina de
+    acompanhamento) quanto pra `imagemRecorte`. Pedidos que ja tinham
+    foto anexada ANTES desse fix continuam nesse estado -- essa funcao
+    nao pode apagar um token assim, mesmo vencido, porque quebraria a
+    pagina de acompanhamento (a garantia que ela mesma promete)."""
+    recorte_tambem_exibido = imagens_personalizadas.salvar_imagem(
+        b"r1", "image/png", "r1.png", tipo="recorte"
+    )
+    imagens_personalizadas.marcar_imagem_usada(recorte_tambem_exibido)
+    _envelhecer_imagem(recorte_tambem_exibido, dias=31)
+
+    url = f"/imagem-personalizada/{recorte_tambem_exibido}"
+    corpo = _corpo_valido(itens=[{
+        "chave_preco": "16mm", "quantidade": 10, "produtoNome": "Personalizada",
+        "formato": "medalha", "tamanho": "16mm",
+        "imagem": url, "imagemRecorte": url,
+    }])
+    with patch("app.criar_link_pagamento", return_value={"url": "https://checkout.infinitepay.io/abc"}):
+        client.post("/api/pedido/criar", json=corpo)
+
+    removidas = imagens_personalizadas.purgar_recortes_usados_antigos(dias=30)
+
+    assert removidas == 0
+    assert imagens_personalizadas.obter_imagem(recorte_tambem_exibido) is not None
+
+
 def test_migracao_adiciona_coluna_tipo_em_banco_antigo(client, tmp_path):
     """Simula um banco criado antes da coluna `tipo` existir (imagem
     salva direto via SQL, sem passar por salvar_imagem) -- inicializar_db

@@ -36,6 +36,7 @@ busca no R2 quando encontra isso vazio.
 from __future__ import annotations
 
 import hashlib
+import json
 import os
 import secrets
 import sqlite3
@@ -199,6 +200,40 @@ def purgar_imagens_antigas(dias: int = 7) -> int:
         return cursor.rowcount
 
 
+_CAMPOS_IMAGEM_EXIBIDA = ("imagem", "imagemLado1", "imagemLado2")
+
+
+def _token_usado_como_imagem_exibida(conexao: sqlite3.Connection, token: str) -> bool:
+    """Confere se `token` aparece em algum campo de imagem EXIBIDA
+    (imagem/imagemLado1/imagemLado2 -- a miniatura da pagina de
+    acompanhamento), nao so imagemRecorte/imagemRecorteLadoN (o arquivo
+    pesado de producao, que purgar_recortes_usados_antigos existe pra
+    apagar). Protege pedidos que guardaram o MESMO token nos dois
+    campos -- ex: bug real corrigido 2026-09-22 em
+    app.py:admin_pedido_enviar_foto, que usava um unico token tipo
+    "recorte" tanto pra imagem quanto pra imagemRecorte; pedidos que
+    ja tinham foto anexada ANTES desse fix continuam nesse estado.
+    Apagar o token nessas condicoes quebraria a pagina de
+    acompanhamento, violando a garantia que essa funcao promete (ver
+    docstring dela). Tolerante a banco onde a tabela `pedidos` ainda nao
+    existe (ex: teste isolado so desse modulo, sem nenhum pedido
+    criado) -- nesse caso nao ha nada que possa estar usando o token."""
+    try:
+        linhas = conexao.execute("SELECT itens FROM pedidos WHERE itens LIKE ?", (f"%{token}%",)).fetchall()
+    except sqlite3.OperationalError:
+        return False
+    for linha in linhas:
+        try:
+            itens = json.loads(linha["itens"])
+        except (TypeError, ValueError):
+            continue
+        for item in itens:
+            for campo in _CAMPOS_IMAGEM_EXIBIDA:
+                if token in str(item.get(campo) or ""):
+                    return True
+    return False
+
+
 def purgar_recortes_usados_antigos(dias: int = 30) -> int:
     """Apaga o RECORTE (1:1, resolucao real -- o pesado dos dois, ver
     inicializar_db acima) de pedidos de verdade (usada_em_pedido = 1)
@@ -209,22 +244,29 @@ def purgar_recortes_usados_antigos(dias: int = 30) -> int:
     PREVIEW (menor, com moldura) NUNCA e´ apagada por essa funcao --
     continua pra sempre servindo o "imagem"/imagemLado1/imagemLado2
     mostrado na pagina de acompanhamento do pedido (a "miniatura" que
-    fica no link). Devolve quantas linhas foram removidas."""
+    fica no link) -- por isso pula qualquer token que ainda esteja
+    sendo usado EXATAMENTE nesses campos (ver
+    _token_usado_como_imagem_exibida), mesmo que ele tambem apareca
+    como imagemRecorte em algum pedido. Devolve quantas linhas foram
+    removidas."""
     inicializar_db()
     limite = (datetime.now(timezone.utc) - timedelta(days=dias)).isoformat()
     with _conexao() as conexao:
-        tokens = [
+        candidatos = [
             linha["token"] for linha in conexao.execute(
                 "SELECT token FROM imagens_personalizadas "
                 "WHERE tipo = 'recorte' AND usada_em_pedido = 1 AND criado_em < ?",
                 (limite,),
             ).fetchall()
         ]
-        if tokens and armazenamento_r2.configurado():
+        tokens = [t for t in candidatos if not _token_usado_como_imagem_exibida(conexao, t)]
+        if not tokens:
+            return 0
+        if armazenamento_r2.configurado():
             armazenamento_r2.apagar(tokens)
+        marcadores = ",".join("?" * len(tokens))
         cursor = conexao.execute(
-            "DELETE FROM imagens_personalizadas WHERE tipo = 'recorte' AND usada_em_pedido = 1 AND criado_em < ?",
-            (limite,),
+            f"DELETE FROM imagens_personalizadas WHERE token IN ({marcadores})", tokens
         )
         return cursor.rowcount
 

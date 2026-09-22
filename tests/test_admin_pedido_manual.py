@@ -399,9 +399,11 @@ def _criar_pedido_com_item_personalizada(client, monkeypatch, *, duas_faces=Fals
 def test_enviar_foto_do_item_anexa_imagem_sem_gerar_simulacao(client, monkeypatch):
     """ver conversa 2026-09-20: o admin quer só subir a foto (já cortada
     1:1 por quem fez o pedido, ou corrigida na mão fora do site) -- sem
-    gastar memória do Render gerando compose_medal/preview. A rota só
-    salva o arquivo enviado como veio e usa ele tanto pra `imagem`
-    quanto pra `imagemRecorte`."""
+    gastar memória do Render gerando compose_medal/preview. A rota salva
+    o arquivo enviado como veio, em DUAS linhas/tokens diferentes (mesmos
+    bytes) -- uma pra `imagem`, outra pra `imagemRecorte` -- ver conversa
+    2026-09-22: tokens iguais fazia a limpeza de recortes derrubar a
+    imagem exibida na página de acompanhamento junto (bug real)."""
     token = _criar_pedido_com_item_personalizada(client, monkeypatch)
 
     resposta = client.post(
@@ -414,7 +416,36 @@ def test_enviar_foto_do_item_anexa_imagem_sem_gerar_simulacao(client, monkeypatc
     item = pedidos.obter_pedido(token)["itens"][0]
     assert item["semImagem"] is False
     assert item["imagem"]
-    assert item["imagemRecorte"] == item["imagem"]
+    assert item["imagemRecorte"]
+    assert item["imagemRecorte"] != item["imagem"]
+
+    for campo in ("imagem", "imagemRecorte"):
+        servida = client.get(item[campo])
+        assert servida.status_code == 200
+        assert servida.data == b"conteudo-fake-da-foto"
+
+
+def test_enviar_foto_sobrevive_a_limpeza_de_recortes_antigos(client, monkeypatch):
+    """ver conversa 2026-09-22: bug real reportado -- apagar o recorte
+    velho/usado (purgar_recortes_usados_antigos) NÃO pode derrubar a
+    imagem mostrada na página de acompanhamento (`imagem`), porque essa
+    função promete nunca mexer na preview. Só funciona se os dois
+    campos usarem tokens DIFERENTES (ver fix acima)."""
+    token = _criar_pedido_com_item_personalizada(client, monkeypatch)
+    client.post(
+        f"/admin/pedidos/{token}/itens/0/enviar-foto",
+        data={"imagem": (io.BytesIO(b"conteudo-fake-da-foto"), "foto.jpg")},
+        content_type="multipart/form-data",
+        auth=("admin", "segredo123"),
+    )
+    item = pedidos.obter_pedido(token)["itens"][0]
+
+    from datetime import datetime, timedelta, timezone
+    passado = (datetime.now(timezone.utc) - timedelta(days=31)).isoformat()
+    with imagens_personalizadas._conexao() as conexao:
+        conexao.execute("UPDATE imagens_personalizadas SET criado_em = ?", (passado,))
+
+    imagens_personalizadas.purgar_recortes_usados_antigos(dias=30)
 
     servida = client.get(item["imagem"])
     assert servida.status_code == 200
@@ -465,7 +496,8 @@ def test_enviar_foto_lado_especifico_preserva_o_outro_lado(client, monkeypatch):
     assert resposta.status_code == 302
     item = pedidos.obter_pedido(token)["itens"][0]
     assert item["imagemLado1"]
-    assert item["imagemRecorteLado1"] == item["imagemLado1"]
+    assert item["imagemRecorteLado1"]
+    assert item["imagemRecorteLado1"] != item["imagemLado1"]
     # lado 2 nao foi mexido
     assert item["imagemLado2"] == "/imagem-personalizada/ja-existente"
 

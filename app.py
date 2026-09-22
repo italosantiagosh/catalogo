@@ -4108,9 +4108,19 @@ def admin_pedido_enviar_foto(token: str, indice: int):
 
     NÃO gera simulação (sem compose_medal, sem semáforo de memória) --
     o admin já recebe a foto cortada 1:1 de quem fez o pedido, então é
-    só um upload cru: salva o arquivo exatamente como veio e usa ele
-    tanto pra `imagem` quanto pra `imagemRecorte`. Isso foi decisão
-    explícita pra não gastar memória do Render nessa tela.
+    só um upload cru, sem processamento. Isso foi decisão explícita pra
+    não gastar memória do Render nessa tela.
+
+    Salva DUAS linhas (mesmos bytes, tokens diferentes: uma tipo
+    "preview" pra `imagem`, outra tipo "recorte" pra `imagemRecorte`) em
+    vez de reaproveitar UM soo token pras duas -- mesmo padrão do fluxo
+    normal do cliente (ver api_personalizada_preview/recorte). BUG real
+    corrigido 2026-09-22: a versão anterior usava o MESMO token (tipo
+    "recorte") pras duas, então qualquer limpeza que mexesse em recortes
+    (ex: purgar_recortes_usados_antigos, que promete explicitamente
+    NUNCA apagar a preview mostrada na página de acompanhamento) also
+    apagava a imagem visível do pedido -- não só o arquivo pesado de
+    produção (ver conversa: imagem sumiu de um pedido de verdade).
 
     `lado` ("1" ou "2") so pra item de 2 lados -- atualiza so aquele
     lado especifico (imagemLadoN/imagemRecorteLadoN), preservando o
@@ -4148,7 +4158,9 @@ def admin_pedido_enviar_foto(token: str, indice: int):
     if not dados:
         abort(400, description="Arquivo vazio.")
 
-    chave_imagem = salvar_imagem(dados, arquivo.mimetype or "image/png", arquivo.filename, tipo="recorte")
+    mimetype = arquivo.mimetype or "image/png"
+    chave_preview = salvar_imagem(dados, mimetype, arquivo.filename, tipo="preview")
+    chave_recorte = salvar_imagem(dados, mimetype, arquivo.filename, tipo="recorte")
     # BUG real corrigido 2026-09-22: faltava isso -- sem marcar como
     # usada, o job diario purgar_imagens_antigas (7 dias, ver
     # services/imagens_personalizadas.py) via o token com
@@ -4156,15 +4168,17 @@ def admin_pedido_enviar_foto(token: str, indice: int):
     # verdade, mesmo ja anexada aqui. Rompia a previa/link de
     # acompanhamento E o "Repetir esse pedido" (imagem quebrada, ver
     # conversa).
-    marcar_imagem_usada(chave_imagem)
-    url_imagem = url_for("servir_imagem_personalizada", token=chave_imagem)
+    marcar_imagem_usada(chave_preview)
+    marcar_imagem_usada(chave_recorte)
+    url_preview = url_for("servir_imagem_personalizada", token=chave_preview)
+    url_recorte = url_for("servir_imagem_personalizada", token=chave_recorte)
 
     if lado:
-        item[f"imagemLado{lado}"] = url_imagem
-        item[f"imagemRecorteLado{lado}"] = url_imagem
+        item[f"imagemLado{lado}"] = url_preview
+        item[f"imagemRecorteLado{lado}"] = url_recorte
     else:
-        item["imagem"] = url_imagem
-        item["imagemRecorte"] = url_imagem
+        item["imagem"] = url_preview
+        item["imagemRecorte"] = url_recorte
         item["semImagem"] = False
 
     editar_item_formato(token, indice, item=item)
