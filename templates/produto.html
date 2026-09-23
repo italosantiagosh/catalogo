@@ -101,7 +101,16 @@
 
   <div class="painel-selecao" id="painel-selecao" hidden>
     <div class="preview-formato-wrap">
-      <img id="sel-preview-imagem" alt="">
+      <div class="preview-formato-linha">
+        <img id="sel-preview-imagem" alt="">
+        <div class="preview-verso" id="preview-verso" hidden>
+          <picture>
+            <source type="image/webp" srcset="{{ url_for('static', filename='img/verso-medalha-inox.webp') }}">
+            <img src="{{ url_for('static', filename='img/verso-medalha-inox.jpg') }}" alt="Verso da medalha, base inoxidável" loading="lazy" decoding="async">
+          </picture>
+          <span>VERSO: Base Inoxidável</span>
+        </div>
+      </div>
     </div>
 
     <h2>Modelo selecionado: <span id="sel-modelo-nome"></span></h2>

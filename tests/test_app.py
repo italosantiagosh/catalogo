@@ -479,6 +479,33 @@ def test_pagina_atendimento_inexistente_404(client):
     assert resposta.status_code == 404
 
 
+def test_quem_somos_mostra_fotos_de_italo_e_producao(client):
+    """ver conversa 2026-09-24: fotos reais (retrato + producao artesanal)
+    na pagina "Quem Somos", pedido da usuaria."""
+    resposta = client.get("/atendimento/quem-somos")
+    pagina = resposta.get_data(as_text=True)
+    assert "fundador-italo-grande.jpg" in pagina
+    assert "producao-artesanal.jpg" in pagina
+
+
+def test_home_mostra_foto_do_fundador(client):
+    resposta = client.get("/")
+    pagina = resposta.get_data(as_text=True)
+    assert "fundador-italo.jpg" in pagina
+
+
+def test_produto_mostra_verso_da_medalha_no_painel_de_selecao(client):
+    """ver conversa 2026-09-24: verso (base inox) aparece junto do
+    preview do modelo escolhido -- JS (static/js/produto.js) controla a
+    visibilidade (so formato medalha, sem 2 lados), aqui so confere que
+    o markup existe na pagina."""
+    resposta = client.get("/produto/sao-jose")
+    pagina = resposta.get_data(as_text=True)
+    assert 'id="preview-verso"' in pagina
+    assert "VERSO: Base Inoxidável" in pagina
+    assert "verso-medalha-inox.jpg" in pagina
+
+
 def test_termos_privacidade_cita_lgpd_nao_lei_portuguesa(client):
     resposta = client.get("/atendimento/termos-e-privacidade")
     corpo = resposta.get_data(as_text=True)

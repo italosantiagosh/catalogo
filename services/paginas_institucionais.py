@@ -193,6 +193,11 @@ PAGINAS_ATENDIMENTO = {
             "devoção e o desejo de levar medalhas de santos a todo o Brasil."
         ),
         "corpo_html": """
+            <figure>
+              <img src="/static/img/fundador-italo-grande.jpg" alt="Ítalo, fundador da Nove de Julho" loading="lazy" decoding="async">
+              <figcaption>Ítalo, fundador da Nove de Julho.</figcaption>
+            </figure>
+
             <p>Meu nome é Ítalo, tenho 32 anos, sou Consagrado da Comunidade Católica
             Shalom e fundador da Nove de Julho.</p>
 
@@ -208,6 +213,11 @@ PAGINAS_ATENDIMENTO = {
             <p>Mesmo sem apoio inicial, decidi investir e aprender a produzir
             artesanalmente medalhas resinadas em material inox de qualidade. Hoje, posso
             dizer com alegria que encontrei nesse projeto uma missão de vida.</p>
+
+            <figure>
+              <img src="/static/img/producao-artesanal.jpg" alt="Produção artesanal das medalhas da Nove de Julho" loading="lazy" decoding="async">
+              <figcaption>Cada medalha é montada e revisada à mão, uma por uma.</figcaption>
+            </figure>
 
             <p>A Nove de Julho nasceu do desejo de evangelizar por meio da beleza, da
             devoção e da tradição da Igreja. Nossa missão é ajudar pessoas que, como eu,

@@ -251,3 +251,11 @@ def test_artigo_de_confianca_cita_dados_reais_e_linka_pro_catalogo(client):
     assert "/atendimento/trocas-e-devolucao" in pagina
     assert "/blog/a-historia-da-nove-de-julho" in pagina
     assert "/catalogo" in pagina
+
+
+def test_historia_da_loja_mostra_foto_real_de_producao(client):
+    """ver conversa 2026-09-24: foto real da producao (medalhas prontas
+    pra envio) no artigo da historia, pedido da usuaria."""
+    resposta = client.get("/blog/a-historia-da-nove-de-julho")
+    pagina = resposta.get_data(as_text=True)
+    assert "medalhas-prontas.jpg" in pagina

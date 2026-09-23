@@ -3,6 +3,8 @@
   const painel = document.getElementById('painel-selecao');
   const nomeSpan = document.getElementById('sel-modelo-nome');
   const previewImg = document.getElementById('sel-preview-imagem');
+  const previewWrap = document.querySelector('.preview-formato-wrap');
+  const previewVerso = document.getElementById('preview-verso');
   const formatosFieldset = document.getElementById('sel-formatos');
   const tamanhosFieldset = document.getElementById('sel-tamanhos');
   const coresFieldset = document.getElementById('sel-cores');
@@ -174,6 +176,7 @@
       toggle2Lados.classList.toggle('ativo', duasFacesAtiva);
       if (lado2Widget) lado2Widget.hidden = !duasFacesAtiva;
       atualizarVisibilidadeTamanho();
+      atualizarVersoVisivel();
       if (duasFacesAtiva) {
         atualizar2LadosUI();
       } else {
@@ -511,9 +514,21 @@
     tamanhosFieldset.hidden = formatoAtual() !== 'medalha' || duasFacesAtiva;
   }
 
+  // verso da peca (base inox lisa) so faz sentido pra medalha de 1 lado --
+  // pedido 2026-09-24: nada de "acabamento maciço", so o rotulo simples
+  // "VERSO: Base Inoxidável", visivel apenas junto do preview do modelo
+  // ja escolhido (nao no topo da pagina).
+  function atualizarVersoVisivel() {
+    if (!previewVerso) return;
+    const mostrar = formatoAtual() === 'medalha' && !duasFacesAtiva;
+    previewVerso.hidden = !mostrar;
+    if (previewWrap) previewWrap.classList.toggle('tem-verso', mostrar);
+  }
+
   function atualizarSubSelecao() {
     const formato = formatoAtual();
     atualizarVisibilidadeTamanho();
+    atualizarVersoVisivel();
     coresFieldset.hidden = formato !== 'entremeio';
     atualizarInfoFormato();
     atualizarAvisoPreco();

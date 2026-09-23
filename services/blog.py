@@ -1484,6 +1484,11 @@ ARTIGOS_BLOG = {
             inteiras -- e não é raro que, viajando por aí, ele encontre alguém usando uma
             peça que saiu das próprias mãos.</p>
 
+            <figure>
+              <img src="/static/img/medalhas-prontas.jpg" alt="Medalhas de santos já prontas, aguardando envio" loading="lazy" decoding="async">
+              <figcaption>Parte do catálogo, já pronto para envio -- cada medalha passa pelas mãos de Ítalo antes de sair daqui.</figcaption>
+            </figure>
+
             <p>Uma medalha pensada pra resolver uma dificuldade pessoal se tornou, aos
             poucos, parte da história de fé de milhares de pessoas -- prova de que o passo
             mais importante, quase sempre, é simplesmente começar.</p>

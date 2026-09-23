@@ -1570,6 +1570,49 @@ h1 {
   background: var(--bg);
 }
 
+/* quando o verso aparece (so medalha de 1 lado, ver produto.js),
+   a linha vira 2 colunas e o wrap todo alarga um pouco -- feito por
+   JS (classe "tem-verso") pra nao afetar o layout quando so tem a
+   foto principal. */
+.preview-formato-wrap.tem-verso {
+  max-width: 320px;
+}
+
+.preview-formato-linha {
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+}
+
+.preview-formato-linha #sel-preview-imagem {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.preview-verso {
+  flex: 0 0 92px;
+  text-align: center;
+}
+
+.preview-verso img {
+  width: 92px;
+  height: 92px;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+  display: block;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+}
+
+.preview-verso span {
+  display: block;
+  font-size: 0.68rem;
+  color: var(--muted);
+  margin-top: 4px;
+  line-height: 1.2;
+}
+
 fieldset.tamanhos,
 fieldset.formatos,
 fieldset.cores {
@@ -2953,6 +2996,26 @@ body.tem-barra-fixa-comprar main {
   line-height: 1.6;
   color: var(--ink);
   margin: 0 0 10px;
+}
+
+.nossa-historia-corpo {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+}
+
+.nossa-historia-foto {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+  border: 2px solid var(--card);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
+}
+
+.nossa-historia-corpo p {
+  margin-top: 0;
 }
 
 /* destaques da home (mais vendidos / novidades / etc) */
