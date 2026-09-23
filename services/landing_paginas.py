@@ -74,7 +74,7 @@ PAGINAS_LANDING = {
             <h2>Pelo nome do santo</h2>
             <p>Se o bebê já tem nome de batismo definido, o jeito mais direto é buscar o
             santo correspondente direto no <a href="/catalogo">catálogo completo</a> (mais
-            de 130 santos e devoções) -- é comum encontrar até mais de uma versão do mesmo
+            de 140 santos e devoções) -- é comum encontrar até mais de uma versão do mesmo
             santo, quando existem diferentes representações.</p>
 
             <h2>Opções que costumam ser escolhidas pra criança</h2>
@@ -148,7 +148,7 @@ PAGINAS_LANDING = {
             <h2>Devoções ligadas à formação na fé</h2>
             <p>Pra turmas de primeira comunhão, a <a href="/produto/sagrada-familia">Sagrada
             Família</a> e as devoções da categoria <a href="/categoria/jesus">Jesus</a>
-            costumam fazer sentido com o momento -- mas o catálogo completo (mais de 130
+            costumam fazer sentido com o momento -- mas o catálogo completo (mais de 140
             santos) cobre praticamente qualquer padroeiro que a paróquia queira destacar.</p>
 
             <h2>Nota fiscal e forma de pagamento</h2>
@@ -185,7 +185,7 @@ PAGINAS_LANDING = {
             <p>Pra Primeira Comunhão, o <a href="/produto/sagrado-coracao-de-jesus">Sagrado
             Coração de Jesus</a> é uma das devoções mais escolhidas -- e quem prefere seguir
             pelo nome de batismo da criança encontra o santo correspondente direto no
-            <a href="/categoria/jesus">catálogo completo</a> (mais de 130 santos e devoções).</p>
+            <a href="/categoria/jesus">catálogo completo</a> (mais de 140 santos e devoções).</p>
 
             <h2>Turma grande? Sortimento pronto</h2>
             <p>Quando a turma de catequese é grande e não dá pra escolher um santo só, o
@@ -220,7 +220,7 @@ PAGINAS_LANDING = {
 
             <h2>Como funciona pra quem revende</h2>
             <ul>
-                <li>Mais de 130 santos e devoções, com busca e filtro por categoria no
+                <li>Mais de 140 santos e devoções, com busca e filtro por categoria no
                     <a href="/catalogo">catálogo completo</a>;</li>
                 <li>Desconto progressivo automático -- soma a quantidade de qualquer santo
                     e formato, não precisa concentrar tudo num item só;</li>

@@ -1721,7 +1721,7 @@ ARTIGOS_BLOG = {
             <h2>Caminho 1: pelo nome de batismo</h2>
             <p>O mais tradicional é buscar o santo que dá nome à criança -- se o nome de
             batismo já está definido, é só procurar esse santo direto no
-            <a href="/catalogo">catálogo completo</a> (mais de 130 santos e devoções). É
+            <a href="/catalogo">catálogo completo</a> (mais de 140 santos e devoções). É
             comum encontrar até mais de uma representação do mesmo santo.</p>
 
             <h2>Caminho 2: por uma devoção da família</h2>
@@ -1920,7 +1920,7 @@ ARTIGOS_BLOG = {
             trajetória de fé de quem as guarda.</p>
 
             <h2>Por onde começar (ou continuar) sua coleção</h2>
-            <p>Com mais de 130 santos e devoções diferentes no catálogo, entre medalhas,
+            <p>Com mais de 140 santos e devoções diferentes no catálogo, entre medalhas,
             entremeios e chaveiros, dá pra ir completando aos poucos -- do santo mais
             conhecido ao mais raro de achar em livraria física. E como o desconto de atacado
             é automático por quantidade total no carrinho, comprar várias medalhas de uma vez

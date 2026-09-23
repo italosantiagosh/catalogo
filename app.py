@@ -1041,7 +1041,7 @@ def llms_txt():
 
 > Catálogo de atacado de medalhas, entremeios e chaveiros religiosos católicos,
 > resinados -- medalha de 1 lado em aço inoxidável, os demais formatos em liga
-> de zinco. Mais de 130 santos e devoções, com desconto de atacado automático
+> de zinco. Mais de 140 santos e devoções, com desconto de atacado automático
 > por quantidade (sem cupom) e opção de peça personalizada a partir de foto
 > enviada pelo cliente.
 

@@ -96,7 +96,7 @@ def test_categoria_inexistente_404(client):
 
 def test_home_nao_tem_a_grade_completa_mas_linka_o_catalogo(client):
     # a home virou landing page (hero, vantagens, destaques, busca ao
-    # vivo, chips de categoria, 4 santos + botao) -- so a grade dos 130+
+    # vivo, chips de categoria, 4 santos + botao) -- so a grade dos 140+
     # produtos sai daqui e vai pra /catalogo.
     resposta = client.get("/").get_data(as_text=True)
     assert 'id="grid-produtos"' not in resposta
