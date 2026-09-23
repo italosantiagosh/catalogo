@@ -15,7 +15,9 @@
     <span aria-current="page">{{ artigo.titulo }}</span>
   </nav>
   <h1>{{ artigo.titulo }}</h1>
+  {% if not artigo.get("oculta_imagem_topo") %}
   <img class="imagem-artigo-blog" src="{{ imagem_url }}" alt="{{ artigo.titulo }}" loading="lazy" decoding="async">
+  {% endif %}
   <div class="conteudo-institucional">
     {{ corpo_html | safe }}
   </div>

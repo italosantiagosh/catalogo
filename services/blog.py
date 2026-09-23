@@ -2080,6 +2080,7 @@ ARTIGOS_BLOG = {
         ),
         "produto_relacionado_id": "santa-teresinha",
         "publicado_em": "2026-09-24",
+        "oculta_imagem_topo": True,
         "corpo_html": """
             <p>Santa Teresinha do Menino Jesus e da Sagrada Face é Doutora da Igreja,
             padroeira das missões e uma das santas mais amadas por jovens no Brasil e no
@@ -2092,15 +2093,6 @@ ARTIGOS_BLOG = {
             </figure>
 
             <p><em>Novena reproduzida de <a href="https://comshalom.org/novena-de-santa-teresinha-do-menino-jesus/" target="_blank" rel="noopener">comshalom.org</a> (Comunidade Católica Shalom).</em></p>
-
-            <p>A mesma oração se repete todos os 9 dias -- só muda a intenção do dia,
-            indicada em cada card abaixo. Reproduzimos a oração completa uma única vez
-            aqui, e a intenção de cada um dos 9 dias logo depois.</p>
-
-<p><strong>Oração (repetida todos os 9 dias):</strong></p>
-            <p>Santíssima Trindade: Pai, Filho e Espírito Santo: eu vos agradeço por todas as graças com que enriqueceste a vida de vossa serva, Santa Teresinha do Menino Jesus e da Sagrada Face, nestes 24 anos que passou na terra. E pelos méritos de tão querida santinha, concedei-me a graça que ardentemente vos peço … (fale qual é), se for conforme a Vossa Santíssima Vontade e para a salvação de minha alma (ou da pessoa por quem está rezando).</p>
-            <p>Ajudai minha fé e minha esperança, Santa Teresinha, cumprindo mais uma vez vossa promessa de que ficareis no Céu a fazer o bem na terra, permitindo que eu ganhe um rosa em sinal de que alcançarei a graça pedida.</p>
-            <p><strong>Rezar 24 vezes, por cada ano de Santa Teresinha na terra:</strong> "Glória ao Pai, ao Filho e ao Espírito Santo como era no princípio, agora e sempre. Amém." Santa Teresinha do Menino Jesus e da Sagrada Face, rogai por mim (ou o nome da pessoa por quem está intercedendo).
 
             <details class="novena-dia">
               <summary>1º dia — Santa Teresinha doutora e amante da Igreja</summary>
@@ -2145,6 +2137,15 @@ ARTIGOS_BLOG = {
               <p>Neste último dia da Novena de Santa Teresinha, rezemos pelos que não creem, não esperam e não confiam em Deus.</p>
             </details>
 
+            <p>A mesma oração se repete todos os 9 dias -- só muda a intenção do dia,
+            indicada em cada card acima. Reproduzimos a oração completa uma única vez
+            aqui.</p>
+
+<p><strong>Oração (repetida todos os 9 dias):</strong></p>
+            <p>Santíssima Trindade: Pai, Filho e Espírito Santo: eu vos agradeço por todas as graças com que enriqueceste a vida de vossa serva, Santa Teresinha do Menino Jesus e da Sagrada Face, nestes 24 anos que passou na terra. E pelos méritos de tão querida santinha, concedei-me a graça que ardentemente vos peço … (fale qual é), se for conforme a Vossa Santíssima Vontade e para a salvação de minha alma (ou da pessoa por quem está rezando).</p>
+            <p>Ajudai minha fé e minha esperança, Santa Teresinha, cumprindo mais uma vez vossa promessa de que ficareis no Céu a fazer o bem na terra, permitindo que eu ganhe um rosa em sinal de que alcançarei a graça pedida.</p>
+            <p><strong>Rezar 24 vezes, por cada ano de Santa Teresinha na terra:</strong> "Glória ao Pai, ao Filho e ao Espírito Santo como era no princípio, agora e sempre. Amém." Santa Teresinha do Menino Jesus e da Sagrada Face, rogai por mim (ou o nome da pessoa por quem está intercedendo).</p>
+
             <div class="cta-blog-produto">
               <p>Leve Santa Teresinha com você</p>
               <a href="__URL_PRODUTO__" class="botao-principal">Ver medalha, entremeio e chaveiro de Santa Teresinha →</a>
@@ -2158,6 +2159,7 @@ ARTIGOS_BLOG = {
         ),
         "produto_relacionado_id": "sao-francisco",
         "publicado_em": "2026-09-24",
+        "oculta_imagem_topo": True,
         "corpo_html": """
             <p>São Francisco de Assis, o "Pobrezinho de Assis", é uma das figuras mais
             queridas de toda a tradição católica -- fundador da Ordem Franciscana, patrono
@@ -2174,50 +2176,6 @@ ARTIGOS_BLOG = {
             novena de 9 dias) -- foi reproduzida de
             <a href="https://formacao.cancaonova.com/espiritualidade/devocao/novena/reze-e-medite-novena-sao-francisco-de-assis/" target="_blank" rel="noopener">Canção Nova</a>,
             que credita o texto ao livro <em>Pedi e recebereis</em>, de Adriana Katia Potexki.</em></p>
-
-            <p><strong>Como rezar:</strong></p>
-                <ul>
-                    <li>Fazer o sinal da cruz;</li>
-                    <li>Rezar a oração para todos os dias;</li>
-                    <li>Rezar a oração de cada dia;</li>
-                    <li>Rezar 3 Pais-Nossos, 3 Ave-Marias, 3 Glórias ao Pai;</li>
-                    <li>Meditar e comentar um texto do Novo Testamento (ver sugestões);</li>
-                    <li>Rezar a oração e bênção de São Francisco.</li>
-                </ul>
-
-            <p><strong>Oração para todos os dias:</strong></p>
-                <p>Absolvei, Senhor, eu Vos suplico, o meu espírito, e pela suave e ardente força de Vosso amor, desfeiçoai-me de todas as coisas que existem debaixo do céu, a fim de que eu possa morrer por Vosso amor, ó Deus, que por meu amor Vos dignastes morrer.</p>
-
-            <p>Reza-se, a seguir, 3 Pais-Nossos, 3 Ave-Marias e 3 Glórias ao Pai, a
-            oração do dia (abaixo) e, por fim, a Oração e a Bênção de São Francisco:</p>
-
-            <p><strong>Oração de São Francisco:</strong></p>
-                <p>Senhor, fazei-me instrumento de vossa paz.<br>
-Onde houver ódio, que eu leve o amor.<br>
-Onde houver ofensa, que eu leve o perdão.<br>
-Onde houver discórdia, que eu leve a união.<br>
-Onde houver dúvida, que eu leve a fé.<br>
-Onde houver erro, que eu leve a verdade.<br>
-Onde houver desespero, que eu leve a esperança.<br>
-Onde houver tristeza, que eu leve a alegria.<br>
-Onde houver trevas, que eu leve a luz.<br>
-Ó Mestre, fazei que eu procure mais consolar que ser consolado,<br>
-compreender que ser compreendido, amar que ser amado.<br>
-Pois é dando que se recebe, é perdoando que se é perdoado<br>
-e é morrendo que se vive para a vida eterna.</p>
-
-            <p><strong>Bênção de São Francisco:</strong></p>
-                <p>O Senhor vos abençoe e vos guarde.</p>
-
-                <p>O Senhor vos mostre a Sua face e se compadeça de vós. Amém.</p>
-
-                <p>O Senhor volva Seu rosto para vós e vos dê a paz.</p>
-
-                <p>O Senhor vos abençoe. Amém.</p>
-
-                <p>Que o Senhor Deus, pelos méritos de São Francisco,</p>
-
-                <p>vos conceda toda a paz e todo o bem. Amém.</p>
 
             <details class="novena-dia">
               <summary>1º dia</summary>
@@ -2279,6 +2237,50 @@ e é morrendo que se vive para a vida eterna.</p>
               <p><em>Sugestão de leitura: Mt 15,21-28 ou Rm 16,25-27.</em></p>
             </details>
 
+            <p><strong>Como rezar:</strong></p>
+                <ul>
+                    <li>Fazer o sinal da cruz;</li>
+                    <li>Rezar a oração para todos os dias;</li>
+                    <li>Rezar a oração do dia correspondente (acima);</li>
+                    <li>Rezar 3 Pais-Nossos, 3 Ave-Marias, 3 Glórias ao Pai;</li>
+                    <li>Meditar e comentar um texto do Novo Testamento (ver sugestões de leitura em cada dia, acima);</li>
+                    <li>Rezar a oração e bênção de São Francisco.</li>
+                </ul>
+
+            <p><strong>Oração para todos os dias:</strong></p>
+                <p>Absolvei, Senhor, eu Vos suplico, o meu espírito, e pela suave e ardente força de Vosso amor, desfeiçoai-me de todas as coisas que existem debaixo do céu, a fim de que eu possa morrer por Vosso amor, ó Deus, que por meu amor Vos dignastes morrer.</p>
+
+            <p>Reza-se, a seguir, 3 Pais-Nossos, 3 Ave-Marias e 3 Glórias ao Pai, a
+            oração do dia correspondente e, por fim, a Oração e a Bênção de São Francisco:</p>
+
+            <p><strong>Oração de São Francisco:</strong></p>
+                <p>Senhor, fazei-me instrumento de vossa paz.<br>
+Onde houver ódio, que eu leve o amor.<br>
+Onde houver ofensa, que eu leve o perdão.<br>
+Onde houver discórdia, que eu leve a união.<br>
+Onde houver dúvida, que eu leve a fé.<br>
+Onde houver erro, que eu leve a verdade.<br>
+Onde houver desespero, que eu leve a esperança.<br>
+Onde houver tristeza, que eu leve a alegria.<br>
+Onde houver trevas, que eu leve a luz.<br>
+Ó Mestre, fazei que eu procure mais consolar que ser consolado,<br>
+compreender que ser compreendido, amar que ser amado.<br>
+Pois é dando que se recebe, é perdoando que se é perdoado<br>
+e é morrendo que se vive para a vida eterna.</p>
+
+            <p><strong>Bênção de São Francisco:</strong></p>
+                <p>O Senhor vos abençoe e vos guarde.</p>
+
+                <p>O Senhor vos mostre a Sua face e se compadeça de vós. Amém.</p>
+
+                <p>O Senhor volva Seu rosto para vós e vos dê a paz.</p>
+
+                <p>O Senhor vos abençoe. Amém.</p>
+
+                <p>Que o Senhor Deus, pelos méritos de São Francisco,</p>
+
+                <p>vos conceda toda a paz e todo o bem. Amém.</p>
+
             <div class="cta-blog-produto">
               <p>Leve São Francisco de Assis com você</p>
               <a href="__URL_PRODUTO__" class="botao-principal">Ver medalha, entremeio e chaveiro de São Francisco →</a>
@@ -2292,6 +2294,7 @@ e é morrendo que se vive para a vida eterna.</p>
         ),
         "produto_relacionado_id": "santa-teresa-davila",
         "publicado_em": "2026-09-24",
+        "oculta_imagem_topo": True,
         "corpo_html": """
             <p>Santa Teresa d'Ávila (Teresa de Jesus) reformou o Carmelo, escreveu
             clássicos da mística cristã como <em>Castelo Interior</em> e foi a primeira
@@ -2622,6 +2625,7 @@ e é morrendo que se vive para a vida eterna.</p>
         ),
         "produto_relacionado_id": "sao-joao-paulo-ii",
         "publicado_em": "2026-09-24",
+        "oculta_imagem_topo": True,
         "corpo_html": """
             <p>Conhecido como o "Papa Peregrino", São João Paulo II viajou a mais de 100
             países anunciando o Evangelho e teve um papado marcado pelo amor a Maria --
@@ -2890,6 +2894,7 @@ para que sejamos dignos das promessas de Cristo. Amém!</p>
         ),
         "produto_relacionado_id": "carlo-acutis",
         "publicado_em": "2026-09-24",
+        "oculta_imagem_topo": True,
         "corpo_html": """
             <p>São Carlo Acutis (1991-2006), o "influencer de Deus", morreu aos 15 anos
             de uma leucemia fulminante depois de dedicar a curta vida a catalogar milagres
@@ -2904,45 +2909,33 @@ para que sejamos dignos das promessas de Cristo. Amém!</p>
 
             <p><em>Novena reproduzida de <a href="https://comshalom.org/novena-ao-beato-carlo-acutis/" target="_blank" rel="noopener">comshalom.org</a> (Comunidade Católica Shalom) -- a página de origem ainda usa o título anterior à canonização, mas o texto já é o mesmo rezado por quem invoca São Carlo Acutis hoje.</em></p>
 
-            <p>Todos os 9 dias seguem a mesma estrutura: a Oração inicial (abaixo),
-            a invocação específica do dia (indicada em cada card), 5 Pai-Nossos/Ave-Marias/
-            Glórias e a Oração final (também abaixo) -- reproduzidas uma única vez aqui
-            pra não repetir o mesmo texto 9 vezes.</p>
-
-            <p><strong>Oração inicial para todos os dias:</strong></p>
-                <p>Santíssima Trindade, Pai, Filho e Espírito Santo, eu Vos agradeço todos os favores, todas as graças com que enriquecestes a alma de São Carlo Acutis durante os 15 anos que passou nesta terra e pelos méritos, em Cristo Jesus, deste tão querido exemplo para a juventude, concedei-me a graça que ardentemente Vos peço… (faça o pedido da graça que deseja).</p>
-
-                <p>São Carlo Acutis, que fizeste de tua vida uma contínua renúncia e aniquilamento, dá-me a graça de buscar as coisas do Céu e desprezar as que passam. Assim seja. Amém.</p>
-
-                <p><strong>5 Pai-Nossos, 5 Ave-Marias e 5 Glórias ao Pai</strong>, em honra dos 15 anos de vida de Carlo Acutis nesta terra.</p>
-
             <details class="novena-dia">
               <summary>1º dia — "Não eu, mas Deus"</summary>
-              <p><em>(Reza-se a Oração inicial para todos os dias -- reproduzida uma única vez acima)</em></p>
+              <p><em>(Reza-se a Oração inicial para todos os dias -- reproduzida uma única vez abaixo)</em></p>
               <p>São Carlo Acutis, que fizeste de tua vida uma contínua renúncia e aniquilamento, dá-me a graça de buscar as coisas do Céu e desprezar as que passam. Assim seja. Amém.</p>
               <p>5 Pai-Nossos, 5 Ave-Marias e 5 Glórias ao Pai, em honra dos 15 anos de vida de Carlo Acutis nesta terra.</p>
-              <p><em>(Reza-se a seguir a Oração final -- reproduzida uma única vez acima)</em></p>
+              <p><em>(Reza-se a seguir a Oração final -- reproduzida uma única vez abaixo)</em></p>
             </details>
             <details class="novena-dia">
               <summary>2º dia — "Estar sempre com Jesus, este é o meu projeto de vida"</summary>
-              <p><em>(Reza-se a Oração inicial para todos os dias -- reproduzida uma única vez acima)</em></p>
+              <p><em>(Reza-se a Oração inicial para todos os dias -- reproduzida uma única vez abaixo)</em></p>
               <p>São Carlo Acutis, que viveste na intimidade do Sagrado Coração de Jesus, dá-me a graça de realizar, em tudo, a vontade de Deus em minha vida. Assim seja. Amém.</p>
               <p>5 Pai-Nossos, 5 Ave-Marias e 5 Glórias ao Pai, em honra dos 15 anos de vida de Carlo Acutis nesta terra.</p>
-              <p><em>(Reza-se a seguir a Oração final -- reproduzida uma única vez acima)</em></p>
+              <p><em>(Reza-se a seguir a Oração final -- reproduzida uma única vez abaixo)</em></p>
             </details>
             <details class="novena-dia">
               <summary>3º dia — "Peça ao seu Anjo da Guarda para ajudá-lo continuamente, de modo que ele se torne seu melhor amigo"</summary>
-              <p><em>(Reza-se a Oração inicial para todos os dias -- reproduzida uma única vez acima)</em></p>
+              <p><em>(Reza-se a Oração inicial para todos os dias -- reproduzida uma única vez abaixo)</em></p>
               <p>São Carlo Acutis, que buscaste, já neste mundo, a companhia dos santos anjos, dá-me a graça de viver na retidão que o meu santo anjo deseja. Assim seja. Amém.</p>
               <p>5 Pai-Nossos, 5 Ave-Marias e 5 Glórias ao Pai, em honra dos 15 anos de vida de Carlo Acutis nesta terra.</p>
-              <p><em>(Reza-se a seguir a Oração final -- reproduzida uma única vez acima)</em></p>
+              <p><em>(Reza-se a seguir a Oração final -- reproduzida uma única vez abaixo)</em></p>
             </details>
             <details class="novena-dia">
               <summary>4º dia — "Nossa alma é como um balão aerostático… Se por acaso existe um pecado mortal, a alma cai por terra. A confissão é como o fogo embaixo do balão que permite que a alma se levante novamente. É importante confessar-se com frequência"</summary>
-              <p><em>(Reza-se a Oração inicial para todos os dias -- reproduzida uma única vez acima)</em></p>
+              <p><em>(Reza-se a Oração inicial para todos os dias -- reproduzida uma única vez abaixo)</em></p>
               <p>São Carlo Acutis, que tão bem viveste este sacramento da Reconciliação, dá-me a graça de buscar sempre a confissão com uma contrição profunda. Assim seja. Amém.</p>
               <p>5 Pai-Nossos, 5 Ave-Marias e 5 Glórias ao Pai, em honra dos 15 anos de vida de Carlo Acutis nesta terra.</p>
-              <p><em>(Reza-se a seguir a Oração final -- reproduzida uma única vez acima)</em></p>
+              <p><em>(Reza-se a seguir a Oração final -- reproduzida uma única vez abaixo)</em></p>
             </details>
 
             <figure>
@@ -2952,39 +2945,51 @@ para que sejamos dignos das promessas de Cristo. Amém!</p>
 
             <details class="novena-dia">
               <summary>5º dia — "A felicidade é olhar para Deus e a tristeza é olhar para si mesmo"</summary>
-              <p><em>(Reza-se a Oração inicial para todos os dias -- reproduzida uma única vez acima)</em></p>
+              <p><em>(Reza-se a Oração inicial para todos os dias -- reproduzida uma única vez abaixo)</em></p>
               <p>São Carlo Acutis, que jamais desviaste o teu olhar de Jesus, teu grande amor, dá-me a graça de viver já neste mundo esta verdadeira felicidade. Assim seja. Amém.</p>
               <p>5 Pai-Nossos, 5 Ave-Marias e 5 Glórias ao Pai, em honra dos 15 anos de vida de Carlo Acutis nesta terra.</p>
-              <p><em>(Reza-se a seguir a Oração final -- reproduzida uma única vez acima)</em></p>
+              <p><em>(Reza-se a seguir a Oração final -- reproduzida uma única vez abaixo)</em></p>
             </details>
             <details class="novena-dia">
               <summary>6º dia — "A única coisa que devemos pedir a Deus em oração é o desejo de ser santos"</summary>
-              <p><em>(Reza-se a Oração inicial para todos os dias -- reproduzida uma única vez acima)</em></p>
+              <p><em>(Reza-se a Oração inicial para todos os dias -- reproduzida uma única vez abaixo)</em></p>
               <p>São Carlo Acutis, que soubeste sempre pedir a Deus o essencial, dá-me a graça de um profundo desejo do Céu. Assim seja. Amém.</p>
               <p>5 Pai-Nossos, 5 Ave-Marias e 5 Glórias ao Pai, em honra dos 15 anos de vida de Carlo Acutis nesta terra.</p>
-              <p><em>(Reza-se a seguir a Oração final -- reproduzida uma única vez acima)</em></p>
+              <p><em>(Reza-se a seguir a Oração final -- reproduzida uma única vez abaixo)</em></p>
             </details>
             <details class="novena-dia">
               <summary>7º dia — "A Virgem Maria é a única mulher na minha vida"</summary>
-              <p><em>(Reza-se a Oração inicial para todos os dias -- reproduzida uma única vez acima)</em></p>
+              <p><em>(Reza-se a Oração inicial para todos os dias -- reproduzida uma única vez abaixo)</em></p>
               <p>São Carlo Acutis, que amaste a Virgem Maria com devoção filial, dá-me a graça de corresponder ao amor desta tão terna e boa Mãe. Assim seja. Amém.</p>
               <p>5 Pai-Nossos, 5 Ave-Marias e 5 Glórias ao Pai, em honra dos 15 anos de vida de Carlo Acutis nesta terra.</p>
-              <p><em>(Reza-se a seguir a Oração final -- reproduzida uma única vez acima)</em></p>
+              <p><em>(Reza-se a seguir a Oração final -- reproduzida uma única vez abaixo)</em></p>
             </details>
             <details class="novena-dia">
               <summary>8º dia — "A Eucaristia é a minha estrada para o Céu"</summary>
-              <p><em>(Reza-se a Oração inicial para todos os dias -- reproduzida uma única vez acima)</em></p>
+              <p><em>(Reza-se a Oração inicial para todos os dias -- reproduzida uma única vez abaixo)</em></p>
               <p>São Carlo Acutis, que buscavas sempre teu Jesus escondido no sacrário, dá-me a graça de um profundo ardor eucarístico. Assim seja. Amém.</p>
               <p>5 Pai-Nossos, 5 Ave-Marias e 5 Glórias ao Pai, em honra dos 15 anos de vida de Carlo Acutis nesta terra.</p>
-              <p><em>(Reza-se a seguir a Oração final -- reproduzida uma única vez acima)</em></p>
+              <p><em>(Reza-se a seguir a Oração final -- reproduzida uma única vez abaixo)</em></p>
             </details>
             <details class="novena-dia">
               <summary>9º dia — "Eu estou feliz por morrer, porque vivi a minha vida sem perder nem mesmo um minuto dela com coisas que não agradam a Deus"</summary>
-              <p><em>(Reza-se a Oração inicial para todos os dias -- reproduzida uma única vez acima)</em></p>
+              <p><em>(Reza-se a Oração inicial para todos os dias -- reproduzida uma única vez abaixo)</em></p>
               <p>São Carlo Acutis, dá-me a graça das graças, que é a perseverança final e uma morte santa. Assim seja. Amém.</p>
               <p>5 Pai-Nossos, 5 Ave-Marias e 5 Glórias ao Pai, em honra dos 15 anos de vida de Carlo Acutis nesta terra.</p>
-              <p><em>(Reza-se a seguir a Oração final -- reproduzida uma única vez acima)</em></p>
+              <p><em>(Reza-se a seguir a Oração final -- reproduzida uma única vez abaixo)</em></p>
             </details>
+
+            <p>Todos os 9 dias seguem a mesma estrutura: a Oração inicial (abaixo),
+            a invocação específica do dia (já lida acima, em cada card), 5 Pai-Nossos/Ave-Marias/
+            Glórias e a Oração final (também abaixo) -- reproduzidas uma única vez aqui
+            pra não repetir o mesmo texto 9 vezes.</p>
+
+            <p><strong>Oração inicial para todos os dias:</strong></p>
+                <p>Santíssima Trindade, Pai, Filho e Espírito Santo, eu Vos agradeço todos os favores, todas as graças com que enriquecestes a alma de São Carlo Acutis durante os 15 anos que passou nesta terra e pelos méritos, em Cristo Jesus, deste tão querido exemplo para a juventude, concedei-me a graça que ardentemente Vos peço… (faça o pedido da graça que deseja).</p>
+
+                <p>São Carlo Acutis, que fizeste de tua vida uma contínua renúncia e aniquilamento, dá-me a graça de buscar as coisas do Céu e desprezar as que passam. Assim seja. Amém.</p>
+
+                <p><strong>5 Pai-Nossos, 5 Ave-Marias e 5 Glórias ao Pai</strong>, em honra dos 15 anos de vida de Carlo Acutis nesta terra.</p>
 
             <p><strong>Oração final (repetida todos os dias):</strong></p>
                 <p>Deus Pai de Misericórdia, pelos méritos do Vosso Filho Nosso Senhor Jesus Cristo, por intercessão de São Carlo Acutis, a fim de que, por ele, Vós sejais mais glorificado, dai-nos chamar de Santo este que em tudo viveu a Vossa vontade e, se for do Vosso agrado, concedei-me a graça que ardentemente desejo. Assim seja. Amém.</p>
@@ -3002,6 +3007,7 @@ para que sejamos dignos das promessas de Cristo. Amém!</p>
         ),
         "produto_relacionado_id": "nossa-senhora-aparecida",
         "publicado_em": "2026-09-24",
+        "oculta_imagem_topo": True,
         "corpo_html": """
             <p>Em 1717, três pescadores encontraram no rio Paraíba do Sul uma pequena
             imagem de Nossa Senhora da Conceição -- hoje venerada como Nossa Senhora
@@ -3021,60 +3027,6 @@ para que sejamos dignos das promessas de Cristo. Amém!</p>
             que diz tê-la traduzido de um antigo manual de orações em latim e italiano
             (é a novena tradicional à Imaculada Conceição, já que a imagem encontrada em
             1717 é de Nossa Senhora da Conceição).</em></p>
-
-            <p><strong>Oração curta (comshalom.org):</strong></p>
-                <p>Padroeira do Brasil – 300 anos</p>
-
-                <p>A Devoção a Nossa Senhora Aparecida nos faz sentir igualmente filhos, cujas necessidades apresentamos a Mãe.</p>
-
-                <p>Ó Virgem Maria, abençoada sois vós pelo Senhor Deus Altíssimo entre todas as mulheres da Terra. Vós sois a glória de Jerusalém, vós sois a alegria de Israel, vós sois a honra do vosso povo. Salve, ó Virgem, honra de nossa Terra, a quem rendemos um culto de piedade e veneração, a quem chamamos com o belo nome de Aparecida.</p>
-
-                <p>Quem poderá contar, ó doce Mãe, quantas graças, durante tantos anos, vós dispensastes ao povo brasileiro, compadecida de nossos males?</p>
-
-                <p>Quisemos cingir vossa cabeça sagrada com uma coroa de ouro, que vos é devida por tantos títulos; continuai a dobrar-vos benignamente às nossas preces.</p>
-
-                <p>Quando erguemos ao céu nossas mãos suplicantes, ouvi clemente os nossos rogos, ó Virgem; conservai nossas almas afastadas da culpa e, por fim, conduzi-nos ao céu.</p>
-
-                <p>Louvor, honra e poder Àquele que, uno e trino, nos fulgores de seu trono celeste, governa e rege todo o universo. Amém.</p>
-
-                <p>V. A vossa Imaculada Conceição, ó Virgem Mãe de Deus,</p>
-
-                <p>R. Anunciou a alegria ao mundo todo.</p>
-
-                <p><strong>Oremos</strong></p>
-
-                <p>Ó Deus, que por intermédio da Mãe Imaculada de vosso Filho, multiplicastes os dons de vossa graça em favor de nós, vossos servos: concedei-nos propício que, celebrando na Terra os louvores da mesma Virgem, pelas suas maternas preces mereçamos alcançar o prêmio eterno no céu. Pelo mesmo Nosso Senhor Jesus Cristo. Amém.</p>
-
-            <hr>
-
-            <p><strong>Novena completa de 9 dias (padrepauloricardo.org)</strong></p>
-
-                <p>A devoção à Imaculada Conceição é particularmente forte nos países lusófonos e acompanha a história de Portugal desde as suas origens. Três fatos são suficientes para atestá-lo:</p>
-
-                <p>No Cerco de Lisboa, em 1147, quando a cidade foi tomada dos muçulmanos por D. Afonso Henriques, o primeiro rei português, uma Missa pontifical de ação de graças foi celebrada em honra à Virgem da Conceição.</p>
-
-                <p>Na crise dinástica do século XIV, que se resolveu com a Batalha de Aljubarrota, em 1385, D. Nuno Álvares Pereira (São Nuno de Santa Maria) mandou construir em Vila Viçosa um templo a Nossa Senhora da Conceição.</p>
-
-                <p>Após a Restauração da Independência de Portugal, em 1640, D. João IV jurou e proclamou solenemente Nossa Senhora da Conceição como Rainha e Padroeira de Portugal e de todos os seus territórios ultramarinos (o que incluía, na época, o Brasil). Na provisão régia — confirmada depois pelo próprio Papa —, o rei prometeu "confessar e defender sempre (até dar a vida sendo necessário) que a Virgem Maria Mãe de Deus foi concebida sem pecado original". Depois, num ato profundamente simbólico, coroou a imagem da Virgem da Conceição, na mesma igreja de Vila Viçosa, e desde então os reis de Portugal nunca mais colocariam a coroa real em sua cabeça, como forma de reconhecer na Virgem Maria a única verdadeira soberana de todo o reino lusitano.</p>
-
-                <p>Essa devoção também se tornou particularmente cara ao povo brasileiro, principalmente com a pesca milagrosa de uma imagem de Nossa Senhora da Conceição no rio Paraíba, em 1717 — daí o culto à Virgem Aparecida. No século seguinte, o Brasil se tornaria independente de Portugal, mas a devoção à Imaculada continua a unir espiritualmente as duas nações.</p>
-
-                <p>Em 1854, o Beato Papa Pio IX finalmente proclamou como dogma a Imaculada Conceição, tornando obrigatória a todos os católicos essa doutrina que os portugueses e brasileiros já confessavam espontaneamente.</p>
-
-                <p>Por isso, sugerimos aos nossos leitores que façam esta novena não só de 3 a 11 de outubro (quando nos preparamos para a festa de Nossa Senhora Aparecida), mas também dos dias 29 de novembro a 7 de dezembro (que precedem a solenidade da Imaculada Conceição) — embora essas orações possam ser rezadas a qualquer tempo.</p>
-
-            <p><strong>Orações preparatórias</strong> (rezar antes da oração de cada dia):</p>
-                <p>Vinde, Espírito Santo, enchei o coração dos vossos fiéis e acendei neles o fogo do vosso amor.</p>
-
-                <p>℣. Enviai o vosso Espírito, e tudo será criado.</p>
-
-                <p>℟. E renovareis a face da terra.</p>
-
-                <p><strong>Oremos.</strong> Ó Deus, que instruístes os corações dos vossos fiéis com a luz do Espírito Santo, concedei-nos amar, no mesmo Espírito, o que é reto e gozar sempre a sua consolação. Por Cristo, Senhor nosso. ℟. Amém.</p>
-
-                <p>Ó Virgem puríssima concebida sem pecado, desde o primeiro instante toda bela e sem mancha. Ó gloriosa Maria, cheia de graça e Mãe de meu Deus, Rainha dos anjos e dos homens. Humildemente vos venero como Mãe do meu Salvador, que, sendo Deus, me ensinou com sua estima, respeito e submissão a vós a honra e a homenagem que vos devo prestar. Dignai-vos acolher-me a mim, que nesta novena a vós me consagro. Sendo vós refúgio seguro dos pecadores arrependidos, tenho razão para recorrer a vós; sendo Mãe de misericórdia, não podeis não vos compadecer de minha miséria; sendo, depois de Jesus Cristo, toda a minha esperança, não podeis não vos agradar da tenra confiança que em vós tenho. Fazei-me digno de chamar-me vosso filho, a fim de que possa dizer com confiança: Mostrais que sois Mãe.</p>
-
-                <p><em>— Em seguida, reza-se uma Ave-Maria, um Glória e a oração do dia correspondente.</em></p>
 
             <details class="novena-dia">
               <summary>1º dia</summary>
@@ -3174,6 +3126,60 @@ para que sejamos dignos das promessas de Cristo. Amém!</p>
                 <p>℟. Rogai por nós ao Pai cujo Filho destes à luz.</p>
 
             <p><strong>Oremos.</strong> Ó Deus, que pela Imaculada Conceição da Virgem Maria preparastes uma digna morada para o vosso Filho e em atenção aos méritos futuros da morte de Cristo a preservastes de toda mancha, concedei-nos, por sua intercessão, a graça de chegarmos purificados junto de Vós. Ó Deus, pastor e guia de todos os fiéis, olhai propício para o vosso servo N., que constituístes pastor de vossa Igreja; dai-lhe, nós vos pedimos, servir por palavra e exemplo aqueles a quem governa, a fim de alcançar a vida eterna com o rebanho que lhe foi confiado. Ó Deus, nosso refúgio e fortaleza, ouvi as piedosas súplicas de vossa Igreja, Vós que sois o autor da piedade, e concedei-nos alcançar eficazmente o que com confiança vos pedimos. Por Cristo, Senhor nosso. ℟. Amém.</p>
+
+            <p><strong>Oração curta (comshalom.org):</strong></p>
+                <p>Padroeira do Brasil – 300 anos</p>
+
+                <p>A Devoção a Nossa Senhora Aparecida nos faz sentir igualmente filhos, cujas necessidades apresentamos a Mãe.</p>
+
+                <p>Ó Virgem Maria, abençoada sois vós pelo Senhor Deus Altíssimo entre todas as mulheres da Terra. Vós sois a glória de Jerusalém, vós sois a alegria de Israel, vós sois a honra do vosso povo. Salve, ó Virgem, honra de nossa Terra, a quem rendemos um culto de piedade e veneração, a quem chamamos com o belo nome de Aparecida.</p>
+
+                <p>Quem poderá contar, ó doce Mãe, quantas graças, durante tantos anos, vós dispensastes ao povo brasileiro, compadecida de nossos males?</p>
+
+                <p>Quisemos cingir vossa cabeça sagrada com uma coroa de ouro, que vos é devida por tantos títulos; continuai a dobrar-vos benignamente às nossas preces.</p>
+
+                <p>Quando erguemos ao céu nossas mãos suplicantes, ouvi clemente os nossos rogos, ó Virgem; conservai nossas almas afastadas da culpa e, por fim, conduzi-nos ao céu.</p>
+
+                <p>Louvor, honra e poder Àquele que, uno e trino, nos fulgores de seu trono celeste, governa e rege todo o universo. Amém.</p>
+
+                <p>V. A vossa Imaculada Conceição, ó Virgem Mãe de Deus,</p>
+
+                <p>R. Anunciou a alegria ao mundo todo.</p>
+
+                <p><strong>Oremos</strong></p>
+
+                <p>Ó Deus, que por intermédio da Mãe Imaculada de vosso Filho, multiplicastes os dons de vossa graça em favor de nós, vossos servos: concedei-nos propício que, celebrando na Terra os louvores da mesma Virgem, pelas suas maternas preces mereçamos alcançar o prêmio eterno no céu. Pelo mesmo Nosso Senhor Jesus Cristo. Amém.</p>
+
+            <hr>
+
+            <p><strong>Novena completa de 9 dias (padrepauloricardo.org)</strong></p>
+
+                <p>A devoção à Imaculada Conceição é particularmente forte nos países lusófonos e acompanha a história de Portugal desde as suas origens. Três fatos são suficientes para atestá-lo:</p>
+
+                <p>No Cerco de Lisboa, em 1147, quando a cidade foi tomada dos muçulmanos por D. Afonso Henriques, o primeiro rei português, uma Missa pontifical de ação de graças foi celebrada em honra à Virgem da Conceição.</p>
+
+                <p>Na crise dinástica do século XIV, que se resolveu com a Batalha de Aljubarrota, em 1385, D. Nuno Álvares Pereira (São Nuno de Santa Maria) mandou construir em Vila Viçosa um templo a Nossa Senhora da Conceição.</p>
+
+                <p>Após a Restauração da Independência de Portugal, em 1640, D. João IV jurou e proclamou solenemente Nossa Senhora da Conceição como Rainha e Padroeira de Portugal e de todos os seus territórios ultramarinos (o que incluía, na época, o Brasil). Na provisão régia — confirmada depois pelo próprio Papa —, o rei prometeu "confessar e defender sempre (até dar a vida sendo necessário) que a Virgem Maria Mãe de Deus foi concebida sem pecado original". Depois, num ato profundamente simbólico, coroou a imagem da Virgem da Conceição, na mesma igreja de Vila Viçosa, e desde então os reis de Portugal nunca mais colocariam a coroa real em sua cabeça, como forma de reconhecer na Virgem Maria a única verdadeira soberana de todo o reino lusitano.</p>
+
+                <p>Essa devoção também se tornou particularmente cara ao povo brasileiro, principalmente com a pesca milagrosa de uma imagem de Nossa Senhora da Conceição no rio Paraíba, em 1717 — daí o culto à Virgem Aparecida. No século seguinte, o Brasil se tornaria independente de Portugal, mas a devoção à Imaculada continua a unir espiritualmente as duas nações.</p>
+
+                <p>Em 1854, o Beato Papa Pio IX finalmente proclamou como dogma a Imaculada Conceição, tornando obrigatória a todos os católicos essa doutrina que os portugueses e brasileiros já confessavam espontaneamente.</p>
+
+                <p>Por isso, sugerimos aos nossos leitores que façam esta novena não só de 3 a 11 de outubro (quando nos preparamos para a festa de Nossa Senhora Aparecida), mas também dos dias 29 de novembro a 7 de dezembro (que precedem a solenidade da Imaculada Conceição) — embora essas orações possam ser rezadas a qualquer tempo.</p>
+
+            <p><strong>Orações preparatórias</strong> (rezar antes da oração de cada dia):</p>
+                <p>Vinde, Espírito Santo, enchei o coração dos vossos fiéis e acendei neles o fogo do vosso amor.</p>
+
+                <p>℣. Enviai o vosso Espírito, e tudo será criado.</p>
+
+                <p>℟. E renovareis a face da terra.</p>
+
+                <p><strong>Oremos.</strong> Ó Deus, que instruístes os corações dos vossos fiéis com a luz do Espírito Santo, concedei-nos amar, no mesmo Espírito, o que é reto e gozar sempre a sua consolação. Por Cristo, Senhor nosso. ℟. Amém.</p>
+
+                <p>Ó Virgem puríssima concebida sem pecado, desde o primeiro instante toda bela e sem mancha. Ó gloriosa Maria, cheia de graça e Mãe de meu Deus, Rainha dos anjos e dos homens. Humildemente vos venero como Mãe do meu Salvador, que, sendo Deus, me ensinou com sua estima, respeito e submissão a vós a honra e a homenagem que vos devo prestar. Dignai-vos acolher-me a mim, que nesta novena a vós me consagro. Sendo vós refúgio seguro dos pecadores arrependidos, tenho razão para recorrer a vós; sendo Mãe de misericórdia, não podeis não vos compadecer de minha miséria; sendo, depois de Jesus Cristo, toda a minha esperança, não podeis não vos agradar da tenra confiança que em vós tenho. Fazei-me digno de chamar-me vosso filho, a fim de que possa dizer com confiança: Mostrais que sois Mãe.</p>
+
+                <p><em>— Em seguida, reza-se uma Ave-Maria, um Glória e a oração do dia correspondente.</em></p>
 
             <div class="cta-blog-produto">
               <p>Leve Nossa Senhora Aparecida com você</p>
