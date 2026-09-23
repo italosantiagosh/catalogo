@@ -1797,11 +1797,6 @@ ARTIGOS_BLOG = {
             relato deles, Maria pediu explicitamente que seu Imaculado Coração fosse
             conhecido e amado, e prometeu que, no fim, "meu Imaculado Coração triunfará".</p>
 
-            <figure>
-              <img src="/static/img/produtos/imaculado_coracao_de_maria_modelo_1_medalha.jpg" alt="Medalha do Imaculado Coração de Maria" loading="lazy" decoding="async">
-              <figcaption>Medalha do Imaculado Coração de Maria, catálogo Nove de Julho.</figcaption>
-            </figure>
-
             <h2>Um coração sem pecado, traspassado de dor</h2>
             <p>Nas imagens tradicionais, o Imaculado Coração de Maria aparece cercado de
             rosas (símbolo de pureza) e atravessado por uma ou mais espadas -- referência à
@@ -1844,11 +1839,6 @@ ARTIGOS_BLOG = {
             <a href="/produto/sagrado-coracao-de-jesus">Sagrado Coração de Jesus</a> e do
             <a href="/produto/imaculado-coracao-de-maria">Imaculado Coração de Maria</a>, o
             conjunto conhecido como "os três corações" da Sagrada Família.</p>
-
-            <figure>
-              <img src="/static/img/produtos/castissimo_coracao_de_sao_jose_modelo_1_medalha.jpg" alt="Medalha do Castíssimo Coração de São José" loading="lazy" decoding="async">
-              <figcaption>Medalha do Castíssimo Coração de São José, catálogo Nove de Julho.</figcaption>
-            </figure>
 
             <h2>Por que "castíssimo"?</h2>
             <p>O adjetivo "castíssimo" (superlativo de casto) destaca justamente a pureza da
@@ -2060,6 +2050,1048 @@ ARTIGOS_BLOG = {
             <div class="cta-blog-produto">
               <p>Organize a compra em quantidade do seu grupo</p>
               <a href="__URL_PRODUTO__" class="botao-principal">Ver catálogo completo de medalhas →</a>
+            </div>
+        """,
+    },
+    "novena-de-santa-teresinha": {
+        "titulo": "Novena de Santa Teresinha do Menino Jesus: os 9 dias",
+        "resumo": (
+            "A novena completa de Santa Teresinha, dia a dia, pra rezar antes de sua festa em 1º de outubro."
+        ),
+        "produto_relacionado_id": "santa-teresinha",
+        "publicado_em": "2026-09-24",
+        "corpo_html": """
+            <p>Santa Teresinha do Menino Jesus e da Sagrada Face é Doutora da Igreja,
+            padroeira das missões e uma das santas mais amadas por jovens no Brasil e no
+            mundo. Sua festa é celebrada em 1º de outubro, e é tradição rezar esta novena
+            nos nove dias que a antecedem.</p>
+
+            <p><em>Novena reproduzida de <a href="https://comshalom.org/novena-de-santa-teresinha-do-menino-jesus/" target="_blank" rel="noopener">comshalom.org</a> (Comunidade Católica Shalom).</em></p>
+
+            <p>A mesma oração se repete todos os 9 dias -- só muda a intenção do dia,
+            indicada em cada card abaixo. Reproduzimos a oração completa uma única vez
+            aqui, e a intenção de cada um dos 9 dias logo depois.</p>
+
+<p><strong>Oração (repetida todos os 9 dias):</strong></p>
+            <p>Santíssima Trindade: Pai, Filho e Espírito Santo: eu vos agradeço por todas as graças com que enriqueceste a vida de vossa serva, Santa Teresinha do Menino Jesus e da Sagrada Face, nestes 24 anos que passou na terra. E pelos méritos de tão querida santinha, concedei-me a graça que ardentemente vos peço … (fale qual é), se for conforme a Vossa Santíssima Vontade e para a salvação de minha alma (ou da pessoa por quem está rezando).</p>
+            <p>Ajudai minha fé e minha esperança, Santa Teresinha, cumprindo mais uma vez vossa promessa de que ficareis no Céu a fazer o bem na terra, permitindo que eu ganhe um rosa em sinal de que alcançarei a graça pedida.</p>
+            <p><strong>Rezar 24 vezes, por cada ano de Santa Teresinha na terra:</strong> "Glória ao Pai, ao Filho e ao Espírito Santo como era no princípio, agora e sempre. Amém." Santa Teresinha do Menino Jesus e da Sagrada Face, rogai por mim (ou o nome da pessoa por quem está intercedendo).
+
+            <details class="novena-dia">
+              <summary>1º dia — Santa Teresinha doutora e amante da Igreja</summary>
+              <p>Neste dia rezemos pelos que exercem o ministério sacerdotal, pela santificação do Clero e pelas intenções do coração do Santo Padre.</p>
+            </details>
+            <details class="novena-dia">
+              <summary>2º dia — Santa Teresinha padroeira das missões</summary>
+              <p>Neste dia rezemos pelos missionários espalhados no mundo inteiro e suas necessidades espirituais e materiais.</p>
+            </details>
+            <details class="novena-dia">
+              <summary>3º dia — Santa Teresinha que teve uma vida de sacrifícios pelas almas</summary>
+              <p>Neste dia rezemos pelos Cristãos que são perseguidos e martirizados por sua fidelidade e amor a Cristo.</p>
+            </details>
+            <details class="novena-dia">
+              <summary>4º dia — Santa Teresinha que viveu em uma família santa</summary>
+              <p>Neste dia rezemos pela união e santificação das famílias.</p>
+            </details>
+            <details class="novena-dia">
+              <summary>5º dia — Santa Teresinha padroeira dos jovens na vocação Shalom</summary>
+              <p>Neste 5º dia da novena de Santa Teresinha rezemos pelos jovens do Projeto Juventude para Jesus e pela juventude do mundo inteiro.</p>
+            </details>
+            <details class="novena-dia">
+              <summary>6º dia — Santa Teresinha que foi curada pelo sorriso de Maria</summary>
+              <p>Neste dia rezemos pelos que sofrem de depressão, pelos que vivem oprimidos e sem sentido de vida.</p>
+            </details>
+            <details class="novena-dia">
+              <summary>7º dia — Santa Teresinha apaixonada por Jesus</summary>
+              <p>Neste dia rezemos para que todos tenham um coração inflamado de amor a Cristo.</p>
+            </details>
+            <details class="novena-dia">
+              <summary>8º dia — Santa Teresinha próxima dos prisioneiros</summary>
+              <p>Neste 8º dia da novena de Santa Teresinha rezemos por todos os encarcerados e pelos que se encontram presos em si mesmo, pelo pecado.</p>
+            </details>
+            <details class="novena-dia">
+              <summary>9º dia — Santa Teresinha solidária aos incrédulos</summary>
+              <p>Neste último dia da Novena de Santa Teresinha, rezemos pelos que não creem, não esperam e não confiam em Deus.</p>
+            </details>
+
+            <div class="cta-blog-produto">
+              <p>Leve Santa Teresinha com você</p>
+              <a href="__URL_PRODUTO__" class="botao-principal">Ver medalha, entremeio e chaveiro de Santa Teresinha →</a>
+            </div>
+        """,
+    },
+    "novena-de-sao-francisco-de-assis": {
+        "titulo": "Novena de São Francisco de Assis: os 9 dias",
+        "resumo": (
+            "A novena completa de São Francisco de Assis, com leitura bíblica sugerida pra cada um dos 9 dias, antes de sua festa em 4 de outubro."
+        ),
+        "produto_relacionado_id": "sao-francisco",
+        "publicado_em": "2026-09-24",
+        "corpo_html": """
+            <p>São Francisco de Assis, o "Pobrezinho de Assis", é uma das figuras mais
+            queridas de toda a tradição católica -- fundador da Ordem Franciscana, patrono
+            da ecologia e símbolo de uma vida simples e inteiramente entregue a Deus. Sua
+            festa é celebrada em 4 de outubro.</p>
+
+            <p><em>Esta novena não está publicada no comshalom.org (o site da Comunidade
+            Católica Shalom tem apenas artigos e uma Via-Sacra sobre o santo, não uma
+            novena de 9 dias) -- foi reproduzida de
+            <a href="https://formacao.cancaonova.com/espiritualidade/devocao/novena/reze-e-medite-novena-sao-francisco-de-assis/" target="_blank" rel="noopener">Canção Nova</a>,
+            que credita o texto ao livro <em>Pedi e recebereis</em>, de Adriana Katia Potexki.</em></p>
+
+            <p><strong>Como rezar:</strong></p>
+                <ul>
+                    <li>Fazer o sinal da cruz;</li>
+                    <li>Rezar a oração para todos os dias;</li>
+                    <li>Rezar a oração de cada dia;</li>
+                    <li>Rezar 3 Pais-Nossos, 3 Ave-Marias, 3 Glórias ao Pai;</li>
+                    <li>Meditar e comentar um texto do Novo Testamento (ver sugestões);</li>
+                    <li>Rezar a oração e bênção de São Francisco.</li>
+                </ul>
+
+            <p><strong>Oração para todos os dias:</strong></p>
+                <p>Absolvei, Senhor, eu Vos suplico, o meu espírito, e pela suave e ardente força de Vosso amor, desfeiçoai-me de todas as coisas que existem debaixo do céu, a fim de que eu possa morrer por Vosso amor, ó Deus, que por meu amor Vos dignastes morrer.</p>
+
+            <p>Reza-se, a seguir, 3 Pais-Nossos, 3 Ave-Marias e 3 Glórias ao Pai, a
+            oração do dia (abaixo) e, por fim, a Oração e a Bênção de São Francisco:</p>
+
+            <p><strong>Oração de São Francisco:</strong></p>
+                <p>Senhor, fazei-me instrumento de vossa paz.<br>
+Onde houver ódio, que eu leve o amor.<br>
+Onde houver ofensa, que eu leve o perdão.<br>
+Onde houver discórdia, que eu leve a união.<br>
+Onde houver dúvida, que eu leve a fé.<br>
+Onde houver erro, que eu leve a verdade.<br>
+Onde houver desespero, que eu leve a esperança.<br>
+Onde houver tristeza, que eu leve a alegria.<br>
+Onde houver trevas, que eu leve a luz.<br>
+Ó Mestre, fazei que eu procure mais consolar que ser consolado,<br>
+compreender que ser compreendido, amar que ser amado.<br>
+Pois é dando que se recebe, é perdoando que se é perdoado<br>
+e é morrendo que se vive para a vida eterna.</p>
+
+            <p><strong>Bênção de São Francisco:</strong></p>
+                <p>O Senhor vos abençoe e vos guarde.</p>
+
+                <p>O Senhor vos mostre a Sua face e se compadeça de vós. Amém.</p>
+
+                <p>O Senhor volva Seu rosto para vós e vos dê a paz.</p>
+
+                <p>O Senhor vos abençoe. Amém.</p>
+
+                <p>Que o Senhor Deus, pelos méritos de São Francisco,</p>
+
+                <p>vos conceda toda a paz e todo o bem. Amém.</p>
+
+            <details class="novena-dia">
+              <summary>1º dia</summary>
+                <p>Meu amigo e protetor São Francisco, em vossa juventude, cantáveis alegremente pelas ruas de Assis, participando das boas alegrias dos jovens de vossa idade e fazendo grande projetos de conquistas e aventuras, ensinai-me a encontrar a alegria que vem de Deus e fazer-me nela viver continuamente.</p>
+
+                <p>Afastai de mim toda a tristeza que me torna fechado ao próximo.</p>
+
+                <p>Que a minha alegria e o meu espírito comunicativo deem testemunho da alegre presença de Deus em minha vida.</p>
+              <p><em>Sugestão de leitura: Jo 6,41-51.</em></p>
+            </details>
+            <details class="novena-dia">
+              <summary>2º dia</summary>
+                <p>Meu amigo e protetor São Francisco, o encontro com um leproso, a quem fostes beijar e a quem destes generosa esmola, num gesto de autossuperação, marcou o começo de vossa conversão e da vida maravilhosa, que, a partir de então, iniciastes, causando admiração ao mundo inteiro. Pelo vosso espírito de renúncia e penitência, ensinai-me a vencer as paixões e más inclinações, canalizando essas energias para o caminho do bem, a fim de que alcance minha plena realização humana, na perfeição a que Deus me chamou.</p>
+              <p><em>Sugestão de leitura: Rm 8,18-22.</em></p>
+            </details>
+            <details class="novena-dia">
+              <summary>3º dia</summary>
+                <p>Grande patriarca Francisco, conta-se que, na igrejinha de São Damião, enquanto estáveis em oração, o crucifixo vos falou: "Francisco, vai e restaura a minha Igreja". Foi uma ordem profética. Com vosso exemplo e com os numerosos seguidores que tivestes ainda em vida, nova aurora despertou para a Igreja. Pelo amor que tivestes à Igreja de Cristo, ensinai-me a ser-lhe fiel, vivendo em união com ele, apoiando-a por palavras e pelo testemunho da Igreja, levando uma vida de verdadeiro cristão.</p>
+              <p><em>Sugestão de leitura: 1Cor 12,31;13,4-13.</em></p>
+            </details>
+            <details class="novena-dia">
+              <summary>4º dia</summary>
+                <p>Ó São Francisco, vós vos tornastes um apaixonado do amor de Cristo e saístes pelo mundo a lamentar que "o Amor não é amado", e vos apresentastes aos homens como o "Amante do Grande Rei". Livrai-me da indiferença e comunicai-me vosso entusiasmo para que aprenda a amar a Nosso Senhor e saiba encontrá-Lo na natureza e nos acontecimentos de cada dia.</p>
+              <p><em>Sugestão de leitura: Mc 16,1-8 ou Mt 28,1-10.</em></p>
+            </details>
+            <details class="novena-dia">
+              <summary>5º dia</summary>
+                <p>São Francisco, enviastes vossos primeiros discípulos pelo mundo inteiro, a fim de que apregoassem a Boa Nova do Reino de Deus. Alcançai-me do Senhor o espírito apostólico e o zelo missionário, para que me interesse por Sua obra e procure colaborar com a Igreja, a fim de que o Reino de Cristo se estabeleça na Terra.</p>
+              <p><em>Sugestão de leitura: Mc 9,33-41.</em></p>
+            </details>
+            <details class="novena-dia">
+              <summary>6º dia</summary>
+                <p>São Francisco, na contemplação e meditação da Paixão de Nosso Senhor Jesus Cristo, encontrastes vigorosa motivação para vos entregardes a Deus numa vida desprovida de conforto e segurança. Submetestes vosso corpo a rudes penitências para experimentar uma parte dos padecimentos que Cristo enfrentou por amor de nós. A lembrança da Paixão do Senhor vos arrancava sentidas lágrimas de arrependimento e de gratidão. De vós quero aprender a grande lição do Crucificado: que, no sofrimento aceito livremente e por amor, atingimos nossa purificação.</p>
+
+                <p>Ensinai-me a aceitar os males e contrariedades que não posso evitar, para, por meio deles, expiar, com Jesus, os males que o pecado inflige ao mundo.</p>
+              <p><em>Sugestão de leitura: Mc 9,25-30 ou Rm 8,9-13.</em></p>
+            </details>
+            <details class="novena-dia">
+              <summary>7º dia</summary>
+                <p>São Francisco, fostes chamado "o Pobrezinho de Assis". Abandonastes os bens e o conforto do mundo e vivestes na maior pobreza para mais perfeitamente imitar a Jesus, que nasceu pobre em Belém e na cruz foi despojado de tudo. Ajudai-me a superar o fascínio e os atrativos que os bens da terra exercem sobre mim. Que saiba repartir do que é meu com os mais necessitados, e assim mereça gozar da liberdade dos filhos de Deus.</p>
+              <p><em>Sugestão de leitura: Jo 19,31-37 ou Ef 3,8-12.14-19.</em></p>
+            </details>
+            <details class="novena-dia">
+              <summary>8º dia</summary>
+                <p>São Francisco, fostes o grande amigo da natureza. No Cântico do Sol, convidastes a todas as criaturas para cantarem louvores a Deus. Para vós, a natureza era o livro aberto onde se leem a bondade e a beleza de Deus, que tudo criou com amor de Pai. Fazei que, para mim, as criaturas não sejam pedras de tropeço, mas degraus que me levem para junto do Criador. Dai-me a graça de não me prender exageradamente às criaturas nem a mim mesmo. E que, de coração livre, possa levantar voo para as alturas do amor de Deus.</p>
+              <p><em>Sugestão de leitura: Jo 14,1-12 ou 1Pd 2,4-10.</em></p>
+            </details>
+            <details class="novena-dia">
+              <summary>9º dia</summary>
+                <p>Meu grande São Francisco, apesar da ingratidão dos homens que se fecham ao amor de Deus, soubestes viver em contínua alegria. Estáveis consciente de que o amor do Pai nos predestinou à felicidade do céu. Tão grande foi vosso amor a Cristo, vossa identificação com o Amado atingiu incomparável perfeição. Ensinai-me a encarar a vida com seriedade e alegria. Quero assumir com amor e alegria as responsabilidades que ele me impõe. Que seja compreensivo e alegre no relacionamento com o próximo. Que não esqueça minha vocação de filho de Deus chamado para servir. Fazei que, a vosso exemplo, eu me deixe arrastar pelo amor de Cristo, caminhando decidido e alegre ao seu encontro todos os dias da vida.</p>
+
+                <p><em>Oração retirada do livro "Pedi e recebereis", de Adriana Katia Potexki. (Fim da novena — conforme publicada em formacao.cancaonova.com)</em></p>
+              <p><em>Sugestão de leitura: Mt 15,21-28 ou Rm 16,25-27.</em></p>
+            </details>
+
+            <div class="cta-blog-produto">
+              <p>Leve São Francisco de Assis com você</p>
+              <a href="__URL_PRODUTO__" class="botao-principal">Ver medalha, entremeio e chaveiro de São Francisco →</a>
+            </div>
+        """,
+    },
+    "novena-de-santa-teresa-davila": {
+        "titulo": "Novena de Santa Teresa d'Ávila: os 9 dias",
+        "resumo": (
+            "A novena completa de Santa Teresa d'Ávila, com reflexão e oração pra cada um dos 9 dias, antes de sua festa em 15 de outubro."
+        ),
+        "produto_relacionado_id": "santa-teresa-davila",
+        "publicado_em": "2026-09-24",
+        "corpo_html": """
+            <p>Santa Teresa d'Ávila (Teresa de Jesus) reformou o Carmelo, escreveu
+            clássicos da mística cristã como <em>Castelo Interior</em> e foi a primeira
+            mulher declarada Doutora da Igreja. Sua festa é celebrada em 15 de outubro.</p>
+
+            <p><em>Novena reproduzida de <a href="https://comshalom.org/novena-de-santa-teresa-davila/" target="_blank" rel="noopener">comshalom.org</a> (Comunidade Católica Shalom).</em></p>
+
+            <details class="novena-dia">
+              <summary>1º dia</summary>
+                <p>Santa Teresa de Jesus nasceu em um lar cristão e desde criança foi chamada a viver só para Deus. O pai era um homem muito caridoso com os pobres e piedoso com os doentes. Ninguém jamais o viu murmurar ou praguejar. Sua mãe, devota de Nossa Senhora, ensinou-lhe a recitar o rosário. Herdou também de sua mãe o gosto pela leitura de histórias de santos e, também histórias de cavalaria. Histórias estas que influenciaram sua vida.</p>
+
+                <p>As histórias de martírio de algumas santas levaram Teresa e seu irmão a desejarem fugir para a terra dos mouros para morrerem decapitados, pois queriam gozar tão logo dos bens celestes. Percebendo que isso era impossível, queriam, então, ser eremitas. Nas brincadeiras com as amigas, gostava de fazer mosteiros, como se fosse uma monja.</p>
+
+                <p>Com a perda de sua mãe, tomou Maria por mãe e, a partir de então, começou a entender as graças que o Senhor lhe concedia, e o quanto a Sua Majestade queria que fosse toda dEle. Esta descoberta a fez ofendê-Lo, ao invés de dar-Lhe graças.</p>
+
+                <p>Deixou-se encantar pelos prazeres do mundo, pela vaidade exagerada, pelas companhias dos primos e pelas conversas e entretenimentos levianos. A amizade com uma parenta foi lhe transformando a tal ponto que quase nada lhe restou de sua inclinação natural para a virtude, seus hábitos foram lhe imprimidos. Dizia que sua alma começou a não resistir ao que lhe causava todo mal. Perdeu o temor de Deus e com o medo de também perder a honra, tudo que fazia lhe trazia aflição. Pensando que não seria descoberta, atreveu-se a fazer coisas contra a honra e contra Deus. Mas era impossível ocultar algo de quem tudo vê. Mesmo vivendo desta forma não se entregou a pecados graves. Deus a livrou, contra a sua própria vontade, de se perder por inteira.</p>
+
+                <p>O pai desgostoso com a situação e as suas companhias colocou-a no convento das monjas agostinianas. No início foi difícil a adaptação, mas aos poucos foi encontrando com a sua essência, suas virtudes, e a cada dia foi renascendo no seu coração o amor a Deus e o desejo de nunca mais ofendê-Lo. Acreditava que a Sua Majestade buscava incessantemente a melhor maneira de trazê-la a Si. Dizia: "Bendito sejais, Senhor, que tanto sofrestes por mim."</p>
+
+                <blockquote><em>Vossa sou, pois me criastes,</em><br>
+<em>Vossa, porque me remistes,</em><br>
+<em>Vossa, porque me atraístes,</em><br>
+<em>E porque me suportastes</em><br>
+<em>E me salvastes, por fim:</em><br>
+<em>Que mandais fazer de mim?</em></blockquote>
+
+                <p><strong>Reflexão</strong></p>
+
+                <p>1. Santa Teresa experimentou o bem e o mal. Quis ser mártir, depois eremita, e ao descobrir sua vocação – ser toda de Deus – preferiu fugir buscando os prazeres do mundo, a vaidade, as más companhias. Assumo minha vocação acolhendo as verdades de Deus ou me escondo nas coisas que dão prazer à minha carne?</p>
+
+                <p>2. Mesmo vivendo daquela forma, Deus a livrou de se perder por inteira, pois a queria perto de Si. Santa Teresa se abriu ao toque de amor de Deus, à Sua misericórdia, desejando não mais ofendê-Lo. Abro-me sem reservas a esse toque de amor de Deus?</p>
+
+                <p><strong>Oração</strong></p>
+
+                <p>Santa Teresa d'Àvila, vós que lutastes contra os desejos da carne para assumir o chamado de ser toda de Deus, fazei com que eu permita que o toque de Deus transforme o meu interior e desperte em mim o desejo de não mais ofendê-lo. Amém.</p>
+
+                <p>Pai Nosso, Ave Maria, Glória.</p>
+
+                <p>Santa Teresa d'Ávila, rogai por nós.</p>
+            </details>
+            <details class="novena-dia">
+              <summary>2º dia — A dor como caminho para encontro com Deus</summary>
+                <p>Uma monja começou a falar a Santa Teresa como decidira ser monja e a recompensa dada pelo Senhor a quem tudo deixa por Ele. Encantava-se com sua conversa santa, porém, tinha aversão à ideia de ser uma monja. Seu coração estava tão duro que nem mesmo a leitura da Paixão lhe arrancava uma única lágrima. Em oração, pediu ao Senhor que lhe indicasse o melhor caminho para servi-Lo. Queria se dedicar a Deus, mas não estava convencida a fazê-lo, pois ainda se entregava mais ao que agradava à sua carne e à vaidade.</p>
+
+                <p>O Senhor lhe deu uma grave doença que a fez retornar à casa paterna. Curada foi visitar uma irmã. No caminho, ficou por alguns dias na casa de um tio. Tempo suficiente para que as palavras de Deus que ouvia e lia, e a sua companhia fizessem-na compreender as verdades da inutilidade das coisas do mundo, a vaidade exagerada e a rapidez de como tudo passa. Decidiu abraçar a vocação, mesmo com medo de não suportar as renúncias e exigências da vida religiosa.</p>
+
+                <p>Havia grande contentamento em ser monja, era querida por todos e dedicada em tudo que fazia. Ocupava-se sempre das coisas que dava prazer. No Carmelo, uma monja sofria de uma grave e dolorosa enfermidade, mas suportava tudo com paciência. Vendo-a assim, Santa Teresa pediu a Deus que lhe concedesse a mesma paciência. O Senhor atendeu o seu pedido. Sua enfermidade durou três anos. Foram meses de muita dor, sofrimento e de luta pela vida. Mas a dor maior estava em se ver tão pecadora e pequena diante da grandeza do amor de Deus.</p>
+
+                <p>Levada para a casa de seu pai teve um paroxismo tão forte que ficou sem sentido por quatro dias. Sua morte era esperada, tanto que se prepararam para o funeral, mas Sua Majestade a fez recuperar o sentido; então, imediatamente buscou a confissão e a comunhão. Naquela hora recebeu a graça de jamais deixar de confessar qualquer coisa que considerasse pecado, mesmo que fosse venial.</p>
+
+                <p>Pediu que a levassem de volta ao mosteiro, mesmo naquele estado: pior que um morto. Tendo melhorado, ficou paralítica por longo tempo, mas grande era sua conformidade com a vontade de Deus, que suportava todo o sofrimento com alegria. Queria muito ser curada para melhor servir a Deus, contudo, o Senhor sabe o que é o melhor para cada um. Os médicos pouco podiam fazer.</p>
+
+                <p>Resolveu, então, pedir a S. José, o pai de Jesus. Recebeu a graça que tanto queria, mas isso não a fez perseverar no caminho. Deus dava a ela a graça de fazer o bem, mas o fazia com imperfeições e faltas. Recaiu na vaidade depois de tantas bênçãos recebidas. A mão de Deus continuava a lhe sustentar e fazer com que voltasse a se levantar.</p>
+
+                <blockquote><em>"Busca-me em ti, não por fora…</em><br>
+<em>para me achares ali,</em><br>
+<em>chama-me, que, a qualquer hora,</em><br>
+<em>a ti virei sem demora…"</em></blockquote>
+
+                <p><strong>Reflexão</strong></p>
+
+                <p>1. Encantou-se com a história da monja, mas isso não foi suficiente para levá-la a assumir sua vocação, pois tinha medo das renúncias e exigências da vida religiosa. O encantamento pelo carisma do qual pertenço, me fez deixar tudo e assumir uma vocação. Hoje abraço esse chamado assumindo as dores do servir e das renúncias?</p>
+
+                <p>2. Toda enfermidade que sofreu foi para prová-la na paciência de tudo sofrer por amor. Viu-se tão pequena e pecadora diante da misericórdia de Deus e Sua fidelidade àqueles que são escolhidos. O Senhor usou desta enfermidade para que ela O encontrasse dentro de si. Aceito as dores como caminho para o encontro íntimo com Deus, comigo mesmo e minhas misérias?</p>
+
+                <p><strong>Oração</strong></p>
+
+                <p>Santa Teresa d'Ávila, vós que, pela dor e pela enfermidade, encontrastes com amor e a misericórdia de Cristo, fazei que eu, ao assumir o chamado de Deus, faça do sofrimento o caminho seguro para o encontro e pessoal e íntimo com Cristo. Amém.</p>
+
+                <p>Pai Nosso, Ave Maria, Glória.</p>
+
+                <p>Santa Teresa d'Ávila, rogai por nós.</p>
+            </details>
+            <details class="novena-dia">
+              <summary>3º dia — Batalha entre Deus e o mundo</summary>
+                <p>É importante para as almas entenderem que quando se inicia uma vida de oração é preciso se desapegar de toda espécie de prazer, e entrar num caminho voltado somente para ajudar Cristo a carregar a Sua cruz, apenas como um bom cavaleiro, sem pagamento algum, apenas pelo prazer de servir o seu Rei. É fundamental seguir com determinação e sem querer consolações; o caminho é a cruz: "toma a tua cruz e segue-me".</p>
+
+                <p>Santa Teresa travou uma grande batalha entre lidar com Deus e lidar com o mundo. Não se rejubilava em Deus, nem se alegrava no mundo. Somente com as misericórdias de Deus é que teve ânimo para orar. Dos vinte e oito anos de oração, passou mais de dezoito nessa luta.</p>
+
+                <p>Sua alma, já cansada, entrou um dia no oratório, viu a imagem de um Cristo com grandes chagas que inspirava tamanha devoção, que ela ficou extremamente perturbada, visto que a imagem representava bem o que Jesus passou por nós. Foi tão grande o sentimento de ter sido mal–agradecida àquelas chagas que o seu coração quase partiu. Imediatamente lançou-se aos Seus pés, em lágrimas, suplicou que a fortalecesse para que não O ofendesse mais.</p>
+
+                <p>Naquele momento depositou toda a sua confiança em Deus. Em oração se esforçava por representar Cristo dentro de si e se sentia melhor nas passagens onde O via mais sozinho. Na oração do Horto, fazia-Lhe companhia; ficava pensando no suor e na aflição que sofrera, desejando se possível for, enxugar-Lhe o suor tão doloroso. Mas, não ousava fazer, pois vinham em sua mente os pecados cometidos. Por longos anos, quase todas as noites, antes de dormir, ao se encomendar a Deus, pensava na oração do Horto, pois era um costume que adquiriu antes mesmo de ser monja.</p>
+
+                <p>Santa Teresa pediu a Sua Majestade um remédio para viver sem muito sobressalto nessa guerra tão perigosa. Disse Ele ser o amor e o temor, pois o amor nos fará apressar o passo e o temor nos levará a nos atentar por onde colocamos nossos pés, para que não caiamos em uma trilha tão pedregosa, assim não seremos enganados. Dizia às suas filhas espirituais que, quem ama genuinamente a Deus não pode amar a vaidade, a riqueza, as coisas do mundo, os deleites, as honras ou ter contendas ou inveja. Tudo porque a única coisa que devemos pretender é contentar o Amado, desejando ardentemente ser amado por Ele, empenhando a vida em atender como agradá-Lo mais.</p>
+
+                <blockquote><em>"Ditoso o coração enamorado</em><br>
+<em>Que só em Deus coloca o pensamento;</em><br>
+<em>Por ele renuncia a todo criado,</em><br>
+<em>Nele acha glória, paz, contentamento…"</em></blockquote>
+
+                <p><strong>Reflexão</strong></p>
+
+                <p>1. Santa Teresa passou longos anos de sua vida travando uma luta entre Deus e o mundo. Pela misericórdia de Deus não se afastou da vida de oração, mas encontrou nela forças para renunciar ao mundo e ajudar Cristo a carregar a Sua cruz. A minha oração me impulsiona a dizer sim a Deus, colocando-me a serviço de Cristo sem nada esperar, pelo simples prazer de servir?</p>
+
+                <p>2. A experiência com Jesus crucificado e Suas chagas fez Santa Teresa experimentar toda dor da Paixão de Cristo e Sua solidão. Nesse momento, entendeu a dimensão do amor perfeito e pleno, e o quanto precisa lutar para amar genuinamente a Deus e não o que dá prazer à carne. Ao olhar para Jesus crucificado, contemplando a Sua dor, vejo a necessidade que tenho de ser inteiro em Cristo?</p>
+
+                <p><strong>Oração</strong></p>
+
+                <p>Santa Teresa d'Ávila, vós que lutastes para ser serva de um único Rei, Jesus Cristo, fazei com que eu, contemplando a Paixão de Jesus, experimente o verdadeiro amor que nasce do Seu Sagrado Coração e das Suas chagas, e viva em plenitude a minha consagração. Amém.</p>
+
+                <p>Pai Nosso, Ave Maria, Glória.</p>
+
+                <p>Santa Teresa d'Ávila, rogai por nós.</p>
+            </details>
+            <details class="novena-dia">
+              <summary>4º dia — Cruz, sinal do amor a Deus</summary>
+                <p>Em suas orações o Senhor lhe concedia a graça de vê-Lo, de ouvir a Sua voz. Aparecia-lhe de várias formas, dependendo do modo que se encontrava. Quando passava por tribulações, para revigorá-la, mostrava-Se com as chagas, na Cruz ou no Horto.</p>
+
+                <p>A Sua Majestade concedia à Santa visões celestiais que não eram bem interpretadas por alguns mestres, por isso, davam-lhe mal conselho. Por pensarem que fosse obra do demônio e para livrá-la do mal, ordenavam-lhe que fizesse figa, o sinal-da-cruz e se opusesse à cruz. Obedecia, mas era um grande sofrimento para ela. Para não fazer o sinal-da-cruz a todo tempo, segurava na mão a cruz do rosário.</p>
+
+                <p>Certo dia, estando com ela na mão, o Senhor a tomou em Suas mãos e quando lhe devolveu estava formada por quatro pedras grandes muito mais preciosas que diamantes. As cinco chagas estavam formosamente cravejadas na cruz. Assim o Senhor lhe pediu que sempre visse a cruz: no lugar da madeira as pedras. Esta visão só ela tinha.</p>
+
+                <p>Dizia às suas filhas que o Senhor quer levar como almas fortes àqueles que buscam a contemplação, dando a eles a cruz que Sua Majestade sempre teve. A cruz que não é leve, e se soubessem o caminho e maneiras pelos quais Deus lhes dá essa cruz se espantariam; muitos não suportariam os sofrimentos dados se não fossem as consolações recebidas.</p>
+
+                <p>É absurdo crer que o Senhor admita ter como amigos íntimos pessoas comodistas e que não sofrem. Os caminhos dos contemplativos são ásperos, cheios de irregularidades, fazendo-os por vezes pensar que se perdem e que devem recomeçar a percorrer os trechos já percorridos, sendo necessário que Ele os dê mantimentos; não água, mas vinho, pois embriagados não se atentem por aquilo que passam e suportem as dores.</p>
+
+                <p>Para Santa Teresa, a tarefa dela e de suas monjas é de se apegar à cruz que o Esposo tomou sobre si. Aquela que mais puder padecer, que padeça mais por Ele e será a que melhor se libertará. O maior favor que o Senhor pode lhes dar é uma vida que imita a vida de Seu Filho tão amado. As graças recebidas visa fortalecer as suas fraquezas, assim poderão imitá-Lo no sofrimento.</p>
+
+                <blockquote><em>"O consolo está, e a vida,</em><br>
+<em>Só na cruz;</em><br>
+<em>E ao Céu é a única senda</em><br>
+<em>Que conduz."</em></blockquote>
+
+                <p><strong>Reflexão</strong></p>
+
+                <p>1. Santa Teresa diz que o caminho para aqueles que buscam a contemplação é a cruz, pois por ela se experimenta a dor, o sofrimento, a renúncia, mas ao mesmo tempo o consolo de Deus. O caminho que percorro na minha consagração tem sido marcado pela dor e sofrimento que emanam da cruz de Cristo?</p>
+
+                <p>2. A tarefa de Santa Teresa e de suas monjas é de se apegar à cruz que o Esposo tomou sobre Si, para que suas vidas sejam uma imitação da vida de Cristo. A cruz que carrego hoje me leva à identificação com Cristo, com Sua dor e o abandono na vontade de Deus?</p>
+
+                <p><strong>Oração</strong></p>
+
+                <p>Santa Teresa d'Ávila, vós que vencestes os prazeres da carne para assumir a cruz de Cristo, as Suas dores e os Seus sofrimentos, fazei que eu abrace com amor e determinação a cruz, que é o caminho para a glória e a estrada para o céu. Amém.</p>
+
+                <p>Pai Nosso, Ave Maria, Glória.</p>
+
+                <p>Santa Teresa d'Ávila, rogai por nós.</p>
+            </details>
+            <details class="novena-dia">
+              <summary>5º dia — Pobreza</summary>
+                <p>O Senhor já lhe dera o desejo de pobreza, desejo de, mesmo no seu estado, pedir esmola por amor a Deus, de não ter casa ou qualquer outra coisa. Mas pensava que talvez as monjas não tivessem esse mesmo desejo. Muita coisa ouvia sobre esse assunto e inquietava o seu coração. Um dia estando em oração, ao olhar Cristo na cruz tão pobre e desnudo, não suportou a ideia da riqueza.</p>
+
+                <p>Suplicava-Lhe em lágrimas que fizesse as coisas de maneira que viesse a ser tão pobre quanto Ele. Insatisfeita com o voto de pobreza que se seguia no mosteiro, questionou algumas pessoas sobre qual seria a melhor forma para vivê-lo, mas não recebeu o apoio que desejava. Entregou o caso à Sua Majestade que lhe pediu para não deixar de estabelecer o mosteiro na pobreza, pois esta era vontade de Seu Pai e Sua, e que lhe ajudaria.</p>
+
+                <p>Muitas monjas temiam passar fome, por isso, ensinava que viver a pobreza é ter a certeza que nada vai lhes faltar, que o sustento vem do Senhor, e que Ele dará o próprio alimento. Assim, que não se preocupassem com a renda e com o alimento, mas deixassem isso com o Senhor dos ricos e da riqueza. Estava certa que a promessa de Deus, feita um dia a ela, não deixaria de ser cumprida.</p>
+
+                <p>Conceituava que a pobreza é um bem que traz em si todos os bens do mundo; uma grande soberania. Dizia que quem deseja honra tem interesse por rendas ou dinheiro; mas quem é pobre, mesmo que mereça honra para si, é pouco considerado. Suas casas eram pobres em tudo e pequenas, assemelhando-se em algo no Rei que teve por casa apenas o presépio de Belém onde nasceu, e a cruz onde morreu.</p>
+
+                <p>Considerava que além de se viver a pobreza material deveria se viver a pobreza espiritual. Nas horas de tribulação, de intranquilidade, nas perseguições, nos sofrimentos e nos tempos de aridez encontrava em Cristo o bom amigo, porque O via como Homem, permanecendo em sua companhia. Para ela o Senhor se viu privado de todo consolo, restando-lhe apenas os sofrimentos; não desejava, então deixá-Lo só, fazendo-O sofrer mais.</p>
+
+                <p>A verdadeira pobreza de espírito consiste em não buscar consolo nem prazer na oração, mas consolações nos sofrimentos, por amor Àquele que sempre viveu em meio a eles, e em ter paz nos sofrimentos e securas. Mesmo que sinta alguma coisa, a alma não deve se inquietar ou perturbar, como fazem certas pessoas que consideram tudo perdido se não tiverem sempre trabalhando com o intelecto e sentindo fervor.</p>
+
+                <blockquote><em>"A pobreza é a estrela real</em><br>
+<em>Que o Imperador celestial</em><br>
+<em>Trilhou com todo o desvelo,</em><br>
+<em>Monjas do Carmelo."</em></blockquote>
+
+                <p><strong>Reflexão</strong></p>
+
+                <p>1. Ao ver Cristo na cruz, pobre e desnudo, não suportou a ideia da riqueza, por isso, suplicou-Lhe que a ajudasse a viver a mesma pobreza de Cristo no Carmelo. Vivo a pobreza, o desprendimento dos bens materiais, confiando na providência divina?</p>
+
+                <p>2. A verdadeira pobreza espiritual, segundo Santa Teresa, consiste em encontrar em Deus a consolação nos sofrimentos, e em ter paz nos momentos de dores e securas. Nos momentos de sofrimentos, solidão, aridez, tribulações, busco o consolo em Deus encontrando em Cristo o verdadeiro e bom amigo?</p>
+
+                <p><strong>Oração</strong></p>
+
+                <p>Santa Teresa de Jesus, vós que vivestes a pobreza material e espiritual, encontrando em Sua Majestade o consolo e ajuda adequada nos momentos de sofrimento e aridez, fazei com que eu, livre de todos os bens terrenos e abraçando a cruz de Cristo, assuma a verdadeira pobreza que nasce do coração de Deus. Amém.</p>
+
+                <p>Pai Nosso, Ave Maria, Glória.</p>
+
+                <p>Santa Teresa d'Ávila, rogai por nós.</p>
+            </details>
+            <details class="novena-dia">
+              <summary>6º dia — O amor a Deus e aos irmãos</summary>
+                <p>É extremamente importante o amor entre os irmãos, pois assim não haverá problema que não seja resolvido com facilidade. Se este mandamento fosse respeitado pelos homens muito favorecia a guarda do outro. Contudo, por excesso ou por falta, nunca se chega a guardá-lo com perfeição.</p>
+
+                <p>Santa Teresa trata o amor de duas maneiras: a primeira é espiritual e nada tem a ver com os sentidos, nem com a ternura da nossa natureza a ponto de ser privada de sua pureza; a segunda, também é espiritual, mas sendo acompanhada da nossa sensibilidade e da nossa fraqueza. Quem se deixa instruir pelo Senhor na oração ou a quem Ele deseja instruir, essa pessoa ama de modo distinto, diferente daquele que não chegou a esse ponto.</p>
+
+                <p>Dizia às suas filhas: não se contente em amar pelo corpo e por seus atrativos exteriores. Ame pelo fato de amar, sem se importar se serão amadas. Podendo ocorrer, a princípio, que se inclinem a gostarem de ser amadas, mas depois vão perceber que isso é um disparate, caso isso não traga proveito algum à alma, seja na doutrina ou na oração.</p>
+
+                <p>O amor verdadeiro para Santa Teresa é com mais paixão e mais proveitoso, pois as almas sempre cuidam mais em dar do que de receber, agindo assim mesmo diante do Criador. Quando amam alguém, as almas perfeitas têm desejo de que ele seja digno do amor de Deus, porque só assim podem continuar a amá-Lo.</p>
+
+                <p>"Quanto mais se pratica o amor ao próximo, tanto mais se estará praticando amor a Deus. Isso porque é tão grande o amor que o Senhor nos tem que, para recompensar aquele que demonstramos pelo próximo, faz crescer por mil maneiras o amor que temos a Ele".</p>
+
+                <blockquote><em>"O amor que é mundano</em><br>
+<em>Se apega a esta vida;</em><br>
+<em>Mas o amor divino</em><br>
+<em>À outra nos convida.</em><br>
+<em>Sem ti, Deus eterno,</em><br>
+<em>Quem pode viver?"</em></blockquote>
+
+                <p><strong>Reflexão</strong></p>
+
+                <p>1. É extremamente importante amar uns aos outros, pois assim não haverá problema que não seja resolvido com facilidade, diz Santa Teresa. O amor que sinto pelos meus irmãos me leva a derrubar as barreiras da indiferença, do orgulho e do egoísmo?</p>
+
+                <p>2. Quanto mais se pratica o amor ao próximo, tanto mais se estará praticando o amor a Deus. Amar o outro sem nada desejar em troca. Como vivo esta realidade na minha vida fraterna e na missão?</p>
+
+                <p><strong>Oração</strong></p>
+
+                <p>Santa Teresa de Jesus, vós que vivestes o amor perfeito, que amastes o outro sem esperar ser amada ou receber algo em troca, fazei que eu me deixe ser instruída pela Sua Majestade para alcançar esse amor perfeito. Amém.</p>
+
+                <p>Pai Nosso, Ave Maria, Glória.</p>
+
+                <p>Santa Teresa d'Ávila, rogai por nós.</p>
+            </details>
+            <details class="novena-dia">
+              <summary>7º dia — Oração – encontro com o Amigo íntimo</summary>
+                <p>Desde que entrara para o Carmelo sua saúde não foi muito estável, chegando quase à morte. Por 20 anos tinha vômitos pela manhã, sendo impedida de alimentar-se até o meio dia. Como comungava diariamente, durante à noite, provocava-o para que seu mal estar não fosse pior. Apesar de todos esses males era alegre, pois tinha a impressão de com isso estava a servir o Senhor de alguma maneira.</p>
+
+                <p>Para ela na doença e em situações difíceis, a alma que ama tem como verdadeira oração fazer a dádiva dos seus sofrimentos, lembrar daqueles por quem os padece, conformar-se com as suas dores. Trata-se, portanto, do exercício do amor, pois somos obrigados a orar quando temos momentos de solidão, porque se estes nos faltam, mesmo assim se pode orar. O Senhor nos tira o tempo da oração com sofrimentos, mas consegue-se obter lucros com esses momentos.</p>
+
+                <p>Santa Teresa nos ensina o caminho da oração. Este caminho começa por estar a sós, somente na companhia do próprio Mestre, pois Ele com amor e humildade é que nos ensina a orar. Para ela é preciso ter os nossos olhos nos Seus olhos, pois Ele está sempre a nos olhar, suportando as abominações que praticamos contra Ele.</p>
+
+                <p>Ela compara a cada uma de suas filhas a uma esposa bem casada que se mostra triste quando vê o esposo triste e alegre quando o vê alegre, mesmo que não esteja. Se estivermos alegres, vejamo-Lo ressuscitado, pois o simples imaginar que saiu do sepulcro nos alegrará. Se estivermos tristes, vejamo-lo a caminho do Horto; pensemos na tamanha aflição de Sua alma.</p>
+
+                <p>Podemos vê-Lo atado às colunas, cheio de dores, com a carne feita em pedaços, sofrendo muito; perseguido por uns, cuspido por outros, renegados pelos amigos, desamparado por eles, sem ninguém que O defendesse, gelado de frio, posto em imensa solidão. Teresa pedia: contemplai o Senhor carregando a cruz, sem que O deixassem recobrar o fôlego; com os olhos cheios de lágrimas, esquecendo de Suas dores para consolar as nossas.</p>
+
+                <p>Ela chama suas filhas para carregar a cruz de Cristo, para que Ele não siga tão carregado, não se incomodando com os judeus que as atropelam; não se importando com o que dizem e fazendo-se de surdas aos murmúrios; tropeçando ou caindo com o Esposo não devem se afastar e nem deixar a cruz.</p>
+
+                <blockquote><em>"Sem tal companhia</em><br>
+<em>Vejo me cativo.</em><br>
+<em>Sem ti, vida minha,</em><br>
+<em>É morte o que eu vivo."</em></blockquote>
+
+                <p><strong>Reflexão</strong></p>
+
+                <p>1. Santa Teresa fez de sua oração um encontro pessoal e íntimo com Jesus, mergulhando em Suas alegria, dores e sofrimentos. Contemplando a vida, morte e ressurreição de Cristo, caminho para a união plena com o Amado, tornando-me um com Ele?</p>
+
+                <p>2. Santa Teresa fez da dor uma oração, conformando a sua vontade com a vontade de Deus, entendendo que mesmo naquela situação era chamada a servir. A minha oração é de um verdadeiro abandono à vontade de Deus, assumindo a vocação de serva de Sua Majestade, não parando nas minhas limitações e dores?</p>
+
+                <p><strong>Oração</strong></p>
+
+                <p>Santa Teresa d'Ávila, vós que fizestes da oração o caminho perfeito para viver a união plena com o Amado, fazei com que eu, por meio do encontro íntimo com Jesus, identificando-me com Suas dores e sofrimentos, abrace com amor a cruz que sou chamado a carregar, vivendo em plenitude a união espiritual com Cristo. Amém.</p>
+
+                <p>Pai Nosso, Ave Maria, Glória.</p>
+
+                <p>Santa Teresa d'Ávila, rogai por nós.</p>
+            </details>
+            <details class="novena-dia">
+              <summary>8º dia — Matrimônio Espiritual</summary>
+                <p>Estando um dia no Convento da Encarnação, ao receber a comunhão, o padre João da Cruz, partiu a Hóstia para a outra irmã. Pensou ela que era por falta de Hóstia, mas ele queria mortificá-la, pois havia dito a ele, anteriormente, que gostava muito quando as Hóstias eram bem grandes. Ouviu naquele dia de Sua Majestade: "não tenhas medo, filha, que alguém tenha poder de afastar-te de Mim".</p>
+
+                <p>O Senhor apresentou-se, no seu íntimo, dando-lhe a Sua mão direita dizendo: "Olha este prego, que é sinal de que serás Minha esposa de hoje em diante. Até agora não o tinhas merecido; doravante, defenderás Minha honra não só como Criador, como Rei e como teu Deus, mas como verdadeira esposa Minha: Minha honra é a tua, e a tua, Minha."</p>
+
+                <p>Tamanha foi sua alegria que ficou como que desatinada e disse ao Senhor que ou aumentasse a sua baixeza ou não a concedesse tão infinita graça, pois certamente não lhe parecia que a sua natureza pudesse suportar.</p>
+
+                <p>No matrimônio espiritual a união secreta se passa no centro mais íntimo da alma, que deve ser onde está o próprio Deus. Não precisa de porta para entrar, porque em todas as graças, os sentidos e as faculdades parecem servir de intermediários, o mesmo devendo acontecer com esse aparecimento da Humanidade do Senhor. Ele aparece no centro da alma sem visão imaginária, mas intelectual, tal como surgiu aos Apóstolos, sem entrar pela porta, e lhes disse: "a paz esteja convosco".</p>
+
+                <p>O Matrimônio espiritual é como se a água caísse do céu sobre um rio ou uma fonte, confundindo-se então todas as águas. Já não se sabe o que é água do rio ou água que cai do céu. "Quem se une ao Senhor torna-se com ele um só espírito", talvez São Paulo esteja se referindo a união da alma com o seu Esposo. Sem dúvida, a alma que se esvazia de tudo o que é criado e desapega-se dele por amor a Deus, o próprio Senhor a preenche de Si mesmo.</p>
+
+                <blockquote><em>"Eis aqui meu coração:</em><br>
+<em>Deponho-o na vossa palma;</em><br>
+<em>Minhas entranhas, minha alma,</em><br>
+<em>Meu corpo, vida e afeição.</em><br>
+<em>Doce Esposo e Redenção,</em><br>
+<em>A vós entregar-me vim:</em><br>
+<em>Que mandais fazer de mim?"</em></blockquote>
+
+                <p><strong>Reflexão</strong></p>
+
+                <p>1. A alma que se esvazia de tudo que é criado e se desapega dele por amor a Deus é preenchida pelo seu Senhor, tornando-se uma com Ele. O que mais me impede hoje de viver essa união plena com o meu Amado?</p>
+
+                <p>2. Santa Teresa se tornava naquela Eucaristia uma só em Cristo. Sua alma, sua vida não mais pertencia a si mesma, mas era toda de Deus. Os passos que dou na vida consagrada estão me levando a ser inteira de Deus, estão me levando a viver esse matrimônio espiritual?</p>
+
+                <p><strong>Oração</strong></p>
+
+                <p>Santa Teresa d'Ávila, vós que lutastes contra o desejo da carne, contra vossos apegos para assim viver a união plena com o Amado, fazei que eu esvazie, a cada dia, a minha alma de tudo que é criado para que o meu coração seja preenchido somente pelo meu Senhor, tornando-me assim Sua Esposa. Amém.</p>
+
+                <p>Pai Nosso, Ave Maria, Glória.</p>
+
+                <p>Santa Teresa d'Ávila, rogai por nós.</p>
+            </details>
+            <details class="novena-dia">
+              <summary>9º dia — Maria, Mãe das Carmelitas</summary>
+                <p>Um dia no mosteiro, conversando com outras monjas, nasceu a ideia de viverem segundo as regras primitivas do Carmelo. Resolveram colocar todos os planos e projetos nas mãos de Deus. Certa vez, após a comunhão, o Senhor lhe ordenou expressamente que se dedicasse a esse empreendimento com todas as suas forças, prometendo-lhe que o mosteiro não deixaria de ser feito e dizendo que ali seria muito bem servido. Este devia ser dedicado a S. José, pois este santo glorioso guardaria uma porta, Nossa Senhora, a outra, e Cristo andaria ao seu lado; e a casa seria uma estrela da qual sairia um grande resplendor.</p>
+
+                <p>Começou, então, a construção do mosteiro de S. José. Muitos foram os problemas, as tribulações e perseguições para que ela desistisse. Mas se manteve firme e em silêncio diante dos ataques; sempre esperando em Deus. Achava que aquele espaço não seria adequado, pensou em ampliá-lo, mas o Senhor não permitiu, pois queria que este fosse pequeno e que ali se vivesse a pobreza.</p>
+
+                <p>No dia de Nossa Senhora da Assunção, considerando seus inúmeros pecados veio-lhe um arroubo imenso, sentou-se naquele momento e teve a impressão que alguém lhe cobria com uma roupa de grande brancura e esplendor. No início não via quem fazia isso, depois percebeu que era Nossa Senhora do seu lado direito e S. José, do esquerdo adornando-a com aquelas vestes, purificando-a dos seus pecados.</p>
+
+                <p>Maria dizia que se contentava em vê-la servindo ao glorioso S. José e que o mosteiro se faria de acordo com o seu desejo e que os dois seriam muito bem servidos ali. Pediu para que nada temesse, pois o seu Filho prometera andar ao seu lado.</p>
+
+                <p>Até conseguir a licença para ir para o Mosteiro de S. José foram muitas batalhas travadas com o demônio que usava de todas as armas para combatê-la, mas sentiu consolada quando lá chegou. Numa festa da Assunção da Rainha dos Anjos e Senhora Nossa, o Senhor quis lhe fazer um favor apresentando-lhe a Sua subida ao céu, a alegria e a solenidade com que Ela foi recebida, bem como o lugar onde está. O seu espírito teve enorme exultação ao contemplar a imensa glória. Isso fez com que santa Teresa desejasse cada vez mais suportar grandes sofrimentos e servir a essa Senhora, que tanto mereceu.</p>
+
+                <p>Sabia que era preciso confiar nos méritos de Jesus e de Sua Mãe para vencer as batalhas. Sentia-se muito indigna de vestir o hábito de Sua Mãe, mas pedia a todas as suas filhas que louvassem por ele, porque eram verdadeiramente filhas dessa Senhora. E que deviam sempre imitá-La e considerar a imensa grandeza dessa Senhora, bem como a vantagem de tê-la por padroeira; pois nem seus grandes pecados e o fato de ser como era podiam ofuscar minimamente essa sagrada Ordem.</p>
+
+                <blockquote><em>"Seu Único Filho</em><br>
+<em>O Pai nos envia</em><br>
+<em>Nasce hoje na lapa,</em><br>
+<em>Da Virgem Maria."</em></blockquote>
+
+                <p><strong>Reflexão</strong></p>
+
+                <p>1. Santa Teresa via Maria como mãe e protetora, pois em todos os momentos recorreu a Ela e foi prontamente atendida. Na minha vida de consagrado encontro em Maria a proteção, o consolo, a direção?</p>
+
+                <p>2. Santa Teresa pedia que suas monjas considerassem grande honra ter Nossa Senhora como padroeira e que, como filhas dessa boa Mãe, louvassem a Deus pelo hábito que traziam e que a imitassem sempre. Busco em Maria as virtudes necessárias para bem servir Jesus Cristo?</p>
+
+                <p><strong>Oração</strong></p>
+
+                <p>Santa Teresa d'Ávila, vós que encontrastes em Maria a proteção, o consolo, o caminho que vos levaria a Jesus, fazei que eu, conduzido pelas mãos da Mãe da Luz da Vida, resplandeça a verdadeira luz que ilumina as trevas do mundo. Amém.</p>
+
+                <p>Pai Nosso, Ave Maria, Glória.</p>
+
+                <p>Santa Teresa d'Ávila, rogai por nós.</p>
+
+                <p><em>(Fim da novena — conforme publicada em comshalom.org)</em></p>
+            </details>
+
+            <div class="cta-blog-produto">
+              <p>Leve Santa Teresa d'Ávila com você</p>
+              <a href="__URL_PRODUTO__" class="botao-principal">Ver medalha, entremeio e chaveiro de Santa Teresa d'Ávila →</a>
+            </div>
+        """,
+    },
+    "novena-de-sao-joao-paulo-ii": {
+        "titulo": "Novena de São João Paulo II: os 9 dias",
+        "resumo": (
+            "A novena completa de São João Paulo II, com trechos de suas homilias e encíclicas, antes de sua festa em 22 de outubro."
+        ),
+        "produto_relacionado_id": "sao-joao-paulo-ii",
+        "publicado_em": "2026-09-24",
+        "corpo_html": """
+            <p>Conhecido como o "Papa Peregrino", São João Paulo II viajou a mais de 100
+            países anunciando o Evangelho e teve um papado marcado pelo amor a Maria --
+            foi ele quem incluiu os mistérios luminosos no Santo Rosário. Sua festa é
+            celebrada em 22 de outubro.</p>
+
+            <p><em>Novena reproduzida de <a href="https://comshalom.org/novena-a-sao-joao-paulo-ii/" target="_blank" rel="noopener">comshalom.org</a> (Comunidade Católica Shalom) -- compilada, segundo a própria fonte, a partir de homilias, cartas e encíclicas de São João Paulo II.</em></p>
+
+            <details class="novena-dia">
+              <summary>1º dia — Amor</summary>
+                <p>Tenha a coragem de viver por amor… A grandeza de uma pessoa não está em suas posses, mas em quem é, não naquilo que possui, mas no que compartilha com os outros.</p>
+
+                <p>(…) Esta mensagem sobre a pureza do coração torna-se hoje muito atual. A civilização da morte quer destruir a pureza do coração. Um dos seus métodos de agir é pôr intencionalmente em dúvida o valor da atitude do homem, que definimos como virtude da castidade. É um fenômeno de modo particular perigoso quando o objectivo do ataque são as consciências sensíveis das crianças e dos jovens.</p>
+
+                <p>Uma civilização que, agindo desta forma, fere ou até aniquila uma relação correta entre os homens, é uma civilização da morte, porque o homem não pode viver sem o verdadeiro amor… Anunciai ao mundo a «Boa Nova» da pureza do coração e, com o exemplo da vossa vida, transmiti a mensagem da civilização do amor. Conheço a vossa sensibilidade à verdade e à beleza.</p>
+
+                <p>Hoje, a civilização da morte propõe-vos, entre outras coisas, o chamado «amor livre». Neste gênero de deformação do amor chega-se à profanação dum dos valores mais queridos e sagrados, porque a libertinagem não é amor nem liberdade…</p>
+
+                <p>Não tenhais medo de viver contra as opiniões da moda e as propostas em contraste com a lei de Deus. A coragem da fé tem um preço muito elevado, mas vós não podeis perder o amor! Não permitais que alguém vos torne escravos! Não vos deixeis seduzir pelas ilusões da felicidade, pelas quais deveríeis pagar um preço demasiado elevado, o preço de feridas por vezes incuráveis ou até duma vida despedaçada!</p>
+
+                <p><em>São João Paulo II, Homilia, Sandomierz, 12/06/1999</em></p>
+
+                <p><strong>Oremos:</strong> Deus, nosso Pai, a fim de voltarmos para vós, devemos encontrar vossa misericórdia, vosso paciente amor que em Vós não conhece limites. Infinita é a vossa prontidão em perdoar os nossos pecados assim como inefável é o sacrifício de vosso Filho. Com confiança pedimos, pela intercessão de São João Paulo II, que nos concedais esta graça… por Cristo Nosso Senhor. Amém.</p>
+
+                <p>Pai Nosso… Ave Maria… Glória…</p>
+              <p><em>Reza-se a seguir a Ladainha de São João Paulo II (reproduzida uma única vez, mais abaixo nesta página, pois se repete em todos os 9 dias).</em></p>
+            </details>
+            <details class="novena-dia">
+              <summary>2º dia — Verdade</summary>
+                <p>Ninguém pode ditar a outro a sua própria "verdade". A verdade vence por seu próprio poder. Impor seus próprios pontos de vista torna as relações interpessoais piores, dando origem a disputas e tensões. Assim, uma das condições para manter a paz no mundo é de respeitar a liberdade de consciência dos outros, mesmo que eles pensam de maneira muito diferente de nós.</p>
+
+                <p>A verdade é a luz da inteligência humana. Se desde a juventude a mente humana procura conhecer a realidade nas suas várias dimensões, faz isto a fim de possuir a verdade, para viver a verdade. Tal é a estrutura do espírito humano. A fome de verdade é a sua aspiração e expressão fundamental. Cristo diz: "Conhecereis a verdade e a verdade vos libertará". Das palavras do Evangelho, estas certamente estão entre as mais importantes. Elas se referem, na verdade, ao homem todo. Explicam a base sobre a qual são construídos a partir de dentro, na dimensão do espírito humano, a dignidade e a grandeza próprias do homem.</p>
+
+                <p>O conhecimento que liberta o homem não depende apenas da instrução, mesmo que seja na faculdade; também o pode possuir um analfabeto; mas esta instrução, como conhecimento sistemático da realidade, deve servir a essa dignidade e grandeza. Portanto, deveria servir à verdade… Neste campo as palavras de Cristo: "Conhecereis a verdade e a verdade vos libertará" vêm a ser um programa essencial.</p>
+
+                <p>Os jovens, se podemos dizer assim, têm um "senso de verdade" congênito. E a verdade deve servir para a liberdade: os jovens também têm um espontâneo "desejo de liberdade". O que significa ser livre? Significa saber usar a nossa liberdade na verdade, ser "verdadeiramente" livre.</p>
+
+                <p>Ser verdadeiramente livre não significa de forma alguma fazer tudo aquilo que me agrada ou que eu queria fazer. A liberdade traz consigo a critério da verdade, a disciplina da verdade. Ser verdadeiramente livre significa usar a própria liberdade para aquilo que é verdadeiramente bom… para ser um homem de reta consciência, ser responsável, ser um homem "para os outros".</p>
+
+                <p><em>Carta Apostólica do Papa São João Paulo II aos jovens do mundo, por ocasião do Ano Internacional da Juventude, 1985</em></p>
+
+                <p><strong>Oremos:</strong> Deus, nosso Pai, diante da Igreja do terceiro milênio se abre um vasto oceano de credos de nosso mundo contemporâneo. Crendo em Vós, colocando a minha esperança em Cristo, desejo imitá-lo e experimentar o milagre de uma pesca abundante. Vinde em auxílio de todos os cristãos da nossa geração para nos lançarmos nas profundezas da verdade, do bem e da beleza. Fazei do nosso Santo Padre João Paulo II o patrono da nova evangelização, e por sua intercessão concedei-nos esta graça… Por Cristo Nosso Senhor. Amém.</p>
+
+                <p>Pai Nosso… Ave Maria… Glória…</p>
+              <p><em>Reza-se a seguir a Ladainha de São João Paulo II (reproduzida uma única vez, mais abaixo nesta página, pois se repete em todos os 9 dias).</em></p>
+            </details>
+            <details class="novena-dia">
+              <summary>3º dia — A pessoa</summary>
+                <p>Nesta terra, sejam portadores da fé e da esperança cristãs, vivendo em amor todos os dias. Sejam fiéis testemunhas de Cristo Ressuscitado, nunca cedendo aos obstáculos que se acumulam sobre os caminhos de sua vida. Eu conto com vocês, em seu entusiasmo juvenil e dedicação a Cristo.</p>
+
+                <p>O homem não pode viver sem amor. Ele permanece para si próprio um ser incompreensível e a sua vida é destituída de sentido, se não lhe for revelado o amor, se ele não se encontra com o amor, se o não experimenta e se o não torna algo seu próprio, se nele não participa vivamente. E por isto precisamente o Cristo Redentor… revela plenamente o homem ao próprio homem. Esta é – se assim é lícito exprimir-se – a dimensão humana do mistério da Redenção…</p>
+
+                <p>«Deus, de fato, amou de tal modo o mundo, que lhe deu o Seu filho unigênito, para que todo o que nele crer não pereça, mas tenha a vida eterna» (Jo 3,16)… E por meio do Filho-Verbo, que se fez homem… Deus entrou na história da humanidade… um dos milhares de milhões e, ao mesmo tempo, Único!</p>
+
+                <p>Para Ele queremos olhar, porque só n'Ele, Filho de Deus, está a salvação, renovando a afirmação de Pedro: «Para quem iremos nós, Senhor? Tu tens as palavras de vida eterna»… Através de todos os campos de atividade onde a Igreja se afirma presente, se encontra e se consolida, devemos tender constantemente para Aquele «que é a Cabeça», para «Aquele de quem tudo provém e nós somos criados para Ele»…</p>
+
+                <p>A Igreja não cessa de ouvir as suas palavras, continuamente as relê e reconstrói com a máxima devoção todos os pormenores da sua vida… A Igreja vive o seu mistério e nele vai haurir sem jamais se cansar, e busca continuamente as vias para tornar este mistério do seu Mestre e Senhor próximo do gênero humano: dos povos, das nações, das gerações que se sucedem e de cada um dos homens em particular…</p>
+
+                <p>Nesta dimensão, o homem reencontra a grandeza, a dignidade e o valor próprios da sua humanidade. No mistério da Redenção o homem é novamente «reproduzido» e, de algum modo, é novamente criado. Ele é novamente criado!… O homem que quiser compreender-se a si mesmo profundamente… deve… aproximar-se de Cristo. Ele deve, por assim dizer, entrar n'Ele com tudo o que é em si mesmo, deve «apropriar-se» e assimilar toda a realidade da Encarnação e da Redenção, para se encontrar a si mesmo.</p>
+
+                <p>Se no homem se atuar este processo profundo, então ele produz frutos, não somente de adoração de Deus, mas também de profunda maravilha perante si próprio. Que grande valor deve ter o homem aos olhos do Criador, se «mereceu ter um tal e tão grande Redentor», se «Deus deu o seu Filho», para que ele, o homem, «não pereça, mas tenha a vida eterna». (cf Jo 3,16).</p>
+
+                <p><em>São João Paulo II, Encíclica Redemptor hominis, 1979</em></p>
+
+                <p><strong>Oremos:</strong> Deus, nosso Pai, Vós sois amor e nos amastes primeiro. Vosso filho se tornou homem para a nossa salvação, e revelando a seus irmãos e irmãs a verdade sobre o amor; permitiu-lhes compreender a si mesmos e descobrir o sentido de sua própria existência. Nós vos pedimos que, por São João Paulo II, defensor incansável da dignidade humana, bom pastor em busca de almas perdidas na confusão da vida e mergulhadas no desespero, que nos concedais esta graça… Por Cristo Nosso Senhor. Amém!</p>
+
+                <p>Pai Nosso… Ave Maria… Glória…</p>
+              <p><em>Reza-se a seguir a Ladainha de São João Paulo II (reproduzida uma única vez, mais abaixo nesta página, pois se repete em todos os 9 dias).</em></p>
+            </details>
+            <details class="novena-dia">
+              <summary>4º dia — A família</summary>
+                <p>Uma família que tira a sua força de Deus torna-se a força do homem e de uma nação inteira.</p>
+
+                <p>Dentre essas numerosas estradas, a primeira e a mais importante é a família: uma via comum, mesmo se permanece particular, única e irrepetível, como irrepetível é cada homem; uma via da qual o ser humano não pode separar-se. Com efeito, normalmente ele vem ao mundo no seio de uma família, podendo-se dizer que a ela deve o próprio fato de existir como homem.</p>
+
+                <p>Quando falta a família logo à chegada da pessoa ao mundo, acaba por criar-se uma inquietante e dolorosa carência que pesará depois sobre toda a vida. A Igreja une-se com afetuosa solicitude a quantos vivem tais situações, porque está bem ciente do papel fundamental que a família é chamada a desempenhar…</p>
+
+                <p>A família tem a sua origem naquele mesmo amor com que o Criador abraça o mundo criado, como se afirma já «ao princípio», no livro do Gênesis (1, 1). Uma suprema confirmação disso mesmo, no-la oferece Jesus no Evangelho: «Deus amou de tal modo o mundo que lhe deu o seu Filho unigênito» (Jo 3, 16).</p>
+
+                <p>O Filho unigênito, consubstancial ao Pai, «Deus de Deus, Luz da Luz», entrou na história dos homens através da família: «Pela sua encarnação, Ele, o Filho de Deus, uniu-Se de certo modo a cada homem. Trabalhou com mãos humanas,… amou com um coração humano. Nascido da Virgem Maria, tornou-Se verdadeiramente um de nós, semelhante a nós em tudo, excepto no pecado» (3).</p>
+
+                <p>Se é certo que Cristo «revela plenamente o homem a si mesmo» (4), fá-lo a começar da família onde Ele escolheu nascer e crescer. Sabe-se que o Redentor passou grande parte da sua vida no recanto escondido de Nazaré, «submisso» (Lc 2, 51) como «filho do homem» a Maria, sua Mãe, e a José, o carpinteiro. Esta sua «obediência» filial não é já a primeira manifestação daquela obediência ao Pai «até à morte» (Fil 2, 8), por meio da qual redimiu o mundo?</p>
+
+                <p><em>São João Paulo II, Carta às Famílias Gratissimam Sane, 1994</em></p>
+
+                <p><strong>Oremos:</strong> Deus, nosso Pai, vosso eterno plano de salvação atingiu a sua plenitude quando o vosso Amado Filho veio ao mundo através da Sagrada Família, santificando por Seu nascimento toda família humana. Confiamos a Vós nossas famílias e todas as famílias em todo o mundo. Que a oração seja uma parte de suas vidas, o amor puro, o respeito à vida, e uma saudável preocupação pela juventude. Pedimo-vos humildemente, por intercessão do Santo Papa João Paulo II, o defensor incansável dos direitos de uma família, que possamos ser fortalecidos pela graça… Por Cristo, nosso Senhor. Amém.</p>
+
+                <p>Pai Nosso… Ave Maria… Glória…</p>
+              <p><em>Reza-se a seguir a Ladainha de São João Paulo II (reproduzida uma única vez, mais abaixo nesta página, pois se repete em todos os 9 dias).</em></p>
+            </details>
+            <details class="novena-dia">
+              <summary>5º dia — Juventude</summary>
+                <p>Você deve fazer exigências a partir de si mesmo, mesmo que os outros não exijam de você. Só fazendo exigências de si mesmo – ao contrário do consenso universal que diz: "Tome o caminho mais fácil" – você pode perceber outros desafios do Papa: escolher "ser mais" em vez de "ter mais". O "ser mais" de um jovem hoje é a coragem de permanecer cheio de iniciativa – você não pode renunciar a isto, o futuro de todos depende disto – fiel a um testemunho dinâmico de fé e esperança.</p>
+
+                <p>Jovens amigos… Sede benditos! Sim, sede benditos junto com Maria, que acreditou no cumprimento das palavras que lhe disse o Senhor. Sim, Sede benditos! Que o sinal da mulher vestida de sol caminhe convosco, com cada uma e cada um, ao longo de todos os caminhos da vida. Que vos conduza ao cumprimento, em Deus, de vossa adoção filial em Cristo. Verdadeiramente, o Senhor realizou maravilhas em vós!</p>
+
+                <p>Destas «maravilhas», queridos jovens, deveis ser sempre testemunhas coerentes e valorosas em vosso ambiente, entre vossos coetâneos, em todas as circunstâncias de vossa vida. Está ao vosso lado Maria, a Virgem dócil a todos os sopros do Espírito, a que com seu «sim» generoso ao projeto de Deus abriu ao mundo a perspectiva, longamente ansiada, da salvação. Olhando para ela, humilde serva do Senhor, hoje elevada à glória do céu, vos digo com São Paulo: «Deixai-vos conduzir pelo Espírito»! (Gal 5, 16).</p>
+
+                <p>Deixai que o Espírito de sabedoria e inteligência, de conselho e fortaleza, de conhecimento, piedade e temor do Senhor (cf. Is 11, 2) penetre em vossos corações e vossas vidas e, por meio de vós, transforme a face da terra…</p>
+
+                <p>Revesti-vos da força que brota dele, convertei-vos em construtores de um mundo novo: um mundo diferente, fundado na verdade, na justiça, na solidariedade e no amor.</p>
+
+                <p>Queridos amigos… Recebei o Espírito Santo e sede fortes!</p>
+
+                <p><em>São João Paulo II, Homilia para a conclusão VI / DM, Czestochowa, 15 de agosto de 1991</em></p>
+
+                <p><strong>Oremos:</strong> Deus, nosso Pai, desde nossa juventude nos chamastes para Vos seguir. Em Vosso Filho, a juventude tem um Mestre, que ensina como formar uma nova pessoa em nós – com paciência e persistência – para descobrir a própria vocação, para efetivamente construir uma cultura de amor. Pedimos a Vós por nossa juventude, para que não se deixe escravizar por desejos cegos e decepções amorosas. Que São João Paulo II, que procurou o jovem e reciprocamente os amou, seja para eles um modelo e patrono, e por sua intercessão Vos pedimos esta graça… Por Cristo Nosso Senhor. Amém.</p>
+
+                <p>Pai Nosso… Ave Maria… Glória…</p>
+              <p><em>Reza-se a seguir a Ladainha de São João Paulo II (reproduzida uma única vez, mais abaixo nesta página, pois se repete em todos os 9 dias).</em></p>
+            </details>
+            <details class="novena-dia">
+              <summary>6º dia — Pecado</summary>
+                <p>O maior sofrimento da humanidade e de cada indivíduo é o pecado. Não há maior dor que se possa infligir a uma alma do que mergulhá-la em estado de pecado mortal.</p>
+
+                <p>O pecado não termina nos limites da consciência humana, não se encerra nela. Por definição intrínseca, implica uma referência: a referência a Deus. Todavia, esta referência é salvífica! Significa que eu – homem – não fico só com minha culpa. E Deus, que de certo modo é testemunha "ocular" de meu pecado (ocular embora invisível), está próximo de mim não somente para julgar. Certamente me julga! Julga-me com o mesmo juízo interior de minha consciência (se esta não se tornou surda ou deformada).</p>
+
+                <p>No entanto, o próprio juízo já é salvífico. Mediante o fato de chamar o mal por seu verdadeiro nome, de certo modo rompo com ele, mantenho-o a certa distância de mim, ainda quando ao mesmo tempo sei que este mal, o pecado, não deixa de ser meu pecado.</p>
+
+                <p>Mas mesmo quando meu pecado é contra Deus, Deus não está contra mim.</p>
+
+                <p>No momento da tensão interior da consciência humana, Deus não proclama sua sentença. Não condena. Deus espera que eu me volte para Ele como à justiça amorosa, como ao Pai, da forma que mostra a parábola do filho pródigo.</p>
+
+                <p>Para que lhe "revele" o pecado.</p>
+
+                <p>E me confie a Ele. Deste modo, do exame de consciência passamos ao que constitui a própria substância da conversão e da reconciliação com Deus.</p>
+
+                <p><em>João Paulo II, Angelus, em Roma, 23 de fevereiro de 1986</em></p>
+
+                <p><strong>Oremos:</strong> Deus, nosso Pai, o pecado é um aguilhão que causa dor e mata a graça santificante. O sofrimento em vosso conceito de salvação é o caminho que conduz a Vós. O Vosso Filho, por meio de sua paixão de vontade livre e morte na cruz, tomou sobre Si todo o mal do pecado, e deu ao sofrimento um significado totalmente novo, introduzindo-o na ordem do amor. Em nome desse amor, que foi capaz de assumir sofrimentos sem culpa, nós vos pedimos por intercessão de São João Paulo II, que ao servir o povo de Deus, foi marcado com os estigmas do martírio, esta graça especial… Por Cristo Nosso Senhor. Amém.</p>
+
+                <p>Pai Nosso… Ave Maria… Glória…</p>
+              <p><em>Reza-se a seguir a Ladainha de São João Paulo II (reproduzida uma única vez, mais abaixo nesta página, pois se repete em todos os 9 dias).</em></p>
+            </details>
+            <details class="novena-dia">
+              <summary>7º dia — Misericórdia</summary>
+                <p>Hoje, quando o egoísmo, indiferença e insensibilidade dos corações estão se espalhando de forma assustadora, o quão intensamente nós precisamos de uma renovação da sensibilidade a uma pessoa, a sua pobreza e os sofrimentos. O mundo clama por misericórdia. Nada é mais necessário para o homem do que a misericórdia de Deus, esse amor gentil, simpático, elevando o homem acima de suas fraquezas em direção às alturas eternas da santidade de Deus.</p>
+
+                <p>O homem, – cada um dos homens – é este filho pródigo: fascinado pela tentação de se separar do Pai para viver de modo independente a própria existência; caído na tentação; desiludido do nada que, como miragem, o tinha deslumbrado.</p>
+
+                <p>Sozinho, desonrado e explorado no momento em que tenta construir um mundo só para si; atormentado, mesmo no mais profundo da própria miséria, pelo desejo de voltar à comunhão com o Pai. Como o pai da parábola, Deus fica à espreita do regresso do filho, abraça-o à sua chegada e põe a mesa para o banquete do novo encontro, com que se festeja a reconciliação.</p>
+
+                <p><em>João Paulo II, Exortação Apostólica Reconciliatio et Penitentia, 02 de dezembro de 1984</em></p>
+
+                <p><strong>Oremos:</strong> "Jesus, eu confio em Vós". Esta oração, querida por muitos devotos da Divina Misericórdia, expressa adequadamente a postura que também desejamos assumir ao nos confiarmos ao vosso abraço, Senhor, nosso único Salvador. Quão intensamente desejais ser amado, e quem quer que acenda em si os sentimentos de vosso coração, aprende a ser um construtor da nova cultura do amor.</p>
+
+                <p>Um simples ato de confiança é suficiente para penetrar a cortina de melancolia e tristeza, dúvida e desespero. Os raios de vossa divina misericórdia restaura de maneira especial a esperança daqueles que se sentem oprimidos pelo peso do pecado….</p>
+
+                <p>Maria, Mãe de Misericórdia, concedei que a esperança que colocamos em vosso Filho, nosso Redentor, permaneça sempre viva. E vós, Santa Faustina, ajudai-nos também quando repetirmos convosco, olhando corajosamente para a face do divino Redentor, as palavras: "Jesus, eu confio em Vós. Hoje e para sempre". Amém.</p>
+
+                <p>Pai Nosso… Ave Maria… Glória…</p>
+              <p><em>Reza-se a seguir a Ladainha de São João Paulo II (reproduzida uma única vez, mais abaixo nesta página, pois se repete em todos os 9 dias).</em></p>
+            </details>
+            <details class="novena-dia">
+              <summary>8º dia — Maria</summary>
+                <p>Em meio a este mistério, em meio a essa confiança na fé, destaca Maria. "Eis aqui a serva do Senhor… Faça-se em mim segundo a tua palavra".</p>
+
+                <p>Hoje vim junto de Ti, Nossa Senhora de Jasna Gora, para me despedir mais uma vez e para Te pedir a bênção para a minha viagem… Mãe da Igreja! Mais uma vez me consagro a Ti «na Tua materna escravidão de amor»: «Totus Tuus»! Sou todo Teu! Consagro-Te toda a Igreja – em toda a parte até aos extremos confins da terra! Oh, consagro-Te a Humanidade! Eu te consagro todos os homens, meus irmãos.</p>
+
+                <p>Todos os Povos e Nações. Consagro-Te a Europa e todos os continentes. Consagro-Te Roma e a Polônia juntas, através do Teu servo, por um novo vínculo de amor. Mãe, aceita! Oh Mãe, não nos abandones! Querida Mãe, guia-nos Tu! …Perdoa, pois, Mãe da Igreja e Rainha da Polônia, que todos nós Te agradeçamos só com o silêncio dos nossos corações, que Te cantemos, com este silêncio, o nosso «prefácio» de despedida!</p>
+
+                <p><em>João Paulo II, Primeira Peregrinação Apostólica à Polônia, Czestochowa, 06 de junho de 1979</em></p>
+
+                <p><strong>Oremos:</strong> Deus, nosso Pai, Maria, Mãe de vosso Filho, escutai a nossa prece-petição: "Advogada nossa, estes vossos olhos misericordiosos a nós volvei, e depois deste desterro, mostrai-nos Jesus, bendito fruto do vosso ventre. Ó clemente, ó piedosa, ó doce sempre Virgem Maria!" Damos graças pelo Santo Papa João Paulo II, totalmente dedicado a Maria, com fidelidade e até o final cumprindo a missão que lhe foi dada pelo Ressuscitado; aceitai os frutos de sua vida e serviço, concedendo-nos por sua intercessão esta graça… Por Cristo, nosso Senhor. Amém.</p>
+
+                <p>Pai Nosso… Ave Maria… Glória…</p>
+              <p><em>Reza-se a seguir a Ladainha de São João Paulo II (reproduzida uma única vez, mais abaixo nesta página, pois se repete em todos os 9 dias).</em></p>
+            </details>
+            <details class="novena-dia">
+              <summary>9º dia — A Eucaristia</summary>
+                <p>A Eucaristia é o maior dom e milagre, pois o mistério da morte e ressurreição de Cristo, a redenção da humanidade, se faz presente nela.</p>
+
+                <p>A Igreja vive da Eucaristia. Esta verdade não exprime apenas uma experiência diária de fé, mas contém em síntese o próprio núcleo do mistério da Igreja. É com alegria que ela experimenta, de diversas maneiras, a realização incessante desta promessa: «Eu estarei sempre convosco, até ao fim do mundo» (Mt 28, 20); mas, na sagrada Eucaristia, pela conversão do pão e do vinho no corpo e no sangue do Senhor, goza desta presença com uma intensidade sem par…</p>
+
+                <p>A Igreja recebeu a Eucaristia de Cristo seu Senhor, não como um dom, embora precioso, entre muitos outros, mas como o dom por excelência, porque dom d'Ele mesmo, da sua Pessoa na humanidade sagrada, e também da sua obra de salvação. Esta não fica circunscrita no passado, pois «tudo o que Cristo é, tudo o que fez e sofreu por todos os homens, participa da eternidade divina, e assim transcende todos os tempos e em todos se torna presente»…</p>
+
+                <p>É esta verdade que desejo recordar mais uma vez, colocando-me convosco, meus queridos irmãos e irmãs, em adoração diante deste Mistério: mistério grande, mistério de misericórdia. Que mais poderia Jesus ter feito por nós? Verdadeiramente, na Eucaristia demonstra-nos um amor levado até ao «extremo» (cf. Jo 13, 1), um amor sem medida.</p>
+
+                <p><em>João Paulo II, Carta Encíclica Ecclesia de Eucharistia, 17 abr 2003</em></p>
+
+                <p><strong>Oremos:</strong> Deus, nosso Pai: Vosso Filho nos amou até ao fim e permaneceu conosco na Eucaristia. Que o Amém que dizemos na presença do Corpo e Sangue de Nosso Senhor nos disponha a um serviço humilde aos irmãos que têm fome de amor. Que sejais louvado no brilhante exemplo desse amor, como demonstrado pelo Papa São João Paulo II. Como a comunhão com a Igreja dos redimidos no céu é expressa e fortalecida na Eucaristia, concedei-nos por sua intercessão esta graça… Por Cristo, nosso Senhor. Amém.</p>
+
+                <p>Pai Nosso… Ave Maria… Glória…</p>
+
+                <p><em>(Fim da novena — conforme publicada em comshalom.org)</em></p>
+              <p><em>Reza-se a seguir a Ladainha de São João Paulo II (reproduzida uma única vez, mais abaixo nesta página, pois se repete em todos os 9 dias).</em></p>
+            </details>
+
+            <p><strong>Ladainha de São João Paulo II</strong> (reza-se ao final de cada um dos 9 dias):</p>
+                <p>Senhor, tende piedade de nós. – Senhor, tende piedade de nós.<br>
+Cristo, tende piedade de nós. – Cristo, tende piedade de nós.<br>
+Senhor, tende piedade de nós. – Senhor, tende piedade de nós.<br>
+Jesus Cristo ouvi-nos. – Jesus Cristo ouvi-nos.<br>
+Jesus Cristo atendei-nos. – Jesus Cristo atendei-nos.<br>
+Deus, Pai dos céus, tende piedade de nós.<br>
+Deus Filho, Redentor do mundo, tende piedade de nós.<br>
+Deus Espírito Santo, tende piedade de nós.<br>
+Santíssima Trindade, que sois um só Deus, tende piedade de nós.<br>
+Santa Maria, Mãe de Deus, rogai por nós.<br>
+São João Paulo II, rogai por nós.<br>
+Perfeito discípulo de Cristo, …<br>
+Generosamente dotado com os dons do Espírito Santo,<br>
+Grande apóstolo da Divina Misericórdia,<br>
+Fiel Filho de Maria,<br>
+Totalmente dedicado à Mãe de Deus,<br>
+Perseverante pregador do Evangelho,<br>
+Papa Peregrino,<br>
+Papa do Milênio,<br>
+Modelo de diligência,<br>
+Modelo dos sacerdotes,<br>
+Que extraístes forças da Eucaristia,<br>
+Homem incansável da oração,<br>
+Amante do Rosário,<br>
+Força dos que duvidam de sua fé,<br>
+Que desejastes unir todos aqueles que creem em Cristo,<br>
+Conversor dos pecadores,<br>
+Defensor da dignidade de toda pessoa,<br>
+Defensor da vida desde a concepção até à morte natural,<br>
+Que rogastes pelo dom da paternidade para o infértil,<br>
+Amigo das crianças,<br>
+Líder da juventude,<br>
+Intercessor das famílias,<br>
+Consolador dos sofredores,<br>
+Que valorosamente suportastes vossa dor,<br>
+Semeador de divina alegria,<br>
+Grande intercessor pela paz,<br>
+Orgulho da nação polonesa,<br>
+Brilho da Santa Igreja,<br>
+Para que possamos ser fiéis imitadores de Cristo,<br>
+Para que possamos ser fortes com o poder do Espírito Santo,<br>
+Para que possamos ter confiança na Mãe de Deus,<br>
+Para que possamos crescer em nossa fé, esperança e caridade,<br>
+Para que possamos viver em paz em nossas famílias,<br>
+Para que possamos saber perdoar,<br>
+Para que possamos saber suportar o sofrimento,<br>
+Para que não sucumbamos à cultura da morte,<br>
+Para que não tenhamos medo e corajosamente combatamos as várias tentações,<br>
+Para que interceda e nos obtenha a graça de uma morte feliz, rogai por nós.<br>
+Cordeiro de Deus, que tirais o pecado do mundo, perdoai-nos, Senhor!<br>
+Cordeiro de Deus, que tirais o pecado do mundo, ouvi-nos, Senhor!<br>
+Cordeiro de Deus, que tirais o pecado do mundo, tende piedade de nós!<br>
+Rogai por nós, São João Paulo II,<br>
+para que sejamos dignos das promessas de Cristo. Amém!</p>
+
+            <div class="cta-blog-produto">
+              <p>Leve São João Paulo II com você</p>
+              <a href="__URL_PRODUTO__" class="botao-principal">Ver medalha, entremeio e chaveiro de São João Paulo II →</a>
+            </div>
+        """,
+    },
+    "novena-de-sao-carlo-acutis": {
+        "titulo": "Novena de São Carlo Acutis: os 9 dias",
+        "resumo": (
+            "A novena completa de São Carlo Acutis, com uma frase marcante do santo em cada um dos 9 dias, tradicionalmente rezada de 3 a 11 de outubro."
+        ),
+        "produto_relacionado_id": "carlo-acutis",
+        "publicado_em": "2026-09-24",
+        "corpo_html": """
+            <p>São Carlo Acutis (1991-2006), o "influencer de Deus", morreu aos 15 anos
+            de uma leucemia fulminante depois de dedicar a curta vida a catalogar milagres
+            eucarísticos e viver o Evangelho no dia a dia comum de um adolescente. Foi
+            canonizado em 7 de setembro de 2025 pelo Papa Leão XIV, e é tradicionalmente
+            celebrado com esta novena rezada de 3 a 11 de outubro.</p>
+
+            <p><em>Novena reproduzida de <a href="https://comshalom.org/novena-ao-beato-carlo-acutis/" target="_blank" rel="noopener">comshalom.org</a> (Comunidade Católica Shalom) -- a página de origem ainda usa o título anterior à canonização, mas o texto já é o mesmo rezado por quem invoca São Carlo Acutis hoje.</em></p>
+
+            <p>Todos os 9 dias seguem a mesma estrutura: a Oração inicial (abaixo),
+            a invocação específica do dia (indicada em cada card), 5 Pai-Nossos/Ave-Marias/
+            Glórias e a Oração final (também abaixo) -- reproduzidas uma única vez aqui
+            pra não repetir o mesmo texto 9 vezes.</p>
+
+            <p><strong>Oração inicial para todos os dias:</strong></p>
+                <p>Santíssima Trindade, Pai, Filho e Espírito Santo, eu Vos agradeço todos os favores, todas as graças com que enriquecestes a alma de São Carlo Acutis durante os 15 anos que passou nesta terra e pelos méritos, em Cristo Jesus, deste tão querido exemplo para a juventude, concedei-me a graça que ardentemente Vos peço… (faça o pedido da graça que deseja).</p>
+
+                <p>São Carlo Acutis, que fizeste de tua vida uma contínua renúncia e aniquilamento, dá-me a graça de buscar as coisas do Céu e desprezar as que passam. Assim seja. Amém.</p>
+
+                <p><strong>5 Pai-Nossos, 5 Ave-Marias e 5 Glórias ao Pai</strong>, em honra dos 15 anos de vida de Carlo Acutis nesta terra.</p>
+
+            <details class="novena-dia">
+              <summary>1º dia — "Não eu, mas Deus"</summary>
+              <p><em>(Reza-se a Oração inicial para todos os dias -- reproduzida uma única vez acima)</em></p>
+              <p>São Carlo Acutis, que fizeste de tua vida uma contínua renúncia e aniquilamento, dá-me a graça de buscar as coisas do Céu e desprezar as que passam. Assim seja. Amém.</p>
+              <p>5 Pai-Nossos, 5 Ave-Marias e 5 Glórias ao Pai, em honra dos 15 anos de vida de Carlo Acutis nesta terra.</p>
+              <p><em>(Reza-se a seguir a Oração final -- reproduzida uma única vez acima)</em></p>
+            </details>
+            <details class="novena-dia">
+              <summary>2º dia — "Estar sempre com Jesus, este é o meu projeto de vida"</summary>
+              <p><em>(Reza-se a Oração inicial para todos os dias -- reproduzida uma única vez acima)</em></p>
+              <p>São Carlo Acutis, que viveste na intimidade do Sagrado Coração de Jesus, dá-me a graça de realizar, em tudo, a vontade de Deus em minha vida. Assim seja. Amém.</p>
+              <p>5 Pai-Nossos, 5 Ave-Marias e 5 Glórias ao Pai, em honra dos 15 anos de vida de Carlo Acutis nesta terra.</p>
+              <p><em>(Reza-se a seguir a Oração final -- reproduzida uma única vez acima)</em></p>
+            </details>
+            <details class="novena-dia">
+              <summary>3º dia — "Peça ao seu Anjo da Guarda para ajudá-lo continuamente, de modo que ele se torne seu melhor amigo"</summary>
+              <p><em>(Reza-se a Oração inicial para todos os dias -- reproduzida uma única vez acima)</em></p>
+              <p>São Carlo Acutis, que buscaste, já neste mundo, a companhia dos santos anjos, dá-me a graça de viver na retidão que o meu santo anjo deseja. Assim seja. Amém.</p>
+              <p>5 Pai-Nossos, 5 Ave-Marias e 5 Glórias ao Pai, em honra dos 15 anos de vida de Carlo Acutis nesta terra.</p>
+              <p><em>(Reza-se a seguir a Oração final -- reproduzida uma única vez acima)</em></p>
+            </details>
+            <details class="novena-dia">
+              <summary>4º dia — "Nossa alma é como um balão aerostático… Se por acaso existe um pecado mortal, a alma cai por terra. A confissão é como o fogo embaixo do balão que permite que a alma se levante novamente. É importante confessar-se com frequência"</summary>
+              <p><em>(Reza-se a Oração inicial para todos os dias -- reproduzida uma única vez acima)</em></p>
+              <p>São Carlo Acutis, que tão bem viveste este sacramento da Reconciliação, dá-me a graça de buscar sempre a confissão com uma contrição profunda. Assim seja. Amém.</p>
+              <p>5 Pai-Nossos, 5 Ave-Marias e 5 Glórias ao Pai, em honra dos 15 anos de vida de Carlo Acutis nesta terra.</p>
+              <p><em>(Reza-se a seguir a Oração final -- reproduzida uma única vez acima)</em></p>
+            </details>
+            <details class="novena-dia">
+              <summary>5º dia — "A felicidade é olhar para Deus e a tristeza é olhar para si mesmo"</summary>
+              <p><em>(Reza-se a Oração inicial para todos os dias -- reproduzida uma única vez acima)</em></p>
+              <p>São Carlo Acutis, que jamais desviaste o teu olhar de Jesus, teu grande amor, dá-me a graça de viver já neste mundo esta verdadeira felicidade. Assim seja. Amém.</p>
+              <p>5 Pai-Nossos, 5 Ave-Marias e 5 Glórias ao Pai, em honra dos 15 anos de vida de Carlo Acutis nesta terra.</p>
+              <p><em>(Reza-se a seguir a Oração final -- reproduzida uma única vez acima)</em></p>
+            </details>
+            <details class="novena-dia">
+              <summary>6º dia — "A única coisa que devemos pedir a Deus em oração é o desejo de ser santos"</summary>
+              <p><em>(Reza-se a Oração inicial para todos os dias -- reproduzida uma única vez acima)</em></p>
+              <p>São Carlo Acutis, que soubeste sempre pedir a Deus o essencial, dá-me a graça de um profundo desejo do Céu. Assim seja. Amém.</p>
+              <p>5 Pai-Nossos, 5 Ave-Marias e 5 Glórias ao Pai, em honra dos 15 anos de vida de Carlo Acutis nesta terra.</p>
+              <p><em>(Reza-se a seguir a Oração final -- reproduzida uma única vez acima)</em></p>
+            </details>
+            <details class="novena-dia">
+              <summary>7º dia — "A Virgem Maria é a única mulher na minha vida"</summary>
+              <p><em>(Reza-se a Oração inicial para todos os dias -- reproduzida uma única vez acima)</em></p>
+              <p>São Carlo Acutis, que amaste a Virgem Maria com devoção filial, dá-me a graça de corresponder ao amor desta tão terna e boa Mãe. Assim seja. Amém.</p>
+              <p>5 Pai-Nossos, 5 Ave-Marias e 5 Glórias ao Pai, em honra dos 15 anos de vida de Carlo Acutis nesta terra.</p>
+              <p><em>(Reza-se a seguir a Oração final -- reproduzida uma única vez acima)</em></p>
+            </details>
+            <details class="novena-dia">
+              <summary>8º dia — "A Eucaristia é a minha estrada para o Céu"</summary>
+              <p><em>(Reza-se a Oração inicial para todos os dias -- reproduzida uma única vez acima)</em></p>
+              <p>São Carlo Acutis, que buscavas sempre teu Jesus escondido no sacrário, dá-me a graça de um profundo ardor eucarístico. Assim seja. Amém.</p>
+              <p>5 Pai-Nossos, 5 Ave-Marias e 5 Glórias ao Pai, em honra dos 15 anos de vida de Carlo Acutis nesta terra.</p>
+              <p><em>(Reza-se a seguir a Oração final -- reproduzida uma única vez acima)</em></p>
+            </details>
+            <details class="novena-dia">
+              <summary>9º dia — "Eu estou feliz por morrer, porque vivi a minha vida sem perder nem mesmo um minuto dela com coisas que não agradam a Deus"</summary>
+              <p><em>(Reza-se a Oração inicial para todos os dias -- reproduzida uma única vez acima)</em></p>
+              <p>São Carlo Acutis, dá-me a graça das graças, que é a perseverança final e uma morte santa. Assim seja. Amém.</p>
+              <p>5 Pai-Nossos, 5 Ave-Marias e 5 Glórias ao Pai, em honra dos 15 anos de vida de Carlo Acutis nesta terra.</p>
+              <p><em>(Reza-se a seguir a Oração final -- reproduzida uma única vez acima)</em></p>
+            </details>
+
+            <p><strong>Oração final (repetida todos os dias):</strong></p>
+                <p>Deus Pai de Misericórdia, pelos méritos do Vosso Filho Nosso Senhor Jesus Cristo, por intercessão de São Carlo Acutis, a fim de que, por ele, Vós sejais mais glorificado, dai-nos chamar de Santo este que em tudo viveu a Vossa vontade e, se for do Vosso agrado, concedei-me a graça que ardentemente desejo. Assim seja. Amém.</p>
+
+            <div class="cta-blog-produto">
+              <p>Leve São Carlo Acutis com você</p>
+              <a href="__URL_PRODUTO__" class="botao-principal">Ver medalha, entremeio e chaveiro de Carlo Acutis →</a>
+            </div>
+        """,
+    },
+    "novena-de-nossa-senhora-aparecida": {
+        "titulo": "Novena de Nossa Senhora Aparecida: os 9 dias",
+        "resumo": (
+            "A novena completa de Nossa Senhora Aparecida, dia a dia, pra rezar antes de sua festa em 12 de outubro, padroeira do Brasil."
+        ),
+        "produto_relacionado_id": "nossa-senhora-aparecida",
+        "publicado_em": "2026-09-24",
+        "corpo_html": """
+            <p>Em 1717, três pescadores encontraram no rio Paraíba do Sul uma pequena
+            imagem de Nossa Senhora da Conceição -- hoje venerada como Nossa Senhora
+            Aparecida, padroeira do Brasil. Sua festa é celebrada em 12 de outubro.</p>
+
+            <p><em>O comshalom.org tem uma página de novena a Nossa Senhora Aparecida, mas
+            ela traz só uma oração curta (sem divisão em 9 dias) -- reproduzida abaixo,
+            citando <a href="https://www.comshalom.org/novena-nossa-senhora-da-conceicao-aparecida/" target="_blank" rel="noopener">comshalom.org</a>,
+            que por sua vez credita o texto à Canção Nova. A novena completa de 9 dias que
+            vem a seguir NÃO é do comshalom.org -- foi reproduzida de
+            <a href="https://padrepauloricardo.org/blog/novena-a-nossa-senhora-da-conceicao-aparecida" target="_blank" rel="noopener">padrepauloricardo.org</a>,
+            que diz tê-la traduzido de um antigo manual de orações em latim e italiano
+            (é a novena tradicional à Imaculada Conceição, já que a imagem encontrada em
+            1717 é de Nossa Senhora da Conceição).</em></p>
+
+            <p><strong>Oração curta (comshalom.org):</strong></p>
+                <p>Padroeira do Brasil – 300 anos</p>
+
+                <p>A Devoção a Nossa Senhora Aparecida nos faz sentir igualmente filhos, cujas necessidades apresentamos a Mãe.</p>
+
+                <p>Ó Virgem Maria, abençoada sois vós pelo Senhor Deus Altíssimo entre todas as mulheres da Terra. Vós sois a glória de Jerusalém, vós sois a alegria de Israel, vós sois a honra do vosso povo. Salve, ó Virgem, honra de nossa Terra, a quem rendemos um culto de piedade e veneração, a quem chamamos com o belo nome de Aparecida.</p>
+
+                <p>Quem poderá contar, ó doce Mãe, quantas graças, durante tantos anos, vós dispensastes ao povo brasileiro, compadecida de nossos males?</p>
+
+                <p>Quisemos cingir vossa cabeça sagrada com uma coroa de ouro, que vos é devida por tantos títulos; continuai a dobrar-vos benignamente às nossas preces.</p>
+
+                <p>Quando erguemos ao céu nossas mãos suplicantes, ouvi clemente os nossos rogos, ó Virgem; conservai nossas almas afastadas da culpa e, por fim, conduzi-nos ao céu.</p>
+
+                <p>Louvor, honra e poder Àquele que, uno e trino, nos fulgores de seu trono celeste, governa e rege todo o universo. Amém.</p>
+
+                <p>V. A vossa Imaculada Conceição, ó Virgem Mãe de Deus,</p>
+
+                <p>R. Anunciou a alegria ao mundo todo.</p>
+
+                <p><strong>Oremos</strong></p>
+
+                <p>Ó Deus, que por intermédio da Mãe Imaculada de vosso Filho, multiplicastes os dons de vossa graça em favor de nós, vossos servos: concedei-nos propício que, celebrando na Terra os louvores da mesma Virgem, pelas suas maternas preces mereçamos alcançar o prêmio eterno no céu. Pelo mesmo Nosso Senhor Jesus Cristo. Amém.</p>
+
+            <hr>
+
+            <p><strong>Novena completa de 9 dias (padrepauloricardo.org)</strong></p>
+
+                <p>A devoção à Imaculada Conceição é particularmente forte nos países lusófonos e acompanha a história de Portugal desde as suas origens. Três fatos são suficientes para atestá-lo:</p>
+
+                <p>No Cerco de Lisboa, em 1147, quando a cidade foi tomada dos muçulmanos por D. Afonso Henriques, o primeiro rei português, uma Missa pontifical de ação de graças foi celebrada em honra à Virgem da Conceição.</p>
+
+                <p>Na crise dinástica do século XIV, que se resolveu com a Batalha de Aljubarrota, em 1385, D. Nuno Álvares Pereira (São Nuno de Santa Maria) mandou construir em Vila Viçosa um templo a Nossa Senhora da Conceição.</p>
+
+                <p>Após a Restauração da Independência de Portugal, em 1640, D. João IV jurou e proclamou solenemente Nossa Senhora da Conceição como Rainha e Padroeira de Portugal e de todos os seus territórios ultramarinos (o que incluía, na época, o Brasil). Na provisão régia — confirmada depois pelo próprio Papa —, o rei prometeu "confessar e defender sempre (até dar a vida sendo necessário) que a Virgem Maria Mãe de Deus foi concebida sem pecado original". Depois, num ato profundamente simbólico, coroou a imagem da Virgem da Conceição, na mesma igreja de Vila Viçosa, e desde então os reis de Portugal nunca mais colocariam a coroa real em sua cabeça, como forma de reconhecer na Virgem Maria a única verdadeira soberana de todo o reino lusitano.</p>
+
+                <p>Essa devoção também se tornou particularmente cara ao povo brasileiro, principalmente com a pesca milagrosa de uma imagem de Nossa Senhora da Conceição no rio Paraíba, em 1717 — daí o culto à Virgem Aparecida. No século seguinte, o Brasil se tornaria independente de Portugal, mas a devoção à Imaculada continua a unir espiritualmente as duas nações.</p>
+
+                <p>Em 1854, o Beato Papa Pio IX finalmente proclamou como dogma a Imaculada Conceição, tornando obrigatória a todos os católicos essa doutrina que os portugueses e brasileiros já confessavam espontaneamente.</p>
+
+                <p>Por isso, sugerimos aos nossos leitores que façam esta novena não só de 3 a 11 de outubro (quando nos preparamos para a festa de Nossa Senhora Aparecida), mas também dos dias 29 de novembro a 7 de dezembro (que precedem a solenidade da Imaculada Conceição) — embora essas orações possam ser rezadas a qualquer tempo.</p>
+
+            <p><strong>Orações preparatórias</strong> (rezar antes da oração de cada dia):</p>
+                <p>Vinde, Espírito Santo, enchei o coração dos vossos fiéis e acendei neles o fogo do vosso amor.</p>
+
+                <p>℣. Enviai o vosso Espírito, e tudo será criado.</p>
+
+                <p>℟. E renovareis a face da terra.</p>
+
+                <p><strong>Oremos.</strong> Ó Deus, que instruístes os corações dos vossos fiéis com a luz do Espírito Santo, concedei-nos amar, no mesmo Espírito, o que é reto e gozar sempre a sua consolação. Por Cristo, Senhor nosso. ℟. Amém.</p>
+
+                <p>Ó Virgem puríssima concebida sem pecado, desde o primeiro instante toda bela e sem mancha. Ó gloriosa Maria, cheia de graça e Mãe de meu Deus, Rainha dos anjos e dos homens. Humildemente vos venero como Mãe do meu Salvador, que, sendo Deus, me ensinou com sua estima, respeito e submissão a vós a honra e a homenagem que vos devo prestar. Dignai-vos acolher-me a mim, que nesta novena a vós me consagro. Sendo vós refúgio seguro dos pecadores arrependidos, tenho razão para recorrer a vós; sendo Mãe de misericórdia, não podeis não vos compadecer de minha miséria; sendo, depois de Jesus Cristo, toda a minha esperança, não podeis não vos agradar da tenra confiança que em vós tenho. Fazei-me digno de chamar-me vosso filho, a fim de que possa dizer com confiança: Mostrais que sois Mãe.</p>
+
+                <p><em>— Em seguida, reza-se uma Ave-Maria, um Glória e a oração do dia correspondente.</em></p>
+
+            <details class="novena-dia">
+              <summary>1º dia</summary>
+                <p>Eis-me aqui aos vossos pés santíssimos, ó Virgem Imaculada. Alegro-me grandemente convosco, eleita desde a eternidade para ser Mãe do Verbo eterno e preservada da culpa original. Dou graças e bendigo à Santíssima Trindade, que vos enriqueceu com este privilégio em vossa Conceição, e suplico-vos humildemente que me alcanceis a graça de vencer as tristes sequelas que em mim deixou o pecado original. Fazei que eu as supere e não deixe mais de amar ao meu Deus.</p>
+
+                <p><em>— Em seguida, reza-se o hino abaixo (ou a ladainha de Nossa Senhora):</em></p>
+
+                <p>℣. Toda bela sois, Maria. ℟. Toda bela sois, Maria.</p>
+
+                <p>℣. E sem a mancha original. ℟. E sem a mancha original.</p>
+
+                <p>℣. Sois a glória de Jerusalém. ℟. Sois a alegria de Israel.</p>
+
+                <p>℣. Sois a honra do nosso povo. ℟. Sois a Advogada dos pecadores.</p>
+
+                <p>℣. Ó Maria. ℟. Ó Maria.</p>
+
+                <p>℣. Virgem prudentíssima. ℟. Mãe clementíssima.</p>
+
+                <p>℣. Rogai por nós. ℟. Intercedei por nós ao Senhor Jesus Cristo.</p>
+
+                <p><em>Em seguida, reza-se:</em></p>
+
+                <p>℣. Em vossa Conceição, ó Virgem, fostes imaculada.</p>
+
+                <p>℟. Rogai por nós ao Pai cujo Filho destes à luz.</p>
+
+                <p><strong>Oremos.</strong> Ó Deus, que pela Imaculada Conceição da Virgem Maria preparastes uma digna morada para o vosso Filho e em atenção aos méritos futuros da morte de Cristo a preservastes de toda mancha, concedei-nos, por sua intercessão, a graça de chegarmos purificados junto de Vós. Ó Deus, pastor e guia de todos os fiéis, olhai propício para o vosso servo N., que constituístes pastor de vossa Igreja; dai-lhe, nós vos pedimos, servir por palavra e exemplo aqueles a quem governa, a fim de alcançar a vida eterna com o rebanho que lhe foi confiado. Ó Deus, nosso refúgio e fortaleza, ouvi as piedosas súplicas de vossa Igreja, Vós que sois o autor da piedade, e concedei-nos alcançar eficazmente o que com confiança vos pedimos. Por Cristo, Senhor nosso. ℟. Amém.</p>
+              <p><em>Em seguida, reza-se o hino/ladainha e a oração "Oremos" do Primeiro Dia (reproduzidos uma única vez, logo abaixo).</em></p>
+            </details>
+            <details class="novena-dia">
+              <summary>2º dia</summary>
+                <p>Ó Maria, lírio imaculado de pureza, alegro-me convosco, que desde o primeiro instante de vossa Conceição fostes cumulada de graça e recebestes o uso perfeito da razão. Dou graças e adoro à Santíssima Trindade, que vos concedeu dons tão sublimes. Confundo-me todo diante de vós, vendo-me tão pobre de graça. Vós, que fostes plenamente cumulada de graça celeste, fazei-me participar e compartilhar dos tesouros de vossa Imaculada Conceição.</p>
+              <p><em>Em seguida, reza-se o hino/ladainha e a oração "Oremos" do Primeiro Dia (reproduzidos uma única vez, logo abaixo).</em></p>
+            </details>
+            <details class="novena-dia">
+              <summary>3º dia</summary>
+                <p>Ó Maria, rosa mística de pureza, alegro-me convosco, que em vossa Imaculada Conceição triunfastes gloriosamente da serpente infernal e fostes concebida sem a mancha do pecado original. Dou graças e louvo com todo o coração à Santíssima Trindade, que vos concedeu tal privilégio, e vos suplico que me alcanceis a força para superar todas as insídias do inimigo infernal e não manchar com o pecado a minha alma. Ajudai-me sempre e fazei-me, com vossa proteção, triunfar sempre do inimigo comum de nossa eterna salvação.</p>
+              <p><em>Em seguida, reza-se o hino/ladainha e a oração "Oremos" do Primeiro Dia (reproduzidos uma única vez, logo abaixo).</em></p>
+            </details>
+            <details class="novena-dia">
+              <summary>4º dia</summary>
+                <p>Ó Imaculada Virgem Maria, espelho de pureza, encho-me de sumo gozo ao ver que vos foram infusos desde a vossa Conceição os dons mais sublimes e perfeitos de virtude e também todos os dons do Espírito Santo. Dou graças e louvo à Santíssima Trindade, que vos favoreceu com estes privilégios, e vos suplico, ó Mãe benigna, que me alcanceis a prática da virtude e a graça de tornar-me digno de receber os dons e a graça do Espírito Santo.</p>
+              <p><em>Em seguida, reza-se o hino/ladainha e a oração "Oremos" do Primeiro Dia (reproduzidos uma única vez, logo abaixo).</em></p>
+            </details>
+            <details class="novena-dia">
+              <summary>5º dia</summary>
+                <p>Ó Maria, lua reluzente de pureza, alegro-me convosco, pois o mistério de vossa Imaculada Conceição foi o início da salvação de todo o gênero humano e a alegria do mundo inteiro. Dou graças e bendigo à Santíssima Trindade, que assim vos engrandeceu e glorificou, e vos suplico que me alcanceis a graça de saber aproveitar-me da paixão e morte do vosso Jesus. Que não seja para mim inútil o Sangue derramado na cruz, mas que eu viva santamente e me salve.</p>
+              <p><em>Em seguida, reza-se o hino/ladainha e a oração "Oremos" do Primeiro Dia (reproduzidos uma única vez, logo abaixo).</em></p>
+            </details>
+            <details class="novena-dia">
+              <summary>6º dia</summary>
+                <p>Ó Maria Imaculada, estrela esplendorosa de pureza, alegro-me convosco, porque a vossa Imaculada Conceição foi motivo de grandíssima alegria para todos os anjos do paraíso. Dou graças e bendigo à Santíssima Trindade, que vos enriqueceu de tão belo privilégio. Fazei-me entrar um dia nesta alegria e poder, na companhia dos anjos, louvar-vos e bendizer-vos eternamente.</p>
+              <p><em>Em seguida, reza-se o hino/ladainha e a oração "Oremos" do Primeiro Dia (reproduzidos uma única vez, logo abaixo).</em></p>
+            </details>
+            <details class="novena-dia">
+              <summary>7º dia</summary>
+                <p>Ó Maria Imaculada, aurora nascente de pureza, alegro-me convosco, admirado de que no momento mesmo de vossa Conceição fostes confirmada em graça e tornada impecável. Dou graças e exalto à Santíssima Trindade, que vos distinguiu somente a vós com este particular privilégio. Impetrai-me, ó Virgem santa, um total e contínuo horror ao pecado, mais do que a qualquer outro mal, e que eu prefira antes morrer que voltar a pecar.</p>
+              <p><em>Em seguida, reza-se o hino/ladainha e a oração "Oremos" do Primeiro Dia (reproduzidos uma única vez, logo abaixo).</em></p>
+            </details>
+            <details class="novena-dia">
+              <summary>8º dia</summary>
+                <p>Ó Virgem Maria, sol sem mancha, alegro-me convosco, cheio de gozo por terdes recebido de Deus em vossa Conceição uma graça maior e mais copiosa que a alcançada por todos os anjos e santos no auge de seus méritos. Dou graças à Santíssima Trindade, admirado da suma beneficência com que vos dispensou este privilégio. Fazei-me corresponder à graça divina e a dela não mais abusar. Transformai-me o coração e fazei que eu me arrependa desde agora de minhas culpas.</p>
+              <p><em>Em seguida, reza-se o hino/ladainha e a oração "Oremos" do Primeiro Dia (reproduzidos uma única vez, logo abaixo).</em></p>
+            </details>
+            <details class="novena-dia">
+              <summary>9º dia</summary>
+                <p>Ó Maria, Virgem Imaculada, luz viva de santidade, exemplo de pureza e Mãe minha. Vós, apenas concebida, adorastes profundamente a Deus e lhe rendestes graças, já que por meio de vós, desfeita a antiga maldição, derramou-se a maior bênção sobre os filhos de Adão. Fazei que esta bênção acenda em meu coração um amor ardente a Deus. Inflamai-o vós, para que eu o ame constantemente e dele goze depois para sempre no paraíso, onde poderei dar-lhe graças mais ardentemente pelos singulares privilégios que vos concedeu e gozar de vós coroada de tanta glória.</p>
+
+                <p><em>(Fim da novena — Parte 2 conforme publicada em padrepauloricardo.org)</em></p>
+              <p><em>Em seguida, reza-se o hino/ladainha e a oração "Oremos" do Primeiro Dia (reproduzidos uma única vez, logo abaixo).</em></p>
+            </details>
+
+            <p><strong>Hino/ladainha e "Oremos" do Primeiro Dia</strong> (repetidos ao final de todos os 9 dias):</p>
+                <p>℣. Toda bela sois, Maria. ℟. Toda bela sois, Maria.</p>
+
+                <p>℣. E sem a mancha original. ℟. E sem a mancha original.</p>
+
+                <p>℣. Sois a glória de Jerusalém. ℟. Sois a alegria de Israel.</p>
+
+                <p>℣. Sois a honra do nosso povo. ℟. Sois a Advogada dos pecadores.</p>
+
+                <p>℣. Ó Maria. ℟. Ó Maria.</p>
+
+                <p>℣. Virgem prudentíssima. ℟. Mãe clementíssima.</p>
+
+                <p>℣. Rogai por nós. ℟. Intercedei por nós ao Senhor Jesus Cristo.</p>
+
+                <p>℣. Em vossa Conceição, ó Virgem, fostes imaculada.</p>
+
+                <p>℟. Rogai por nós ao Pai cujo Filho destes à luz.</p>
+
+            <p><strong>Oremos.</strong> Ó Deus, que pela Imaculada Conceição da Virgem Maria preparastes uma digna morada para o vosso Filho e em atenção aos méritos futuros da morte de Cristo a preservastes de toda mancha, concedei-nos, por sua intercessão, a graça de chegarmos purificados junto de Vós. Ó Deus, pastor e guia de todos os fiéis, olhai propício para o vosso servo N., que constituístes pastor de vossa Igreja; dai-lhe, nós vos pedimos, servir por palavra e exemplo aqueles a quem governa, a fim de alcançar a vida eterna com o rebanho que lhe foi confiado. Ó Deus, nosso refúgio e fortaleza, ouvi as piedosas súplicas de vossa Igreja, Vós que sois o autor da piedade, e concedei-nos alcançar eficazmente o que com confiança vos pedimos. Por Cristo, Senhor nosso. ℟. Amém.</p>
+
+            <div class="cta-blog-produto">
+              <p>Leve Nossa Senhora Aparecida com você</p>
+              <a href="__URL_PRODUTO__" class="botao-principal">Ver medalha, entremeio e chaveiro de Nossa Senhora Aparecida →</a>
             </div>
         """,
     },

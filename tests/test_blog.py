@@ -3,6 +3,7 @@ from __future__ import annotations
 import re
 
 import pytest
+from markupsafe import escape
 
 from app import app
 from services.blog import ARTIGOS_BLOG, artigo_por_produto_id
@@ -32,11 +33,15 @@ def test_todos_os_artigos_tem_produto_relacionado_valido():
 
 
 def test_indice_lista_todos_os_artigos(client):
+    """`escape()` porque o Jinja escapa aspas simples (ex: "d'Ávila" vira
+    "d&#39;Ávila" no HTML renderizado) -- comparar a string crua contra
+    a pagina falha pra qualquer titulo com apostrofo, mesmo estando
+    tudo certo (ver conversa 2026-09-24)."""
     resposta = client.get("/blog")
     assert resposta.status_code == 200
     pagina = resposta.get_data(as_text=True)
     for artigo in ARTIGOS_BLOG.values():
-        assert artigo["titulo"] in pagina
+        assert str(escape(artigo["titulo"])) in pagina
 
 
 def test_artigo_existe_renderiza_200(client):
@@ -111,14 +116,19 @@ def test_links_internos_dos_artigos_apontam_pra_coisas_reais():
     """Artigos "misturados" citam varios produtos/outros artigos dentro
     do texto (ver conversa) com link cru (<a href="/produto/...">,
     "/blog/..."), sem passar por url_for -- essa checagem garante que
-    nenhum desses links crus aponta pra um id/slug que nao existe."""
+    nenhum desses links crus aponta pra um id/slug que nao existe.
+    Ancorado em `href="` (nao so "/produto/"/"/blog/" soltos) pra nao
+    confundir link INTERNO com um link EXTERNO que por coincidencia
+    tem "/blog/" no proprio caminho (ex: as novenas citam
+    https://.../blog/novena-..., um artigo de outro site, ver
+    conversa 2026-09-24)."""
     ids_validos = {p["id"] for p in carregar_produtos()}
     slugs_validos = set(ARTIGOS_BLOG.keys())
     for slug, artigo in ARTIGOS_BLOG.items():
         corpo = artigo["corpo_html"]
-        for pid in re.findall(r'/produto/([a-z0-9\-]+)', corpo):
+        for pid in re.findall(r'href="/produto/([a-z0-9\-]+)"', corpo):
             assert pid in ids_validos, f"{slug}: link inline /produto/{pid} não existe"
-        for slug_inline in re.findall(r'/blog/([a-z0-9\-]+)', corpo):
+        for slug_inline in re.findall(r'href="/blog/([a-z0-9\-]+)"', corpo):
             assert slug_inline in slugs_validos, f"{slug}: link inline /blog/{slug_inline} não existe"
 
 
@@ -202,6 +212,26 @@ def test_artigos_de_atacado_linkam_pra_pagina_de_revendedores(client):
     resposta = client.get("/blog/como-comprar-artigos-religiosos-no-atacado")
     pagina = resposta.get_data(as_text=True)
     assert "/para/livrarias-e-revendedores" in pagina
+
+
+def test_novenas_tem_os_9_dias_e_citam_a_fonte(client):
+    """ver conversa 2026-09-24: pedido explicito da usuaria de citar a
+    fonte quando o texto vem do comshalom.org (ou de outro site, quando
+    o comshalom nao tinha aquela novena especifica -- ver services/blog.py)."""
+    casos = {
+        "novena-de-santa-teresinha": "comshalom.org",
+        "novena-de-sao-francisco-de-assis": "Canção Nova",
+        "novena-de-santa-teresa-davila": "comshalom.org",
+        "novena-de-sao-joao-paulo-ii": "comshalom.org",
+        "novena-de-sao-carlo-acutis": "comshalom.org",
+        "novena-de-nossa-senhora-aparecida": "padrepauloricardo.org",
+    }
+    for slug, fonte_esperada in casos.items():
+        resposta = client.get(f"/blog/{slug}")
+        assert resposta.status_code == 200
+        pagina = resposta.get_data(as_text=True)
+        assert pagina.count('class="novena-dia"') == 9, f"{slug}: não tem os 9 dias"
+        assert fonte_esperada in pagina, f"{slug}: não cita a fonte {fonte_esperada}"
 
 
 def test_historia_da_loja_e_personalizacao_linkam_entre_si(client):
