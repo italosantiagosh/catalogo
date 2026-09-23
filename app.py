@@ -992,14 +992,15 @@ def sitemap_xml():
     produtos = carregar_produtos()
     # (caminho, changefreq, priority) -- home/catalogo primeiro (mais
     # importantes e mudam mais), produto/categoria no meio, paginas
-    # institucionais e carrinho (nao e´ conteudo de busca) por ultimo.
+    # institucionais por ultimo. /carrinho fica de fora: nao e´ conteudo
+    # de busca, e´ estado transitorio por visitante (ver auditoria
+    # 2026-09-23).
     entradas = [
         (url_for("index"), "weekly", "0.8"),
         (url_for("catalogo_completo"), "weekly", "0.8"),
         (url_for("personalizada"), "monthly", "0.7"),
         (url_for("kit_livraria_shalom"), "monthly", "0.6"),
         (url_for("cruz_para_terco"), "monthly", "0.6"),
-        (url_for("carrinho"), "yearly", "0.1"),
     ]
     entradas += [(url_for("landing_pagina", slug=s), "monthly", "0.6") for s in PAGINAS_LANDING]
     entradas += [
@@ -1458,7 +1459,7 @@ def categoria(slug: str):
     itens = _com_vendas_recentes(_com_avaliacoes(_itens_do_grid([p for p in produtos if p["categoria"] == nome_categoria])))
     dados_breadcrumb = _dados_breadcrumb(
         [
-            ("Catálogo", url_for("index", _external=True)),
+            ("Início", url_for("index", _external=True)),
             (nome_categoria, url_for("categoria", slug=slug, _external=True)),
         ]
     )
@@ -1588,7 +1589,7 @@ def produto(produto_id: str):
         ]
     dados_breadcrumb = _dados_breadcrumb(
         [
-            ("Catálogo", url_for("index", _external=True)),
+            ("Início", url_for("index", _external=True)),
             (produto["categoria"], url_for("categoria", slug=categoria_slug, _external=True)),
             (produto["nome"], url_for("produto", produto_id=produto_id, _external=True)),
         ]
@@ -1727,7 +1728,7 @@ def pagina_atendimento(slug: str):
         abort(404)
     dados_breadcrumb = _dados_breadcrumb(
         [
-            ("Catálogo", url_for("index", _external=True)),
+            ("Início", url_for("index", _external=True)),
             (pagina["titulo"], url_for("pagina_atendimento", slug=slug, _external=True)),
         ]
     )
@@ -1771,7 +1772,7 @@ def _url_cta_do_artigo(artigo: dict) -> str:
 def blog_indice():
     dados_breadcrumb = _dados_breadcrumb(
         [
-            ("Catálogo", url_for("index", _external=True)),
+            ("Início", url_for("index", _external=True)),
             ("Blog", url_for("blog_indice", _external=True)),
         ]
     )
@@ -1793,7 +1794,7 @@ def blog_artigo(slug: str):
     url_artigo = url_for("blog_artigo", slug=slug, _external=True)
     dados_breadcrumb = _dados_breadcrumb(
         [
-            ("Catálogo", url_for("index", _external=True)),
+            ("Início", url_for("index", _external=True)),
             ("Blog", url_for("blog_indice", _external=True)),
             (artigo["titulo"], url_artigo),
         ]
@@ -1821,7 +1822,7 @@ def landing_pagina(slug: str):
         abort(404)
     dados_breadcrumb = _dados_breadcrumb(
         [
-            ("Catálogo", url_for("index", _external=True)),
+            ("Início", url_for("index", _external=True)),
             (pagina["titulo"], url_for("landing_pagina", slug=slug, _external=True)),
         ]
     )
@@ -4978,7 +4979,7 @@ def personalizada():
         formato_inicial = "medalha_2lados" if (combo_2lados or lado1_prefill) else "medalha"
     dados_breadcrumb = _dados_breadcrumb(
         [
-            ("Catálogo", url_for("index", _external=True)),
+            ("Início", url_for("index", _external=True)),
             ("Medalha personalizada", url_for("personalizada", _external=True)),
         ]
     )

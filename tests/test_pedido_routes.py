@@ -981,6 +981,17 @@ def test_obrigado_nao_aparece_se_pedido_nao_esta_pago(client):
     assert "Obrigado pela sua compra!" not in corpo
 
 
+def test_pagina_de_pedido_e_noindex(client):
+    # tem nome, endereco e total do cliente -- nao deve ser indexavel
+    # mesmo o risco sendo baixo (nao esta no sitemap nem linkada em
+    # lugar publico), ver auditoria 2026-09-23.
+    with patch("app.criar_link_pagamento", return_value={"url": "https://checkout.infinitepay.io/abc"}):
+        criado = client.post("/api/pedido/criar", json=_corpo_valido()).get_json()
+
+    corpo = client.get(f"/pedido/{criado['token']}").get_data(as_text=True)
+    assert '<meta name="robots" content="noindex, nofollow">' in corpo
+
+
 def test_webhook_confirma_pagamento_dispara_notificacao_de_venda_uma_vez(client):
     with patch("app.criar_link_pagamento", return_value={"url": "https://checkout.infinitepay.io/abc"}):
         criado = client.post("/api/pedido/criar", json=_corpo_valido()).get_json()

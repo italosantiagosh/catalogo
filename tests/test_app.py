@@ -43,6 +43,13 @@ def test_sitemap_xml_inclui_home_e_paginas_de_categoria(client):
 def test_sitemap_xml_tem_lastmod_changefreq_priority(client):
     corpo = client.get("/sitemap.xml").get_data(as_text=True)
     assert "<lastmod>" in corpo
+
+
+def test_sitemap_xml_nao_inclui_o_carrinho(client):
+    # /carrinho e´ estado transitorio por visitante, nao conteudo de
+    # busca -- nao faz sentido estar no sitemap (ver auditoria 2026-09-23).
+    corpo = client.get("/sitemap.xml").get_data(as_text=True)
+    assert "/carrinho<" not in corpo
     assert "<changefreq>weekly</changefreq>" in corpo
     assert "<priority>0.8</priority>" in corpo
     assert "<changefreq>monthly</changefreq>" in corpo
@@ -620,7 +627,7 @@ def test_breadcrumb_schema_na_pagina_de_produto(client):
     breadcrumbs = [b for b in blocos if b.get("@type") == "BreadcrumbList"]
     assert len(breadcrumbs) == 1
     itens = breadcrumbs[0]["itemListElement"]
-    assert [i["name"] for i in itens] == ["Catálogo", "Santos", "São José"]
+    assert [i["name"] for i in itens] == ["Início", "Santos", "São José"]
 
 
 def test_breadcrumb_visual_na_pagina_de_categoria(client):
