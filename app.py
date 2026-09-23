@@ -152,6 +152,7 @@ from services.email import (
     enviar_pedido_enviado,
     enviar_pedido_excluido,
     enviar_pedido_recompra,
+    inscrever_newsletter,
 )
 from services.documentos import cpf_valido, documento_valido, numero_whatsapp, telefone_valido
 from services.frete import (
@@ -566,6 +567,7 @@ def _injetar_globais_de_template():
         "meta_pixel_id": META_PIXEL_ID,
         "google_site_verification": GOOGLE_SITE_VERIFICATION,
         "instagram_url": INSTAGRAM_URL,
+        "facebook_url": FACEBOOK_URL,
         "ano_atual": datetime.now(timezone.utc).year,
         "dados_organizacao": _dados_organizacao(),
         "dados_website": _dados_website(),
@@ -2477,6 +2479,22 @@ def api_calcular_frete():
         resumo_carrinho["frete_gratis_atingido"],
         resumo_carrinho["desconto_frete_atacado"],
     )
+    return jsonify(resultado)
+
+
+@app.route("/api/newsletter", methods=["POST"])
+@limiter.limit("5 per minute")
+def api_newsletter():
+    """Inscricao na newsletter (novenas, historias de santos, produtos
+    novos e novidades -- rodape de todo o site, ver base.html e
+    auditoria 2026-09-23). Rate limit baixo: e´ um formulario publico
+    sem nenhuma outra validacao alem do formato do e-mail, entao e´ o
+    unico freio contra alguem inscrever um monte de e-mail alheio."""
+    dados = request.get_json(silent=True) or {}
+    email = str(dados.get("email", "")).strip()
+    resultado = inscrever_newsletter(email)
+    if resultado.get("erro"):
+        return jsonify(resultado), 400
     return jsonify(resultado)
 
 

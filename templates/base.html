@@ -116,6 +116,14 @@
         <strong>Nove de Julho</strong>
         <p>Medalhas, chaveiros e entremeios católicos feitos com cuidado e devoção —
         presentes de fé para marcar momentos especiais.</p>
+        <form class="rodape-newsletter" id="form-newsletter">
+          <label for="newsletter-email">Novenas, histórias de santos e novidades do site no seu e-mail</label>
+          <div class="rodape-newsletter-linha">
+            <input type="email" id="newsletter-email" name="email" placeholder="seu@email.com" required>
+            <button type="submit">Quero receber</button>
+          </div>
+          <p class="rodape-newsletter-feedback" id="newsletter-feedback" hidden></p>
+        </form>
       </div>
       <div class="rodape-coluna">
         <strong>Atendimento</strong>
@@ -145,6 +153,9 @@
         </a>
         <a class="rodape-link-icone" href="{{ instagram_url }}" target="_blank" rel="noopener">
           <img src="{{ url_for('static', filename='img/icone-instagram.png') }}" alt="" width="18" height="18" loading="lazy" decoding="async"> Instagram
+        </a>
+        <a class="rodape-link-icone" href="{{ facebook_url }}" target="_blank" rel="noopener">
+          <img src="{{ url_for('static', filename='img/icones/facebook.svg') }}" alt="" width="18" height="18" loading="lazy" decoding="async"> Facebook
         </a>
       </div>
     </div>
@@ -317,6 +328,7 @@
   <script src="{{ url_for('static', filename='js/home_busca.js') }}"></script>
   <script src="{{ url_for('static', filename='js/hero_carrossel.js') }}"></script>
   <script src="{{ url_for('static', filename='js/compartilhar.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/newsletter.js') }}"></script>
   {% block script %}{% endblock %}
 </body>
 </html>

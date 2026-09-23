@@ -460,3 +460,32 @@ def test_pedido_cancelado_oferece_3_jeitos_de_reaproveitar_o_pedido(monkeypatch)
     assert "ABC123" in corpo
 
 
+def test_newsletter_sem_configuracao_devolve_erro(monkeypatch):
+    monkeypatch.setattr(email, "BREVO_API_KEY", "")
+    monkeypatch.setattr(email, "BREVO_LIST_ID", "")
+    resultado = email.inscrever_newsletter("maria@example.com")
+    assert "erro" in resultado
+
+
+def test_newsletter_email_invalido_devolve_erro(monkeypatch):
+    monkeypatch.setattr(email, "BREVO_API_KEY", "segredo")
+    monkeypatch.setattr(email, "BREVO_LIST_ID", "7")
+    resultado = email.inscrever_newsletter("nao-e-email")
+    assert "erro" in resultado
+
+
+def test_newsletter_inscreve_com_payload_correto(monkeypatch):
+    monkeypatch.setattr(email, "BREVO_API_KEY", "segredo")
+    monkeypatch.setattr(email, "BREVO_LIST_ID", "7")
+    resposta_mock = Mock()
+    resposta_mock.raise_for_status = Mock()
+    with patch("services.email.requests.post", return_value=resposta_mock) as post_mock:
+        resultado = email.inscrever_newsletter("maria@example.com")
+
+    assert resultado == {"ok": True}
+    assert post_mock.call_args.args[0] == "https://api.brevo.com/v3/contacts"
+    corpo = post_mock.call_args.kwargs["json"]
+    assert corpo == {"email": "maria@example.com", "listIds": [7], "updateEnabled": True}
+    assert post_mock.call_args.kwargs["headers"]["api-key"] == "segredo"
+
+

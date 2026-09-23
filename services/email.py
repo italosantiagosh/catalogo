@@ -25,6 +25,7 @@ import requests
 
 from config import (
     BREVO_API_KEY,
+    BREVO_LIST_ID,
     CANONICAL_DOMAIN,
     EMAIL_NOTIFICACAO_VENDA,
     EMAIL_REMETENTE,
@@ -36,6 +37,7 @@ from services.pedidos import previsoes_do_pedido
 from services.pricing import pedido_minimo_reais
 
 API_URL = "https://api.brevo.com/v3/smtp/email"
+CONTATOS_API_URL = "https://api.brevo.com/v3/contacts"
 
 # Todo campo que vem do que o cliente digitou no checkout (nome,
 # telefone, descricao/frete escolhidos) ou que o admin digita no painel
@@ -306,6 +308,29 @@ def _enviar(*, email_cliente: str, nome_cliente: str, assunto: str, corpo_html: 
         resposta.raise_for_status()
     except requests.RequestException as exc:
         return {"erro": f"Não foi possível enviar o e-mail agora ({exc})."}
+    return {"ok": True}
+
+
+def inscrever_newsletter(email: str) -> dict:
+    """Adiciona um e-mail na lista de newsletter do Brevo (novenas,
+    historias de santos, produtos novos e novidades -- rodape do site,
+    ver app.py:api_newsletter). updateEnabled=True faz o Brevo tratar
+    reinscricao como um upsert em vez de erro 400 de duplicado -- quem
+    ja´ assinou e assina de novo simplesmente nao muda nada."""
+    if not BREVO_API_KEY or not BREVO_LIST_ID:
+        return {"erro": "Newsletter não configurada (falta BREVO_API_KEY ou BREVO_LIST_ID)."}
+    if not email or "@" not in email:
+        return {"erro": "E-mail inválido."}
+    try:
+        resposta = requests.post(
+            CONTATOS_API_URL,
+            json={"email": email, "listIds": [int(BREVO_LIST_ID)], "updateEnabled": True},
+            headers={"api-key": BREVO_API_KEY, "Content-Type": "application/json", "Accept": "application/json"},
+            timeout=10,
+        )
+        resposta.raise_for_status()
+    except requests.RequestException as exc:
+        return {"erro": f"Não foi possível inscrever agora ({exc})."}
     return {"ok": True}
 
 

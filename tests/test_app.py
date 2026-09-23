@@ -727,3 +727,32 @@ def test_pagina_404_personalizada(client):
     assert "Essa página não existe" in corpo
     assert 'href="/catalogo"' in corpo
     assert "Rua Furnas" in corpo  # confirma que usa o rodape/base.html normal, nao a pagina padrao do Flask
+
+
+def test_newsletter_rodape_aparece_em_toda_pagina(client):
+    resposta = client.get("/").get_data(as_text=True)
+    assert 'id="form-newsletter"' in resposta
+
+
+def test_rodape_tem_link_e_logo_do_facebook(client):
+    resposta = client.get("/").get_data(as_text=True)
+    assert 'href="https://www.facebook.com/111904180503686"' in resposta
+    assert "icones/facebook.svg" in resposta
+
+
+def test_api_newsletter_inscreve_com_sucesso(client, monkeypatch):
+    import app as app_module
+
+    monkeypatch.setattr(app_module, "inscrever_newsletter", lambda email: {"ok": True})
+    resposta = client.post("/api/newsletter", json={"email": "maria@example.com"})
+    assert resposta.status_code == 200
+    assert resposta.get_json() == {"ok": True}
+
+
+def test_api_newsletter_erro_devolve_400(client, monkeypatch):
+    import app as app_module
+
+    monkeypatch.setattr(app_module, "inscrever_newsletter", lambda email: {"erro": "E-mail inválido."})
+    resposta = client.post("/api/newsletter", json={"email": "nao-e-email"})
+    assert resposta.status_code == 400
+    assert "erro" in resposta.get_json()

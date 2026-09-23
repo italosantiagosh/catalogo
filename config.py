@@ -108,6 +108,13 @@ TINY_API_TOKEN = os.environ.get("TINY_API_TOKEN", "")
 # aqui, so variavel de ambiente BREVO_API_KEY no servidor.
 BREVO_API_KEY = os.environ.get("BREVO_API_KEY", "")
 
+# Lista de contatos da newsletter no Brevo (novenas, historias de
+# santos, produtos novos e novidades do site -- pedido do usuario,
+# auditoria 2026-09-23). Criada direto no painel do Brevo (Contatos >
+# Listas); o ID numerico dessa lista vai aqui via variavel de ambiente,
+# igual o padrao de BREVO_API_KEY acima.
+BREVO_LIST_ID = os.environ.get("BREVO_LIST_ID", "")
+
 # Remetente dos e-mails -- nao e´ segredo (aparece publico em todo
 # e-mail enviado), pode ficar no codigo como padrao.
 EMAIL_REMETENTE = os.environ.get("EMAIL_REMETENTE", "pedidos@lojanovedejulho.com.br")

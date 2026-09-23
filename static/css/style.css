@@ -3700,6 +3700,65 @@ input[type="file"] {
   margin-bottom: 4px;
 }
 
+.rodape-newsletter {
+  margin-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.rodape-newsletter label {
+  font-size: 0.78rem;
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.rodape-newsletter-linha {
+  display: flex;
+  gap: 6px;
+}
+
+.rodape-newsletter-linha input {
+  flex: 1;
+  min-width: 0;
+  padding: 8px 10px;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+  font-size: 0.82rem;
+}
+
+.rodape-newsletter-linha input::placeholder {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.rodape-newsletter-linha button {
+  padding: 8px 14px;
+  border-radius: 6px;
+  border: none;
+  background: var(--gold);
+  color: var(--accent-dark);
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.rodape-newsletter-linha button:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.rodape-newsletter-feedback {
+  margin: 0;
+  font-size: 0.78rem;
+  color: #9be29b;
+}
+
+.rodape-newsletter-feedback-erro {
+  color: #f2a1a1;
+}
+
 .rodape-selos {
   border-top: 1px solid rgba(255, 255, 255, 0.15);
   max-width: 960px;
