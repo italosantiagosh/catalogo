@@ -2086,6 +2086,11 @@ ARTIGOS_BLOG = {
             mundo. Sua festa é celebrada em 1º de outubro, e é tradição rezar esta novena
             nos nove dias que a antecedem.</p>
 
+            <figure>
+              <img src="/static/img/artigos/novena-teresinha-inicio.jpg" alt="Santa Teresinha do Menino Jesus e da Sagrada Face" loading="lazy" decoding="async">
+              <figcaption>Santa Teresinha do Menino Jesus, fotografada por sua irmã Céline Martin no Carmelo de Lisieux, 1895 (Wikimedia Commons, domínio público).</figcaption>
+            </figure>
+
             <p><em>Novena reproduzida de <a href="https://comshalom.org/novena-de-santa-teresinha-do-menino-jesus/" target="_blank" rel="noopener">comshalom.org</a> (Comunidade Católica Shalom).</em></p>
 
             <p>A mesma oração se repete todos os 9 dias -- só muda a intenção do dia,
@@ -2113,6 +2118,12 @@ ARTIGOS_BLOG = {
               <summary>4º dia — Santa Teresinha que viveu em uma família santa</summary>
               <p>Neste dia rezemos pela união e santificação das famílias.</p>
             </details>
+
+            <figure>
+              <img src="/static/img/artigos/novena-teresinha-meio.jpg" alt="Retrato de Santa Teresinha do Menino Jesus" loading="lazy" decoding="async">
+              <figcaption>Retrato de Santa Teresinha, c. 1888 (Wikimedia Commons, domínio público).</figcaption>
+            </figure>
+
             <details class="novena-dia">
               <summary>5º dia — Santa Teresinha padroeira dos jovens na vocação Shalom</summary>
               <p>Neste 5º dia da novena de Santa Teresinha rezemos pelos jovens do Projeto Juventude para Jesus e pela juventude do mundo inteiro.</p>
@@ -2274,6 +2285,11 @@ e é morrendo que se vive para a vida eterna.</p>
             <p>Santa Teresa d'Ávila (Teresa de Jesus) reformou o Carmelo, escreveu
             clássicos da mística cristã como <em>Castelo Interior</em> e foi a primeira
             mulher declarada Doutora da Igreja. Sua festa é celebrada em 15 de outubro.</p>
+
+            <figure>
+              <img src="/static/img/artigos/novena-teresa-davila-inicio.jpg" alt="Santa Teresa d'Ávila -- A Visão da Pomba" loading="lazy" decoding="async">
+              <figcaption>Santa Teresa d'Ávila -- "A Visão da Pomba" (Peter Paul Rubens, c. 1614-1635, Fitzwilliam Museum, Cambridge -- domínio público).</figcaption>
+            </figure>
 
             <p><em>Novena reproduzida de <a href="https://comshalom.org/novena-de-santa-teresa-davila/" target="_blank" rel="noopener">comshalom.org</a> (Comunidade Católica Shalom).</em></p>
 
@@ -2595,6 +2611,11 @@ e é morrendo que se vive para a vida eterna.</p>
             foi ele quem incluiu os mistérios luminosos no Santo Rosário. Sua festa é
             celebrada em 22 de outubro.</p>
 
+            <figure>
+              <img src="/static/img/artigos/novena-jp2-inicio.jpg" alt="Ilustração de São João Paulo II" loading="lazy" decoding="async">
+              <figcaption>Ilustração de São João Paulo II.</figcaption>
+            </figure>
+
             <p><em>Novena reproduzida de <a href="https://comshalom.org/novena-a-sao-joao-paulo-ii/" target="_blank" rel="noopener">comshalom.org</a> (Comunidade Católica Shalom) -- compilada, segundo a própria fonte, a partir de homilias, cartas e encíclicas de São João Paulo II.</em></p>
 
             <details class="novena-dia">
@@ -2700,6 +2721,12 @@ e é morrendo que se vive para a vida eterna.</p>
                 <p>Pai Nosso… Ave Maria… Glória…</p>
               <p><em>Reza-se a seguir a Ladainha de São João Paulo II (reproduzida uma única vez, mais abaixo nesta página, pois se repete em todos os 9 dias).</em></p>
             </details>
+
+            <figure>
+              <img src="/static/img/artigos/novena-jp2-meio.jpg" alt="Retrato oficial do Papa João Paulo II" loading="lazy" decoding="async">
+              <figcaption>Retrato oficial do Papa João Paulo II, 12 de agosto de 1993 (foto: Bob McNeely, Casa Branca -- domínio público).</figcaption>
+            </figure>
+
             <details class="novena-dia">
               <summary>6º dia — Pecado</summary>
                 <p>O maior sofrimento da humanidade e de cada indivíduo é o pecado. Não há maior dor que se possa infligir a uma alma do que mergulhá-la em estado de pecado mortal.</p>
@@ -2853,6 +2880,11 @@ para que sejamos dignos das promessas de Cristo. Amém!</p>
             canonizado em 7 de setembro de 2025 pelo Papa Leão XIV, e é tradicionalmente
             celebrado com esta novena rezada de 3 a 11 de outubro.</p>
 
+            <figure>
+              <img src="/static/img/artigos/novena-carlo-acutis-inicio.jpg" alt="Ilustração de São Carlo Acutis" loading="lazy" decoding="async">
+              <figcaption>Ilustração devocional de São Carlo Acutis -- não existe foto pessoal dele com licença livre disponível, por isso optamos por uma ilustração em vez de uma fotografia real.</figcaption>
+            </figure>
+
             <p><em>Novena reproduzida de <a href="https://comshalom.org/novena-ao-beato-carlo-acutis/" target="_blank" rel="noopener">comshalom.org</a> (Comunidade Católica Shalom) -- a página de origem ainda usa o título anterior à canonização, mas o texto já é o mesmo rezado por quem invoca São Carlo Acutis hoje.</em></p>
 
             <p>Todos os 9 dias seguem a mesma estrutura: a Oração inicial (abaixo),
@@ -2895,6 +2927,12 @@ para que sejamos dignos das promessas de Cristo. Amém!</p>
               <p>5 Pai-Nossos, 5 Ave-Marias e 5 Glórias ao Pai, em honra dos 15 anos de vida de Carlo Acutis nesta terra.</p>
               <p><em>(Reza-se a seguir a Oração final -- reproduzida uma única vez acima)</em></p>
             </details>
+
+            <figure>
+              <img src="/static/img/artigos/novena-carlo-acutis-meio.jpg" alt="Ilustração simbólica: notebook e Santíssimo Sacramento" loading="lazy" decoding="async">
+              <figcaption>Ilustração inspirada no maior legado de Carlo Acutis: catalogar milagres eucarísticos usando a tecnologia a serviço da fé.</figcaption>
+            </figure>
+
             <details class="novena-dia">
               <summary>5º dia — "A felicidade é olhar para Deus e a tristeza é olhar para si mesmo"</summary>
               <p><em>(Reza-se a Oração inicial para todos os dias -- reproduzida uma única vez acima)</em></p>
@@ -2951,6 +2989,11 @@ para que sejamos dignos das promessas de Cristo. Amém!</p>
             <p>Em 1717, três pescadores encontraram no rio Paraíba do Sul uma pequena
             imagem de Nossa Senhora da Conceição -- hoje venerada como Nossa Senhora
             Aparecida, padroeira do Brasil. Sua festa é celebrada em 12 de outubro.</p>
+
+            <figure>
+              <img src="/static/img/artigos/novena-aparecida-inicio.jpg" alt="Ilustração de Nossa Senhora Aparecida" loading="lazy" decoding="async">
+              <figcaption>Ilustração devocional de Nossa Senhora Aparecida.</figcaption>
+            </figure>
 
             <p><em>O comshalom.org tem uma página de novena a Nossa Senhora Aparecida, mas
             ela traz só uma oração curta (sem divisão em 9 dias) -- reproduzida abaixo,
@@ -3060,6 +3103,12 @@ para que sejamos dignos das promessas de Cristo. Amém!</p>
                 <p>Ó Imaculada Virgem Maria, espelho de pureza, encho-me de sumo gozo ao ver que vos foram infusos desde a vossa Conceição os dons mais sublimes e perfeitos de virtude e também todos os dons do Espírito Santo. Dou graças e louvo à Santíssima Trindade, que vos favoreceu com estes privilégios, e vos suplico, ó Mãe benigna, que me alcanceis a prática da virtude e a graça de tornar-me digno de receber os dons e a graça do Espírito Santo.</p>
               <p><em>Em seguida, reza-se o hino/ladainha e a oração "Oremos" do Primeiro Dia (reproduzidos uma única vez, logo abaixo).</em></p>
             </details>
+
+            <figure>
+              <img src="/static/img/artigos/novena-aparecida-meio.jpg" alt="Imagem original de Nossa Senhora Aparecida na Basílica" loading="lazy" decoding="async">
+              <figcaption>Imagem original de Nossa Senhora Aparecida, no Santuário Nacional (Wikimedia Commons, licença livre).</figcaption>
+            </figure>
+
             <details class="novena-dia">
               <summary>5º dia</summary>
                 <p>Ó Maria, lua reluzente de pureza, alegro-me convosco, pois o mistério de vossa Imaculada Conceição foi o início da salvação de todo o gênero humano e a alegria do mundo inteiro. Dou graças e bendigo à Santíssima Trindade, que assim vos engrandeceu e glorificou, e vos suplico que me alcanceis a graça de saber aproveitar-me da paixão e morte do vosso Jesus. Que não seja para mim inútil o Sangue derramado na cruz, mas que eu viva santamente e me salve.</p>
