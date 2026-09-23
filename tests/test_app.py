@@ -463,6 +463,18 @@ def test_catalogo_completo_aceita_termo_de_busca_na_url(client):
     assert resposta  # so confirma que nao quebra com o parametro
 
 
+def test_catalogo_completo_imagens_tem_width_e_height(client):
+    # sem isso o navegador nao reserva espaco antes da imagem carregar
+    # -- CLS (auditoria 2026-09-23). Nao conta ocorrencias exatas (o
+    # numero de cards muda conforme o catalogo cresce), so garante que
+    # nenhuma <img> da grade ficou sem os atributos.
+    resposta = client.get("/catalogo").get_data(as_text=True)
+    imgs_na_grade = re.findall(r"<img[^>]*class=\"card-imagem-alt\"[^>]*>|<img(?![^>]*class=\"card-imagem-alt\")[^>]*src=\"[^\"]*produtos[^\"]*\"[^>]*>", resposta)
+    assert imgs_na_grade
+    for tag in imgs_na_grade:
+        assert 'width="224"' in tag and 'height="224"' in tag
+
+
 def test_produto_tem_meta_description(client):
     resposta = client.get("/produto/sao-jose")
     assert b'name="description"' in resposta.data
