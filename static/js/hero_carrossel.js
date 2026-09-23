@@ -27,9 +27,11 @@
   function mostrar(indice) {
     slides[indiceAtual].classList.remove('hero-slide-ativo');
     dots[indiceAtual]?.classList.remove('hero-dot-ativo');
+    dots[indiceAtual]?.removeAttribute('aria-current');
     indiceAtual = indice;
     slides[indiceAtual].classList.add('hero-slide-ativo');
     dots[indiceAtual]?.classList.add('hero-dot-ativo');
+    dots[indiceAtual]?.setAttribute('aria-current', 'true');
   }
 
   function proximo() {
