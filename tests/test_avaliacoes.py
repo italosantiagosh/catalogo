@@ -415,3 +415,29 @@ def test_pagina_avaliacoes_nao_mostra_pendente(client, monkeypatch):
 def test_footer_tem_link_para_pagina_de_avaliacoes(client):
     pagina = client.get("/").get_data(as_text=True)
     assert 'href="/avaliacoes"' in pagina
+
+
+def test_organization_schema_tem_facebook_no_sameas(client):
+    # auditoria 2026-09-23: o Facebook no HTML era so o pixel, nao um
+    # link de pagina de verdade.
+    pagina = client.get("/").get_data(as_text=True)
+    assert "https://www.facebook.com/111904180503686" in pagina
+
+
+def test_organization_schema_leva_aggregate_rating_com_avaliacao_real(client, monkeypatch):
+    # aggregateRating no Organization (aparece em toda pagina, ver
+    # base.html) so com avaliacao aprovada de verdade -- mesma regra do
+    # schema de produto (auditoria 2026-09-23: /avaliacoes nao tinha
+    # nenhum sinal de nota pro Google).
+    _preparar_admin(monkeypatch)
+    client.post("/api/avaliacoes", data=_corpo_avaliacao())
+    avaliacao = avaliacoes.listar_avaliacoes()[0]
+    client.post(f"/admin/avaliacoes/{avaliacao['id']}/aprovar", auth=("admin", "segredo123"))
+
+    pagina = client.get("/").get_data(as_text=True)
+    assert '"AggregateRating"' in pagina
+
+
+def test_organization_schema_sem_avaliacao_nao_leva_aggregate_rating(client):
+    pagina = client.get("/").get_data(as_text=True)
+    assert "AggregateRating" not in pagina

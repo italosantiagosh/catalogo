@@ -83,6 +83,7 @@ from config import (
     DESCRICOES_FORMATO,
     DESTAQUES_HOME,
     ENABLE_SCHEDULER,
+    FACEBOOK_URL,
     FAIXAS_PRODUCAO_DIAS_UTEIS,
     GA4_MEASUREMENT_ID,
     GOOGLE_SITE_VERIFICATION,
@@ -435,7 +436,7 @@ def _dados_organizacao() -> dict:
     marca/negocio) -- dados reais: CNPJ, endereco (so retirada com
     agendamento, nao e loja fisica aberta), contato. Igual em toda
     pagina, ver base.html."""
-    return {
+    dados = {
         "@context": "https://schema.org",
         "@type": "Organization",
         "name": "Nove de Julho Artigos Ltda",
@@ -452,8 +453,21 @@ def _dados_organizacao() -> dict:
             "addressRegion": "RN",
             "addressCountry": "BR",
         },
-        "sameAs": [INSTAGRAM_URL],
+        "sameAs": [INSTAGRAM_URL, FACEBOOK_URL],
     }
+    # aggregateRating so entra com dado REAL (avaliacao aprovada no
+    # painel admin, nunca fabricado) -- mesma regra do schema de produto
+    # (ver produto() acima). Aqui e´ a media de TODAS as avaliacoes do
+    # site, pro Organization como um todo (auditoria 2026-09-23: a
+    # pagina /avaliacoes nao tinha nenhum sinal de nota pro Google).
+    media, total = media_e_total_todas_aprovadas()
+    if total > 0:
+        dados["aggregateRating"] = {
+            "@type": "AggregateRating",
+            "ratingValue": media,
+            "reviewCount": total,
+        }
+    return dados
 
 
 def _dados_website() -> dict:

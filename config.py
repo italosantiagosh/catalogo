@@ -341,6 +341,7 @@ CANONICAL_DOMAIN = _normalizar_dominio(os.environ.get("CANONICAL_DOMAIN", ""))
 # Instagram da loja -- usado no bloco de prova social da pagina de
 # produto (ver templates/produto.html).
 INSTAGRAM_URL = "https://www.instagram.com/novedjulho/"
+FACEBOOK_URL = "https://www.facebook.com/111904180503686"
 
 # Video de apresentacao (bolinha flutuante, ver base.html/
 # video_flutuante.js). Hospedado pelo proprio usuario fora do
