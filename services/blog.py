@@ -2164,6 +2164,11 @@ ARTIGOS_BLOG = {
             da ecologia e símbolo de uma vida simples e inteiramente entregue a Deus. Sua
             festa é celebrada em 4 de outubro.</p>
 
+            <figure>
+              <img src="/static/img/artigos/novena-sao-francisco-inicio.jpg" alt="Ilustração de São Francisco de Assis em oração" loading="lazy" decoding="async">
+              <figcaption>Ilustração devocional de São Francisco de Assis.</figcaption>
+            </figure>
+
             <p><em>Esta novena não está publicada no comshalom.org (o site da Comunidade
             Católica Shalom tem apenas artigos e uma Via-Sacra sobre o santo, não uma
             novena de 9 dias) -- foi reproduzida de
@@ -2238,6 +2243,12 @@ e é morrendo que se vive para a vida eterna.</p>
                 <p>Ó São Francisco, vós vos tornastes um apaixonado do amor de Cristo e saístes pelo mundo a lamentar que "o Amor não é amado", e vos apresentastes aos homens como o "Amante do Grande Rei". Livrai-me da indiferença e comunicai-me vosso entusiasmo para que aprenda a amar a Nosso Senhor e saiba encontrá-Lo na natureza e nos acontecimentos de cada dia.</p>
               <p><em>Sugestão de leitura: Mc 16,1-8 ou Mt 28,1-10.</em></p>
             </details>
+
+            <figure>
+              <img src="/static/img/artigos/novena-sao-francisco-meio.jpg" alt="Ilustração de São Francisco de Assis com os animais" loading="lazy" decoding="async">
+              <figcaption>Ilustração devocional de São Francisco de Assis, o "Cântico das Criaturas".</figcaption>
+            </figure>
+
             <details class="novena-dia">
               <summary>5º dia</summary>
                 <p>São Francisco, enviastes vossos primeiros discípulos pelo mundo inteiro, a fim de que apregoassem a Boa Nova do Reino de Deus. Alcançai-me do Senhor o espírito apostólico e o zelo missionário, para que me interesse por Sua obra e procure colaborar com a Igreja, a fim de que o Reino de Cristo se estabeleça na Terra.</p>
@@ -2423,6 +2434,12 @@ e é morrendo que se vive para a vida eterna.</p>
 
                 <p>Santa Teresa d'Ávila, rogai por nós.</p>
             </details>
+
+            <figure>
+              <img src="/static/img/artigos/novena-teresa-davila-meio.jpg" alt="Santa Teresa d'Ávila escrevendo" loading="lazy" decoding="async">
+              <figcaption>Ilustração devocional de Santa Teresa d'Ávila, Doutora da Igreja.</figcaption>
+            </figure>
+
             <details class="novena-dia">
               <summary>5º dia — Pobreza</summary>
                 <p>O Senhor já lhe dera o desejo de pobreza, desejo de, mesmo no seu estado, pedir esmola por amor a Deus, de não ter casa ou qualquer outra coisa. Mas pensava que talvez as monjas não tivessem esse mesmo desejo. Muita coisa ouvia sobre esse assunto e inquietava o seu coração. Um dia estando em oração, ao olhar Cristo na cruz tão pobre e desnudo, não suportou a ideia da riqueza.</p>
