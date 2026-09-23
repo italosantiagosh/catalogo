@@ -18,16 +18,24 @@ CONFIRMADO com pedido de teste real (pedido Tiny #1113, status "OK"):
 mesmo pra pedido pago no cartao (pedido explicito 2026-09-17: cai na
 mesma conta de qualquer forma, e o juros do parcelamento e´ da
 adquirente/InfinitePay -- nunca da loja -- entao nao entra na nota,
-ver Sumula 237 do STJ). `forma_envio`/`forma_frete`/`nome_transportador`
-(ver _envio_para_tiny) seguem os nomes EXATOS ja cadastrados na conta
-Tiny da usuaria (print de tela 2026-09-17) -- igual a regra ja seguida
-pros SKUs de material abaixo, nunca inventados.
+ver Sumula 237 do STJ). `forma_envio`/`forma_frete` (ver _envio_para_tiny)
+seguem os nomes EXATOS ja cadastrados na conta Tiny da usuaria (print de
+tela 2026-09-17) -- igual a regra ja seguida pros SKUs de material
+abaixo, nunca inventados. `nome_transportador` NAO e´ mandado (pedido
+2026-09-23: usuaria so usa forma_envio/forma_frete la dentro, o campo
+"Nome" da transportadora fica melhor em branco pra ela preencher on
+precisar, ver conversa).
 
 NAO confirmado ainda:
-  - `forma_envio`/`forma_frete`/`nome_transportador`/`data_pedido`
+  - `forma_envio`/`forma_frete`/`data_pedido`
     (adicionados 2026-09-17, sem pedido de teste real ainda -- se a
     Tiny rejeitar esses valores especificos, os outros campos do
     pedido continuam indo normal, ver criar_pedido_tiny);
+  - `parcelas` (adicionado 2026-09-23: sem isso a Tiny deixava o campo
+    "Vencimento" -- aba Forma de recebimento -- em branco, exigindo
+    edicao manual em todo pedido, ver conversa/print de tela). Uma
+    parcela unica com `data` = data do pedido (pago na hora, sem
+    parcelamento pra loja);
   - o bloco `endereco_entrega` (nome dos campos), usado quando o
     cliente pede entrega num endereco diferente do proprio (ver
     criar_pedido_tiny) -- ainda sem pedido de teste real com isso
@@ -224,18 +232,20 @@ def _descricao_estoque_tiny(item: dict) -> str:
     return _DESCRICAO_MATERIAL_TINY.get(chave, chave)
 
 
-# Nome EXATO das transportadoras e das formas de frete ja cadastradas na
-# conta Tiny da usuaria (print de tela erp.olist.com/vendas#edit/... em
-# 2026-09-17, "Forma de envio"/"Forma de frete") -- nunca inventado aqui,
-# mesma regra ja seguida pros SKUs de material acima. Chave = trecho que
-# aparece em frete_descricao (case-insensitive) pra identificar qual
-# transportadora foi essa (Frenet devolve o nome dela no comeco da
-# descricao, ver services/frete.py:TRANSPORTADORAS_COM_LOGO).
+# Nome EXATO das formas de frete ja cadastradas na conta Tiny da usuaria
+# (print de tela erp.olist.com/vendas#edit/... em 2026-09-17, "Forma de
+# frete") -- nunca inventado aqui, mesma regra ja seguida pros SKUs de
+# material acima. Chave = trecho que aparece em frete_descricao
+# (case-insensitive) pra identificar qual transportadora foi essa
+# (Frenet devolve o nome dela no comeco da descricao, ver
+# services/frete.py:TRANSPORTADORAS_COM_LOGO). So forma_envio/forma_frete
+# vao pra Tiny -- sem nome_transportador (campo "Nome" em Transportador/
+# Volumes), pedido 2026-09-23, ver conversa.
 _TRANSPORTADORA_TINY = {
-    "loggi": {"nome_transportador": "Loggi via Frenet", "forma_frete": "Loggi"},
-    "jadlog": {"nome_transportador": "Jadlog via Frenet", "forma_frete": "Jadlog Package"},
-    "azul": {"nome_transportador": "Azul Cargo Express via Mercado Envios", "forma_frete": "e-commerce"},
-    "total express": {"nome_transportador": "Transportadora", "forma_frete": "Não definida"},
+    "loggi": "Loggi",
+    "jadlog": "Jadlog Package",
+    "azul": "e-commerce",
+    "total express": "Não definida",
 }
 
 # Correios: "Forma de envio" fica sempre "Correios" (forma_envio="C", sem
@@ -253,16 +263,15 @@ _FORMA_FRETE_CORREIOS_PADRAO = "PAC CONTRATO AG (03298)"
 
 
 def _envio_para_tiny(frete_descricao: str) -> dict:
-    """`forma_envio`/`forma_frete`/`nome_transportador` a partir da
-    descricao de frete escolhida no site (ex: "Jadlog Package via Frenet
-    — R$ 12,90") -- devolve {} quando nao reconhece a transportadora (o
-    pedido ainda sincroniza, so sem esses 3 campos preenchidos; melhor
-    que travar o webhook por causa disso, ver aviso no topo do arquivo).
-    AINDA NAO CONFIRMADO com pedido de teste real (mesmo criterio dos
-    outros avisos aqui) -- `forma_frete`/`nome_transportador` so aceitam
-    valores JA CADASTRADOS na conta Tiny da usuaria; se o texto mandado
-    aqui nao bater exatamente com o cadastro, a Tiny pode rejeitar ou
-    ignorar so esses campos."""
+    """`forma_envio`/`forma_frete` a partir da descricao de frete
+    escolhida no site (ex: "Jadlog Package via Frenet — R$ 12,90") --
+    devolve {} quando nao reconhece a transportadora (o pedido ainda
+    sincroniza, so sem esses 2 campos preenchidos; melhor que travar o
+    webhook por causa disso, ver aviso no topo do arquivo). AINDA NAO
+    CONFIRMADO com pedido de teste real (mesmo criterio dos outros
+    avisos aqui) -- `forma_frete` so aceita valores JA CADASTRADOS na
+    conta Tiny da usuaria; se o texto mandado aqui nao bater exatamente
+    com o cadastro, a Tiny pode rejeitar ou ignorar so esse campo."""
     descricao = (frete_descricao or "").lower()
     if eh_correios(descricao):
         forma_frete = next(
@@ -270,13 +279,9 @@ def _envio_para_tiny(frete_descricao: str) -> dict:
             _FORMA_FRETE_CORREIOS_PADRAO,
         )
         return {"forma_envio": "C", "forma_frete": forma_frete}
-    for chave, dados in _TRANSPORTADORA_TINY.items():
+    for chave, forma_frete in _TRANSPORTADORA_TINY.items():
         if chave in descricao:
-            return {
-                "forma_envio": "T",
-                "nome_transportador": dados["nome_transportador"],
-                "forma_frete": dados["forma_frete"],
-            }
+            return {"forma_envio": "T", "forma_frete": forma_frete}
     return {}
 
 
@@ -293,6 +298,33 @@ def _data_pedido_tiny(pedido: dict) -> str | None:
         return datetime.fromisoformat(bruto).strftime("%d/%m/%Y")
     except ValueError:
         return None
+
+
+def _parcelas_para_tiny(pedido: dict) -> list[dict]:
+    """Uma parcela unica, a vista (Pix/cartao caem na conta na hora, sem
+    parcelamento pra loja -- mesma regra de forma_pagamento/meio_pagamento
+    sempre "pix"/"Banco", ver aviso no topo do arquivo), com `data` = data
+    do PEDIDO (mesma de _data_pedido_tiny). Sem isso a Tiny deixava o
+    campo "Vencimento" (aba Forma de recebimento) em branco, exigindo
+    edicao manual pedido por pedido (relatado pela usuaria 2026-09-23,
+    print de tela). Devolve [] quando nao ha criado_em (mesmo caso em que
+    _data_pedido_tiny tambem nao manda data_pedido) -- AINDA NAO
+    CONFIRMADO com pedido de teste real (mesmo criterio dos outros
+    avisos aqui)."""
+    data_pedido = _data_pedido_tiny(pedido)
+    if not data_pedido:
+        return []
+    return [
+        {
+            "parcela": {
+                "dias": "0",
+                "data": data_pedido,
+                "valor": f"{pedido.get('total', 0):.2f}",
+                "forma_pagamento": "pix",
+                "meio_pagamento": "Banco",
+            }
+        }
+    ]
 
 
 def _primeiro_registro(registros_bruto) -> dict:
@@ -389,6 +421,9 @@ def criar_pedido_tiny(pedido: dict) -> dict:
     data_pedido = _data_pedido_tiny(pedido)
     if data_pedido:
         corpo_pedido["data_pedido"] = data_pedido
+    parcelas = _parcelas_para_tiny(pedido)
+    if parcelas:
+        corpo_pedido["parcelas"] = parcelas
 
     # Endereco de entrega DIFERENTE do endereco do cliente (ver
     # conversa/services.pedidos._COLUNAS_ADICIONAIS) -- so manda esse

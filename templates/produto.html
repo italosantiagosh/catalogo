@@ -7,15 +7,17 @@
    135 produtos (isso deixaria varios titulos > 70 caracteres).
 
    titulo_antigo (config.py:PRODUTOS_TITULO_ANTIGO) distingue produtos
-   ja existentes na migracao pro dominio proprio (mantem o titulo
-   antigo) dos produtos novos cadastrados dai pra frente (titulo mais
-   geral, sem "Catalogo de Atacado" -- pedido do usuario). #}
+   ja existentes na migracao pro dominio proprio (mantem o sufixo
+   "Atacado e Varejo" -- deixa claro que tambem vende varejo, pedido da
+   usuaria 2026-09-23, ver conversa: antes so dizia "Catalogo de
+   Atacado") dos produtos novos cadastrados dai pra frente (titulo mais
+   geral, "Medalhas Católicas"). #}
 {% block titulo %}
   {%- if titulo_antigo -%}
     {%- if produto.id == 'espirito-santo' -%}
-      Medalha Espírito Santo — Catálogo de Atacado | Nove de Julho
+      Medalha Espírito Santo — Atacado e Varejo | Nove de Julho
     {%- else -%}
-      {{ produto.nome }} — Catálogo de Atacado | Nove de Julho
+      {{ produto.nome }} — Atacado e Varejo | Nove de Julho
     {%- endif -%}
   {%- else -%}
     {%- if produto.id == 'espirito-santo' -%}

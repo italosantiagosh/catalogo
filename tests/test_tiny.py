@@ -509,8 +509,8 @@ def test_envio_transportadora_reconhecida(monkeypatch):
         tiny.criar_pedido_tiny(_pedido_exemplo(frete_descricao="Jadlog Package via Frenet — R$ 12,90"))
     pedido_json = json.loads(post_mock.call_args.kwargs["data"]["pedido"])["pedido"]
     assert pedido_json["forma_envio"] == "T"
-    assert pedido_json["nome_transportador"] == "Jadlog via Frenet"
     assert pedido_json["forma_frete"] == "Jadlog Package"
+    assert "nome_transportador" not in pedido_json
 
 
 def test_envio_transportadora_desconhecida_nao_envia_campos(monkeypatch):
@@ -537,6 +537,31 @@ def test_sem_criado_em_nao_envia_data_pedido(monkeypatch):
         tiny.criar_pedido_tiny(_pedido_exemplo())
     pedido_json = json.loads(post_mock.call_args.kwargs["data"]["pedido"])["pedido"]
     assert "data_pedido" not in pedido_json
+
+
+def test_parcela_unica_com_data_do_pedido_e_valor_total(monkeypatch):
+    """Sem isso a Tiny deixava o "Vencimento" em branco (relatado pela
+    usuaria, print de tela erp.olist.com/vendas#edit/...) -- a vista, no
+    mesmo dia do pedido, sem juros/parcelamento pra loja (mesma regra do
+    forma_pagamento sempre "pix"/"Banco")."""
+    monkeypatch.setattr(tiny, "TINY_API_TOKEN", "segredo123")
+    with patch("services.tiny.requests.post", return_value=_resposta_ok()) as post_mock:
+        tiny.criar_pedido_tiny(_pedido_exemplo(criado_em="2026-09-17T22:38:05.123456+00:00", total=123.45))
+    pedido_json = json.loads(post_mock.call_args.kwargs["data"]["pedido"])["pedido"]
+    assert len(pedido_json["parcelas"]) == 1
+    parcela = pedido_json["parcelas"][0]["parcela"]
+    assert parcela["data"] == "17/09/2026"
+    assert parcela["valor"] == "123.45"
+    assert parcela["forma_pagamento"] == "pix"
+    assert parcela["meio_pagamento"] == "Banco"
+
+
+def test_sem_criado_em_nao_envia_parcelas(monkeypatch):
+    monkeypatch.setattr(tiny, "TINY_API_TOKEN", "segredo123")
+    with patch("services.tiny.requests.post", return_value=_resposta_ok()) as post_mock:
+        tiny.criar_pedido_tiny(_pedido_exemplo())
+    pedido_json = json.loads(post_mock.call_args.kwargs["data"]["pedido"])["pedido"]
+    assert "parcelas" not in pedido_json
 
 
 def test_resposta_com_erro_da_tiny(monkeypatch):

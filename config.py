@@ -668,9 +668,11 @@ DESCRICOES_FORMATO = {
 }
 
 # Snapshot dos produtos existentes na migração pro dominio proprio
-# (lojanovedejulho.com.br) -- pedido do usuario: manter o <title> antigo
-# ("... -- Catalogo de Atacado | Nove de Julho") nesses produtos, e usar
-# um titulo novo/mais geral em qualquer produto adicionado dai pra frente
+# (lojanovedejulho.com.br) -- pedido do usuario: manter um <title> mais
+# antigo nesses produtos ("... -- Atacado e Varejo | Nove de Julho",
+# ajustado 2026-09-23 pra deixar claro que tambem vende varejo -- antes
+# dizia so "Catalogo de Atacado", ver conversa), e usar um titulo
+# novo/mais geral em qualquer produto adicionado dai pra frente
 # (templates/produto.html). NAO adicionar novos ids aqui.
 PRODUTOS_TITULO_ANTIGO = frozenset({
     'anunciacao', 'banquete-eterno', 'beata-benigna', 'beata-elisabeth-trindade', 'beata-nha-xica', 'beata-sandra-sabatine',
