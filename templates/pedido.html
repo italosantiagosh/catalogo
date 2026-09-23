@@ -258,6 +258,7 @@
           value: {{ pedido.total | tojson }},
           currency: 'BRL',
           content_type: 'product',
+          content_ids: {{ pedido.itens | selectattr('produtoId') | map(attribute='produtoId') | list | tojson }},
           num_items: {{ pedido.itens | length }},
         });
       }

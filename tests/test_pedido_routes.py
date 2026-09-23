@@ -954,6 +954,25 @@ def test_obrigado_dispara_purchase_no_pixel_do_meta_e_no_ga4(client):
     assert "fbq('track', 'Purchase'" not in sem_param
 
 
+def test_purchase_do_pixel_do_meta_leva_content_ids_do_catalogo(client):
+    """content_ids e´ o que liga a venda de volta a um produto do
+    catalogo do Meta -- sem isso, uma campanha de Catalogo/Vendas nao
+    consegue aprender quais produtos convertem nem fazer anuncio
+    dinamico de retargeting."""
+    corpo = _corpo_valido(itens=[
+        {"produtoId": "sao-jose", "chave_preco": "16mm", "quantidade": 10, "produtoNome": "São José", "modeloNome": "Modelo 1"},
+    ])
+    with patch("app.criar_link_pagamento", return_value={"url": "https://checkout.infinitepay.io/abc"}):
+        criado = client.post("/api/pedido/criar", json=corpo).get_json()
+    client.post(
+        "/webhook/infinitepay",
+        json={"order_nsu": criado["token"], "paid_amount": 6000, "capture_method": "pix", "transaction_nsu": "tx-abc"},
+    )
+
+    pagina = client.get(f"/pedido/{criado['token']}?obrigado=1").get_data(as_text=True)
+    assert 'content_ids: ["sao-jose"]' in pagina
+
+
 def test_obrigado_nao_aparece_se_pedido_nao_esta_pago(client):
     with patch("app.criar_link_pagamento", return_value={"url": "https://checkout.infinitepay.io/abc"}):
         criado = client.post("/api/pedido/criar", json=_corpo_valido()).get_json()

@@ -331,6 +331,11 @@
   }
 
   rastrearEventoGA4('view_product', { item_id: produtoId, item_name: produtoNome });
+  rastrearEventoMeta('ViewContent', {
+    content_ids: [String(produtoId)],
+    content_name: produtoNome,
+    content_type: 'product',
+  });
 
   function formatarPrecoLocal(valor) {
     return 'R$ ' + valor.toFixed(2).replace('.', ',');
