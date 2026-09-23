@@ -259,3 +259,13 @@ def test_historia_da_loja_mostra_foto_real_de_producao(client):
     resposta = client.get("/blog/a-historia-da-nove-de-julho")
     pagina = resposta.get_data(as_text=True)
     assert "medalhas-prontas.jpg" in pagina
+
+
+def test_santa_rita_mostra_foto_do_quadro_de_roccaporena_e_modelo_2(client):
+    """ver conversa 2026-09-24: foto pessoal (Italo, fundador) do quadro
+    na casa de Santa Rita em Roccaporena -- mesma cena que inspirou o
+    Modelo 2 da medalha, tambem mostrado no artigo."""
+    resposta = client.get("/blog/santa-rita-de-cassia-santa-dos-impossiveis")
+    pagina = resposta.get_data(as_text=True)
+    assert "santa-rita-roccaporena-quadro.jpg" in pagina
+    assert "santa_rita_de_cassia_modelo_2_medalha.jpg" in pagina

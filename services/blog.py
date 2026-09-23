@@ -255,6 +255,21 @@ ARTIGOS_BLOG = {
             desagradável segundo os relatos da época, permaneceu com ela até sua morte, em
             1457, e é um dos traços mais reconhecíveis em suas imagens e medalhas.</p>
 
+            <figure>
+              <img src="/static/img/artigos/santa-rita-roccaporena-quadro.jpg" alt="Pintura de Santa Rita de Cássia recebendo o espinho, fotografada em Roccaporena, Itália" loading="lazy" decoding="async">
+              <figcaption>Pintura da cena do espinho, na casa de Santa Rita em Roccaporena (Itália) -- foto de Ítalo, fundador da Nove de Julho, numa visita ao local.</figcaption>
+            </figure>
+
+            <p>Essa cena -- Rita ajoelhada em oração, recebendo o espinho vindo do alto --
+            foi justamente a inspiração para o <strong>Modelo 2</strong> da medalha de
+            Santa Rita aqui do catálogo: a mesma composição, o mesmo gesto de mãos postas
+            diante do livro aberto.</p>
+
+            <figure>
+              <img src="/static/img/produtos/santa_rita_de_cassia_modelo_2_medalha.jpg" alt="Medalha de Santa Rita de Cássia, Modelo 2" loading="lazy" decoding="async">
+              <figcaption>Medalha de Santa Rita de Cássia -- Modelo 2, inspirada na pintura de Roccaporena.</figcaption>
+            </figure>
+
             <h2>Por que "santa dos impossíveis"</h2>
             <p>Depois de uma vida marcada por perdas que pareciam insuportáveis e por
             portas que se fechavam repetidamente, Santa Rita se tornou símbolo de
