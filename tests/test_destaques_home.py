@@ -45,3 +45,35 @@ def test_catalogo_grid_continua_no_modelo_1_pro_jesus():
     produtos = carregar_produtos()
     itens = {item["id"]: item for item in _itens_do_grid(produtos)}
     assert "modelo_1" in itens["sagrado-coracao-de-jesus"]["thumbnail"]
+
+
+def _montar_novidades():
+    with app.test_request_context():
+        produtos = carregar_produtos()
+        itens_por_id = {item["id"]: item for item in _itens_do_grid(produtos)}
+        destaques = _montar_destaques(produtos, itens_por_id)
+    return next(d for d in destaques if d["chave"] == "novidades")
+
+
+def test_novidades_usa_formato_por_produto():
+    """ver conversa 2026-09-24: cards de "Novidades" variam o FORMATO
+    mostrado (nao so medalha) pra alguns produtos -- Sandra Sabattini e
+    Moscatti em chaveiro, Filho Pródigo em entremeio ouro velho, Chiara
+    Luce em entremeio prata."""
+    destaque = _montar_novidades()
+    produtos_por_id = {p["id"]: p for p in destaque["produtos"]}
+
+    assert "chaveiro" in produtos_por_id["beata-sandra-sabatine"]["thumbnail"]
+    assert "chaveiro" in produtos_por_id["sao-jose-moscatti"]["thumbnail"]
+    assert "entremeio_ouro_velho" in produtos_por_id["filho-prodigo-acamps"]["thumbnail"]
+    assert "entremeio_prata" in produtos_por_id["chiara-luce"]["thumbnail"]
+
+    # nome do produto continua normal (sem sufixo de modelo, diferente
+    # do modelo_por_produto -- aqui e´ o mesmo modelo, so outro formato)
+    assert produtos_por_id["beata-sandra-sabatine"]["nome"] == "Beata Sandra Sabattini"
+
+
+def test_novidades_nao_mexe_nos_produtos_sem_override():
+    destaque = _montar_novidades()
+    produtos_por_id = {p["id"]: p for p in destaque["produtos"]}
+    assert "medalha" in produtos_por_id["santa-bakhita"]["thumbnail"]

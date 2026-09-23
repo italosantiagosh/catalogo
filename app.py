@@ -893,10 +893,14 @@ def _montar_destaques(produtos: list[dict], itens_por_id: dict) -> list[dict]:
     modelo 1 -- a menos que "modelo_por_produto" (dict id -> numero do
     modelo) diga pra usar outro modelo especifico daquele produto NESSE
     grupo, sem afetar o modelo padrao usado no resto do site -- ver
-    "sagrados_coracoes"). Um grupo com "modelos_de" lista, em vez disso,
-    os VARIOS modelos de UM SO produto (cada card leva pra mesma pagina
-    de produto, so a foto/legenda mudam) -- usado no Ano Jubilar de Sao
-    Francisco."""
+    "sagrados_coracoes", ou "formato_por_produto" (dict id -> sufixo do
+    campo "imagem_<sufixo>" do modelo, ex: "chaveiro"/"entremeio_prata"/
+    "entremeio_ouro_velho") diga pra usar outro FORMATO da mesma peca em
+    vez da medalha padrao -- ver "novidades", pedido 2026-09-24 pra
+    variar o formato mostrado card a card). Um grupo com "modelos_de"
+    lista, em vez disso, os VARIOS modelos de UM SO produto (cada card
+    leva pra mesma pagina de produto, so a foto/legenda mudam) -- usado
+    no Ano Jubilar de Sao Francisco."""
     produtos_por_id = {p["id"]: p for p in produtos}
     destaques = []
     for grupo in DESTAQUES_HOME:
@@ -918,6 +922,7 @@ def _montar_destaques(produtos: list[dict], itens_por_id: dict) -> list[dict]:
             )
         else:
             modelo_por_produto = grupo.get("modelo_por_produto", {})
+            formato_por_produto = grupo.get("formato_por_produto", {})
             produtos_grupo = []
             for pid in grupo["produtos"]:
                 numero_modelo = modelo_por_produto.get(pid)
@@ -934,6 +939,23 @@ def _montar_destaques(produtos: list[dict], itens_por_id: dict) -> list[dict]:
                             "id": produto["id"],
                             "nome": f"{produto['nome']} - {modelo['nome']}",
                             "thumbnail": modelo["imagem"],
+                            "thumbnail_mini": mini,
+                            "thumbnail_webp": _webp_se_existir(mini),
+                        }
+                    )
+                    continue
+                formato = formato_por_produto.get(pid)
+                if formato is not None:
+                    produto = produtos_por_id.get(pid)
+                    imagem = produto["modelos"][0].get(f"imagem_{formato}") if produto else None
+                    if not imagem:
+                        continue
+                    mini = _thumbnail_mini(imagem)
+                    produtos_grupo.append(
+                        {
+                            "id": produto["id"],
+                            "nome": produto["nome"],
+                            "thumbnail": imagem,
                             "thumbnail_mini": mini,
                             "thumbnail_webp": _webp_se_existir(mini),
                         }

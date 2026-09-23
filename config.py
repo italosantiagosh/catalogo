@@ -530,6 +530,14 @@ DESTAQUES_HOME = [
             "chiara-luce",
             "sao-jose-moscatti",
         ],
+        # pedido 2026-09-24: variar o FORMATO mostrado card a card (nao
+        # so medalha pra todo mundo), ver app.py:_montar_destaques.
+        "formato_por_produto": {
+            "beata-sandra-sabatine": "chaveiro",
+            "filho-prodigo-acamps": "entremeio_ouro_velho",
+            "chiara-luce": "entremeio_prata",
+            "sao-jose-moscatti": "chaveiro",
+        },
     },
     {
         # ver conversa 2026-09-22 -- renderizado entre o banner do Kit
