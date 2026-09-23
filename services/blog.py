@@ -1780,6 +1780,289 @@ ARTIGOS_BLOG = {
             </div>
         """,
     },
+    "imaculado-coracao-de-maria-significado": {
+        "titulo": "O que significa a devoção ao Imaculado Coração de Maria",
+        "resumo": (
+            "Irmã da devoção ao Sagrado Coração de Jesus, a consagração ao Imaculado "
+            "Coração de Maria remete às aparições de Fátima e ao pedido de conversão "
+            "feito pela própria Virgem."
+        ),
+        "produto_relacionado_id": "imaculado-coracao-de-maria",
+        "publicado_em": "2026-09-24",
+        "corpo_html": """
+            <p>A devoção ao Imaculado Coração de Maria também tem raízes antigas -- já
+            aparece de forma implícita no Evangelho de Lucas, quando Maria "guardava todas
+            essas coisas, meditando-as em seu coração" -- mas ganhou força especial a partir
+            das aparições de Nossa Senhora aos três pastorinhos de Fátima, em 1917. Segundo o
+            relato deles, Maria pediu explicitamente que seu Imaculado Coração fosse
+            conhecido e amado, e prometeu que, no fim, "meu Imaculado Coração triunfará".</p>
+
+            <figure>
+              <img src="/static/img/produtos/imaculado_coracao_de_maria_modelo_1_medalha.jpg" alt="Medalha do Imaculado Coração de Maria" loading="lazy" decoding="async">
+              <figcaption>Medalha do Imaculado Coração de Maria, catálogo Nove de Julho.</figcaption>
+            </figure>
+
+            <h2>Um coração sem pecado, traspassado de dor</h2>
+            <p>Nas imagens tradicionais, o Imaculado Coração de Maria aparece cercado de
+            rosas (símbolo de pureza) e atravessado por uma ou mais espadas -- referência à
+            profecia do velho Simeão, no Templo, quando disse a Maria que uma espada
+            trespassaria sua própria alma. Diferente das chamas mais visíveis do Sagrado
+            Coração de Jesus, o coração de Maria costuma aparecer mais sereno, mas igualmente
+            marcado pela dor de acompanhar de perto a Paixão do próprio filho.</p>
+
+            <h2>A consagração pedida em Fátima</h2>
+            <p>Um dos pedidos centrais das aparições de Fátima foi que os fiéis -- e mesmo
+            países inteiros -- se consagrassem ao Imaculado Coração de Maria, como forma de
+            reparação e de pedido de conversão e paz para o mundo. É por isso que, até hoje,
+            é comum famílias inteiras fazerem essa consagração em casa, unindo a devoção ao
+            <a href="/produto/sagrado-coracao-de-jesus">Sagrado Coração de Jesus</a> --
+            muitos lares católicos mantêm as duas imagens lado a lado, como símbolo de que
+            confiam a própria casa tanto ao amor de Cristo quanto ao cuidado maternal de
+            Maria. A festa do Imaculado Coração de Maria é celebrada no sábado seguinte à
+            Solenidade do Sagrado Coração de Jesus.</p>
+
+            <div class="cta-blog-produto">
+              <p>O cuidado de Maria, sempre por perto</p>
+              <a href="__URL_PRODUTO__" class="botao-principal">Ver medalha, entremeio e chaveiro do Imaculado Coração de Maria →</a>
+            </div>
+        """,
+    },
+    "castissimo-coracao-de-sao-jose-devocao": {
+        "titulo": "Castíssimo Coração de São José: a terceira devoção da Sagrada Família",
+        "resumo": (
+            "Ao lado do Sagrado Coração de Jesus e do Imaculado Coração de Maria, o "
+            "Castíssimo Coração de São José completa a devoção aos três corações da "
+            "Sagrada Família. Entenda o que ela representa."
+        ),
+        "produto_relacionado_id": "castissimo-coracao-de-sao-jose",
+        "publicado_em": "2026-09-24",
+        "corpo_html": """
+            <p>Já contamos aqui a <a href="/blog/sao-jose-pai-adotivo-de-jesus">história de
+            São José</a> e os <a href="/blog/titulos-de-sao-jose">vários títulos que ele
+            recebe</a> na devoção católica. O Castíssimo Coração de São José é um desses
+            títulos, mas merece um espaço próprio: é a devoção que completa, ao lado do
+            <a href="/produto/sagrado-coracao-de-jesus">Sagrado Coração de Jesus</a> e do
+            <a href="/produto/imaculado-coracao-de-maria">Imaculado Coração de Maria</a>, o
+            conjunto conhecido como "os três corações" da Sagrada Família.</p>
+
+            <figure>
+              <img src="/static/img/produtos/castissimo_coracao_de_sao_jose_modelo_1_medalha.jpg" alt="Medalha do Castíssimo Coração de São José" loading="lazy" decoding="async">
+              <figcaption>Medalha do Castíssimo Coração de São José, catálogo Nove de Julho.</figcaption>
+            </figure>
+
+            <h2>Por que "castíssimo"?</h2>
+            <p>O adjetivo "castíssimo" (superlativo de casto) destaca justamente a pureza da
+            relação de José com Maria: segundo a fé católica, José a desposou e viveu ao seu
+            lado sem nenhuma união carnal, dedicando-se inteiramente ao papel de esposo
+            protetor e pai adotivo de Jesus. O coração de José, nessa devoção, simboliza um
+            amor que se doa por completo sem exigir nada em troca -- fidelidade, silêncio e
+            entrega, os mesmos traços que marcaram toda a vida do santo.</p>
+
+            <h2>Os três corações, uma só família</h2>
+            <p>É cada vez mais comum encontrar as três medalhas -- Jesus, Maria e José --
+            juntas em casas, carros e correntes de terço, como representação da Sagrada
+            Família completa: o amor ardente de Cristo, o cuidado maternal de Maria e a
+            fidelidade silenciosa de José. Não existe uma data de festa universal fixa só
+            para o Castíssimo Coração de São José -- a devoção costuma ser celebrada em
+            conjunto com a festa de São José, em 19 de março, ou no mesmo período dedicado
+            aos outros dois corações, em junho.</p>
+
+            <div class="cta-blog-produto">
+              <p>Complete os três corações da Sagrada Família</p>
+              <a href="__URL_PRODUTO__" class="botao-principal">Ver medalha, entremeio e chaveiro do Castíssimo Coração de São José →</a>
+            </div>
+        """,
+    },
+    "colecionar-medalhas-de-santos-tradicao": {
+        "titulo": "Por que colecionar medalhas de santos é uma tradição tão católica",
+        "resumo": (
+            "De relicários a terços de coleção, guardar e reunir objetos de devoção é uma "
+            "prática antiga na Igreja. Veja por que cada vez mais gente monta sua própria "
+            "coleção de medalhas."
+        ),
+        "produto_relacionado_id": None,
+        "cta_endpoint": "catalogo_completo",
+        "imagem_manual": "img/banner-kit.jpg",
+        "publicado_em": "2026-09-24",
+        "corpo_html": """
+            <p>Guardar objetos de devoção não é modismo recente -- é uma prática que
+            acompanha a Igreja desde os primeiros séculos. Relíquias, medalhas, escapulários
+            e imagens sempre fizeram parte da vida de quem queria manter perto de si um
+            lembrete físico da própria fé, ou de um santo com quem sentia proximidade
+            especial. Colecionar medalhas de santos é, no fundo, uma versão moderna e
+            acessível desse mesmo costume antigo.</p>
+
+            <h2>Cada medalha, uma história diferente</h2>
+            <p>Parte do que torna essa coleção especial é que cada peça carrega uma história
+            própria -- já contamos aqui no blog, por exemplo, <a href="/blog/sao-bento-medalha-significado">o
+            significado por trás da medalha de São Bento</a> e <a href="/blog/titulos-de-sao-jose">os
+            vários títulos de São José</a>. Quem começa comprando a medalha de um santo de
+            devoção pessoal acaba, com o tempo, descobrindo outros -- e é comum que uma
+            coleção cresça justamente assim, um santo de cada vez, cada peça representando um
+            momento ou um pedido diferente feito naquela fase da vida.</p>
+
+            <h2>Um jeito de guardar memórias de fé</h2>
+            <p>Diferente de outros tipos de coleção, a de medalhas de santos costuma vir
+            carregada de significado pessoal: a medalha ganha no batizado, a que representa
+            um pedido atendido, a que foi presente de alguém querido, a do santo de devoção
+            da família há gerações. Reunidas -- num quadro, numa caixinha, num porta-terço ou
+            simplesmente numa gaveta especial -- elas se tornam um retrato da própria
+            trajetória de fé de quem as guarda.</p>
+
+            <h2>Por onde começar (ou continuar) sua coleção</h2>
+            <p>Com mais de 130 santos e devoções diferentes no catálogo, entre medalhas,
+            entremeios e chaveiros, dá pra ir completando aos poucos -- do santo mais
+            conhecido ao mais raro de achar em livraria física. E como o desconto de atacado
+            é automático por quantidade total no carrinho, comprar várias medalhas de uma vez
+            pra começar (ou fechar) uma coleção sai mais em conta do que parece.</p>
+
+            <div class="cta-blog-produto">
+              <p>Comece ou complete sua coleção</p>
+              <a href="__URL_PRODUTO__" class="botao-principal">Ver catálogo completo de medalhas →</a>
+            </div>
+        """,
+    },
+    "presente-de-santo-para-quem-e-ocasiao": {
+        "titulo": "Medalha de santo é um bom presente? Veja para quem e para qual ocasião",
+        "resumo": (
+            "Para uma amiga, um afilhado, um casal de noivos ou só pra mostrar carinho sem "
+            "motivo especial -- veja como escolher a medalha certa pra presentear alguém."
+        ),
+        "produto_relacionado_id": None,
+        "cta_endpoint": "catalogo_completo",
+        "imagem_manual": "img/banner-uso-real.jpg",
+        "publicado_em": "2026-09-24",
+        "corpo_html": """
+            <p>Diferente de outros presentes que se usam uma vez e são guardados na gaveta,
+            uma medalha de santo costuma virar companhia diária -- no pescoço, na bolsa, no
+            chaveiro do carro. É exatamente isso que torna esse tipo de presente tão
+            especial: quem recebe carrega, sem perceber, um lembrete de quem deu.</p>
+
+            <h2>Para uma amiga ou amigo</h2>
+            <p>Presentear uma amizade com uma medalha de santo é um jeito de dizer "estou
+            rezando por você" sem precisar das palavras certas -- vale escolher o santo de
+            devoção da própria pessoa, se ela tiver um, ou apostar em devoções ligadas à
+            proteção e à confiança, como <a href="/produto/nossa-senhora-desatadora-dos-nos">Nossa
+            Senhora Desatadora dos Nós</a> (pra quem está passando por uma fase difícil) ou
+            <a href="/produto/sao-judas-tadeu">São Judas Tadeu</a> (pra quem enfrenta uma
+            causa que parece impossível).</p>
+
+            <h2>Para afilhados e crianças</h2>
+            <p>Batizado, crisma e primeira comunhão são as ocasiões mais tradicionais --
+            temos <a href="/para/batizados">uma seleção pensada especialmente pra
+            batizado</a> e outra pra <a href="/para/crisma-e-primeira-comunhao">crisma e
+            primeira comunhão</a>, com os santos mais pedidos pra cada momento.</p>
+
+            <h2>Para um casal de noivos</h2>
+            <p>Medalhas em dupla -- como as <a href="/blog/santos-carmelitas-espiritualidade-do-carmelo">Teresas
+            do Carmelo</a> ou uma medalha de <a href="/produto/nossa-senhora-de-fatima">Nossa
+            Senhora</a> pra cada um -- também são um presente comum de casamento ou noivado,
+            especialmente como lembrancinha pros convidados. Tem mais detalhes na nossa
+            <a href="/para/casamentos">página de medalhas para casamento</a>.</p>
+
+            <h2>Sem ocasião nenhuma</h2>
+            <p>E, às vezes, o melhor motivo é não ter motivo nenhum: presentear alguém com a
+            medalha do santo de devoção dela, só porque sim, costuma tocar mais fundo do que
+            qualquer presente "de ocasião" -- é um jeito de dizer que você presta atenção na
+            fé de quem você gosta.</p>
+
+            <div class="cta-blog-produto">
+              <p>Encontre a medalha certa pra presentear</p>
+              <a href="__URL_PRODUTO__" class="botao-principal">Ver catálogo completo de medalhas →</a>
+            </div>
+        """,
+    },
+    "como-comprar-artigos-religiosos-no-atacado": {
+        "titulo": "Como comprar artigos religiosos no atacado para revenda",
+        "resumo": (
+            "Livraria católica, loja de presentes ou revenda pela internet -- veja como "
+            "funciona comprar medalhas, entremeios e chaveiros religiosos no atacado."
+        ),
+        "produto_relacionado_id": None,
+        "cta_endpoint": "catalogo_completo",
+        "imagem_manual": "img/banner-atacado.jpg",
+        "publicado_em": "2026-09-24",
+        "corpo_html": """
+            <p>Quem vende artigos religiosos -- numa livraria física, numa banca dentro da
+            paróquia ou numa loja on-line -- sabe que a margem do negócio depende diretamente
+            de comprar bem: preço baixo por peça, variedade de santos e um fornecedor que
+            entrega o combinado. É exatamente aí que entra a compra no atacado.</p>
+
+            <h2>Como funciona o desconto por quantidade</h2>
+            <p>Diferente de outros fornecedores que exigem cadastro de CNPJ, pedido mínimo
+            alto ou tabela de preço separada, aqui o desconto de atacado é automático:
+            quanto maior a quantidade total no carrinho, menor o preço por peça -- sem
+            cupom, sem negociação, sem burocracia. Isso vale tanto pra pessoa física que quer
+            revender por conta própria quanto pra livraria já estabelecida.</p>
+
+            <h2>O que costuma vender melhor pra revenda</h2>
+            <p>Os santos mais buscados -- <a href="/produto/sao-judas-tadeu">São Judas
+            Tadeu</a>, <a href="/produto/nossa-senhora-aparecida">Nossa Senhora
+            Aparecida</a>, <a href="/produto/sao-bento">São Bento</a> -- costumam ser a base
+            de qualquer revenda, mas devoções mais raras de achar em outros fornecedores
+            (como santos recentes, ex: <a href="/produto/carlo-acutis">Carlo Acutis</a>) ajudam
+            a diferenciar a loja de quem só vende os santos "óbvios". Vale variar entre
+            medalha, entremeio e chaveiro pra atender públicos diferentes com o mesmo
+            fornecedor.</p>
+
+            <h2>Pra quem já tem loja formada</h2>
+            <p>Livrarias e revendedores com volume maior de compra têm uma
+            <a href="/para/livrarias-e-revendedores">página própria com condições pensadas
+            pra esse perfil</a> -- vale a pena conferir antes de fechar um pedido grande.</p>
+
+            <div class="cta-blog-produto">
+              <p>Monte seu estoque com desconto automático</p>
+              <a href="__URL_PRODUTO__" class="botao-principal">Ver catálogo completo de medalhas →</a>
+            </div>
+        """,
+    },
+    "atacado-para-paroquias-e-eventos": {
+        "titulo": "Atacado para paróquias e eventos: como funciona o desconto por quantidade",
+        "resumo": (
+            "Crisma, primeira comunhão, retiro ou festa de padroeiro -- veja como comprar "
+            "medalhas em quantidade pra paróquia ou evento sem virar um processo complicado."
+        ),
+        "produto_relacionado_id": None,
+        "cta_endpoint": "catalogo_completo",
+        "imagem_manual": "img/banner-atacado.jpg",
+        "publicado_em": "2026-09-24",
+        "corpo_html": """
+            <p>Quem organiza a compra de lembrancinhas pra uma turma inteira de crismandos,
+            pra uma primeira comunhão ou pra um retiro espiritual sabe que o desafio não é só
+            o preço -- é conseguir a mesma peça, no mesmo padrão, em quantidade suficiente pra
+            todo mundo, sem virar um processo complicado de orçamento e negociação.</p>
+
+            <h2>Um preço só, sem negociação separada</h2>
+            <p>Aqui, o desconto por quantidade já está embutido no próprio carrinho: quanto
+            mais peças do mesmo formato (medalha, entremeio ou chaveiro), menor o preço por
+            unidade -- calculado automaticamente ao montar o pedido no <a href="/catalogo">catálogo
+            completo</a>, sem precisar entrar em contato antes pra negociar um valor
+            especial.</p>
+
+            <h2>Pra crisma e primeira comunhão</h2>
+            <p>Temos uma seleção pensada especialmente pra esse momento, com os santos mais
+            pedidos por catequistas e coordenadores de pastoral -- vale conferir a
+            <a href="/para/crisma-e-primeira-comunhao">página de medalhas para crisma e
+            primeira comunhão</a>.</p>
+
+            <h2>Pra retiros e pastorais</h2>
+            <p>Retiros espirituais também costumam fechar pedidos em quantidade -- geralmente
+            do santo padroeiro do retiro ou de uma devoção ligada ao tema do encontro. Tem
+            mais sugestões na <a href="/para/retiros-espirituais">página de medalhas para
+            retiro espiritual</a> e na <a href="/para/paroquias-e-catequese">página voltada
+            pra paróquias e catequese</a>.</p>
+
+            <h2>Peça personalizada em grupo também tem desconto</h2>
+            <p>Mesmo quando o pedido é de medalha personalizada -- com uma foto ou imagem
+            escolhida pelo grupo --, o desconto por quantidade continua valendo. Só reunir
+            os pedidos de todo mundo no mesmo carrinho antes de fechar a compra.</p>
+
+            <div class="cta-blog-produto">
+              <p>Organize a compra em quantidade do seu grupo</p>
+              <a href="__URL_PRODUTO__" class="botao-principal">Ver catálogo completo de medalhas →</a>
+            </div>
+        """,
+    },
 }
 
 

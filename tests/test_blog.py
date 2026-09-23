@@ -146,6 +146,14 @@ def test_artigos_misturados_carregam_200_e_linkam_produtos_citados(client):
         "santo-expedito-santo-das-causas-urgentes": [],
         "santa-dulce-dos-pobres-primeira-santa-brasileira": [],
         "sao-joao-paulo-ii-o-papa-viajante": [],
+        "imaculado-coracao-de-maria-significado": ["sagrado-coracao-de-jesus"],
+        "castissimo-coracao-de-sao-jose-devocao": ["sagrado-coracao-de-jesus", "imaculado-coracao-de-maria"],
+        "presente-de-santo-para-quem-e-ocasiao": [
+            "nossa-senhora-desatadora-dos-nos", "sao-judas-tadeu", "nossa-senhora-de-fatima",
+        ],
+        "como-comprar-artigos-religiosos-no-atacado": [
+            "sao-judas-tadeu", "nossa-senhora-aparecida", "sao-bento", "carlo-acutis",
+        ],
     }
     for slug, ids_citados in casos.items():
         resposta = client.get(f"/blog/{slug}")
@@ -167,6 +175,33 @@ def test_artigo_sem_produto_usa_cta_endpoint_manual(client):
         pagina = resposta.get_data(as_text=True)
         assert "/personalizada" in pagina
         assert "__URL_PRODUTO__" not in pagina
+
+
+def test_artigos_de_colecionar_presentear_e_atacado_usam_catalogo_completo(client):
+    """ver conversa 2026-09-24: nao sao sobre UM santo especifico -- CTA
+    principal linka pro catalogo inteiro em vez de /produto/<id>, mesmo
+    padrao de cta_endpoint dos artigos "sem produto" acima."""
+    slugs = (
+        "colecionar-medalhas-de-santos-tradicao",
+        "presente-de-santo-para-quem-e-ocasiao",
+        "como-comprar-artigos-religiosos-no-atacado",
+        "atacado-para-paroquias-e-eventos",
+    )
+    for slug in slugs:
+        artigo = ARTIGOS_BLOG[slug]
+        assert artigo["produto_relacionado_id"] is None
+        assert artigo["cta_endpoint"] == "catalogo_completo"
+        resposta = client.get(f"/blog/{slug}")
+        assert resposta.status_code == 200
+        pagina = resposta.get_data(as_text=True)
+        assert "/catalogo" in pagina
+        assert "__URL_PRODUTO__" not in pagina
+
+
+def test_artigos_de_atacado_linkam_pra_pagina_de_revendedores(client):
+    resposta = client.get("/blog/como-comprar-artigos-religiosos-no-atacado")
+    pagina = resposta.get_data(as_text=True)
+    assert "/para/livrarias-e-revendedores" in pagina
 
 
 def test_historia_da_loja_e_personalizacao_linkam_entre_si(client):
