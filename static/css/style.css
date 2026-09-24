@@ -470,6 +470,58 @@ a.link-carrinho #contador-carrinho {
   margin: 0 0 16px;
 }
 
+/* widget "liturgia de hoje" na home (ver services/liturgia_hoje.py) --
+   teaser gratis que puxa trafego pro e-book completo. */
+.liturgia-hoje-card {
+  display: block;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 16px 18px;
+  margin: 0 0 16px;
+  text-decoration: none;
+  color: var(--ink);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+@media (hover: hover) {
+  .liturgia-hoje-card:hover {
+    border-color: var(--accent);
+    box-shadow: 0 10px 24px -16px rgba(20, 51, 92, 0.4);
+  }
+}
+
+.liturgia-hoje-selo {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 999px;
+  color: #fff;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+
+.liturgia-hoje-titulo {
+  font-family: var(--fonte-titulo);
+  font-weight: 600;
+  font-size: 0.98rem;
+  margin: 0 0 4px;
+}
+
+.liturgia-hoje-leitura {
+  font-size: 0.82rem;
+  color: var(--muted);
+  margin: 0 0 10px;
+}
+
+.liturgia-hoje-cta {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--accent);
+}
+
 @media (min-width: 640px) {
   .vantagens {
     display: flex;

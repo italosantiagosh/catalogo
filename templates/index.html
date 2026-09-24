@@ -94,6 +94,15 @@
     </div>
   </section>
 
+  {% if liturgia_hoje %}
+    <a class="liturgia-hoje-card" href="{{ url_for('liturgia_outubro') }}">
+      <span class="liturgia-hoje-selo" style="background:{{ liturgia_hoje.rank_cor_hex }};">{{ liturgia_hoje.rank_rotulo }}</span>
+      <p class="liturgia-hoje-titulo">Hoje, {{ liturgia_hoje.data_extenso }}: {{ liturgia_hoje.titulo }}</p>
+      <p class="liturgia-hoje-leitura">{{ liturgia_hoje.leituras }} · Cor litúrgica: {{ liturgia_hoje.cor_liturgica_rotulo }}</p>
+      <span class="liturgia-hoje-cta">Gostou? Baixe o mês completo →</span>
+    </a>
+  {% endif %}
+
   <button type="button" class="ajuda-botao ajuda-botao-centralizado" onclick="abrirAjudaHome()">❓ Como funciona / Como pedir</button>
 
   <div class="vantagens">

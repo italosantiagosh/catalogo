@@ -127,6 +127,7 @@ from services.landing_paginas import PAGINAS_LANDING
 from services.catalogo_pdf import gerar_pdf_catalogo
 from services.liturgia_pdf import gerar_pdf_liturgia_outubro
 from services.liturgia_ics import gerar_ics_liturgia_outubro
+from services.liturgia_hoje import contexto_liturgia_de_hoje
 from services.avaliacoes import (
     atualizar_status as atualizar_status_avaliacao,
     criar_avaliacao,
@@ -1356,6 +1357,7 @@ def index():
         procurados=procurados,
         categorias=categorias,
         cores_cruz_terco=_cores_cruz_terco(),
+        liturgia_hoje=contexto_liturgia_de_hoje(),
     )
 
 
