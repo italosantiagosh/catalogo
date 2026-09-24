@@ -91,6 +91,7 @@ from config import (
     INSTAGRAM_URL,
     KIT_LIVRARIA_SHALOM,
     LEMBRETE_CARRINHO_MINUTOS,
+    LEMBRETE_FINAL_MINUTOS,
     LEMBRETE_MINUTOS,
     LEMBRETE_PRECOCE_MINUTOS,
     META_PIXEL_ID,
@@ -208,6 +209,7 @@ from services.pedidos import (
     listar_pedidos_pagos_para_upsell,
     listar_pedidos_pendentes_para_cancelar,
     listar_pedidos_pendentes_para_lembrete,
+    listar_pedidos_pendentes_para_lembrete_final,
     listar_pedidos_pendentes_para_lembrete_precoce,
     listar_pedidos_por_documento,
     marcar_boleto_erro,
@@ -217,6 +219,7 @@ from services.pedidos import (
     marcar_email_recompra_enviado,
     marcar_email_enviado,
     marcar_email_lembrete_enviado,
+    marcar_email_lembrete_final_enviado,
     marcar_email_lembrete_precoce_enviado,
     marcar_email_pedido_criado_enviado,
     marcar_email_nota_fiscal_enviado,
@@ -5731,6 +5734,30 @@ def _enviar_lembretes_precoces_pedidos_pendentes() -> None:
             marcar_email_lembrete_precoce_enviado(pedido["token"], erro=resultado_email.get("erro"))
 
 
+def _enviar_lembretes_finais_pedidos_pendentes() -> None:
+    """3o lembrete (LEMBRETE_FINAL_MINUTOS, 18h por padrao), so depois
+    do lembrete normal (12h) ja ter sido mandado -- ver conversa
+    2026-09-24 e services/pedidos.py:
+    listar_pedidos_pendentes_para_lembrete_final. Mesmo conteudo de
+    e-mail dos outros dois."""
+    if not CANONICAL_DOMAIN:
+        return
+    candidatos = listar_pedidos_pendentes_para_lembrete_final(LEMBRETE_FINAL_MINUTOS)
+    if not candidatos:
+        return
+    with app.test_request_context(base_url=f"https://{CANONICAL_DOMAIN}"):
+        for pedido in candidatos:
+            cliente, endereco = _cliente_e_endereco_do_pedido(pedido)
+            resultado_link = _gerar_link_pagamento_para_pedido(pedido, cliente, endereco)
+            if "erro" in resultado_link:
+                marcar_email_lembrete_final_enviado(pedido["token"], erro=resultado_link["erro"])
+                continue
+            resultado_email = enviar_lembrete_pedido_pendente(
+                pedido, resultado_link["url"], url_for("ver_pedido", token=pedido["token"], _external=True)
+            )
+            marcar_email_lembrete_final_enviado(pedido["token"], erro=resultado_email.get("erro"))
+
+
 def _enviar_lembretes_carrinhos_abandonados() -> None:
     """Job agendado (mesmo padrao de _enviar_lembretes_pedidos_pendentes
     acima) -- roda a cada 10min, manda lembrete pra quem deixou nome +
@@ -6026,6 +6053,10 @@ def _iniciar_scheduler_jobs() -> None:
     scheduler.add_job(
         _enviar_lembretes_precoces_pedidos_pendentes,
         "interval", minutes=10, id="lembretes_precoces_pedidos_pendentes",
+    )
+    scheduler.add_job(
+        _enviar_lembretes_finais_pedidos_pendentes,
+        "interval", minutes=10, id="lembretes_finais_pedidos_pendentes",
     )
     scheduler.add_job(
         _enviar_lembretes_carrinhos_abandonados, "interval", minutes=10, id="lembretes_carrinhos_abandonados"

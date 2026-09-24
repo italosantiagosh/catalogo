@@ -243,6 +243,13 @@ _COLUNAS_ADICIONAIS: list[tuple[str, str]] = [
     # reaproveitada aqui sem adiantar o cancelamento junto.
     ("email_lembrete_precoce_enviado", "INTEGER NOT NULL DEFAULT 0"),
     ("email_lembrete_precoce_erro", "TEXT"),
+    # 3o lembrete, o FINAL antes do cancelamento automatico (ver
+    # conversa 2026-09-24) -- depois de LEMBRETE_FINAL_MINUTOS (18h por
+    # padrao), so depois do lembrete normal (12h) ja ter sido mandado,
+    # pra manter a ordem 6h -> 12h -> 18h -> cancela (24h). Mesma logica
+    # de coluna propria do precoce acima, pelo mesmo motivo.
+    ("email_lembrete_final_enviado", "INTEGER NOT NULL DEFAULT 0"),
+    ("email_lembrete_final_erro", "TEXT"),
 ]
 
 # Fluxo de status depois de "pago" -- alteravel manualmente pelo painel
@@ -852,6 +859,33 @@ def listar_pedidos_pendentes_para_lembrete_precoce(minutos: int) -> list[dict]:
     return pedidos
 
 
+def listar_pedidos_pendentes_para_lembrete_final(minutos: int) -> list[dict]:
+    """3o lembrete (email_lembrete_final_enviado, ver conversa
+    2026-09-24) -- filtra quem ainda nao recebeu o final, e exige TER
+    recebido o lembrete normal (12h) primeiro, pra manter a ordem
+    6h -> 12h -> 18h (mesmo raciocinio do precoce acima, so que na
+    outra ponta)."""
+    inicializar_db()
+    limite = (datetime.now(timezone.utc) - timedelta(minutes=minutos)).isoformat()
+    with _conexao() as conexao:
+        linhas = conexao.execute(
+            """
+            SELECT * FROM pedidos
+            WHERE status = 'pendente' AND email_lembrete_final_enviado = 0
+                AND email_lembrete_enviado = 1 AND criado_em <= ?
+                AND (inter_codigo_solicitacao IS NULL OR inter_codigo_solicitacao = '')
+            ORDER BY criado_em ASC
+            """,
+            (limite,),
+        ).fetchall()
+    pedidos = []
+    for linha in linhas:
+        pedido = dict(linha)
+        pedido["itens"] = json.loads(pedido["itens"])
+        pedidos.append(pedido)
+    return pedidos
+
+
 def listar_pedidos_pendentes_para_cancelar(minutos: int) -> list[dict]:
     """Pedidos "pendente" que ja receberam o lembrete (2o link) ha´ pelo
     menos `minutos` e continuam sem pagar -- usado pelo job agendado em
@@ -1350,6 +1384,17 @@ def marcar_email_lembrete_precoce_enviado(token: str, *, erro: str | None) -> di
     with _conexao() as conexao:
         conexao.execute(
             "UPDATE pedidos SET email_lembrete_precoce_enviado = 1, email_lembrete_precoce_erro = ? WHERE token = ?",
+            (erro, token),
+        )
+    return obter_pedido(token)
+
+
+def marcar_email_lembrete_final_enviado(token: str, *, erro: str | None) -> dict | None:
+    """Mesma logica de marcar_email_lembrete_precoce_enviado, pro 3o
+    lembrete (ver listar_pedidos_pendentes_para_lembrete_final acima)."""
+    with _conexao() as conexao:
+        conexao.execute(
+            "UPDATE pedidos SET email_lembrete_final_enviado = 1, email_lembrete_final_erro = ? WHERE token = ?",
             (erro, token),
         )
     return obter_pedido(token)

@@ -189,6 +189,11 @@ LEMBRETE_PRECOCE_MINUTOS = int(os.environ.get("LEMBRETE_PRECOCE_MINUTOS", "360")
 # pagamento").
 LEMBRETE_MINUTOS = int(os.environ.get("LEMBRETE_MINUTOS", "720"))
 
+# 3o lembrete, o FINAL antes de cancelar (ver conversa 2026-09-24) --
+# tambem adicional, nao substitui os outros dois. Fluxo completo com o
+# padrao de todos: 6h -> 12h -> 18h -> cancela em 24h.
+LEMBRETE_FINAL_MINUTOS = int(os.environ.get("LEMBRETE_FINAL_MINUTOS", "1080"))
+
 # Quanto tempo esperar DEPOIS do lembrete (2o link) antes de cancelar
 # automaticamente um pedido que continua "pendente" -- job agendado
 # junto com o lembrete acima (ver app.py). Contagem a partir de

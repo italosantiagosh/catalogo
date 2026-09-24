@@ -7,7 +7,12 @@ import pytest
 
 import services.carrinhos_abandonados as carrinhos_abandonados
 import services.pedidos as pedidos
-from app import app, _enviar_lembretes_pedidos_pendentes, _enviar_lembretes_precoces_pedidos_pendentes
+from app import (
+    app,
+    _enviar_lembretes_finais_pedidos_pendentes,
+    _enviar_lembretes_pedidos_pendentes,
+    _enviar_lembretes_precoces_pedidos_pendentes,
+)
 
 
 @pytest.fixture
@@ -167,4 +172,85 @@ def test_precoce_pedido_recente_nao_recebe_lembrete(client, monkeypatch):
 
     with patch("app.enviar_lembrete_pedido_pendente") as mock_email:
         _enviar_lembretes_precoces_pedidos_pendentes()
+    mock_email.assert_not_called()
+
+
+def test_final_sem_canonical_domain_nao_faz_nada(client, monkeypatch):
+    import app as app_module
+
+    monkeypatch.setattr(app_module, "CANONICAL_DOMAIN", "")
+    with patch("app.enviar_lembrete_pedido_pendente") as mock_email:
+        _enviar_lembretes_finais_pedidos_pendentes()
+    mock_email.assert_not_called()
+
+
+def test_final_so_dispara_depois_do_normal(client, monkeypatch):
+    # ainda nao recebeu o lembrete normal (12h) -- mesmo com criado_em
+    # ja passando dos 18h, o final NAO pode disparar antes do normal
+    # (evita ordem invertida de e-mails).
+    import app as app_module
+
+    monkeypatch.setattr(app_module, "CANONICAL_DOMAIN", "atacado.lojanovedejulho.com.br")
+    monkeypatch.setattr(app_module, "LEMBRETE_FINAL_MINUTOS", 5)
+
+    with patch("app.criar_link_pagamento", return_value={"url": "https://checkout.infinitepay.io/abc"}):
+        criado = client.post("/api/pedido/criar", json=_corpo_valido()).get_json()
+    _envelhecer(criado["token"], 999)
+
+    with patch("app.enviar_lembrete_pedido_pendente") as mock_email:
+        _enviar_lembretes_finais_pedidos_pendentes()
+    mock_email.assert_not_called()
+
+
+def test_fluxo_completo_6h_12h_18h_na_ordem(client, monkeypatch):
+    import app as app_module
+
+    monkeypatch.setattr(app_module, "CANONICAL_DOMAIN", "atacado.lojanovedejulho.com.br")
+    monkeypatch.setattr(app_module, "LEMBRETE_PRECOCE_MINUTOS", 10)
+    monkeypatch.setattr(app_module, "LEMBRETE_MINUTOS", 20)
+    monkeypatch.setattr(app_module, "LEMBRETE_FINAL_MINUTOS", 30)
+
+    with patch("app.criar_link_pagamento", return_value={"url": "https://checkout.infinitepay.io/abc"}):
+        criado = client.post("/api/pedido/criar", json=_corpo_valido()).get_json()
+    token = criado["token"]
+
+    with patch("app.enviar_lembrete_pedido_pendente", return_value={"ok": True}):
+        # so 15min: passa do precoce (10min), ainda nao do normal (20min)
+        _envelhecer(token, 15)
+        _enviar_lembretes_precoces_pedidos_pendentes()
+        _enviar_lembretes_pedidos_pendentes()
+        _enviar_lembretes_finais_pedidos_pendentes()
+        pedido = pedidos.obter_pedido(token)
+        assert pedido["email_lembrete_precoce_enviado"] == 1
+        assert pedido["email_lembrete_enviado"] == 0
+        assert pedido["email_lembrete_final_enviado"] == 0
+
+        # 25min: passa do normal (20min), ainda nao do final (30min)
+        _envelhecer(token, 25)
+        _enviar_lembretes_precoces_pedidos_pendentes()
+        _enviar_lembretes_pedidos_pendentes()
+        _enviar_lembretes_finais_pedidos_pendentes()
+        pedido = pedidos.obter_pedido(token)
+        assert pedido["email_lembrete_enviado"] == 1
+        assert pedido["email_lembrete_final_enviado"] == 0
+
+        # 35min: passa do final (30min) -- os 3 ja foram
+        _envelhecer(token, 35)
+        _enviar_lembretes_precoces_pedidos_pendentes()
+        _enviar_lembretes_pedidos_pendentes()
+        _enviar_lembretes_finais_pedidos_pendentes()
+        pedido = pedidos.obter_pedido(token)
+        assert pedido["email_lembrete_final_enviado"] == 1
+
+
+def test_final_pedido_recente_nao_recebe_lembrete(client, monkeypatch):
+    import app as app_module
+
+    monkeypatch.setattr(app_module, "CANONICAL_DOMAIN", "atacado.lojanovedejulho.com.br")
+
+    with patch("app.criar_link_pagamento", return_value={"url": "https://checkout.infinitepay.io/abc"}):
+        client.post("/api/pedido/criar", json=_corpo_valido())
+
+    with patch("app.enviar_lembrete_pedido_pendente") as mock_email:
+        _enviar_lembretes_finais_pedidos_pendentes()
     mock_email.assert_not_called()
