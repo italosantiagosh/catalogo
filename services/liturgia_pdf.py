@@ -156,6 +156,14 @@ def _estilos() -> dict:
             "indice_numero", fontName="PublicSans-Bold", fontSize=10, leading=12,
             textColor=colors.white, alignment=1,
         ),
+        "cta_final_titulo": ParagraphStyle(
+            "cta_final_titulo", fontName="Fraunces-SemiBold", fontSize=16, leading=20,
+            textColor=COR_MARCA, alignment=1, spaceAfter=8,
+        ),
+        "cta_final_corpo": ParagraphStyle(
+            "cta_final_corpo", fontName="PublicSans", fontSize=10.5, leading=16,
+            textColor=COR_TEXTO_MUTED, alignment=1, spaceAfter=18,
+        ),
     }
 
 
@@ -217,7 +225,7 @@ DIAS_OUTUBRO_2026 = [
             "Aparecida (SP). É também, por coincidência marcante, o dia em que São Carlo "
             "Acutis partiu para o Céu em 2006, aos 15 anos.",
      "novena_slug": "novena-de-nossa-senhora-aparecida",
-     "produto_extra_id": "carlo-acutis", "produto_extra_rotulo": "Ver medalha de São Carlo Acutis →",
+     "produto_extra_id": "carlo-acutis", "produto_extra_rotulo": "Ver medalha de São Carlo Acutis ->",
      "produto_extra_novena_slug": "novena-de-sao-carlo-acutis"},
     {"dia": 13, "titulo": "28ª Semana do Tempo Comum", "rank": "comum",
      "leituras": "Gl 5,1-6 · Sl 118(119) · Lc 11,37-41", "produto_id": None, "bio": None},
@@ -478,24 +486,51 @@ def _cartao_dia_destaque(info: dict, base_url: str, produtos_por_id: dict, estil
     partes = [selo, Spacer(1, 0.25 * cm), linha_conteudo, Spacer(1, 0.3 * cm)]
     if produto is not None:
         url_produto = f"{base_url}/produto/{produto['id']}"
-        partes.append(_botao(f"Ver medalha de {produto['nome']} →", url_produto, estilos))
+        partes.append(_botao(f"Ver medalha de {produto['nome']} ->", url_produto, estilos))
     novena_slug = info.get("novena_slug")
     if novena_slug:
         partes.append(Spacer(1, 0.2 * cm))
         url_novena = f"{base_url}/blog/{novena_slug}"
-        partes.append(_botao("Ver novena completa →", url_novena, estilos, cor=COR_OURO))
+        partes.append(_botao("Ver novena completa ->", url_novena, estilos, cor=COR_OURO))
     produto_extra_id = info.get("produto_extra_id")
     if produto_extra_id and produtos_por_id.get(produto_extra_id):
         partes.append(Spacer(1, 0.2 * cm))
         url_extra = f"{base_url}/produto/{produto_extra_id}"
-        partes.append(_botao(info.get("produto_extra_rotulo", "Ver medalha →"), url_extra, estilos))
+        partes.append(_botao(info.get("produto_extra_rotulo", "Ver medalha ->"), url_extra, estilos))
     produto_extra_novena_slug = info.get("produto_extra_novena_slug")
     if produto_extra_novena_slug:
         partes.append(Spacer(1, 0.2 * cm))
         url_extra_novena = f"{base_url}/blog/{produto_extra_novena_slug}"
-        partes.append(_botao("Ver novena de São Carlo Acutis →", url_extra_novena, estilos, cor=COR_OURO))
+        partes.append(_botao("Ver novena de São Carlo Acutis ->", url_extra_novena, estilos, cor=COR_OURO))
     partes.append(Spacer(1, 0.5 * cm))
     return KeepTogether(partes)
+
+
+def _pagina_final_cta(estilos: dict, base_url: str) -> list:
+    """Ultima pagina, leve e discreta de proposito (pedido do usuario:
+    "de uma forma leve e sutil") -- um convite curto pro catalogo, nao
+    uma pagina de vendas. Kit Livraria Shalom cobre o publico de
+    atacado/revenda (e´ a pagina que ja existe pra isso, ver
+    /kit-livraria-shalom); o catalogo cobre varejo -- o desconto por
+    quantidade entra sozinho no mesmo carrinho, nao tem pagina separada
+    de "atacado" no site."""
+    botao_catalogo = _botao("Ver catálogo completo ->", f"{base_url}/catalogo", estilos)
+    botao_catalogo.hAlign = "CENTER"
+    botao_kit = _botao("Kit Livraria Shalom, pra revenda ->", f"{base_url}/kit-livraria-shalom", estilos, cor=COR_OURO)
+    botao_kit.hAlign = "CENTER"
+    return [
+        Spacer(1, 8 * cm),
+        Paragraph("Antes de você ir", estilos["cta_final_titulo"]),
+        Paragraph(
+            "Se esse e-book ajudou a rezar outubro com mais atenção, talvez você "
+            "goste de conhecer as medalhas dos santos do mês — pra presentear, "
+            "colecionar ou revender (o desconto por quantidade entra sozinho, sem cupom).",
+            estilos["cta_final_corpo"],
+        ),
+        botao_catalogo,
+        Spacer(1, 0.3 * cm),
+        botao_kit,
+    ]
 
 
 def gerar_pdf_liturgia_outubro(base_url: str) -> bytes:
@@ -526,6 +561,9 @@ def gerar_pdf_liturgia_outubro(base_url: str) -> bytes:
             story.append(_cartao_dia_destaque(info, base_url, produtos_por_id, estilos))
         else:
             story.append(_linha_dia_compacto(info, estilos))
+
+    story.append(PageBreak())
+    story += _pagina_final_cta(estilos, base_url)
 
     doc.build(story)
     _cache_pdf = buffer.getvalue()

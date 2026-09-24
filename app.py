@@ -125,6 +125,7 @@ from services.blog import ARTIGOS_BLOG, artigo_por_produto_id
 from services.landing_paginas import PAGINAS_LANDING
 from services.catalogo_pdf import gerar_pdf_catalogo
 from services.liturgia_pdf import gerar_pdf_liturgia_outubro
+from services.liturgia_ics import gerar_ics_liturgia_outubro
 from services.avaliacoes import (
     atualizar_status as atualizar_status_avaliacao,
     criar_avaliacao,
@@ -2008,6 +2009,18 @@ def ebook_liturgia_outubro_pdf():
         as_attachment=False,
         download_name="liturgia-do-mes-nove-de-julho.pdf",
     )
+
+
+@app.route("/ebook/liturgia-do-mes.ics", methods=["GET"])
+def ebook_liturgia_outubro_ics():
+    """Feed de calendario por assinatura (ver services/liturgia_ics.py)
+    -- a landing linka pra isso via calendar.google.com/calendar/render
+    (abre direto o fluxo "adicionar calendario" do Google), mas o
+    arquivo em si funciona em qualquer app que leia .ics (Apple,
+    Outlook). Gerado na hora, sem cache: e´ texto puro, sem foto pra
+    processar, custa nada comparado ao PDF."""
+    ics = gerar_ics_liturgia_outubro(request.url_root.rstrip("/"))
+    return Response(ics, mimetype="text/calendar")
 
 
 def _itens_validos_do_corpo(dados: dict) -> list[dict]:
