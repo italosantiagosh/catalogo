@@ -3858,13 +3858,6 @@ input[type="file"] {
   margin: 18px 0 10px;
 }
 
-.ebook-download .ebook-download-ics-alt {
-  font-weight: 400;
-  color: var(--muted);
-  font-size: 0.8rem;
-  margin: 10px 0 0;
-}
-
 @media (min-width: 640px) {
   .ebook-captura {
     padding: 32px 36px;

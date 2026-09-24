@@ -67,6 +67,19 @@ COR_RANK = {
     "facultativa": colors.HexColor("#8a8578"),
     "comum": colors.HexColor("#3d6b4f"),
 }
+
+# Cor liturgica de verdade (cor da veste do dia) -- eixo diferente do
+# grau (COR_RANK acima): um dia pode ser memoria obrigatoria E
+# vermelho (martir), por exemplo. "branco" usa o dourado da marca em
+# vez de branco de verdade -- texto branco fica invisivel em fundo
+# branco, e ouro e´ uma substituicao tradicional aceita pro branco
+# liturgico nas solenidades (ver conversa 2026-09-24).
+COR_LITURGICA_HEX = {
+    "branco": "#b8860b",
+    "vermelho": "#8a2f22",
+    "verde": "#3d6b4f",
+}
+ROTULO_COR_LITURGICA = {"branco": "Branco", "vermelho": "Vermelho", "verde": "Verde"}
 ROTULO_RANK = {
     "solenidade": "SOLENIDADE",
     "festa": "FESTA",
@@ -137,6 +150,10 @@ def _estilos() -> dict:
             "leitura_biblica", fontName="PublicSans-SemiBold", fontSize=10.5, leading=14.5,
             textColor=COR_TEXTO_LEITURA, spaceBefore=2,
         ),
+        "cor_liturgica_texto": ParagraphStyle(
+            "cor_liturgica_texto", fontName="PublicSans", fontSize=9, leading=13,
+            textColor=COR_TEXTO_MUTED, spaceBefore=1,
+        ),
         "selo_rank": ParagraphStyle(
             "selo_rank", fontName="PublicSans-Bold", fontSize=8.5, leading=10,
             textColor=colors.white, alignment=1,
@@ -179,50 +196,50 @@ DIAS_PT = ["Segunda-feira", "Terça-feira", "Quarta-feira", "Quinta-feira", "Sex
 # bio/produto_id: só nos ~9 dias com destaque (conteudo reaproveitado
 # dos artigos/novenas do blog, ver services/blog.py).
 DIAS_OUTUBRO_2026 = [
-    {"dia": 1, "titulo": "Santa Teresinha do Menino Jesus e da Sagrada Face", "rank": "obrigatoria",
+    {"dia": 1, "cor_liturgica": "branco", "titulo": "Santa Teresinha do Menino Jesus e da Sagrada Face", "rank": "obrigatoria",
      "leituras": "Jó 19,21-27 · Sl 26(27) · Lc 10,1-12", "produto_id": "santa-teresinha",
      "bio": "Carmelita descalça francesa, morreu aos 24 anos sem nunca ter saído do convento — "
             "e mesmo assim se tornou Doutora da Igreja e padroeira das missões, pelo seu "
             "\"caminhozinho\" de confiança simples em Deus. Uma das santas mais amadas por "
             "jovens no Brasil e no mundo.",
      "novena_slug": "novena-de-santa-teresinha"},
-    {"dia": 2, "titulo": "Santos Anjos da Guarda", "rank": "obrigatoria",
+    {"dia": 2, "cor_liturgica": "branco", "titulo": "Santos Anjos da Guarda", "rank": "obrigatoria",
      "leituras": "Êx 23,20-23 · Sl 90(91) · Mt 18,1-5.10", "produto_id": None,
      "bio": "A Igreja ensina que cada pessoa recebe de Deus um anjo pra guiá-la e protegê-la "
             "a vida inteira — uma das certezas mais simples e consoladoras da fé católica."},
-    {"dia": 3, "titulo": "Beatos Mártires de Cunhaú e Uruaçu", "rank": "facultativa",
+    {"dia": 3, "cor_liturgica": "vermelho", "titulo": "Beatos Mártires de Cunhaú e Uruaçu", "rank": "facultativa",
      "leituras": "Jó 42,1-3.5-6.12-16 · Sl 118(119) · Lc 10,17-24", "produto_id": "santos-martires-do-rn",
      "bio": "Em 1645, durante a invasão holandesa no litoral potiguar, dois grupos de fiéis "
             "foram mortos por se recusarem a abandonar a fé católica — os primeiros santos "
             "nascidos em solo brasileiro, canonizados em 2017."},
-    {"dia": 4, "titulo": "27º Domingo do Tempo Comum — tradicionalmente, dia de São Francisco de Assis",
+    {"dia": 4, "cor_liturgica": "verde", "titulo": "27º Domingo do Tempo Comum — tradicionalmente, dia de São Francisco de Assis",
      "rank": "comum", "leituras": "Is 5,1-7 · Sl 79(80) · Fl 4,6-9 · Mt 21,33-43", "produto_id": "sao-francisco",
      "bio": "Filho de comerciante rico que trocou tudo pela pobreza radical, fundou a ordem "
             "franciscana e é hoje um dos santos mais universalmente amados, dentro e fora da "
             "Igreja — padroeiro da ecologia e dos animais. Em 2026 seu dia cai num domingo, "
             "que \"tem precedência\" no calendário — mas a devoção popular segue firme.",
      "novena_slug": "novena-de-sao-francisco-de-assis"},
-    {"dia": 5, "titulo": "27ª Semana do Tempo Comum · opcional: São Bento, o Preto, religioso",
+    {"dia": 5, "cor_liturgica": "verde", "titulo": "27ª Semana do Tempo Comum · opcional: São Bento, o Preto, religioso",
      "rank": "comum", "leituras": "Gl 1,6-12 · Sl 110(111) · Lc 10,25-37", "produto_id": None, "bio": None},
-    {"dia": 6, "titulo": "Santa Faustina Kowalska · opcional também: São Bruno, presbítero",
+    {"dia": 6, "cor_liturgica": "branco", "titulo": "Santa Faustina Kowalska · opcional também: São Bruno, presbítero",
      "rank": "facultativa", "leituras": "Gl 1,13-24 · Sl 138(139) · Lc 10,38-42", "produto_id": "santa-faustina",
      "bio": "Freira polonesa simples que recebeu de Jesus a mensagem da Divina Misericórdia — "
             "a imagem \"Jesus, eu confio em Vós\", hoje presente em incontáveis lares "
             "católicos, nasceu das visões dela."},
-    {"dia": 7, "titulo": "Nossa Senhora do Rosário", "rank": "obrigatoria",
+    {"dia": 7, "cor_liturgica": "branco", "titulo": "Nossa Senhora do Rosário", "rank": "obrigatoria",
      "leituras": "At 1,12-14 · Lc 1,46-55 · Lc 1,26-38", "produto_id": "nossa-senhora-do-rosario",
      "bio": "Instituída no século 16 após a vitória na Batalha de Lepanto, atribuída à "
             "intercessão de Maria através do terço, a festa celebra a mesma oração repetida "
             "há séculos em lares católicos — inclusive no coração da devoção brasileira."},
-    {"dia": 8, "titulo": "27ª Semana do Tempo Comum", "rank": "comum",
+    {"dia": 8, "cor_liturgica": "verde", "titulo": "27ª Semana do Tempo Comum", "rank": "comum",
      "leituras": "Gl 3,1-5 · Sl (Lc 1) · Lc 11,5-13", "produto_id": None, "bio": None},
-    {"dia": 9, "titulo": "27ª Semana do Tempo Comum · opcional: São Dionísio e companheiros; São João Leonardi",
+    {"dia": 9, "cor_liturgica": "verde", "titulo": "27ª Semana do Tempo Comum · opcional: São Dionísio e companheiros; São João Leonardi",
      "rank": "comum", "leituras": "Gl 3,7-14 · Sl 110(111) · Lc 11,15-26", "produto_id": None, "bio": None},
-    {"dia": 10, "titulo": "27ª Semana do Tempo Comum", "rank": "comum",
+    {"dia": 10, "cor_liturgica": "verde", "titulo": "27ª Semana do Tempo Comum", "rank": "comum",
      "leituras": "Gl 3,22-29 · Sl 104(105) · Lc 11,27-28", "produto_id": None, "bio": None},
-    {"dia": 11, "titulo": "28º Domingo do Tempo Comum", "rank": "comum",
+    {"dia": 11, "cor_liturgica": "verde", "titulo": "28º Domingo do Tempo Comum", "rank": "comum",
      "leituras": "Is 25,6-10a · Sl 22(23) · Fl 4,12-14.19-20 · Mt 22,1-14", "produto_id": None, "bio": None},
-    {"dia": 12, "titulo": "Nossa Senhora Aparecida, padroeira do Brasil", "rank": "solenidade",
+    {"dia": 12, "cor_liturgica": "branco", "titulo": "Nossa Senhora Aparecida, padroeira do Brasil", "rank": "solenidade",
      "leituras": "Est 5,1b-2.7,2b-3 · Sl 44(45) · Ap 12,1.5.13a.15-16a · Jo 2,1-11",
      "produto_id": "nossa-senhora-aparecida",
      "bio": "Padroeira do Brasil desde 1930, a imagem foi encontrada por pescadores no rio "
@@ -232,59 +249,59 @@ DIAS_OUTUBRO_2026 = [
      "novena_slug": "novena-de-nossa-senhora-aparecida",
      "produto_extra_id": "carlo-acutis", "produto_extra_rotulo": "Ver medalha de São Carlo Acutis ->",
      "produto_extra_novena_slug": "novena-de-sao-carlo-acutis"},
-    {"dia": 13, "titulo": "28ª Semana do Tempo Comum", "rank": "comum",
+    {"dia": 13, "cor_liturgica": "verde", "titulo": "28ª Semana do Tempo Comum", "rank": "comum",
      "leituras": "Gl 5,1-6 · Sl 118(119) · Lc 11,37-41", "produto_id": None, "bio": None},
-    {"dia": 14, "titulo": "28ª Semana do Tempo Comum · opcional: São Calisto I, papa e mártir",
+    {"dia": 14, "cor_liturgica": "verde", "titulo": "28ª Semana do Tempo Comum · opcional: São Calisto I, papa e mártir",
      "rank": "comum", "leituras": "Gl 5,18-25 · Sl 1 · Lc 11,42-46", "produto_id": None, "bio": None},
-    {"dia": 15, "titulo": "Santa Teresa de Jesus (d'Ávila)", "rank": "obrigatoria",
+    {"dia": 15, "cor_liturgica": "branco", "titulo": "Santa Teresa de Jesus (d'Ávila)", "rank": "obrigatoria",
      "leituras": "Ef 1,1-10 · Sl 97(98) · Lc 11,47-54", "produto_id": "santa-teresa-davila",
      "bio": "Reformadora do Carmelo no século 16, mística e Doutora da Igreja, escreveu sobre "
             "oração com uma clareza que atravessa séculos — ao lado de Santa Teresinha, uma "
             "das grandes referências vivas da espiritualidade carmelita.",
      "novena_slug": "novena-de-santa-teresa-davila"},
-    {"dia": 16, "titulo": "28ª Semana do Tempo Comum · opcional: Santa Edviges; Santa Margarida Maria Alacoque",
+    {"dia": 16, "cor_liturgica": "verde", "titulo": "28ª Semana do Tempo Comum · opcional: Santa Edviges; Santa Margarida Maria Alacoque",
      "rank": "comum", "leituras": "Ef 1,11-14 · Sl 32(33) · Lc 12,1-7", "produto_id": None, "bio": None},
-    {"dia": 17, "titulo": "Santo Inácio de Antioquia", "rank": "obrigatoria",
+    {"dia": 17, "cor_liturgica": "vermelho", "titulo": "Santo Inácio de Antioquia", "rank": "obrigatoria",
      "leituras": "Ef 1,15-23 · Sl 8 · Lc 12,8-12", "produto_id": None,
      "bio": "Bispo de Antioquia e discípulo dos apóstolos, escreveu cartas cheias de fé a "
             "caminho do martírio em Roma, no início do século 2 — um dos elos mais diretos "
             "entre a Igreja de hoje e a geração que conheceu os apóstolos."},
-    {"dia": 18, "titulo": "29º Domingo do Tempo Comum — tradicionalmente, dia de São Lucas Evangelista",
+    {"dia": 18, "cor_liturgica": "verde", "titulo": "29º Domingo do Tempo Comum — tradicionalmente, dia de São Lucas Evangelista",
      "rank": "comum", "leituras": "Is 45,1.4-6 · Sl 95(96) · 1Ts 1,1-5b · Mt 22,15-21",
      "produto_id": None, "bio": None},
-    {"dia": 19, "titulo": "29ª Semana do Tempo Comum · opcional: vários mártires e santos do dia",
+    {"dia": 19, "cor_liturgica": "verde", "titulo": "29ª Semana do Tempo Comum · opcional: vários mártires e santos do dia",
      "rank": "comum", "leituras": "Ef 2,1-10 · Sl 99(100) · Lc 12,13-21", "produto_id": None, "bio": None},
-    {"dia": 20, "titulo": "29ª Semana do Tempo Comum", "rank": "comum",
+    {"dia": 20, "cor_liturgica": "verde", "titulo": "29ª Semana do Tempo Comum", "rank": "comum",
      "leituras": "Ef 2,12-22 · Sl 84(85) · Lc 12,35-38", "produto_id": None, "bio": None},
-    {"dia": 21, "titulo": "29ª Semana do Tempo Comum", "rank": "comum",
+    {"dia": 21, "cor_liturgica": "verde", "titulo": "29ª Semana do Tempo Comum", "rank": "comum",
      "leituras": "Ef 3,2-12 · Is 12 · Lc 12,39-48", "produto_id": None, "bio": None},
-    {"dia": 22, "titulo": "São João Paulo II, papa", "rank": "facultativa",
+    {"dia": 22, "cor_liturgica": "branco", "titulo": "São João Paulo II, papa", "rank": "facultativa",
      "leituras": "Ef 3,14-21 · Sl 32(33) · Lc 12,49-53", "produto_id": "sao-joao-paulo-ii",
      "bio": "Primeiro papa não-italiano em mais de 450 anos e sobrevivente de um atentado, "
             "João Paulo II liderou a Igreja por 27 anos e se tornou um dos maiores nomes "
             "religiosos do século 20 — especialmente querido pela juventude, que reunia às "
             "centenas de milhares nas Jornadas Mundiais.",
      "novena_slug": "novena-de-sao-joao-paulo-ii"},
-    {"dia": 23, "titulo": "29ª Semana do Tempo Comum · opcional: São João de Capistrano, presbítero",
+    {"dia": 23, "cor_liturgica": "verde", "titulo": "29ª Semana do Tempo Comum · opcional: São João de Capistrano, presbítero",
      "rank": "comum", "leituras": "Ef 4,1-6 · Sl 23(24) · Lc 12,54-59", "produto_id": None, "bio": None},
-    {"dia": 24, "titulo": "29ª Semana do Tempo Comum · opcional: Santo Antônio Maria Claret, bispo",
+    {"dia": 24, "cor_liturgica": "verde", "titulo": "29ª Semana do Tempo Comum · opcional: Santo Antônio Maria Claret, bispo",
      "rank": "comum", "leituras": "Ef 4,7-16 · Sl 121(122) · Lc 13,1-9", "produto_id": None, "bio": None},
-    {"dia": 25, "titulo": "30º Domingo do Tempo Comum", "rank": "comum",
+    {"dia": 25, "cor_liturgica": "verde", "titulo": "30º Domingo do Tempo Comum", "rank": "comum",
      "leituras": "Êx 22,20-26 · Sl 17(18) · 1Ts 1,5c-10 · Mt 22,34-40", "produto_id": None, "bio": None},
-    {"dia": 26, "titulo": "30ª Semana do Tempo Comum", "rank": "comum",
+    {"dia": 26, "cor_liturgica": "verde", "titulo": "30ª Semana do Tempo Comum", "rank": "comum",
      "leituras": "Ef 4,32–5,8 · Sl 1 · Lc 13,10-17", "produto_id": None, "bio": None},
-    {"dia": 27, "titulo": "30ª Semana do Tempo Comum", "rank": "comum",
+    {"dia": 27, "cor_liturgica": "verde", "titulo": "30ª Semana do Tempo Comum", "rank": "comum",
      "leituras": "Ef 5,21-33 · Sl 127(128) · Lc 13,18-21", "produto_id": None, "bio": None},
-    {"dia": 28, "titulo": "Santos Simão e Judas Tadeu, Apóstolos", "rank": "festa",
+    {"dia": 28, "cor_liturgica": "vermelho", "titulo": "Santos Simão e Judas Tadeu, Apóstolos", "rank": "festa",
      "leituras": "Ef 2,19-22 · Sl 18(19A) · Lc 6,12-19", "produto_id": "sao-judas-tadeu",
      "bio": "Judas Tadeu, apóstolo de Jesus e primo do Senhor, tornou-se o santo mais "
             "invocado nas causas urgentes e impossíveis — devoção especialmente forte no "
             "Brasil, com filas que dão volta ao quarteirão em seu dia."},
-    {"dia": 29, "titulo": "30ª Semana do Tempo Comum", "rank": "comum",
+    {"dia": 29, "cor_liturgica": "verde", "titulo": "30ª Semana do Tempo Comum", "rank": "comum",
      "leituras": "Ef 6,10-20 · Sl 143(144) · Lc 13,31-35", "produto_id": None, "bio": None},
-    {"dia": 30, "titulo": "30ª Semana do Tempo Comum", "rank": "comum",
+    {"dia": 30, "cor_liturgica": "verde", "titulo": "30ª Semana do Tempo Comum", "rank": "comum",
      "leituras": "Fl 1,1-11 · Sl 110(111) · Lc 14,1-6", "produto_id": None, "bio": None},
-    {"dia": 31, "titulo": "30ª Semana do Tempo Comum", "rank": "comum",
+    {"dia": 31, "cor_liturgica": "verde", "titulo": "30ª Semana do Tempo Comum", "rank": "comum",
      "leituras": "Fl 1,18b-26 · Sl 41(42) · Lc 14,1.7-11", "produto_id": None, "bio": None},
 ]
 
@@ -339,6 +356,15 @@ def _pagina_capa(estilos: dict) -> list:
     ]
 
 
+def _paragrafo_cor_liturgica(cor: str, estilos: dict) -> Paragraph:
+    hex_cor = COR_LITURGICA_HEX[cor]
+    rotulo = ROTULO_COR_LITURGICA[cor]
+    return Paragraph(
+        f'Cor litúrgica: <font color="{hex_cor}"><b>{rotulo}</b></font>',
+        estilos["cor_liturgica_texto"],
+    )
+
+
 def _selo_legenda(rank: str, estilos: dict) -> Table:
     cor = COR_RANK[rank]
     celula = Table([[Paragraph(ROTULO_RANK[rank], estilos["selo_rank"])]], colWidths=[4.6 * cm])
@@ -351,16 +377,19 @@ def _selo_legenda(rank: str, estilos: dict) -> Table:
     return celula
 
 
-def _pagina_como_usar(estilos: dict) -> list:
+def _pagina_como_usar(estilos: dict, base_url: str) -> list:
     elementos = [
         Paragraph("Como usar este e-book", estilos["secao_titulo"]),
         Paragraph(
             "Cada dia traz o tempo litúrgico e a referência das leituras do dia (o livro, "
             "capítulo e versículo — não o texto completo, pra você abrir na sua Bíblia ou "
-            "app de preferência). Nos dias de santo, tem uma bio curta e, quando o santo "
-            "tem medalha no nosso catálogo, um link direto pra conhecer.",
+            "app de preferência), além da cor litúrgica do dia. Nos dias de santo, tem uma "
+            "bio curta e, quando o santo tem medalha no nosso catálogo, um link direto pra "
+            "conhecer.",
             estilos["legenda_corpo"],
         ),
+        _botao("Adicionar os 31 dias à minha agenda ->", f"{base_url}/ebook/liturgia-do-mes.ics", estilos),
+        Spacer(1, 0.5 * cm),
         Paragraph("O que cada selo colorido significa:", estilos["legenda_corpo"]),
     ]
     linhas_legenda = []
@@ -430,7 +459,8 @@ def _linha_dia_compacto(info: dict, estilos: dict) -> KeepTogether:
     weekday = DIAS_PT[data.weekday()]
     texto = Paragraph(f"{weekday} — {info['titulo']}", estilos["dia_titulo_compacto"])
     leitura = Paragraph(info["leituras"], estilos["leitura_biblica"])
-    bloco_texto = Table([[texto], [leitura]], colWidths=[13.4 * cm])
+    cor_liturgica = _paragrafo_cor_liturgica(info["cor_liturgica"], estilos)
+    bloco_texto = Table([[texto], [leitura], [cor_liturgica]], colWidths=[13.4 * cm])
     bloco_texto.setStyle(TableStyle([
         ("LEFTPADDING", (0, 0), (-1, -1), 10),
         ("TOPPADDING", (0, 0), (-1, -1), 0),
@@ -476,6 +506,7 @@ def _cartao_dia_destaque(info: dict, base_url: str, produtos_por_id: dict, estil
         Paragraph(info["titulo"], estilos["dia_titulo_grande"]),
         Paragraph(info["bio"], estilos["dia_bio"]),
         Paragraph(info["leituras"], estilos["leitura_biblica"]),
+        _paragrafo_cor_liturgica(info["cor_liturgica"], estilos),
     ]
     if foto is not None:
         linha_conteudo = Table(
@@ -559,7 +590,7 @@ def gerar_pdf_liturgia_outubro(base_url: str) -> bytes:
 
     story: list = []
     story += _pagina_capa(estilos)
-    story += _pagina_como_usar(estilos)
+    story += _pagina_como_usar(estilos, base_url)
 
     for info in DIAS_OUTUBRO_2026:
         if info.get("bio"):

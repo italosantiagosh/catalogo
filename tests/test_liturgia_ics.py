@@ -45,3 +45,13 @@ def test_rota_ics_serve_com_content_type_correto():
     assert resposta.status_code == 200
     assert resposta.headers["Content-Type"] == "text/calendar; charset=utf-8"
     assert resposta.data.count(b"BEGIN:VEVENT") == 31
+
+
+def test_landing_linka_direto_pro_ics_sem_o_truque_quebrado_do_google():
+    """Ver conversa 2026-09-24: o link calendar.google.com/calendar/render
+    ?cid=... deu erro no celular do usuario -- trocado pelo link direto
+    pro .ics, que o proprio navegador/SO sabe abrir em qualquer app de
+    calendario (Google, Apple, Outlook)."""
+    resposta = app.test_client().get("/liturgia-do-mes")
+    assert b"calendar.google.com/calendar/render" not in resposta.data
+    assert b"/ebook/liturgia-do-mes.ics" in resposta.data
