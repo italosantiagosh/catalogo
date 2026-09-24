@@ -146,6 +146,7 @@ from services.email import (
     enviar_confirmacao_pedido,
     enviar_lembrete_carrinho_abandonado,
     enviar_lembrete_pedido_pendente,
+    enviar_lembrete_precoce_pedido_pendente,
     enviar_link_pagamento,
     enviar_nota_fiscal_disponivel,
     enviar_notificacao_venda,
@@ -5712,10 +5713,10 @@ def _enviar_lembretes_precoces_pedidos_pendentes() -> None:
     """Igual _enviar_lembretes_pedidos_pendentes acima, so que mais
     cedo (LEMBRETE_PRECOCE_MINUTOS) -- adicional ao lembrete normal, nao
     substitui (ver conversa 2026-09-24 e services/pedidos.py:
-    listar_pedidos_pendentes_para_lembrete_precoce). Mesmo conteudo de
-    e-mail do lembrete normal (enviar_lembrete_pedido_pendente) -- se um
-    dia fizer sentido um texto mais leve pro primeiro aviso, é só trocar
-    aqui."""
+    listar_pedidos_pendentes_para_lembrete_precoce). Usa
+    enviar_lembrete_precoce_pedido_pendente (tom mais suave/de ajuda,
+    nao de cobranca -- pedido do usuario, faz sentido no 1o toque, o
+    pedido ainda esta´ "morno")."""
     if not CANONICAL_DOMAIN:
         return
     candidatos = listar_pedidos_pendentes_para_lembrete_precoce(LEMBRETE_PRECOCE_MINUTOS)
@@ -5728,7 +5729,7 @@ def _enviar_lembretes_precoces_pedidos_pendentes() -> None:
             if "erro" in resultado_link:
                 marcar_email_lembrete_precoce_enviado(pedido["token"], erro=resultado_link["erro"])
                 continue
-            resultado_email = enviar_lembrete_pedido_pendente(
+            resultado_email = enviar_lembrete_precoce_pedido_pendente(
                 pedido, resultado_link["url"], url_for("ver_pedido", token=pedido["token"], _external=True)
             )
             marcar_email_lembrete_precoce_enviado(pedido["token"], erro=resultado_email.get("erro"))

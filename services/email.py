@@ -433,6 +433,39 @@ def enviar_lembrete_pedido_pendente(pedido: dict, url_pagamento: str, url_acompa
     )
 
 
+def _corpo_html_lembrete_precoce(pedido: dict, url_pagamento: str, url_acompanhamento: str) -> str:
+    # Tom mais suave/de ajuda (nao de cobranca) que _corpo_html_lembrete
+    # acima -- pedido do usuario 2026-09-24, pro 1o toque (6h, ainda
+    # "morno"). Sem "ainda nao foi pago"/prazo -- so um "ficou alguma
+    # duvida?" com o link a mao, caso a pessoa queira retomar.
+    return (
+        f"<p>Olá, {_esc(pedido.get('cliente_nome', ''))}! Vimos que você começou um pedido "
+        f"com a gente e ainda não finalizou.</p>"
+        f"<p><strong>Pedido #{pedido['codigo']}</strong></p>"
+        f"{_itens_html(pedido)}"
+        f"<p><strong>Total: {_preco(pedido['total'])}</strong></p>"
+        f"<p>Ficou alguma dúvida sobre as peças, o prazo ou o pagamento? A gente fica à "
+        f"disposição no WhatsApp pra ajudar com o que precisar.</p>"
+        f"{_botao(_com_utm(url_pagamento, 'lembrete_pedido_pendente_precoce'), '💳 Continuar meu pedido')}"
+        f"<p>Se preferir, acompanhe por aqui:</p>"
+        f"{_botao(_com_utm(url_acompanhamento, 'lembrete_pedido_pendente_precoce'), '🔎 Clique aqui e acompanhe')}"
+    )
+
+
+def enviar_lembrete_precoce_pedido_pendente(pedido: dict, url_pagamento: str, url_acompanhamento: str) -> dict:
+    """Mesma logica de enviar_lembrete_pedido_pendente, so que com tom
+    mais suave (ver _corpo_html_lembrete_precoce acima) -- usado no 1o
+    toque, 6h depois de criado (ver app.py:
+    _enviar_lembretes_precoces_pedidos_pendentes)."""
+    return _enviar(
+        email_cliente=pedido.get("cliente_email", ""),
+        nome_cliente=pedido.get("cliente_nome", ""),
+        assunto=f"Ficou alguma dúvida no seu pedido? — Pedido #{pedido['codigo']}",
+        corpo_html=_corpo_html_lembrete_precoce(pedido, url_pagamento, url_acompanhamento),
+        tag="lembrete_pedido_pendente_precoce",
+    )
+
+
 def _itens_carrinho_abandonado_html(itens: list[dict]) -> str:
     # Formato CRU do carrinho do navegador (ver static/js/carrinho.js),
     # diferente do formato de um pedido ja´ persistido (_itens_html

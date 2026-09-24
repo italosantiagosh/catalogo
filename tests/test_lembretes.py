@@ -119,7 +119,7 @@ def test_precoce_sem_canonical_domain_nao_faz_nada(client, monkeypatch):
     import app as app_module
 
     monkeypatch.setattr(app_module, "CANONICAL_DOMAIN", "")
-    with patch("app.enviar_lembrete_pedido_pendente") as mock_email:
+    with patch("app.enviar_lembrete_precoce_pedido_pendente") as mock_email:
         _enviar_lembretes_precoces_pedidos_pendentes()
     mock_email.assert_not_called()
 
@@ -139,7 +139,7 @@ def test_precoce_manda_mais_cedo_e_e_independente_do_normal(client, monkeypatch)
     _envelhecer(criado["token"], 20)
 
     with patch("app.criar_link_pagamento", return_value={"url": "https://checkout.infinitepay.io/novo"}), \
-         patch("app.enviar_lembrete_pedido_pendente", return_value={"ok": True}) as mock_email:
+         patch("app.enviar_lembrete_precoce_pedido_pendente", return_value={"ok": True}) as mock_email:
         _enviar_lembretes_precoces_pedidos_pendentes()
     assert mock_email.call_count == 1
 
@@ -148,7 +148,7 @@ def test_precoce_manda_mais_cedo_e_e_independente_do_normal(client, monkeypatch)
     assert pedido["email_lembrete_enviado"] == 0  # normal ainda nao bateu o prazo
 
     # rodar de novo nao reenvia o precoce
-    with patch("app.enviar_lembrete_pedido_pendente") as mock_email2:
+    with patch("app.enviar_lembrete_precoce_pedido_pendente") as mock_email2:
         _enviar_lembretes_precoces_pedidos_pendentes()
     mock_email2.assert_not_called()
 
@@ -170,7 +170,7 @@ def test_precoce_pedido_recente_nao_recebe_lembrete(client, monkeypatch):
     with patch("app.criar_link_pagamento", return_value={"url": "https://checkout.infinitepay.io/abc"}):
         client.post("/api/pedido/criar", json=_corpo_valido())
 
-    with patch("app.enviar_lembrete_pedido_pendente") as mock_email:
+    with patch("app.enviar_lembrete_precoce_pedido_pendente") as mock_email:
         _enviar_lembretes_precoces_pedidos_pendentes()
     mock_email.assert_not_called()
 
@@ -214,7 +214,8 @@ def test_fluxo_completo_6h_12h_18h_na_ordem(client, monkeypatch):
         criado = client.post("/api/pedido/criar", json=_corpo_valido()).get_json()
     token = criado["token"]
 
-    with patch("app.enviar_lembrete_pedido_pendente", return_value={"ok": True}):
+    with patch("app.enviar_lembrete_pedido_pendente", return_value={"ok": True}), \
+         patch("app.enviar_lembrete_precoce_pedido_pendente", return_value={"ok": True}):
         # so 15min: passa do precoce (10min), ainda nao do normal (20min)
         _envelhecer(token, 15)
         _enviar_lembretes_precoces_pedidos_pendentes()
