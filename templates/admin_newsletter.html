@@ -118,7 +118,10 @@
         <div>Com erro<strong id="campanha-erro">{{ campanha_liturgia.com_erro }}</strong></div>
       </div>
       <button type="button" id="campanha-preparar-btn">Buscar clientes que já compraram</button>
+      <a class="botao" href="{{ url_for('admin_campanha_liturgia_exportar_csv') }}" style="margin-left:8px; display:inline-block;">Baixar CSV (e-mail + nome) →</a>
       <p id="campanha-feedback" hidden></p>
+      <p style="font-size:0.76rem; color:var(--texto-suave); margin-top:10px;">O CSV só traz clientes com pedido registrado
+      neste site — pedidos de antes dele (outra loja/planilha) não aparecem aqui.</p>
     </div>
 
     {% if contatos %}

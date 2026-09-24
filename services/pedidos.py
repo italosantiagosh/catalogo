@@ -938,14 +938,15 @@ def listar_pedidos_pendentes_para_cancelar(minutos: int) -> list[dict]:
     return pedidos
 
 
-def preparar_campanha_convite_liturgia() -> int:
-    """Popula campanha_convite_liturgia com um e-mail por cliente que ja
-    comprou (status em STATUS_VALIDOS), a partir do pedido pago mais
-    recente de cada um (pra pegar o nome mais atual). INSERT OR IGNORE:
-    seguro de rodar mais de uma vez -- quem ja esta na tabela (enviado
-    ou nao) fica intocado. Devolve quantos e-mails novos entraram.
-    Disparada manualmente uma vez via /admin/campanha-liturgia/preparar
-    (ver app.py), nao roda sozinha em nenhum job agendado."""
+def clientes_pagos_distintos() -> list[dict]:
+    """Um e-mail por cliente que ja comprou (status em STATUS_VALIDOS),
+    a partir do pedido pago mais recente de cada um (pra pegar o nome
+    mais atual) -- usada tanto por preparar_campanha_convite_liturgia
+    (fila de envio via API) quanto pela exportacao em CSV (ver
+    app.py:admin_campanha_liturgia_exportar_csv). So enxerga pedidos
+    que passaram por ESTE banco -- pedidos antigos de antes da loja
+    propria (fora daqui, ex: Tiny/outra plataforma) nao aparecem, entao
+    o total pode ficar abaixo do que o usuario tem em outro cadastro."""
     inicializar_db()
     marcadores = ", ".join("?" for _ in STATUS_VALIDOS)
     with _conexao() as conexao:
@@ -957,17 +958,28 @@ def preparar_campanha_convite_liturgia() -> int:
             """,
             STATUS_VALIDOS,
         ).fetchall()
-        vistos: dict[str, str] = {}
-        for linha in linhas:
-            email = linha["cliente_email"].strip().lower()
-            if email not in vistos:
-                vistos[email] = linha["cliente_nome"] or ""
+    vistos: dict[str, str] = {}
+    for linha in linhas:
+        email = linha["cliente_email"].strip().lower()
+        if email not in vistos:
+            vistos[email] = linha["cliente_nome"] or ""
+    return [{"email": email, "nome": nome} for email, nome in vistos.items()]
 
+
+def preparar_campanha_convite_liturgia() -> int:
+    """Popula campanha_convite_liturgia com os clientes de
+    clientes_pagos_distintos() acima. INSERT OR IGNORE: seguro de
+    rodar mais de uma vez -- quem ja esta na tabela (enviado ou nao)
+    fica intocado. Devolve quantos e-mails novos entraram. Disparada
+    manualmente uma vez via /admin/campanha-liturgia/preparar (ver
+    app.py), nao roda sozinha em nenhum job agendado."""
+    clientes = clientes_pagos_distintos()
+    with _conexao() as conexao:
         antes = conexao.execute("SELECT COUNT(*) FROM campanha_convite_liturgia").fetchone()[0]
         agora = datetime.now(timezone.utc).isoformat()
         conexao.executemany(
             "INSERT OR IGNORE INTO campanha_convite_liturgia (email, nome, criado_em) VALUES (?, ?, ?)",
-            [(email, nome, agora) for email, nome in vistos.items()],
+            [(c["email"], c["nome"], agora) for c in clientes],
         )
         depois = conexao.execute("SELECT COUNT(*) FROM campanha_convite_liturgia").fetchone()[0]
     return depois - antes

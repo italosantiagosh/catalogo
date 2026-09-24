@@ -194,3 +194,51 @@ def test_admin_preparar_e_seguro_chamar_duas_vezes(client):
     dados = resposta.get_json()
     assert dados["novos"] == 0
     assert dados["total"] == 1
+
+
+# ---- exportacao em CSV (ver conversa 2026-09-24: usuario prefere CSV
+# manual em vez do envio automatico, pedidos antigos de antes desta
+# loja nao entram nesta base) ----
+
+def test_clientes_pagos_distintos_ignora_pendente(client):
+    _criar_pendente(client, cliente={"nome": "Pendente", "tipo_pessoa": "fisica", "documento": "11144477735",
+                                      "telefone": "84999999999", "email": "pendente@example.com"})
+    _criar_pago(client, cliente={"nome": "Paga", "tipo_pessoa": "fisica", "documento": "11144477735",
+                                  "telefone": "84999999999", "email": "paga@example.com"})
+
+    clientes = pedidos.clientes_pagos_distintos()
+
+    assert clientes == [{"email": "paga@example.com", "nome": "Paga"}]
+
+
+def test_csv_exige_autenticacao(client):
+    resposta = client.get("/admin/campanha-liturgia/exportar.csv")
+    assert resposta.status_code == 401
+
+
+def test_csv_tem_cabecalho_e_uma_linha_por_cliente(client):
+    _criar_pago(client, cliente={"nome": "Maria", "tipo_pessoa": "fisica", "documento": "11144477735",
+                                  "telefone": "84999999999", "email": "maria@example.com"})
+    _criar_pago(client, cliente={"nome": "João", "tipo_pessoa": "fisica", "documento": "11144477735",
+                                  "telefone": "84999999999", "email": "joao@example.com"})
+
+    resposta = client.get("/admin/campanha-liturgia/exportar.csv", auth=("admin", "segredo123"))
+
+    assert resposta.status_code == 200
+    assert resposta.headers["Content-Type"].startswith("text/csv")
+    assert "attachment" in resposta.headers["Content-Disposition"]
+    conteudo = resposta.data.decode("utf-8-sig")
+    linhas = conteudo.strip().splitlines()
+    assert linhas[0] == "E-mail;Nome"
+    assert len(linhas) == 3
+    assert "maria@example.com;Maria" in linhas
+    assert "joao@example.com;João" in linhas
+
+
+def test_csv_nao_precisa_da_fila_de_campanha_ja_preparada(client):
+    """O CSV le direto de pedidos, nao depende de alguem ja ter clicado
+    em "Buscar clientes que ja compraram" antes."""
+    _criar_pago(client)
+    resposta = client.get("/admin/campanha-liturgia/exportar.csv", auth=("admin", "segredo123"))
+    linhas = resposta.data.decode("utf-8-sig").strip().splitlines()
+    assert len(linhas) == 2

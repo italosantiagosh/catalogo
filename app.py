@@ -194,6 +194,7 @@ from services.pedidos import (
     arquivar_pedido,
     atualizar_status,
     cancelar_pedido,
+    clientes_pagos_distintos,
     confirmar_venda_manual,
     contagem_pedidos_por_status,
     contar_campanha_convite_liturgia,
@@ -5520,6 +5521,31 @@ def admin_campanha_liturgia_preparar():
         )
     novos = preparar_campanha_convite_liturgia()
     return jsonify({"ok": True, "novos": novos, **contar_campanha_convite_liturgia()})
+
+
+@app.route("/admin/campanha-liturgia/exportar.csv", methods=["GET"])
+def admin_campanha_liturgia_exportar_csv():
+    """CSV (e-mail + nome) de todo cliente com pedido pago/faturado/
+    enviado/entregue neste banco (ver services/pedidos.py:
+    clientes_pagos_distintos) -- pro usuario importar manualmente numa
+    lista separada do Brevo, em vez do envio automatico em lotes (ver
+    conversa 2026-09-24: pedidos antigos de antes desta loja propria
+    nao passam por aqui, entao o total pode ficar abaixo do que o
+    usuario tem cadastrado em outro lugar)."""
+    if not _autenticacao_admin_valida(request.authorization):
+        return Response(
+            "Autenticação necessária.", 401, {"WWW-Authenticate": 'Basic realm="Painel de newsletter"'}
+        )
+    buffer = io.StringIO()
+    escritor = csv.writer(buffer, delimiter=";")
+    escritor.writerow(["E-mail", "Nome"])
+    for cliente in clientes_pagos_distintos():
+        escritor.writerow([cliente["email"], cliente["nome"]])
+
+    conteudo_bytes = buffer.getvalue().encode("utf-8-sig")
+    resposta = Response(conteudo_bytes, mimetype="text/csv")
+    resposta.headers["Content-Disposition"] = 'attachment; filename="clientes-nove-de-julho.csv"'
+    return resposta
 
 
 @app.route("/sw.js", methods=["GET"])
