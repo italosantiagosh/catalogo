@@ -176,6 +176,13 @@ SECRET_KEY = os.environ.get("SECRET_KEY", "")
 # verdade sem querer.
 ENABLE_SCHEDULER = os.environ.get("ENABLE_SCHEDULER", "").lower() in ("1", "true", "yes")
 
+# Lembrete PRECOCE (ver conversa 2026-09-24) -- adicional ao lembrete
+# de LEMBRETE_MINUTOS abaixo, nao substitui: pedido "pendente" recebe
+# esse primeiro (mais cedo), depois o de LEMBRETE_MINUTOS continua
+# batendo normal, depois o cancelamento automatico igual antes. Nao
+# muda o prazo total ate cancelar.
+LEMBRETE_PRECOCE_MINUTOS = int(os.environ.get("LEMBRETE_PRECOCE_MINUTOS", "360"))
+
 # Quanto tempo esperar (pedido "pendente" sem pagar) antes do lembrete
 # -- metade do prazo total de 24h ate cancelar (ver
 # CANCELAMENTO_MINUTOS_APOS_LEMBRETE abaixo e conversa: "24h esperando
