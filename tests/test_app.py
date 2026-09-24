@@ -740,6 +740,43 @@ def test_rodape_tem_link_e_logo_do_facebook(client):
     assert "icones/facebook.svg" in resposta
 
 
+def test_admin_newsletter_exige_autenticacao(client):
+    resposta = client.get("/admin/newsletter")
+    assert resposta.status_code == 401
+
+
+def test_admin_newsletter_lista_contatos(client, monkeypatch):
+    import app as app_module
+
+    monkeypatch.setattr(app_module, "ADMIN_USER", "admin")
+    monkeypatch.setattr(app_module, "ADMIN_PASSWORD", "segredo123")
+    monkeypatch.setattr(app_module, "BREVO_LIST_ID", "7")
+    monkeypatch.setattr(
+        app_module,
+        "listar_contatos_newsletter",
+        lambda: {"contatos": [{"email": "maria@example.com", "criado_em": "2026-09-20T10:00:00Z"}], "total": 1},
+    )
+
+    resposta = client.get("/admin/newsletter", auth=("admin", "segredo123")).get_data(as_text=True)
+    assert "maria@example.com" in resposta
+    assert "https://my.brevo.com/camp/lists/id/7" in resposta
+
+
+def test_admin_newsletter_mostra_erro_de_configuracao(client, monkeypatch):
+    import app as app_module
+
+    monkeypatch.setattr(app_module, "ADMIN_USER", "admin")
+    monkeypatch.setattr(app_module, "ADMIN_PASSWORD", "segredo123")
+    monkeypatch.setattr(
+        app_module,
+        "listar_contatos_newsletter",
+        lambda: {"erro": "Newsletter não configurada.", "contatos": [], "total": 0},
+    )
+
+    resposta = client.get("/admin/newsletter", auth=("admin", "segredo123")).get_data(as_text=True)
+    assert "Newsletter não configurada." in resposta
+
+
 def test_api_newsletter_inscreve_com_sucesso(client, monkeypatch):
     import app as app_module
 

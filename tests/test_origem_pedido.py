@@ -62,6 +62,15 @@ def test_classificar_origem_pedido_desconhecido_cai_em_outro():
     assert "umsitequalquer.com.br" in bruto
 
 
+def test_classificar_origem_pedido_reconhece_ig_fb_do_meta_ads():
+    # o Meta Ads usa "ig"/"fb" (nao "instagram"/"facebook" por extenso)
+    # no parametro dinamico de URL (site_source_name) conforme a
+    # veiculacao -- ver conversa 2026-09-24: pedido real caindo em
+    # "Outro" por causa disso.
+    assert _classificar_origem_pedido({"referrer": "", "utm_source": "ig", "utm_medium": "paid"})[0] == "Instagram"
+    assert _classificar_origem_pedido({"referrer": "", "utm_source": "fb", "utm_medium": "paid"})[0] == "Facebook"
+
+
 def test_criar_pedido_grava_origem_e_dispositivo(client):
     corpo = _corpo_valido(origem={"referrer": "https://www.instagram.com/nove.de.julho/", "utm_source": ""})
     with patch("app.calcular_frete", return_value={

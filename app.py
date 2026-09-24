@@ -75,6 +75,7 @@ from config import (
     ADMIN_PASSWORD,
     ADMIN_USER,
     AVALIACAO_SEGUIMENTO_DIAS_APOS_ENTREGA,
+    BREVO_LIST_ID,
     CANCELAMENTO_MINUTOS_APOS_LEMBRETE,
     CANONICAL_DOMAIN,
     CATEGORIA_PERSONALIZADOS,
@@ -153,6 +154,7 @@ from services.email import (
     enviar_pedido_excluido,
     enviar_pedido_recompra,
     inscrever_newsletter,
+    listar_contatos_newsletter,
 )
 from services.documentos import cpf_valido, documento_valido, numero_whatsapp, telefone_valido
 from services.frete import (
@@ -2323,9 +2325,15 @@ def _classificar_origem_pedido(origem: dict | None) -> tuple[str, str]:
 
     if "chatgpt" in texto or "openai" in texto:
         return "ChatGPT", bruto
-    if "instagram" in texto:
+    # "ig"/"fb" -- valor exato que o Meta Ads usa no parametro dinamico
+    # de URL (site_source_name) conforme o anuncio foi veiculado no
+    # Instagram ou no Facebook -- so casa o campo inteiro (nao
+    # substring), pra nao pegar "ig" escondido dentro de outra palavra
+    # (ver conversa 2026-09-24: pedido com utm_source=ig caindo em
+    # "Outro").
+    if utm_source.lower() in ("ig", "instagram") or "instagram" in texto:
         return "Instagram", bruto
-    if "l.facebook" in texto or "facebook" in texto or "fb.com" in texto:
+    if utm_source.lower() == "fb" or "l.facebook" in texto or "facebook" in texto or "fb.com" in texto:
         return "Facebook", bruto
     if "wa.me" in texto or "whatsapp" in texto:
         return "WhatsApp", bruto
@@ -5375,6 +5383,28 @@ def admin_avaliacao_recusar(id_: int):
         )
     atualizar_status_avaliacao(id_, "recusada")
     return redirect(url_for("admin_avaliacoes"))
+
+
+@app.route("/admin/newsletter", methods=["GET"])
+def admin_newsletter():
+    """Lista quem esta inscrito na newsletter -- consulta o Brevo ao
+    vivo, sem guardar copia local (decisao do usuario, ver conversa
+    2026-09-24: mais simples, sem duplicar dado). Pra enviar campanha,
+    o template linka direto pro Brevo -- o site nao tem um composer
+    proprio de proposito, pra nao correr risco de link de descadastro
+    errado (LGPD)."""
+    if not _autenticacao_admin_valida(request.authorization):
+        return Response(
+            "Autenticação necessária.", 401, {"WWW-Authenticate": 'Basic realm="Painel de newsletter"'}
+        )
+    resultado = listar_contatos_newsletter()
+    return render_template(
+        "admin_newsletter.html",
+        contatos=resultado.get("contatos", []),
+        total=resultado.get("total", 0),
+        erro=resultado.get("erro"),
+        brevo_list_id=BREVO_LIST_ID,
+    )
 
 
 @app.route("/sw.js", methods=["GET"])

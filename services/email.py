@@ -334,6 +334,31 @@ def inscrever_newsletter(email: str) -> dict:
     return {"ok": True}
 
 
+def listar_contatos_newsletter(limite: int = 200) -> dict:
+    """Lista os contatos da lista de newsletter direto do Brevo, pro
+    painel /admin/newsletter (ver app.py) -- consulta ao vivo, sem
+    guardar copia local: o Brevo continua sendo a unica fonte de
+    verdade (decisao do usuario, ver conversa 2026-09-24)."""
+    if not BREVO_API_KEY or not BREVO_LIST_ID:
+        return {"erro": "Newsletter não configurada (falta BREVO_API_KEY ou BREVO_LIST_ID).", "contatos": [], "total": 0}
+    try:
+        resposta = requests.get(
+            f"{CONTATOS_API_URL}/lists/{BREVO_LIST_ID}/contacts",
+            params={"limit": limite, "sort": "desc"},
+            headers={"api-key": BREVO_API_KEY, "Accept": "application/json"},
+            timeout=10,
+        )
+        resposta.raise_for_status()
+    except requests.RequestException as exc:
+        return {"erro": f"Não foi possível buscar os contatos agora ({exc}).", "contatos": [], "total": 0}
+    dados = resposta.json()
+    contatos = [
+        {"email": contato.get("email", ""), "criado_em": contato.get("createdAt", "")}
+        for contato in dados.get("contacts", [])
+    ]
+    return {"contatos": contatos, "total": dados.get("count", len(contatos))}
+
+
 def _corpo_html_codigo_verificacao(codigo: str) -> str:
     return (
         f"<p>Use o código abaixo pra entrar em <strong>Meus Pedidos</strong> no site da "

@@ -489,3 +489,35 @@ def test_newsletter_inscreve_com_payload_correto(monkeypatch):
     assert post_mock.call_args.kwargs["headers"]["api-key"] == "segredo"
 
 
+def test_listar_contatos_sem_configuracao_devolve_erro(monkeypatch):
+    monkeypatch.setattr(email, "BREVO_API_KEY", "")
+    monkeypatch.setattr(email, "BREVO_LIST_ID", "")
+    resultado = email.listar_contatos_newsletter()
+    assert "erro" in resultado
+    assert resultado["contatos"] == []
+
+
+def test_listar_contatos_devolve_email_e_data(monkeypatch):
+    monkeypatch.setattr(email, "BREVO_API_KEY", "segredo")
+    monkeypatch.setattr(email, "BREVO_LIST_ID", "7")
+    resposta_mock = Mock()
+    resposta_mock.raise_for_status = Mock()
+    resposta_mock.json = Mock(return_value={
+        "contacts": [
+            {"email": "maria@example.com", "createdAt": "2026-09-20T10:00:00Z"},
+            {"email": "joao@example.com", "createdAt": "2026-09-21T10:00:00Z"},
+        ],
+        "count": 2,
+    })
+    with patch("services.email.requests.get", return_value=resposta_mock) as get_mock:
+        resultado = email.listar_contatos_newsletter()
+
+    assert resultado["total"] == 2
+    assert resultado["contatos"] == [
+        {"email": "maria@example.com", "criado_em": "2026-09-20T10:00:00Z"},
+        {"email": "joao@example.com", "criado_em": "2026-09-21T10:00:00Z"},
+    ]
+    assert get_mock.call_args.args[0] == "https://api.brevo.com/v3/contacts/lists/7/contacts"
+    assert get_mock.call_args.kwargs["headers"]["api-key"] == "segredo"
+
+
