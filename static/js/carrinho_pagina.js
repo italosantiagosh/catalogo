@@ -1674,7 +1674,28 @@
   // nenhuma. Cobre tambem quem abre o link num navegador/dispositivo
   // novo, sem o localStorage original.
   const tokenRestaurar = new URLSearchParams(window.location.search).get('restaurar');
-  if (tokenRestaurar) {
+  // Carrinho montado a mao pelo dono (pedido fechado no WhatsApp, ver
+  // conversa 2026-09-24) -- ?itens=<base64 de um array JSON no mesmo
+  // formato que carrinhoAdicionarItem espera>, decodificado 100% no
+  // navegador, sem round-trip nenhum com o servidor (ao contrario do
+  // ?restaurar= acima, que usa o carrinho abandonado -- de proposito
+  // NAO reaproveitei aquele mecanismo aqui, porque ele dispara um
+  // lembrete por e-mail automatico depois de LEMBRETE_CARRINHO_MINUTOS,
+  // e esse link nao tem nem contato de cliente de verdade).
+  const itensCodificados = new URLSearchParams(window.location.search).get('itens');
+  if (itensCodificados) {
+    try {
+      const itens = JSON.parse(decodeURIComponent(escape(atob(itensCodificados))));
+      if (Array.isArray(itens)) {
+        itens.forEach((item) => carrinhoAdicionarItem(item));
+      }
+    } catch (e) {
+      // link corrompido/incompleto -- carrinho so fica vazio, pagina
+      // continua funcionando normal.
+    }
+    window.history.replaceState({}, '', window.location.pathname);
+    render();
+  } else if (tokenRestaurar) {
     fetch(`/api/carrinho/abandonado/${encodeURIComponent(tokenRestaurar)}`)
       .then((resposta) => (resposta.ok ? resposta.json() : null))
       .then((dados) => {
