@@ -176,6 +176,10 @@ from services.carrinhos_abandonados import (
     obter_por_token as obter_carrinho_abandonado_por_token,
     salvar_ou_atualizar as salvar_carrinho_abandonado,
 )
+from services.carrinhos_manuais import (
+    obter_por_token as obter_carrinho_manual_por_token,
+    salvar as salvar_carrinho_manual,
+)
 from services.geolocalizacao import localizar_por_ip
 from services.infinitepay import criar_link_pagamento
 from services.pedidos import (
@@ -2953,6 +2957,42 @@ def api_carrinho_abandonado_obter(token):
     if carrinho_abandonado is None:
         return jsonify(erro="Não encontrado."), 404
     return jsonify(itens=carrinho_abandonado["itens"])
+
+
+@app.route("/admin/carrinho-manual", methods=["POST"])
+def admin_carrinho_manual_criar():
+    """Monta um carrinho grande (pedido de atacado fechado por fora do
+    site, ex: WhatsApp) e devolve um link curto pra abrir ja pronto --
+    ver services/carrinhos_manuais.py pra entender por que isso nao
+    reaproveita o carrinho abandonado. Nao tem formulario proprio ainda
+    (usado direto via API por enquanto)."""
+    if not _autenticacao_admin_valida(request.authorization):
+        return Response(
+            "Autenticação necessária.", 401, {"WWW-Authenticate": 'Basic realm="Painel"'}
+        )
+    dados = request.get_json(silent=True) or {}
+    itens = dados.get("itens")
+    if not isinstance(itens, list) or not itens:
+        return jsonify(erro="Itens vazios ou inválidos."), 400
+    itens_para_preco = _itens_validos_do_corpo(dados)
+    if not itens_para_preco:
+        return jsonify(erro="Nenhum item com chave_preco/quantidade válidos."), 400
+    subtotal = calcular_carrinho(itens_para_preco)["subtotal_total"]
+    token = secrets.token_urlsafe(9)
+    salvar_carrinho_manual(token=token, itens=itens, subtotal=subtotal)
+    return jsonify(ok=True, token=token, url=url_for("carrinho", montar=token, _external=True))
+
+
+@app.route("/api/carrinho/manual/<token>", methods=["GET"])
+def api_carrinho_manual_obter(token):
+    """Usado por ?montar=<token> em /carrinho (ver static/js/
+    carrinho_pagina.js e admin_carrinho_manual_criar acima) -- token
+    imprevisivel (secrets.token_urlsafe), mesmo criterio ja usado no
+    carrinho abandonado, entao nao precisa de autenticacao pra ler."""
+    carrinho_manual = obter_carrinho_manual_por_token(token)
+    if carrinho_manual is None:
+        return jsonify(erro="Não encontrado."), 404
+    return jsonify(itens=carrinho_manual["itens"])
 
 
 def _itens_pagamento_de_pedido(pedido: dict) -> list[dict]:

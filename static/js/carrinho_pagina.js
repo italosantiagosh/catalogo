@@ -1683,6 +1683,13 @@
   // lembrete por e-mail automatico depois de LEMBRETE_CARRINHO_MINUTOS,
   // e esse link nao tem nem contato de cliente de verdade).
   const itensCodificados = new URLSearchParams(window.location.search).get('itens');
+  // Mesma ideia do ?itens= acima, so que pra carrinhos grandes: a URL
+  // com tudo embutido esbarra num limite de tamanho de requisicao do
+  // proprio servidor (~4KB) pra pedidos com muitas linhas -- ai o
+  // dono monta o carrinho via /admin/carrinho-manual (ver app.py) e
+  // recebe esse token curto em troca, que so busca os itens pro
+  // navegador (ver services/carrinhos_manuais.py).
+  const tokenMontar = new URLSearchParams(window.location.search).get('montar');
   if (itensCodificados) {
     try {
       const itens = JSON.parse(decodeURIComponent(escape(atob(itensCodificados))));
@@ -1695,6 +1702,17 @@
     }
     window.history.replaceState({}, '', window.location.pathname);
     render();
+  } else if (tokenMontar) {
+    fetch(`/api/carrinho/manual/${encodeURIComponent(tokenMontar)}`)
+      .then((resposta) => (resposta.ok ? resposta.json() : null))
+      .then((dados) => {
+        if (dados && Array.isArray(dados.itens) && dados.itens.length) {
+          dados.itens.forEach((item) => carrinhoAdicionarItem(item));
+        }
+        window.history.replaceState({}, '', window.location.pathname);
+      })
+      .catch(() => {})
+      .then(render);
   } else if (tokenRestaurar) {
     fetch(`/api/carrinho/abandonado/${encodeURIComponent(tokenRestaurar)}`)
       .then((resposta) => (resposta.ok ? resposta.json() : null))
