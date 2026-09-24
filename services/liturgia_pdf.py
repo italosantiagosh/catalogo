@@ -87,6 +87,16 @@ ROTULO_RANK = {
     "facultativa": "MEMÓRIA FACULTATIVA",
     "comum": "TEMPO COMUM",
 }
+# Mesmos rotulos, capitalizacao normal -- usado no titulo do evento do
+# calendario (ver services/liturgia_ics.py), onde o app de calendario
+# corta o texto e o ALL CAPS do selo do PDF fica ruim de ler truncado.
+ROTULO_RANK_FRASE = {
+    "solenidade": "Solenidade",
+    "festa": "Festa",
+    "obrigatoria": "Memória obrigatória",
+    "facultativa": "Memória facultativa",
+    "comum": "Tempo comum",
+}
 
 LADO_FOTO_DIA = 3.2 * cm
 LADO_FOTO_DIA_PX = 220

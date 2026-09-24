@@ -18,7 +18,7 @@ from __future__ import annotations
 
 import datetime
 
-from services.liturgia_pdf import DIAS_OUTUBRO_2026, ROTULO_RANK
+from services.liturgia_pdf import DIAS_OUTUBRO_2026, ROTULO_RANK_FRASE, ROTULO_COR_LITURGICA
 
 _LIMITE_LINHA = 75
 
@@ -52,10 +52,11 @@ def _dobrar_linha(linha: str) -> str:
 
 
 def _descricao_evento(info: dict, base_url: str) -> str:
-    linhas = [ROTULO_RANK[info["rank"]]]
+    linhas = [ROTULO_RANK_FRASE[info["rank"]]]
     if info.get("bio"):
         linhas.append(info["bio"])
     linhas.append(f"Leituras: {info['leituras']}")
+    linhas.append(f"Cor litúrgica: {ROTULO_COR_LITURGICA[info['cor_liturgica']]}")
     if info.get("produto_id"):
         linhas.append(f"Ver medalha: {base_url}/produto/{info['produto_id']}")
     if info.get("novena_slug"):
@@ -77,7 +78,11 @@ def gerar_ics_liturgia_outubro(base_url: str) -> str:
     for info in DIAS_OUTUBRO_2026:
         data = datetime.date(2026, 10, info["dia"])
         proximo_dia = data + datetime.timedelta(days=1)
-        resumo = f"{ROTULO_RANK[info['rank']]} — {info['titulo']}" if info["rank"] != "comum" else info["titulo"]
+        # Nome do santo/tempo primeiro (ver conversa 2026-09-24: o app
+        # de calendario trunca o titulo na visao de mes, e "MEMÓRIA
+        # OBRIGATÓRIA..." cortado nao diz nada -- o nome e´ o que
+        # importa pra reconhecer o dia de relance).
+        resumo = f"{info['titulo']} ({ROTULO_RANK_FRASE[info['rank']]})" if info["rank"] != "comum" else info["titulo"]
         linhas += [
             "BEGIN:VEVENT",
             f"UID:liturgia-outubro-2026-{info['dia']:02d}@lojanovedejulho.com.br",
