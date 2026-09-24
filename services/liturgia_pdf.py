@@ -50,6 +50,11 @@ COR_OURO = colors.HexColor("#b8860b")
 COR_LINHA = colors.HexColor("#dddddd")
 COR_FUNDO_SUAVE = colors.HexColor("#f5f2ea")
 COR_TEXTO_MUTED = colors.HexColor("#5b6b82")
+# Cinza mais escuro que COR_TEXTO_MUTED, so pra referencia da leitura
+# do dia -- pedido do usuario: "aumenta a fonte das passagens biblicas
+# e um cinza mais escuro pra ficar mais visivel" (ver estilo
+# "leitura_biblica" em _estilos()).
+COR_TEXTO_LEITURA = colors.HexColor("#374253")
 
 # cores por grau liturgico -- usadas no selo de cada dia em destaque E
 # na grade-resumo do mes (pagina 2), pra quem folheia rapido reconhecer
@@ -128,6 +133,10 @@ def _estilos() -> dict:
             "dia_leitura_compacta", fontName="PublicSans", fontSize=9, leading=13,
             textColor=COR_TEXTO_MUTED, spaceBefore=2,
         ),
+        "leitura_biblica": ParagraphStyle(
+            "leitura_biblica", fontName="PublicSans-SemiBold", fontSize=10.5, leading=14.5,
+            textColor=COR_TEXTO_LEITURA, spaceBefore=2,
+        ),
         "selo_rank": ParagraphStyle(
             "selo_rank", fontName="PublicSans-Bold", fontSize=8.5, leading=10,
             textColor=colors.white, alignment=1,
@@ -143,10 +152,6 @@ def _estilos() -> dict:
         "dia_bio": ParagraphStyle(
             "dia_bio", fontName="PublicSans", fontSize=10.5, leading=16,
             textColor=colors.HexColor("#142238"), spaceBefore=4, spaceAfter=8,
-        ),
-        "dia_leitura_grande": ParagraphStyle(
-            "dia_leitura_grande", fontName="PublicSans", fontSize=9.5, leading=13,
-            textColor=COR_TEXTO_MUTED,
         ),
         "botao_texto": ParagraphStyle(
             "botao_texto", fontName="PublicSans-Bold", fontSize=10.5, leading=13,
@@ -424,7 +429,7 @@ def _linha_dia_compacto(info: dict, estilos: dict) -> KeepTogether:
     ]))
     weekday = DIAS_PT[data.weekday()]
     texto = Paragraph(f"{weekday} — {info['titulo']}", estilos["dia_titulo_compacto"])
-    leitura = Paragraph(info["leituras"], estilos["dia_leitura_compacta"])
+    leitura = Paragraph(info["leituras"], estilos["leitura_biblica"])
     bloco_texto = Table([[texto], [leitura]], colWidths=[13.4 * cm])
     bloco_texto.setStyle(TableStyle([
         ("LEFTPADDING", (0, 0), (-1, -1), 10),
@@ -470,7 +475,7 @@ def _cartao_dia_destaque(info: dict, base_url: str, produtos_por_id: dict, estil
         Paragraph(f"{info['dia']} de outubro · {weekday}", estilos["dia_data_grande"]),
         Paragraph(info["titulo"], estilos["dia_titulo_grande"]),
         Paragraph(info["bio"], estilos["dia_bio"]),
-        Paragraph(info["leituras"], estilos["dia_leitura_grande"]),
+        Paragraph(info["leituras"], estilos["leitura_biblica"]),
     ]
     if foto is not None:
         linha_conteudo = Table(
