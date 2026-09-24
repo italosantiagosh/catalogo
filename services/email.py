@@ -359,15 +359,21 @@ def listar_contatos_newsletter(limite: int = 200) -> dict:
     return {"contatos": contatos, "total": dados.get("count", len(contatos))}
 
 
-def _corpo_html_convite_liturgia_mensal(nome: str, url_liturgia: str) -> str:
+def _corpo_html_convite_liturgia_mensal(email: str, nome: str, url_liturgia: str) -> str:
     saudacao = f"Olá, {_esc(nome)}!" if nome else "Olá!"
+    # E-mail pre-preenchido na landing (ver static/js/liturgia_outubro.js)
+    # -- poupa digitar de novo, mas quem recebeu ainda precisa clicar
+    # "Quero o e-book" la no site pra confirmar de verdade (esse link
+    # sozinho nao inscreve ninguem).
+    url_com_email = f"{url_liturgia}?email={quote(email)}"
     return (
         f"<p>{saudacao} Começamos um e-book grátis, todo mês: a liturgia de cada dia e a "
         f"história dos santos do mês, com a medalha de cada um pra quem quiser conhecer.</p>"
         f"<p>Como você já é nosso cliente, quisemos te avisar em primeira mão -- mas <strong>esse "
         f"e-mail sozinho não te inscreve em nada</strong>. Pra realmente começar a receber o "
-        f"e-book todo mês, é só confirmar seu e-mail na página abaixo (é rapidinho).</p>"
-        f"{_botao(_com_utm(url_liturgia, 'convite_liturgia_mensal'), '📖 Conhecer a Liturgia do Mês')}"
+        f"e-book todo mês, é só confirmar seu e-mail na página abaixo (já vem preenchido, é só "
+        f"clicar).</p>"
+        f"{_botao(_com_utm(url_com_email, 'convite_liturgia_mensal'), '📖 Conhecer a Liturgia do Mês')}"
         f"<p>Se não for pra você, é só ignorar esse e-mail -- não vamos insistir.</p>"
     )
 
@@ -384,8 +390,36 @@ def enviar_convite_liturgia_mensal(email: str, nome: str, url_liturgia: str) -> 
         email_cliente=email,
         nome_cliente=nome,
         assunto="Um e-book grátis todo mês, com os santos do mês — Nove de Julho",
-        corpo_html=_corpo_html_convite_liturgia_mensal(nome, url_liturgia),
+        corpo_html=_corpo_html_convite_liturgia_mensal(email, nome, url_liturgia),
         tag="convite_liturgia_mensal",
+    )
+
+
+def _corpo_html_ebook_liturgia_mensal(nome: str, url_pdf: str, url_ics: str) -> str:
+    saudacao = f"Olá, {_esc(nome)}!" if nome else "Olá!"
+    return (
+        f"<p>{saudacao} Aqui está seu e-book da Liturgia do Mês -- guarda esse e-mail, ele "
+        f"funciona como uma cópia de segurança do link (caso feche a aba do navegador).</p>"
+        f"{_botao(url_pdf, '📖 Baixar o e-book (PDF)')}"
+        f"<p>Prefere receber no seu calendário (Google, Apple ou Outlook)? Cada dia entra "
+        f"sozinho na agenda, com a notificação que você já configurou por lá.</p>"
+        f"{_botao(url_ics, '🗓️ Adicionar ao meu calendário')}"
+        f"<p>No mês que vem tem um e-book novo -- fica de olho na sua caixa de entrada.</p>"
+    )
+
+
+def enviar_ebook_liturgia_mensal(email: str, nome: str, url_pdf: str, url_ics: str) -> dict:
+    """Confirmacao com os links de verdade (PDF + calendario), disparada
+    na hora que alguem se inscreve pela landing /liturgia-do-mes (ver
+    app.py:api_liturgia_inscrever) -- complementa o botao que ja
+    aparece na propria pagina, pra nao perder o link se fechar a aba
+    (ver conversa 2026-09-24)."""
+    return _enviar(
+        email_cliente=email,
+        nome_cliente=nome,
+        assunto="Seu e-book da Liturgia do Mês chegou — Nove de Julho",
+        corpo_html=_corpo_html_ebook_liturgia_mensal(nome, url_pdf, url_ics),
+        tag="ebook_liturgia_mensal",
     )
 
 

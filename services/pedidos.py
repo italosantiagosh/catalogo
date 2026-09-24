@@ -683,7 +683,7 @@ _ROTULO_FORMA_PAGAMENTO = {
 }
 
 
-def _rotulo_forma_pagamento(bruto: str) -> str:
+def rotulo_forma_pagamento(bruto: str) -> str:
     bruto = (bruto or "").strip()
     if not bruto:
         return "Não informado"
@@ -702,7 +702,7 @@ def formas_pagamento_periodo(dias: int) -> list[dict]:
         ).fetchall()
     agregados: dict[str, dict] = {}
     for linha in linhas:
-        rotulo = _rotulo_forma_pagamento(linha["forma_pagamento"])
+        rotulo = rotulo_forma_pagamento(linha["forma_pagamento"])
         registro = agregados.setdefault(rotulo, {"quantidade": 0, "valor": 0.0})
         registro["quantidade"] += 1
         registro["valor"] += linha["total"]
@@ -968,12 +968,33 @@ def clientes_pagos_distintos() -> list[dict]:
 
 def preparar_campanha_convite_liturgia() -> int:
     """Popula campanha_convite_liturgia com os clientes de
-    clientes_pagos_distintos() acima. INSERT OR IGNORE: seguro de
-    rodar mais de uma vez -- quem ja esta na tabela (enviado ou nao)
-    fica intocado. Devolve quantos e-mails novos entraram. Disparada
-    manualmente uma vez via /admin/campanha-liturgia/preparar (ver
-    app.py), nao roda sozinha em nenhum job agendado."""
-    clientes = clientes_pagos_distintos()
+    clientes_pagos_distintos() acima. Disparada manualmente uma vez via
+    /admin/campanha-liturgia/preparar (ver app.py), nao roda sozinha em
+    nenhum job agendado."""
+    return _inserir_na_fila_campanha_convite_liturgia(clientes_pagos_distintos())
+
+
+def importar_clientes_campanha_convite_liturgia(pares: list[tuple[str, str]]) -> int:
+    """Mesma fila de convite acima, mas a partir de uma planilha que o
+    usuario sobe (ver app.py:admin_campanha_liturgia_importar) -- pra
+    clientes antigos de antes desta loja propria, que nao tem pedido
+    registrado aqui e por isso clientes_pagos_distintos() nao enxerga.
+    NAO toca na lista de newsletter de verdade (Brevo): so entra na
+    fila de convite, mesma logica de preparar_campanha_convite_liturgia."""
+    clientes = []
+    for email_bruto, nome in pares:
+        email = (email_bruto or "").strip().lower()
+        if email and "@" in email:
+            clientes.append({"email": email, "nome": (nome or "").strip()})
+    return _inserir_na_fila_campanha_convite_liturgia(clientes)
+
+
+def _inserir_na_fila_campanha_convite_liturgia(clientes: list[dict]) -> int:
+    """INSERT OR IGNORE: seguro de rodar mais de uma vez ou com listas
+    sobrepostas -- quem ja esta na tabela (enviado ou nao, veio da
+    fila automatica ou de uma planilha importada) fica intocado.
+    Devolve quantos e-mails novos entraram."""
+    inicializar_db()
     with _conexao() as conexao:
         antes = conexao.execute("SELECT COUNT(*) FROM campanha_convite_liturgia").fetchone()[0]
         agora = datetime.now(timezone.utc).isoformat()

@@ -151,6 +151,7 @@ from services.email import (
     enviar_lembrete_pedido_pendente,
     enviar_lembrete_precoce_pedido_pendente,
     enviar_convite_liturgia_mensal,
+    enviar_ebook_liturgia_mensal,
     enviar_link_pagamento,
     enviar_nota_fiscal_disponivel,
     enviar_notificacao_venda,
@@ -199,6 +200,7 @@ from services.pedidos import (
     contagem_pedidos_por_status,
     contar_campanha_convite_liturgia,
     criar_pedido,
+    importar_clientes_campanha_convite_liturgia,
     desarquivar_pedido,
     editar_item_formato,
     editar_valor,
@@ -249,6 +251,7 @@ from services.pedidos import (
     quantidade_por_material,
     reativar_pedido_cancelado,
     resumo_vendas_periodo,
+    rotulo_forma_pagamento,
     salvar_dados_boleto_inter,
     somar_dias_uteis,
     taxa_cancelamento,
@@ -659,6 +662,7 @@ app.jinja_env.filters["preco"] = _formatar_preco
 app.jinja_env.filters["data_br"] = _formatar_data_br
 app.jinja_env.filters["data_hora_br"] = _formatar_data_hora_br
 app.jinja_env.filters["whatsapp"] = numero_whatsapp
+app.jinja_env.filters["forma_pagamento_rotulo"] = rotulo_forma_pagamento
 # Registrado como global (nao filtro) pra poder ser chamado direto nos
 # templates do painel admin com o pedido inteiro (ver
 # services.pedidos.previsoes_do_pedido).
@@ -2567,6 +2571,26 @@ def api_newsletter():
     resultado = inscrever_newsletter(email)
     if resultado.get("erro"):
         return jsonify(resultado), 400
+    return jsonify(resultado)
+
+
+@app.route("/api/liturgia/inscrever", methods=["POST"])
+@limiter.limit("5 per minute")
+def api_liturgia_inscrever():
+    """Inscricao especifica da landing /liturgia-do-mes -- mesma lista
+    da newsletter (inscrever_newsletter), mas alem do botao que ja
+    aparece na propria pagina, manda por e-mail os links de verdade
+    (PDF + calendario) na hora, pra nao perder se fechar a aba (ver
+    conversa 2026-09-24: "aparece na pagina mas nao e enviado por
+    e-mail")."""
+    dados = request.get_json(silent=True) or {}
+    email = str(dados.get("email", "")).strip()
+    resultado = inscrever_newsletter(email)
+    if resultado.get("erro"):
+        return jsonify(resultado), 400
+    url_pdf = url_for("ebook_liturgia_outubro_pdf", _external=True)
+    url_ics = url_for("ebook_liturgia_outubro_ics", _external=True)
+    enviar_ebook_liturgia_mensal(email, "", url_pdf, url_ics)
     return jsonify(resultado)
 
 
@@ -5546,6 +5570,65 @@ def admin_campanha_liturgia_exportar_csv():
     resposta = Response(conteudo_bytes, mimetype="text/csv")
     resposta.headers["Content-Disposition"] = 'attachment; filename="clientes-nove-de-julho.csv"'
     return resposta
+
+
+_COLUNAS_EMAIL_CSV = {"email", "e-mail", "e_mail"}
+_COLUNAS_NOME_CSV = {"nome", "name"}
+
+
+def _ler_pares_email_nome_do_csv(texto: str) -> list[tuple[str, str]]:
+    """Aceita CSV exportado de qualquer planilha (Excel/Brevo/Tiny) --
+    detecta ; ou , automaticamente e reconhece a coluna de e-mail (e de
+    nome, se tiver) pelo cabecalho, sem exigir ordem ou nome exato de
+    coluna."""
+    try:
+        dialeto = csv.Sniffer().sniff(texto[:2048], delimiters=";,")
+    except csv.Error:
+        dialeto = csv.excel
+        dialeto.delimiter = ";" if texto[:2048].count(";") > texto[:2048].count(",") else ","
+    leitor = csv.DictReader(io.StringIO(texto), dialect=dialeto)
+    if not leitor.fieldnames:
+        return []
+    colunas = {c.strip().lower(): c for c in leitor.fieldnames}
+    coluna_email = next((colunas[c] for c in _COLUNAS_EMAIL_CSV if c in colunas), None)
+    if coluna_email is None:
+        return []
+    coluna_nome = next((colunas[c] for c in _COLUNAS_NOME_CSV if c in colunas), None)
+    pares = []
+    for linha in leitor:
+        email = (linha.get(coluna_email) or "").strip()
+        nome = (linha.get(coluna_nome) or "").strip() if coluna_nome else ""
+        if email:
+            pares.append((email, nome))
+    return pares
+
+
+@app.route("/admin/campanha-liturgia/importar", methods=["POST"])
+def admin_campanha_liturgia_importar():
+    """Sobe uma planilha (CSV) de clientes antigos -- de antes desta
+    loja propria, que clientes_pagos_distintos() nao enxerga (ver
+    conversa 2026-09-24) -- e adiciona so os e-mails novos na MESMA
+    fila de convite (campanha_convite_liturgia), nunca direto na lista
+    de newsletter do Brevo. Quem ja esta na fila (de preparar() ou de
+    uma importacao anterior) e´ ignorado, sem duplicar nem reenviar."""
+    if not _autenticacao_admin_valida(request.authorization):
+        return Response(
+            "Autenticação necessária.", 401, {"WWW-Authenticate": 'Basic realm="Painel de newsletter"'}
+        )
+    arquivo = request.files.get("arquivo")
+    if arquivo is None or not arquivo.filename:
+        return jsonify({"erro": "Nenhum arquivo enviado."}), 400
+    try:
+        texto = arquivo.read().decode("utf-8-sig")
+    except UnicodeDecodeError:
+        return jsonify({"erro": "Não consegui ler o arquivo -- exporte como CSV (UTF-8)."}), 400
+
+    pares = _ler_pares_email_nome_do_csv(texto)
+    if not pares:
+        return jsonify({"erro": "Não encontrei uma coluna de e-mail no arquivo."}), 400
+
+    novos = importar_clientes_campanha_convite_liturgia(pares)
+    return jsonify({"ok": True, "linhas_lidas": len(pares), "novos": novos, **contar_campanha_convite_liturgia()})
 
 
 @app.route("/sw.js", methods=["GET"])

@@ -11,41 +11,51 @@
     <span aria-current="page">Liturgia de Outubro</span>
   </nav>
 
-  <h1>Liturgia de Outubro — e-book grátis</h1>
-  <p class="instrucao">
-    O tempo litúrgico e a leitura de cada um dos 31 dias de outubro, com a
-    história dos santos celebrados no mês — de Santa Teresinha a Nossa
-    Senhora Aparecida — e um lembrete visual de quando é solenidade, festa
-    ou memória.
-  </p>
+  <div class="banner-kit-topo">
+    <picture>
+      <source type="image/webp" srcset="{{ url_for('static', filename='img/hero-liturgia-mes.webp') }}">
+      <img src="{{ url_for('static', filename='img/hero-liturgia-mes.jpg') }}" alt="Salão Sisto da Biblioteca Vaticana, com afrescos no teto e a Bíblia guardada entre os manuscritos" loading="lazy" decoding="async" width="900" height="367">
+    </picture>
+  </div>
+  <p class="liturgia-creditos-foto">Salão Sisto, Biblioteca Vaticana (Michal Osmenda / Wikimedia Commons, licença livre).</p>
 
-  <div class="ebook-captura" id="ebook-captura">
-    <div class="ebook-captura-lista">
-      <p>Dentro do e-book:</p>
-      <ul>
-        <li>Os 31 dias de outubro, com tempo litúrgico e referência da leitura do dia</li>
-        <li>A história de 9 santos do mês, com foto da medalha de cada um</li>
-        <li>Um selo colorido pra identificar solenidade, festa e memória de relance</li>
-      </ul>
-    </div>
+  <div class="pagina-liturgia">
+    <h1>Liturgia de Outubro — e-book grátis</h1>
+    <p class="instrucao">
+      O tempo litúrgico e a leitura de cada um dos 31 dias de outubro, com a
+      história dos santos celebrados no mês — de Santa Teresinha a Nossa
+      Senhora Aparecida — e um lembrete visual de quando é solenidade, festa
+      ou memória.
+    </p>
 
-    <form class="ebook-form" id="form-ebook-liturgia">
-      <label for="ebook-email">Recebe no seu e-mail, na hora</label>
-      <div class="ebook-form-linha">
-        <input type="email" id="ebook-email" name="email" placeholder="seu@email.com" required>
-        <button type="submit">Quero o e-book</button>
+    <div class="ebook-captura" id="ebook-captura">
+      <div class="ebook-captura-lista">
+        <p>Dentro do e-book:</p>
+        <ul>
+          <li>Os 31 dias de outubro, com tempo litúrgico e referência da leitura do dia</li>
+          <li>A história de 9 santos do mês, com foto da medalha de cada um</li>
+          <li>Um selo colorido pra identificar solenidade, festa e memória de relance</li>
+        </ul>
       </div>
-      <p class="ebook-form-feedback" id="ebook-form-feedback" hidden></p>
-    </form>
 
-    <div class="ebook-download" id="ebook-download" hidden>
-      <p>Prontinho! Seu e-book está aqui:</p>
-      <a class="botao-principal" id="ebook-download-link" href="{{ url_for('ebook_liturgia_outubro_pdf') }}" target="_blank" rel="noopener">Baixar Liturgia de Outubro (PDF) →</a>
-      <p class="ebook-download-calendario">
-        Prefere receber no seu calendário (Google, Apple ou Outlook)? Cada dia
-        entra sozinho na agenda, com a notificação que você já configurou por lá.
-      </p>
-      <a class="botao-secundario" href="{{ url_for('ebook_liturgia_outubro_ics') }}" target="_blank" rel="noopener">Adicionar ao meu calendário →</a>
+      <form class="ebook-form" id="form-ebook-liturgia">
+        <label for="ebook-email">Recebe no seu e-mail, na hora</label>
+        <div class="ebook-form-linha">
+          <input type="email" id="ebook-email" name="email" placeholder="seu@email.com" required>
+          <button type="submit">Quero o e-book</button>
+        </div>
+        <p class="ebook-form-feedback" id="ebook-form-feedback" hidden></p>
+      </form>
+
+      <div class="ebook-download" id="ebook-download" hidden>
+        <p>Prontinho! Seu e-book está aqui — também te mandamos por e-mail:</p>
+        <a class="botao-principal" id="ebook-download-link" href="{{ url_for('ebook_liturgia_outubro_pdf') }}" target="_blank" rel="noopener">Baixar Liturgia de Outubro (PDF) →</a>
+        <p class="ebook-download-calendario">
+          Prefere receber no seu calendário (Google, Apple ou Outlook)? Cada dia
+          entra sozinho na agenda, com a notificação que você já configurou por lá.
+        </p>
+        <a class="botao-secundario" href="{{ url_for('ebook_liturgia_outubro_ics') }}" target="_blank" rel="noopener">Adicionar ao meu calendário →</a>
+      </div>
     </div>
   </div>
 {% endblock %}

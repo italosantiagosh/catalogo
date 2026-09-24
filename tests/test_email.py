@@ -345,6 +345,41 @@ def test_convite_liturgia_mensal_sem_nome_usa_saudacao_generica(monkeypatch):
     assert "Olá!" in corpo
 
 
+def test_convite_liturgia_mensal_preenche_email_no_link(monkeypatch):
+    """Ver conversa 2026-09-24: o botao do convite ja vem com o e-mail
+    preenchido (static/js/liturgia_outubro.js le ?email= da URL) -- a
+    pessoa so precisa clicar, nao redigitar."""
+    monkeypatch.setattr(email, "BREVO_API_KEY", "segredo")
+    resposta_mock = Mock()
+    resposta_mock.raise_for_status = Mock()
+    with patch("services.email.requests.post", return_value=resposta_mock) as post_mock:
+        email.enviar_convite_liturgia_mensal(
+            "maria@example.com", "Maria", "https://lojanovedejulho.com.br/liturgia-do-mes"
+        )
+
+    corpo = post_mock.call_args.kwargs["json"]["htmlContent"]
+    assert "email=maria%40example.com" in corpo
+
+
+def test_ebook_liturgia_mensal_manda_link_do_pdf_e_do_calendario(monkeypatch):
+    monkeypatch.setattr(email, "BREVO_API_KEY", "segredo")
+    resposta_mock = Mock()
+    resposta_mock.raise_for_status = Mock()
+    with patch("services.email.requests.post", return_value=resposta_mock) as post_mock:
+        resultado = email.enviar_ebook_liturgia_mensal(
+            "maria@example.com", "Maria",
+            "https://lojanovedejulho.com.br/ebook/liturgia-do-mes.pdf",
+            "https://lojanovedejulho.com.br/ebook/liturgia-do-mes.ics",
+        )
+
+    assert resultado == {"ok": True}
+    corpo = post_mock.call_args.kwargs["json"]
+    assert corpo["tags"] == ["ebook_liturgia_mensal"]
+    assert "liturgia-do-mes.pdf" in corpo["htmlContent"]
+    assert "liturgia-do-mes.ics" in corpo["htmlContent"]
+    assert "Olá, Maria!" in corpo["htmlContent"]
+
+
 def test_notificacao_venda_nao_manda_name_vazio_pro_brevo(monkeypatch):
     """Ver conversa: o Brevo devolvia 400 Bad Request pra esse e-mail
     especifico -- causa era "name": "" no destinatario (aviso interno

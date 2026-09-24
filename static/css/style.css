@@ -3864,6 +3864,26 @@ input[type="file"] {
   }
 }
 
+/* landing /liturgia-do-mes -- mais respiro entre os blocos (pedido do
+   usuario: "dar mais espaco entre os paragrafos"), escopado com
+   .pagina-liturgia pra nao mexer em .instrucao nas outras paginas. */
+.pagina-liturgia .instrucao {
+  margin: 0 0 24px;
+  line-height: 1.6;
+}
+
+.pagina-liturgia .ebook-captura-lista li {
+  margin-bottom: 10px;
+  line-height: 1.5;
+}
+
+.liturgia-creditos-foto {
+  font-size: 0.76rem;
+  color: var(--muted);
+  text-align: center;
+  margin: 6px 0 26px;
+}
+
 .rodape-selos {
   border-top: 1px solid rgba(255, 255, 255, 0.15);
   max-width: 960px;
@@ -4556,6 +4576,31 @@ input[type="file"] {
   font-size: 0.9rem;
   margin: 0 0 6px;
   word-break: break-all;
+}
+
+.pedido-saudacao {
+  font-size: 0.95rem;
+  color: var(--muted);
+  margin: 0 0 4px;
+}
+
+.botao-rastrear {
+  display: inline-block;
+  padding: 10px 20px;
+  margin: 0 0 14px;
+  border-radius: 999px;
+  background: var(--accent);
+  color: #fff;
+  font-weight: 700;
+  font-size: 0.82rem;
+  letter-spacing: 0.03em;
+  text-decoration: none;
+}
+
+@media (hover: hover) {
+  .botao-rastrear:hover {
+    background: var(--accent-dark);
+  }
 }
 
 .logo-transportadora-pedido {

@@ -242,3 +242,66 @@ def test_csv_nao_precisa_da_fila_de_campanha_ja_preparada(client):
     resposta = client.get("/admin/campanha-liturgia/exportar.csv", auth=("admin", "segredo123"))
     linhas = resposta.data.decode("utf-8-sig").strip().splitlines()
     assert len(linhas) == 2
+
+
+# ---- importacao de planilha de clientes antigos (ver conversa
+# 2026-09-24: "foram todos aqueles que subi naquela campanha... queria
+# algo parecido, pra eu subir aquelas planilhas e fazer o crivo") ----
+
+def _upload(client, conteudo: str, nome_arquivo: str = "clientes.csv", **auth_kwargs):
+    import io
+
+    dados = {"arquivo": (io.BytesIO(conteudo.encode("utf-8")), nome_arquivo)}
+    kwargs = auth_kwargs or {"auth": ("admin", "segredo123")}
+    return client.post(
+        "/admin/campanha-liturgia/importar", data=dados, content_type="multipart/form-data", **kwargs
+    )
+
+
+def test_importar_exige_autenticacao(client):
+    resposta = _upload(client, "email;nome\nfulano@example.com;Fulano\n", auth=None)
+    assert resposta.status_code == 401
+
+
+def test_importar_com_ponto_e_virgula(client):
+    resposta = _upload(client, "Email;Nome\nfulano@example.com;Fulano de Tal\nciclano@example.com;Ciclano\n")
+    dados = resposta.get_json()
+    assert resposta.status_code == 200
+    assert dados["linhas_lidas"] == 2
+    assert dados["novos"] == 2
+    assert dados["total"] == 2
+
+
+def test_importar_com_virgula(client):
+    resposta = _upload(client, "email,nome\nfulano@example.com,Fulano\n")
+    dados = resposta.get_json()
+    assert dados["linhas_lidas"] == 1
+    assert dados["novos"] == 1
+
+
+def test_importar_nao_duplica_quem_ja_esta_na_fila(client):
+    _upload(client, "email;nome\nfulano@example.com;Fulano\n")
+    resposta = _upload(client, "email;nome\nfulano@example.com;Fulano de Novo\nnovo@example.com;Novo\n")
+    dados = resposta.get_json()
+    assert dados["linhas_lidas"] == 2
+    assert dados["novos"] == 1
+    assert dados["total"] == 2
+
+
+def test_importar_sem_coluna_de_email_da_erro(client):
+    resposta = _upload(client, "nome;telefone\nFulano;84999999999\n")
+    assert resposta.status_code == 400
+    assert "e-mail" in resposta.get_json()["erro"].lower()
+
+
+def test_importar_sem_arquivo_da_erro(client):
+    resposta = client.post("/admin/campanha-liturgia/importar", auth=("admin", "segredo123"))
+    assert resposta.status_code == 400
+
+
+def test_importar_nao_mexe_na_lista_de_newsletter_de_verdade(client):
+    """So entra na fila de convite -- nunca chama inscrever_newsletter
+    nem toca na lista real do Brevo."""
+    with patch("app.inscrever_newsletter") as mock_inscrever:
+        _upload(client, "email;nome\nfulano@example.com;Fulano\n")
+    mock_inscrever.assert_not_called()

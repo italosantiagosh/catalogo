@@ -120,8 +120,19 @@
       <button type="button" id="campanha-preparar-btn">Buscar clientes que já compraram</button>
       <a class="botao" href="{{ url_for('admin_campanha_liturgia_exportar_csv') }}" style="margin-left:8px; display:inline-block;">Baixar CSV (e-mail + nome) →</a>
       <p id="campanha-feedback" hidden></p>
-      <p style="font-size:0.76rem; color:var(--texto-suave); margin-top:10px;">O CSV só traz clientes com pedido registrado
-      neste site — pedidos de antes dele (outra loja/planilha) não aparecem aqui.</p>
+      <p style="font-size:0.76rem; color:var(--texto-suave); margin-top:10px;">O CSV acima só traz clientes com pedido
+      registrado neste site — pedidos de antes dele (outra loja/planilha) não aparecem aqui.</p>
+
+      <hr style="border:none; border-top:1px solid var(--linha); margin:16px 0;">
+
+      <p style="font-weight:700; margin-bottom:6px;">Tem uma planilha de clientes antigos?</p>
+      <p>Sobe o CSV (com uma coluna de e-mail, e nome se tiver) que eu adiciono só quem ainda não está na fila
+      acima — sem duplicar e sem colocar ninguém direto na lista de newsletter.</p>
+      <form id="form-campanha-importar" style="display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin-top:10px;">
+        <input type="file" id="campanha-importar-arquivo" accept=".csv" required>
+        <button type="submit">Importar planilha</button>
+      </form>
+      <p id="campanha-importar-feedback" hidden></p>
     </div>
 
     {% if contatos %}
@@ -145,6 +156,13 @@
 
   <script>
     (function () {
+      function atualizarNumeros(dados) {
+        document.getElementById('campanha-total').textContent = dados.total;
+        document.getElementById('campanha-enviados').textContent = dados.enviados;
+        document.getElementById('campanha-pendentes').textContent = dados.pendentes;
+        document.getElementById('campanha-erro').textContent = dados.com_erro;
+      }
+
       const botao = document.getElementById('campanha-preparar-btn');
       const feedback = document.getElementById('campanha-feedback');
       botao.addEventListener('click', async () => {
@@ -153,10 +171,7 @@
           const resposta = await fetch('{{ url_for("admin_campanha_liturgia_preparar") }}', { method: 'POST' });
           const dados = await resposta.json();
           if (!resposta.ok) throw new Error(dados.erro || 'Falha ao buscar clientes.');
-          document.getElementById('campanha-total').textContent = dados.total;
-          document.getElementById('campanha-enviados').textContent = dados.enviados;
-          document.getElementById('campanha-pendentes').textContent = dados.pendentes;
-          document.getElementById('campanha-erro').textContent = dados.com_erro;
+          atualizarNumeros(dados);
           feedback.textContent = `${dados.novos} cliente(s) novo(s) adicionado(s) à fila.`;
           feedback.hidden = false;
         } catch (e) {
@@ -164,6 +179,36 @@
           feedback.hidden = false;
         } finally {
           botao.disabled = false;
+        }
+      });
+
+      const formImportar = document.getElementById('form-campanha-importar');
+      const campoArquivo = document.getElementById('campanha-importar-arquivo');
+      const feedbackImportar = document.getElementById('campanha-importar-feedback');
+      formImportar.addEventListener('submit', async (evento) => {
+        evento.preventDefault();
+        const arquivo = campoArquivo.files[0];
+        if (!arquivo) return;
+        const botaoImportar = formImportar.querySelector('button[type="submit"]');
+        botaoImportar.disabled = true;
+        try {
+          const corpo = new FormData();
+          corpo.append('arquivo', arquivo);
+          const resposta = await fetch('{{ url_for("admin_campanha_liturgia_importar") }}', {
+            method: 'POST', body: corpo,
+          });
+          const dados = await resposta.json();
+          if (!resposta.ok) throw new Error(dados.erro || 'Falha ao importar a planilha.');
+          atualizarNumeros(dados);
+          feedbackImportar.textContent =
+            `${dados.linhas_lidas} linha(s) lida(s), ${dados.novos} cliente(s) novo(s) adicionado(s) à fila.`;
+          feedbackImportar.hidden = false;
+          formImportar.reset();
+        } catch (e) {
+          feedbackImportar.textContent = e.message;
+          feedbackImportar.hidden = false;
+        } finally {
+          botaoImportar.disabled = false;
         }
       });
     })();
