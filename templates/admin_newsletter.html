@@ -118,10 +118,12 @@
         <div>Com erro<strong id="campanha-erro">{{ campanha_liturgia.com_erro }}</strong></div>
       </div>
       <button type="button" id="campanha-preparar-btn">Buscar clientes que já compraram</button>
+      <button type="button" id="campanha-enviar-agora-btn" style="margin-left:8px;">📤 Enviar agora (até 200)</button>
       <a class="botao" href="{{ url_for('admin_campanha_liturgia_exportar_csv') }}" style="margin-left:8px; display:inline-block;">Baixar CSV (e-mail + nome) →</a>
       <p id="campanha-feedback" hidden></p>
       <p style="font-size:0.76rem; color:var(--texto-suave); margin-top:10px;">O CSV acima só traz clientes com pedido
-      registrado neste site — pedidos de antes dele (outra loja/planilha) não aparecem aqui.</p>
+      registrado neste site — pedidos de antes dele (outra loja/planilha) não aparecem aqui. "Enviar agora" é seguro
+      de clicar quantas vezes quiser: o teto de 200 vale por 24h, não por clique, então nunca estoura.</p>
 
       <hr style="border:none; border-top:1px solid var(--linha); margin:16px 0;">
 
@@ -179,6 +181,26 @@
           feedback.hidden = false;
         } finally {
           botao.disabled = false;
+        }
+      });
+
+      const botaoEnviar = document.getElementById('campanha-enviar-agora-btn');
+      botaoEnviar.addEventListener('click', async () => {
+        botaoEnviar.disabled = true;
+        try {
+          const resposta = await fetch('{{ url_for("admin_campanha_liturgia_enviar_agora") }}', { method: 'POST' });
+          const dados = await resposta.json();
+          if (!resposta.ok) throw new Error(dados.erro || 'Falha ao enviar.');
+          atualizarNumeros(dados);
+          feedback.textContent = dados.enviados_agora > 0
+            ? `${dados.enviados_agora} convite(s) enviado(s) agora.`
+            : 'Nada pra enviar agora (fila vazia ou cota de 24h já usada).';
+          feedback.hidden = false;
+        } catch (e) {
+          feedback.textContent = e.message;
+          feedback.hidden = false;
+        } finally {
+          botaoEnviar.disabled = false;
         }
       });
 

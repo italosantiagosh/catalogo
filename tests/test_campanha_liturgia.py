@@ -154,6 +154,29 @@ def test_job_manda_ate_o_limite_diario_e_marca_enviado(client, monkeypatch):
     assert contagem["pendentes"] == 1
 
 
+def test_job_respeita_janela_movel_de_24h_entre_duas_chamadas(client, monkeypatch):
+    """Ver conversa 2026-09-25: o teto vale por janela movel de 24h, nao
+    por chamada -- chamar a funcao 2x seguidas (ex: clique manual +
+    job automatico) no mesmo dia nunca manda mais que o limite."""
+    import app as app_module
+
+    monkeypatch.setattr(app_module, "CANONICAL_DOMAIN", "lojanovedejulho.com.br")
+    monkeypatch.setattr(app_module, "LIMITE_DIARIO_CAMPANHA_LITURGIA", 2)
+    for i in range(3):
+        _criar_pago(client, cliente={"nome": f"Cliente {i}", "tipo_pessoa": "fisica", "documento": "11144477735",
+                                      "telefone": "84999999999", "email": f"cliente{i}@example.com"})
+    pedidos.preparar_campanha_convite_liturgia()
+
+    with patch("app.enviar_convite_liturgia_mensal", return_value={"ok": True}) as mock_email:
+        primeiro = _enviar_lote_campanha_convite_liturgia()
+        segundo = _enviar_lote_campanha_convite_liturgia()
+
+    assert primeiro == 2
+    assert segundo == 0
+    assert mock_email.call_count == 2
+    assert pedidos.contar_campanha_convite_liturgia()["pendentes"] == 1
+
+
 def test_job_marca_erro_quando_envio_falha(client, monkeypatch):
     import app as app_module
 
@@ -305,3 +328,47 @@ def test_importar_nao_mexe_na_lista_de_newsletter_de_verdade(client):
     with patch("app.inscrever_newsletter") as mock_inscrever:
         _upload(client, "email;nome\nfulano@example.com;Fulano\n")
     mock_inscrever.assert_not_called()
+
+
+# ---- botao "Enviar agora" (ver conversa 2026-09-25: "como faço pra
+# enviar a campanha só pra 200 hj") ----
+
+def test_enviar_agora_exige_autenticacao(client):
+    resposta = client.post("/admin/campanha-liturgia/enviar-agora")
+    assert resposta.status_code == 401
+
+
+def test_enviar_agora_manda_o_lote_na_hora(client, monkeypatch):
+    import app as app_module
+
+    monkeypatch.setattr(app_module, "CANONICAL_DOMAIN", "lojanovedejulho.com.br")
+    _criar_pago(client)
+    pedidos.preparar_campanha_convite_liturgia()
+
+    with patch("app.enviar_convite_liturgia_mensal", return_value={"ok": True}):
+        resposta = client.post("/admin/campanha-liturgia/enviar-agora", auth=("admin", "segredo123"))
+
+    dados = resposta.get_json()
+    assert resposta.status_code == 200
+    assert dados["enviados_agora"] == 1
+    assert dados["enviados"] == 1
+    assert dados["pendentes"] == 0
+
+
+def test_enviar_agora_duas_vezes_no_mesmo_dia_nao_estoura_o_teto(client, monkeypatch):
+    import app as app_module
+
+    monkeypatch.setattr(app_module, "CANONICAL_DOMAIN", "lojanovedejulho.com.br")
+    monkeypatch.setattr(app_module, "LIMITE_DIARIO_CAMPANHA_LITURGIA", 1)
+    for i in range(2):
+        _criar_pago(client, cliente={"nome": f"Cliente {i}", "tipo_pessoa": "fisica", "documento": "11144477735",
+                                      "telefone": "84999999999", "email": f"cliente{i}@example.com"})
+    pedidos.preparar_campanha_convite_liturgia()
+
+    with patch("app.enviar_convite_liturgia_mensal", return_value={"ok": True}):
+        primeira = client.post("/admin/campanha-liturgia/enviar-agora", auth=("admin", "segredo123")).get_json()
+        segunda = client.post("/admin/campanha-liturgia/enviar-agora", auth=("admin", "segredo123")).get_json()
+
+    assert primeira["enviados_agora"] == 1
+    assert segunda["enviados_agora"] == 0
+    assert segunda["pendentes"] == 1

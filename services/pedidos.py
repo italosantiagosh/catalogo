@@ -1030,6 +1030,21 @@ def marcar_campanha_convite_liturgia_enviado(email: str, *, erro: str | None) ->
             )
 
 
+def contar_enviados_campanha_convite_liturgia_ultimas_24h() -> int:
+    """Quantos convites ja´ saíram nas ultimas 24h -- teto por JANELA
+    MOVEL de 24h, nao por "execucao do job", pra ficar seguro mesmo se
+    alguem clicar em "Enviar agora" (ver app.py:admin_campanha_liturgia_
+    enviar_agora) no mesmo dia em que o job automatico tambem rodar.
+    As duas vias (manual e automatica) chamam essa mesma conta antes de
+    decidir quantos faltam pra bater LIMITE_DIARIO_CAMPANHA_LITURGIA."""
+    inicializar_db()
+    limite = (datetime.now(timezone.utc) - timedelta(hours=24)).isoformat()
+    with _conexao() as conexao:
+        return conexao.execute(
+            "SELECT COUNT(*) FROM campanha_convite_liturgia WHERE enviado_em >= ?", (limite,)
+        ).fetchone()[0]
+
+
 def contar_campanha_convite_liturgia() -> dict:
     """Pro painel /admin/newsletter acompanhar o envio em lotes (ver
     LIMITE_DIARIO_CAMPANHA_LITURGIA em config.py)."""

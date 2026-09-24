@@ -200,6 +200,7 @@ from services.pedidos import (
     confirmar_venda_manual,
     contagem_pedidos_por_status,
     contar_campanha_convite_liturgia,
+    contar_enviados_campanha_convite_liturgia_ultimas_24h,
     criar_pedido,
     importar_clientes_campanha_convite_liturgia,
     desarquivar_pedido,
@@ -5550,6 +5551,22 @@ def admin_campanha_liturgia_preparar():
     return jsonify({"ok": True, "novos": novos, **contar_campanha_convite_liturgia()})
 
 
+@app.route("/admin/campanha-liturgia/enviar-agora", methods=["POST"])
+def admin_campanha_liturgia_enviar_agora():
+    """Dispara agora o proximo lote de convites, em vez de esperar o job
+    automatico rodar sozinho (ver conversa 2026-09-25: "como faço pra
+    enviar a campanha só pra 200 hj"). Seguro de clicar quantas vezes
+    quiser: o teto de LIMITE_DIARIO_CAMPANHA_LITURGIA vale por janela
+    movel de 24h (ver _enviar_lote_campanha_convite_liturgia), entao
+    clicar de novo no mesmo dia so manda quem ainda sobrar de cota."""
+    if not _autenticacao_admin_valida(request.authorization):
+        return Response(
+            "Autenticação necessária.", 401, {"WWW-Authenticate": 'Basic realm="Painel de newsletter"'}
+        )
+    enviados_agora = _enviar_lote_campanha_convite_liturgia()
+    return jsonify({"ok": True, "enviados_agora": enviados_agora, **contar_campanha_convite_liturgia()})
+
+
 @app.route("/admin/campanha-liturgia/exportar.csv", methods=["GET"])
 def admin_campanha_liturgia_exportar_csv():
     """CSV (e-mail + nome) de todo cliente com pedido pago/faturado/
@@ -6032,22 +6049,29 @@ def _enviar_upsell_pedidos_pagos() -> None:
         marcar_email_upsell_enviado(pedido["token"], erro=resultado_email.get("erro"))
 
 
-def _enviar_lote_campanha_convite_liturgia() -> None:
-    """Job agendado -- manda ate LIMITE_DIARIO_CAMPANHA_LITURGIA convites
-    por dia pra base de clientes que ja comprou (ver
-    services/pedidos.py:preparar_campanha_convite_liturgia, disparada
-    manualmente uma vez via /admin/campanha-liturgia/preparar). Some
-    sozinho quando a fila de pendentes esvaziar -- nao reagenda nem
-    precisa ser desligado."""
+def _enviar_lote_campanha_convite_liturgia() -> int:
+    """Job agendado (a cada 24h) E o botao manual "Enviar agora" (ver
+    admin_campanha_liturgia_enviar_agora abaixo) chamam esta MESMA
+    funcao -- o teto de LIMITE_DIARIO_CAMPANHA_LITURGIA vale por
+    JANELA MOVEL de 24h (ver services/pedidos.py:contar_enviados_
+    campanha_convite_liturgia_ultimas_24h), nao por execucao, entao
+    clicar o botao no mesmo dia em que o job automatico tambem rodar
+    nunca estoura o teto. Devolve quantos e-mails foram enviados
+    nesta chamada."""
     if not CANONICAL_DOMAIN:
-        return
-    pendentes = listar_pendentes_campanha_convite_liturgia(LIMITE_DIARIO_CAMPANHA_LITURGIA)
+        return 0
+    ja_enviados_24h = contar_enviados_campanha_convite_liturgia_ultimas_24h()
+    limite_restante = max(0, LIMITE_DIARIO_CAMPANHA_LITURGIA - ja_enviados_24h)
+    if limite_restante == 0:
+        return 0
+    pendentes = listar_pendentes_campanha_convite_liturgia(limite_restante)
     if not pendentes:
-        return
+        return 0
     url_liturgia = f"https://{CANONICAL_DOMAIN}/liturgia-do-mes"
     for contato in pendentes:
         resultado = enviar_convite_liturgia_mensal(contato["email"], contato.get("nome") or "", url_liturgia)
         marcar_campanha_convite_liturgia_enviado(contato["email"], erro=resultado.get("erro"))
+    return len(pendentes)
 
 
 def _enviar_email_avaliacao(token: str) -> str | None:
