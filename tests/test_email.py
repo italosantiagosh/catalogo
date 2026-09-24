@@ -313,6 +313,38 @@ def test_upsell_de_cruz_manda_mensagem_de_whatsapp_com_quantidade(monkeypatch):
     assert "retirada no local" in corpo["htmlContent"].lower()
 
 
+def test_convite_liturgia_mensal_deixa_claro_que_nao_inscreve_sozinho(monkeypatch):
+    """Ver conversa 2026-09-24: convite unico pra base de clientes que ja
+    comprou -- precisa deixar claro que so o envio nao inscreve
+    ninguem, pra nao virar opt-in escondido."""
+    monkeypatch.setattr(email, "BREVO_API_KEY", "segredo")
+    resposta_mock = Mock()
+    resposta_mock.raise_for_status = Mock()
+    with patch("services.email.requests.post", return_value=resposta_mock) as post_mock:
+        resultado = email.enviar_convite_liturgia_mensal(
+            "maria@example.com", "Maria Teste", "https://lojanovedejulho.com.br/liturgia-do-mes"
+        )
+
+    assert resultado == {"ok": True}
+    corpo = post_mock.call_args.kwargs["json"]
+    assert corpo["to"] == [{"email": "maria@example.com", "name": "Maria Teste"}]
+    assert corpo["tags"] == ["convite_liturgia_mensal"]
+    assert "não te inscreve em nada" in corpo["htmlContent"]
+    assert "utm_campaign=convite_liturgia_mensal" in corpo["htmlContent"]
+    assert "liturgia-do-mes" in corpo["htmlContent"]
+
+
+def test_convite_liturgia_mensal_sem_nome_usa_saudacao_generica(monkeypatch):
+    monkeypatch.setattr(email, "BREVO_API_KEY", "segredo")
+    resposta_mock = Mock()
+    resposta_mock.raise_for_status = Mock()
+    with patch("services.email.requests.post", return_value=resposta_mock) as post_mock:
+        email.enviar_convite_liturgia_mensal("maria@example.com", "", "https://lojanovedejulho.com.br/liturgia-do-mes")
+
+    corpo = post_mock.call_args.kwargs["json"]["htmlContent"]
+    assert "Olá!" in corpo
+
+
 def test_notificacao_venda_nao_manda_name_vazio_pro_brevo(monkeypatch):
     """Ver conversa: o Brevo devolvia 400 Bad Request pra esse e-mail
     especifico -- causa era "name": "" no destinatario (aviso interno

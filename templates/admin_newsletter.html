@@ -52,6 +52,22 @@
     }
     .cartao-brevo a.botao:hover { background: #1c4a80; }
 
+    .cartao-campanha {
+      background: var(--cartao); border-radius: 14px; padding: 16px 18px; margin-bottom: 20px;
+      border: 1px solid var(--linha); box-shadow: 0 8px 20px -16px rgba(20, 51, 92, 0.35);
+    }
+    .cartao-campanha h3 { margin: 0 0 6px; font-family: 'Fraunces', Georgia, serif; font-size: 0.95rem; }
+    .cartao-campanha p { margin: 0 0 12px; font-size: 0.82rem; color: var(--texto-suave); }
+    .campanha-numeros { display: flex; gap: 18px; flex-wrap: wrap; margin-bottom: 12px; }
+    .campanha-numeros div { font-size: 0.78rem; color: var(--texto-suave); }
+    .campanha-numeros strong { display: block; font-size: 1.25rem; color: var(--texto); font-family: 'Fraunces', Georgia, serif; }
+    .cartao-campanha button {
+      cursor: pointer; border: none; background: var(--dourado); color: #4a3410; font-weight: 700;
+      font-size: 0.82rem; padding: 10px 16px; border-radius: 8px;
+    }
+    .cartao-campanha button:disabled { opacity: 0.6; cursor: default; }
+    #campanha-feedback { font-size: 0.8rem; margin: 10px 0 0; }
+
     .vazio { padding: 40px 24px; text-align: center; color: var(--texto-suave); background: var(--cartao); border-radius: 14px; }
 
     table.lista-contatos { width: 100%; border-collapse: collapse; background: var(--cartao); border-radius: 14px; overflow: hidden; border: 1px solid var(--linha); }
@@ -90,6 +106,21 @@
       <a class="botao" href="https://my.brevo.com/camp/lists/id/{{ brevo_list_id }}" target="_blank" rel="noopener">Abrir lista no Brevo →</a>
     </div>
 
+    <div class="cartao-campanha">
+      <h3>📖 Convite "Liturgia do Mês" pra quem já comprou</h3>
+      <p>Convite único (não recorrente) pra base de clientes conhecer a Liturgia do Mês — enviado aos poucos,
+      até 200 por dia, pelo job agendado. Só entra na newsletter de verdade quem clicar e
+      confirmar o e-mail na landing.</p>
+      <div class="campanha-numeros">
+        <div>Na fila<strong id="campanha-total">{{ campanha_liturgia.total }}</strong></div>
+        <div>Enviados<strong id="campanha-enviados">{{ campanha_liturgia.enviados }}</strong></div>
+        <div>Pendentes<strong id="campanha-pendentes">{{ campanha_liturgia.pendentes }}</strong></div>
+        <div>Com erro<strong id="campanha-erro">{{ campanha_liturgia.com_erro }}</strong></div>
+      </div>
+      <button type="button" id="campanha-preparar-btn">Buscar clientes que já compraram</button>
+      <p id="campanha-feedback" hidden></p>
+    </div>
+
     {% if contatos %}
       <table class="lista-contatos">
         <thead>
@@ -108,5 +139,31 @@
       <p class="vazio">Ninguém se inscreveu ainda.</p>
     {% endif %}
   </div>
+
+  <script>
+    (function () {
+      const botao = document.getElementById('campanha-preparar-btn');
+      const feedback = document.getElementById('campanha-feedback');
+      botao.addEventListener('click', async () => {
+        botao.disabled = true;
+        try {
+          const resposta = await fetch('{{ url_for("admin_campanha_liturgia_preparar") }}', { method: 'POST' });
+          const dados = await resposta.json();
+          if (!resposta.ok) throw new Error(dados.erro || 'Falha ao buscar clientes.');
+          document.getElementById('campanha-total').textContent = dados.total;
+          document.getElementById('campanha-enviados').textContent = dados.enviados;
+          document.getElementById('campanha-pendentes').textContent = dados.pendentes;
+          document.getElementById('campanha-erro').textContent = dados.com_erro;
+          feedback.textContent = `${dados.novos} cliente(s) novo(s) adicionado(s) à fila.`;
+          feedback.hidden = false;
+        } catch (e) {
+          feedback.textContent = e.message;
+          feedback.hidden = false;
+        } finally {
+          botao.disabled = false;
+        }
+      });
+    })();
+  </script>
 </body>
 </html>

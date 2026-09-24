@@ -322,6 +322,29 @@ def inicializar_db() -> None:
             """
         )
 
+        # Convite unico (nao recorrente) pra base de clientes que ja
+        # comprou conhecer a "Liturgia do mes" (ver conversa 2026-09-24)
+        # -- preenchida uma vez por preparar_campanha_convite_liturgia()
+        # a partir de pedidos ja pagos, e esvaziada aos poucos pelo job
+        # agendado em app.py (limite diario, ver LIMITE_DIARIO_
+        # CAMPANHA_LITURGIA em config.py -- Brevo tem teto de 300
+        # e-mails/dia na conta e o resto do teto precisa sobrar pros
+        # e-mails transacionais normais). So faz a pessoa ENTRAR de
+        # verdade na lista de newsletter se ela clicar e confirmar o
+        # e-mail em /liturgia-do-mes -- esse convite em si nao inscreve
+        # ninguem (ver api_newsletter em app.py).
+        conexao.execute(
+            """
+            CREATE TABLE IF NOT EXISTS campanha_convite_liturgia (
+                email TEXT PRIMARY KEY,
+                nome TEXT,
+                enviado_em TEXT,
+                erro TEXT,
+                criado_em TEXT NOT NULL
+            )
+            """
+        )
+
         # Numeracao sequencial e GLOBAL (nunca reinicia por pedido, so
         # quando a usuaria pedir -- ver resetar_numeracao_modelo_personalizada
         # abaixo) de cada LADO com foto de verdade -- pedido do usuario:
@@ -913,6 +936,85 @@ def listar_pedidos_pendentes_para_cancelar(minutos: int) -> list[dict]:
         pedido["itens"] = json.loads(pedido["itens"])
         pedidos.append(pedido)
     return pedidos
+
+
+def preparar_campanha_convite_liturgia() -> int:
+    """Popula campanha_convite_liturgia com um e-mail por cliente que ja
+    comprou (status em STATUS_VALIDOS), a partir do pedido pago mais
+    recente de cada um (pra pegar o nome mais atual). INSERT OR IGNORE:
+    seguro de rodar mais de uma vez -- quem ja esta na tabela (enviado
+    ou nao) fica intocado. Devolve quantos e-mails novos entraram.
+    Disparada manualmente uma vez via /admin/campanha-liturgia/preparar
+    (ver app.py), nao roda sozinha em nenhum job agendado."""
+    inicializar_db()
+    marcadores = ", ".join("?" for _ in STATUS_VALIDOS)
+    with _conexao() as conexao:
+        linhas = conexao.execute(
+            f"""
+            SELECT cliente_email, cliente_nome FROM pedidos
+            WHERE status IN ({marcadores}) AND cliente_email IS NOT NULL AND cliente_email != ''
+            ORDER BY pago_em DESC
+            """,
+            STATUS_VALIDOS,
+        ).fetchall()
+        vistos: dict[str, str] = {}
+        for linha in linhas:
+            email = linha["cliente_email"].strip().lower()
+            if email not in vistos:
+                vistos[email] = linha["cliente_nome"] or ""
+
+        antes = conexao.execute("SELECT COUNT(*) FROM campanha_convite_liturgia").fetchone()[0]
+        agora = datetime.now(timezone.utc).isoformat()
+        conexao.executemany(
+            "INSERT OR IGNORE INTO campanha_convite_liturgia (email, nome, criado_em) VALUES (?, ?, ?)",
+            [(email, nome, agora) for email, nome in vistos.items()],
+        )
+        depois = conexao.execute("SELECT COUNT(*) FROM campanha_convite_liturgia").fetchone()[0]
+    return depois - antes
+
+
+def listar_pendentes_campanha_convite_liturgia(limite: int) -> list[dict]:
+    inicializar_db()
+    with _conexao() as conexao:
+        linhas = conexao.execute(
+            "SELECT * FROM campanha_convite_liturgia WHERE enviado_em IS NULL ORDER BY criado_em ASC LIMIT ?",
+            (limite,),
+        ).fetchall()
+    return [dict(linha) for linha in linhas]
+
+
+def marcar_campanha_convite_liturgia_enviado(email: str, *, erro: str | None) -> None:
+    inicializar_db()
+    with _conexao() as conexao:
+        if erro:
+            conexao.execute(
+                "UPDATE campanha_convite_liturgia SET erro = ? WHERE email = ?", (erro, email)
+            )
+        else:
+            conexao.execute(
+                "UPDATE campanha_convite_liturgia SET enviado_em = ?, erro = NULL WHERE email = ?",
+                (datetime.now(timezone.utc).isoformat(), email),
+            )
+
+
+def contar_campanha_convite_liturgia() -> dict:
+    """Pro painel /admin/newsletter acompanhar o envio em lotes (ver
+    LIMITE_DIARIO_CAMPANHA_LITURGIA em config.py)."""
+    inicializar_db()
+    with _conexao() as conexao:
+        total = conexao.execute("SELECT COUNT(*) FROM campanha_convite_liturgia").fetchone()[0]
+        enviados = conexao.execute(
+            "SELECT COUNT(*) FROM campanha_convite_liturgia WHERE enviado_em IS NOT NULL"
+        ).fetchone()[0]
+        com_erro = conexao.execute(
+            "SELECT COUNT(*) FROM campanha_convite_liturgia WHERE erro IS NOT NULL AND enviado_em IS NULL"
+        ).fetchone()[0]
+    return {
+        "total": total,
+        "enviados": enviados,
+        "pendentes": total - enviados,
+        "com_erro": com_erro,
+    }
 
 
 def listar_pedidos_pagos_para_upsell(horas: int) -> list[dict]:

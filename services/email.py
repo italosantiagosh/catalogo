@@ -359,6 +359,36 @@ def listar_contatos_newsletter(limite: int = 200) -> dict:
     return {"contatos": contatos, "total": dados.get("count", len(contatos))}
 
 
+def _corpo_html_convite_liturgia_mensal(nome: str, url_liturgia: str) -> str:
+    saudacao = f"Olá, {_esc(nome)}!" if nome else "Olá!"
+    return (
+        f"<p>{saudacao} Começamos um e-book grátis, todo mês: a liturgia de cada dia e a "
+        f"história dos santos do mês, com a medalha de cada um pra quem quiser conhecer.</p>"
+        f"<p>Como você já é nosso cliente, quisemos te avisar em primeira mão -- mas <strong>esse "
+        f"e-mail sozinho não te inscreve em nada</strong>. Pra realmente começar a receber o "
+        f"e-book todo mês, é só confirmar seu e-mail na página abaixo (é rapidinho).</p>"
+        f"{_botao(_com_utm(url_liturgia, 'convite_liturgia_mensal'), '📖 Conhecer a Liturgia do Mês')}"
+        f"<p>Se não for pra você, é só ignorar esse e-mail -- não vamos insistir.</p>"
+    )
+
+
+def enviar_convite_liturgia_mensal(email: str, nome: str, url_liturgia: str) -> dict:
+    """Convite UNICO (nao recorrente) pra base de clientes que ja
+    comprou conhecer a Liturgia do Mes -- ver services/pedidos.py:
+    preparar_campanha_convite_liturgia/listar_pendentes_campanha_convite_liturgia
+    e o job agendado em app.py que dispara em lotes (teto diario, ver
+    config.py:LIMITE_DIARIO_CAMPANHA_LITURGIA). So inscreve de verdade
+    na newsletter quem clicar e confirmar o e-mail na landing (ver
+    api_newsletter) -- esse envio aqui nao adiciona ninguem na lista."""
+    return _enviar(
+        email_cliente=email,
+        nome_cliente=nome,
+        assunto="Um e-book grátis todo mês, com os santos do mês — Nove de Julho",
+        corpo_html=_corpo_html_convite_liturgia_mensal(nome, url_liturgia),
+        tag="convite_liturgia_mensal",
+    )
+
+
 def _corpo_html_codigo_verificacao(codigo: str) -> str:
     return (
         f"<p>Use o código abaixo pra entrar em <strong>Meus Pedidos</strong> no site da "

@@ -94,6 +94,7 @@ from config import (
     LEMBRETE_FINAL_MINUTOS,
     LEMBRETE_MINUTOS,
     LEMBRETE_PRECOCE_MINUTOS,
+    LIMITE_DIARIO_CAMPANHA_LITURGIA,
     META_PIXEL_ID,
     PROCURADOS_HOME,
     PRODUCAO_DIAS_UTEIS,
@@ -149,6 +150,7 @@ from services.email import (
     enviar_lembrete_carrinho_abandonado,
     enviar_lembrete_pedido_pendente,
     enviar_lembrete_precoce_pedido_pendente,
+    enviar_convite_liturgia_mensal,
     enviar_link_pagamento,
     enviar_nota_fiscal_disponivel,
     enviar_notificacao_venda,
@@ -194,6 +196,7 @@ from services.pedidos import (
     cancelar_pedido,
     confirmar_venda_manual,
     contagem_pedidos_por_status,
+    contar_campanha_convite_liturgia,
     criar_pedido,
     desarquivar_pedido,
     editar_item_formato,
@@ -215,7 +218,9 @@ from services.pedidos import (
     listar_pedidos_pendentes_para_lembrete_final,
     listar_pedidos_pendentes_para_lembrete_precoce,
     listar_pedidos_por_documento,
+    listar_pendentes_campanha_convite_liturgia,
     marcar_boleto_erro,
+    marcar_campanha_convite_liturgia_enviado,
     marcar_email_avaliacao_enviado,
     marcar_email_avaliacao_seguimento_enviado,
     marcar_email_cancelado_enviado,
@@ -237,6 +242,7 @@ from services.pedidos import (
     obter_pedido,
     pedidos_pagos_por_dispositivo,
     pedidos_por_uf,
+    preparar_campanha_convite_liturgia,
     previsoes_do_pedido,
     produtos_mais_vendidos,
     quantidade_por_material,
@@ -5497,7 +5503,23 @@ def admin_newsletter():
         total=resultado.get("total", 0),
         erro=resultado.get("erro"),
         brevo_list_id=BREVO_LIST_ID,
+        campanha_liturgia=contar_campanha_convite_liturgia(),
     )
+
+
+@app.route("/admin/campanha-liturgia/preparar", methods=["POST"])
+def admin_campanha_liturgia_preparar():
+    """Popula a fila de convite pra base de clientes que ja comprou (ver
+    services/pedidos.py:preparar_campanha_convite_liturgia) -- disparada
+    manualmente UMA VEZ (e´ seguro chamar de novo: so adiciona quem
+    ainda nao esta na fila). Depois disso o envio em lotes acontece
+    sozinho pelo job agendado (_enviar_lote_campanha_convite_liturgia)."""
+    if not _autenticacao_admin_valida(request.authorization):
+        return Response(
+            "Autenticação necessária.", 401, {"WWW-Authenticate": 'Basic realm="Painel de newsletter"'}
+        )
+    novos = preparar_campanha_convite_liturgia()
+    return jsonify({"ok": True, "novos": novos, **contar_campanha_convite_liturgia()})
 
 
 @app.route("/sw.js", methods=["GET"])
@@ -5898,6 +5920,24 @@ def _enviar_upsell_pedidos_pagos() -> None:
         marcar_email_upsell_enviado(pedido["token"], erro=resultado_email.get("erro"))
 
 
+def _enviar_lote_campanha_convite_liturgia() -> None:
+    """Job agendado -- manda ate LIMITE_DIARIO_CAMPANHA_LITURGIA convites
+    por dia pra base de clientes que ja comprou (ver
+    services/pedidos.py:preparar_campanha_convite_liturgia, disparada
+    manualmente uma vez via /admin/campanha-liturgia/preparar). Some
+    sozinho quando a fila de pendentes esvaziar -- nao reagenda nem
+    precisa ser desligado."""
+    if not CANONICAL_DOMAIN:
+        return
+    pendentes = listar_pendentes_campanha_convite_liturgia(LIMITE_DIARIO_CAMPANHA_LITURGIA)
+    if not pendentes:
+        return
+    url_liturgia = f"https://{CANONICAL_DOMAIN}/liturgia-do-mes"
+    for contato in pendentes:
+        resultado = enviar_convite_liturgia_mensal(contato["email"], contato.get("nome") or "", url_liturgia)
+        marcar_campanha_convite_liturgia_enviado(contato["email"], erro=resultado.get("erro"))
+
+
 def _enviar_email_avaliacao(token: str) -> str | None:
     """Manda o e-mail pedindo avaliacao (ver services/email.py:
     enviar_pedido_avaliacao, ja convida a seguir/marcar @novedjulho no
@@ -6110,6 +6150,9 @@ def _iniciar_scheduler_jobs() -> None:
     )
     scheduler.add_job(_cancelar_pedidos_abandonados, "interval", minutes=10, id="cancelar_pedidos_abandonados")
     scheduler.add_job(_enviar_upsell_pedidos_pagos, "interval", minutes=10, id="upsell_pedidos_pagos")
+    scheduler.add_job(
+        _enviar_lote_campanha_convite_liturgia, "interval", hours=24, id="campanha_convite_liturgia"
+    )
     scheduler.add_job(
         _enviar_seguimento_avaliacao_entregues, "interval", minutes=10, id="seguimento_avaliacao_entregues"
     )
