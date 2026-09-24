@@ -1979,9 +1979,13 @@ def catalogo_pdf():
     )
 
 
-@app.route("/liturgia-de-outubro", methods=["GET"])
+@app.route("/liturgia-do-mes", methods=["GET"])
 def liturgia_outubro():
-    """Landing da isca de e-mail 'Liturgia de Outubro' -- captura pelo
+    """Landing da isca de e-mail 'Liturgia do mês' -- URL estavel de
+    proposito (pra colocar na bio do Instagram e nunca precisar trocar),
+    mesmo o conteudo trocando a cada mes. Hoje serve a edicao de outubro
+    (ver services/liturgia_pdf.py) -- quando novembro estiver pronto, o
+    template/import aqui trocam junto, a URL fica a mesma. Captura pelo
     mesmo formulario/lista da newsletter (ver api_newsletter); o botao
     de download so aparece depois do cadastro (static/js/liturgia_outubro.js)."""
     dados_breadcrumb = _dados_breadcrumb(
@@ -1993,15 +1997,16 @@ def liturgia_outubro():
     return render_template("liturgia_outubro.html", dados_breadcrumb=dados_breadcrumb)
 
 
-@app.route("/ebook/liturgia-de-outubro-2026.pdf", methods=["GET"])
+@app.route("/ebook/liturgia-do-mes.pdf", methods=["GET"])
 def ebook_liturgia_outubro_pdf():
     """PDF do e-book (ver services/liturgia_pdf.py) -- mesmo padrao de
-    servir inline de catalogo_pdf() acima."""
+    servir inline de catalogo_pdf() acima. Nome de arquivo tambem
+    estavel (nao amarrado ao mes), mesmo motivo da URL da landing acima."""
     return send_file(
         io.BytesIO(gerar_pdf_liturgia_outubro(request.url_root.rstrip("/"))),
         mimetype="application/pdf",
         as_attachment=False,
-        download_name="liturgia-de-outubro-nove-de-julho.pdf",
+        download_name="liturgia-do-mes-nove-de-julho.pdf",
     )
 
 

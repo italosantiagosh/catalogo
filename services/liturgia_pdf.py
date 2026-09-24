@@ -171,7 +171,8 @@ DIAS_OUTUBRO_2026 = [
      "bio": "Carmelita descalça francesa, morreu aos 24 anos sem nunca ter saído do convento — "
             "e mesmo assim se tornou Doutora da Igreja e padroeira das missões, pelo seu "
             "\"caminhozinho\" de confiança simples em Deus. Uma das santas mais amadas por "
-            "jovens no Brasil e no mundo."},
+            "jovens no Brasil e no mundo.",
+     "novena_slug": "novena-de-santa-teresinha"},
     {"dia": 2, "titulo": "Santos Anjos da Guarda", "rank": "obrigatoria",
      "leituras": "Êx 23,20-23 · Sl 90(91) · Mt 18,1-5.10", "produto_id": None,
      "bio": "A Igreja ensina que cada pessoa recebe de Deus um anjo pra guiá-la e protegê-la "
@@ -186,7 +187,8 @@ DIAS_OUTUBRO_2026 = [
      "bio": "Filho de comerciante rico que trocou tudo pela pobreza radical, fundou a ordem "
             "franciscana e é hoje um dos santos mais universalmente amados, dentro e fora da "
             "Igreja — padroeiro da ecologia e dos animais. Em 2026 seu dia cai num domingo, "
-            "que \"tem precedência\" no calendário — mas a devoção popular segue firme."},
+            "que \"tem precedência\" no calendário — mas a devoção popular segue firme.",
+     "novena_slug": "novena-de-sao-francisco-de-assis"},
     {"dia": 5, "titulo": "27ª Semana do Tempo Comum · opcional: São Bento, o Preto, religioso",
      "rank": "comum", "leituras": "Gl 1,6-12 · Sl 110(111) · Lc 10,25-37", "produto_id": None, "bio": None},
     {"dia": 6, "titulo": "Santa Faustina Kowalska · opcional também: São Bruno, presbítero",
@@ -214,7 +216,9 @@ DIAS_OUTUBRO_2026 = [
             "Paraíba do Sul em 1717 — hoje é venerada no maior santuário mariano do mundo, em "
             "Aparecida (SP). É também, por coincidência marcante, o dia em que São Carlo "
             "Acutis partiu para o Céu em 2006, aos 15 anos.",
-     "produto_extra_id": "carlo-acutis", "produto_extra_rotulo": "Ver medalha de São Carlo Acutis →"},
+     "novena_slug": "novena-de-nossa-senhora-aparecida",
+     "produto_extra_id": "carlo-acutis", "produto_extra_rotulo": "Ver medalha de São Carlo Acutis →",
+     "produto_extra_novena_slug": "novena-de-sao-carlo-acutis"},
     {"dia": 13, "titulo": "28ª Semana do Tempo Comum", "rank": "comum",
      "leituras": "Gl 5,1-6 · Sl 118(119) · Lc 11,37-41", "produto_id": None, "bio": None},
     {"dia": 14, "titulo": "28ª Semana do Tempo Comum · opcional: São Calisto I, papa e mártir",
@@ -223,7 +227,8 @@ DIAS_OUTUBRO_2026 = [
      "leituras": "Ef 1,1-10 · Sl 97(98) · Lc 11,47-54", "produto_id": "santa-teresa-davila",
      "bio": "Reformadora do Carmelo no século 16, mística e Doutora da Igreja, escreveu sobre "
             "oração com uma clareza que atravessa séculos — ao lado de Santa Teresinha, uma "
-            "das grandes referências vivas da espiritualidade carmelita."},
+            "das grandes referências vivas da espiritualidade carmelita.",
+     "novena_slug": "novena-de-santa-teresa-davila"},
     {"dia": 16, "titulo": "28ª Semana do Tempo Comum · opcional: Santa Edviges; Santa Margarida Maria Alacoque",
      "rank": "comum", "leituras": "Ef 1,11-14 · Sl 32(33) · Lc 12,1-7", "produto_id": None, "bio": None},
     {"dia": 17, "titulo": "Santo Inácio de Antioquia", "rank": "obrigatoria",
@@ -245,7 +250,8 @@ DIAS_OUTUBRO_2026 = [
      "bio": "Primeiro papa não-italiano em mais de 450 anos e sobrevivente de um atentado, "
             "João Paulo II liderou a Igreja por 27 anos e se tornou um dos maiores nomes "
             "religiosos do século 20 — especialmente querido pela juventude, que reunia às "
-            "centenas de milhares nas Jornadas Mundiais."},
+            "centenas de milhares nas Jornadas Mundiais.",
+     "novena_slug": "novena-de-sao-joao-paulo-ii"},
     {"dia": 23, "titulo": "29ª Semana do Tempo Comum · opcional: São João de Capistrano, presbítero",
      "rank": "comum", "leituras": "Ef 4,1-6 · Sl 23(24) · Lc 12,54-59", "produto_id": None, "bio": None},
     {"dia": 24, "titulo": "29ª Semana do Tempo Comum · opcional: Santo Antônio Maria Claret, bispo",
@@ -425,11 +431,11 @@ def _linha_dia_compacto(info: dict, estilos: dict) -> KeepTogether:
     return KeepTogether(linha)
 
 
-def _botao(texto: str, url: str, estilos: dict) -> Table:
+def _botao(texto: str, url: str, estilos: dict, cor=COR_MARCA) -> Table:
     paragrafo = Paragraph(f'<link href="{url}">{texto}</link>', estilos["botao_texto"])
     botao = Table([[paragrafo]], colWidths=[9 * cm])
     botao.setStyle(TableStyle([
-        ("BACKGROUND", (0, 0), (-1, -1), COR_MARCA),
+        ("BACKGROUND", (0, 0), (-1, -1), cor),
         ("ALIGN", (0, 0), (-1, -1), "CENTER"),
         ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
         ("TOPPADDING", (0, 0), (-1, -1), 9),
@@ -473,11 +479,21 @@ def _cartao_dia_destaque(info: dict, base_url: str, produtos_por_id: dict, estil
     if produto is not None:
         url_produto = f"{base_url}/produto/{produto['id']}"
         partes.append(_botao(f"Ver medalha de {produto['nome']} →", url_produto, estilos))
+    novena_slug = info.get("novena_slug")
+    if novena_slug:
+        partes.append(Spacer(1, 0.2 * cm))
+        url_novena = f"{base_url}/blog/{novena_slug}"
+        partes.append(_botao("Ver novena completa →", url_novena, estilos, cor=COR_OURO))
     produto_extra_id = info.get("produto_extra_id")
     if produto_extra_id and produtos_por_id.get(produto_extra_id):
         partes.append(Spacer(1, 0.2 * cm))
         url_extra = f"{base_url}/produto/{produto_extra_id}"
         partes.append(_botao(info.get("produto_extra_rotulo", "Ver medalha →"), url_extra, estilos))
+    produto_extra_novena_slug = info.get("produto_extra_novena_slug")
+    if produto_extra_novena_slug:
+        partes.append(Spacer(1, 0.2 * cm))
+        url_extra_novena = f"{base_url}/blog/{produto_extra_novena_slug}"
+        partes.append(_botao("Ver novena de São Carlo Acutis →", url_extra_novena, estilos, cor=COR_OURO))
     partes.append(Spacer(1, 0.5 * cm))
     return KeepTogether(partes)
 
