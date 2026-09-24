@@ -1357,7 +1357,6 @@ def index():
         procurados=procurados,
         categorias=categorias,
         cores_cruz_terco=_cores_cruz_terco(),
-        liturgia_hoje=contexto_liturgia_de_hoje(),
     )
 
 
@@ -2008,7 +2007,9 @@ def liturgia_outubro():
             ("Liturgia de Outubro", url_for("liturgia_outubro", _external=True)),
         ]
     )
-    return render_template("liturgia_outubro.html", dados_breadcrumb=dados_breadcrumb)
+    return render_template(
+        "liturgia_outubro.html", dados_breadcrumb=dados_breadcrumb, liturgia_hoje=contexto_liturgia_de_hoje()
+    )
 
 
 @app.route("/ebook/liturgia-do-mes.pdf", methods=["GET"])

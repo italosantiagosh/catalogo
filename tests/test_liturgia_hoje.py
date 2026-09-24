@@ -58,9 +58,11 @@ def test_contexto_none_quando_sem_dado():
     assert contexto_liturgia_de_hoje(datetime.date(2026, 11, 1)) is None
 
 
-def test_home_mostra_o_widget_quando_ha_dado_pro_dia(monkeypatch):
+def test_landing_mostra_o_widget_quando_ha_dado_pro_dia(monkeypatch):
     # Nao depende do relogio real (o teste nao pode quebrar so porque
     # o dia mudou de mes/ano) -- fixa o retorno como se hoje tivesse dado.
+    # Ver conversa 2026-09-24: o widget mora na landing /liturgia-do-mes
+    # (demonstracao ao vivo pra quem esta decidindo baixar), nao na home.
     import app as app_module
 
     monkeypatch.setattr(
@@ -71,16 +73,23 @@ def test_home_mostra_o_widget_quando_ha_dado_pro_dia(monkeypatch):
             "rank_cor_hex": "#3d6b4f", "cor_liturgica_rotulo": "Verde",
         },
     )
-    resposta = app.test_client().get("/")
+    resposta = app.test_client().get("/liturgia-do-mes")
     assert resposta.status_code == 200
     assert b'liturgia-hoje-card' in resposta.data
-    assert b'liturgia-do-mes' in resposta.data
 
 
-def test_home_esconde_o_widget_quando_nao_ha_dado(monkeypatch):
+def test_landing_esconde_o_widget_quando_nao_ha_dado(monkeypatch):
     import app as app_module
 
     monkeypatch.setattr(app_module, "contexto_liturgia_de_hoje", lambda: None)
+    resposta = app.test_client().get("/liturgia-do-mes")
+    assert resposta.status_code == 200
+    assert b'liturgia-hoje-card' not in resposta.data
+
+
+def test_home_nao_mostra_o_widget():
+    """Pedido explicito do usuario: nao na home, "ja tem muita
+    informacao" -- so na landing /liturgia-do-mes."""
     resposta = app.test_client().get("/")
     assert resposta.status_code == 200
     assert b'liturgia-hoje-card' not in resposta.data

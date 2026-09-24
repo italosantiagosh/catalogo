@@ -28,6 +28,15 @@
       ou memória.
     </p>
 
+    {% if liturgia_hoje %}
+      <div class="liturgia-hoje-card">
+        <span class="liturgia-hoje-selo" style="background:{{ liturgia_hoje.rank_cor_hex }};">{{ liturgia_hoje.rank_rotulo }}</span>
+        <p class="liturgia-hoje-titulo">Um exemplo, de hoje: {{ liturgia_hoje.data_extenso }} — {{ liturgia_hoje.titulo }}</p>
+        <p class="liturgia-hoje-leitura">{{ liturgia_hoje.leituras }} · Cor litúrgica: {{ liturgia_hoje.cor_liturgica_rotulo }}</p>
+        <a class="liturgia-hoje-cta" href="#ebook-captura">É assim todo dia no e-book — pegar os 31 dias ↓</a>
+      </div>
+    {% endif %}
+
     <div class="ebook-captura" id="ebook-captura">
       <div class="ebook-captura-lista">
         <p>Dentro do e-book:</p>

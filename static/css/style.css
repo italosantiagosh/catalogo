@@ -470,25 +470,16 @@ a.link-carrinho #contador-carrinho {
   margin: 0 0 16px;
 }
 
-/* widget "liturgia de hoje" na home (ver services/liturgia_hoje.py) --
-   teaser gratis que puxa trafego pro e-book completo. */
+/* widget "liturgia de hoje" -- demonstracao ao vivo na propria landing
+   /liturgia-do-mes (ver services/liturgia_hoje.py), pra quem esta
+   decidindo se baixa o e-book ver um exemplo de verdade antes. */
 .liturgia-hoje-card {
-  display: block;
   background: var(--card);
   border: 1px solid var(--border);
   border-radius: 14px;
   padding: 16px 18px;
   margin: 0 0 16px;
-  text-decoration: none;
   color: var(--ink);
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
-}
-
-@media (hover: hover) {
-  .liturgia-hoje-card:hover {
-    border-color: var(--accent);
-    box-shadow: 0 10px 24px -16px rgba(20, 51, 92, 0.4);
-  }
 }
 
 .liturgia-hoje-selo {
@@ -517,9 +508,17 @@ a.link-carrinho #contador-carrinho {
 }
 
 .liturgia-hoje-cta {
+  display: inline-block;
   font-size: 0.85rem;
   font-weight: 700;
   color: var(--accent);
+  text-decoration: none;
+}
+
+@media (hover: hover) {
+  .liturgia-hoje-cta:hover {
+    text-decoration: underline;
+  }
 }
 
 @media (min-width: 640px) {
