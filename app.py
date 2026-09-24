@@ -124,6 +124,7 @@ from services.paginas_institucionais import PAGINAS_ATENDIMENTO
 from services.blog import ARTIGOS_BLOG, artigo_por_produto_id
 from services.landing_paginas import PAGINAS_LANDING
 from services.catalogo_pdf import gerar_pdf_catalogo
+from services.liturgia_pdf import gerar_pdf_liturgia_outubro
 from services.avaliacoes import (
     atualizar_status as atualizar_status_avaliacao,
     criar_avaliacao,
@@ -1030,6 +1031,7 @@ def sitemap_xml():
         (url_for("personalizada"), "monthly", "0.7"),
         (url_for("kit_livraria_shalom"), "monthly", "0.6"),
         (url_for("cruz_para_terco"), "monthly", "0.6"),
+        (url_for("liturgia_outubro"), "monthly", "0.6"),
     ]
     entradas += [(url_for("landing_pagina", slug=s), "monthly", "0.6") for s in PAGINAS_LANDING]
     entradas += [
@@ -1974,6 +1976,32 @@ def catalogo_pdf():
         mimetype="application/pdf",
         as_attachment=False,
         download_name="catalogo-nove-de-julho.pdf",
+    )
+
+
+@app.route("/liturgia-de-outubro", methods=["GET"])
+def liturgia_outubro():
+    """Landing da isca de e-mail 'Liturgia de Outubro' -- captura pelo
+    mesmo formulario/lista da newsletter (ver api_newsletter); o botao
+    de download so aparece depois do cadastro (static/js/liturgia_outubro.js)."""
+    dados_breadcrumb = _dados_breadcrumb(
+        [
+            ("Início", url_for("index", _external=True)),
+            ("Liturgia de Outubro", url_for("liturgia_outubro", _external=True)),
+        ]
+    )
+    return render_template("liturgia_outubro.html", dados_breadcrumb=dados_breadcrumb)
+
+
+@app.route("/ebook/liturgia-de-outubro-2026.pdf", methods=["GET"])
+def ebook_liturgia_outubro_pdf():
+    """PDF do e-book (ver services/liturgia_pdf.py) -- mesmo padrao de
+    servir inline de catalogo_pdf() acima."""
+    return send_file(
+        io.BytesIO(gerar_pdf_liturgia_outubro(request.url_root.rstrip("/"))),
+        mimetype="application/pdf",
+        as_attachment=False,
+        download_name="liturgia-de-outubro-nove-de-julho.pdf",
     )
 
 

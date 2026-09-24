@@ -3759,6 +3759,104 @@ input[type="file"] {
   color: #f2a1a1;
 }
 
+/* landing /liturgia-de-outubro -- captura de e-mail maior/de pagina
+   inteira (a do rodape acima e´ so o widget compacto presente em toda
+   pagina). Botao de download so aparece depois do cadastro (ver
+   static/js/liturgia_outubro.js). */
+.ebook-captura {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 24px 22px;
+  margin: 20px 0;
+}
+
+.ebook-captura-lista p {
+  font-weight: 700;
+  margin: 0 0 8px;
+  color: var(--accent);
+}
+
+.ebook-captura-lista ul {
+  margin: 0 0 20px;
+  padding-left: 22px;
+}
+
+.ebook-captura-lista li {
+  margin-bottom: 6px;
+  line-height: 1.5;
+}
+
+.ebook-form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+}
+
+.ebook-form label {
+  font-weight: 600;
+  font-size: 0.92rem;
+}
+
+.ebook-form-linha {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.ebook-form-linha input {
+  flex: 1;
+  min-width: 200px;
+  padding: 13px 16px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  font-size: 0.95rem;
+}
+
+.ebook-form-linha button {
+  padding: 13px 24px;
+  border-radius: 999px;
+  border: none;
+  background: var(--accent);
+  color: #fff;
+  font-weight: 700;
+  font-size: 0.95rem;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.ebook-form-linha button:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.ebook-form-feedback {
+  margin: 4px 0 0;
+  font-size: 0.85rem;
+  color: var(--erro-texto);
+}
+
+.ebook-download {
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+  text-align: center;
+}
+
+.ebook-download p {
+  font-weight: 700;
+  color: var(--accent);
+  margin: 0 0 12px;
+}
+
+@media (min-width: 640px) {
+  .ebook-captura {
+    padding: 32px 36px;
+  }
+}
+
 .rodape-selos {
   border-top: 1px solid rgba(255, 255, 255, 0.15);
   max-width: 960px;

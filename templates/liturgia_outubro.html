@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+
+{% block titulo %}Liturgia de Outubro — e-book grátis com os santos do mês | Nove de Julho{% endblock %}
+{% block meta_descricao %}Baixe grátis: tempo litúrgico e leitura de cada dia de outubro, com a história dos santos do mês — de Santa Teresinha a Nossa Senhora Aparecida — e link pra medalha de cada um.{% endblock %}
+
+{% block conteudo %}
+  <script type="application/ld+json">{{ dados_breadcrumb | tojson }}</script>
+  <nav class="breadcrumbs" aria-label="Breadcrumb">
+    <a href="{{ url_for('index') }}">Início</a>
+    <span>›</span>
+    <span aria-current="page">Liturgia de Outubro</span>
+  </nav>
+
+  <h1>Liturgia de Outubro — e-book grátis</h1>
+  <p class="instrucao">
+    O tempo litúrgico e a leitura de cada um dos 31 dias de outubro, com a
+    história dos santos celebrados no mês — de Santa Teresinha a Nossa
+    Senhora Aparecida — e um lembrete visual de quando é solenidade, festa
+    ou memória.
+  </p>
+
+  <div class="ebook-captura" id="ebook-captura">
+    <div class="ebook-captura-lista">
+      <p>Dentro do e-book:</p>
+      <ul>
+        <li>Os 31 dias de outubro, com tempo litúrgico e referência da leitura do dia</li>
+        <li>A história de 9 santos do mês, com foto da medalha de cada um</li>
+        <li>Um selo colorido pra identificar solenidade, festa e memória de relance</li>
+      </ul>
+    </div>
+
+    <form class="ebook-form" id="form-ebook-liturgia">
+      <label for="ebook-email">Recebe no seu e-mail, na hora</label>
+      <div class="ebook-form-linha">
+        <input type="email" id="ebook-email" name="email" placeholder="seu@email.com" required>
+        <button type="submit">Quero o e-book</button>
+      </div>
+      <p class="ebook-form-feedback" id="ebook-form-feedback" hidden></p>
+    </form>
+
+    <div class="ebook-download" id="ebook-download" hidden>
+      <p>Prontinho! Seu e-book está aqui:</p>
+      <a class="botao-principal" id="ebook-download-link" href="{{ url_for('ebook_liturgia_outubro_pdf') }}" target="_blank" rel="noopener">Baixar Liturgia de Outubro (PDF) →</a>
+    </div>
+  </div>
+{% endblock %}
+
+{% block script %}
+  <script src="{{ url_for('static', filename='js/liturgia_outubro.js') }}"></script>
+{% endblock %}
