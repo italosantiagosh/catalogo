@@ -3187,6 +3187,116 @@ para que sejamos dignos das promessas de Cristo. Amém!</p>
             </div>
         """,
     },
+    "como-fazer-lectio-divina": {
+        "titulo": "Como fazer Lectio Divina: o passo a passo pra rezar com a Bíblia",
+        "resumo": (
+            "Um método antigo, dos primeiros monges, pra deixar de só ler a Bíblia e "
+            "começar a rezar com ela. Passo a passo, com dica prática em cada etapa."
+        ),
+        "produto_relacionado_id": None,
+        "cta_endpoint": "liturgia_outubro",
+        "imagem_manual": "img/artigos/lectio-divina-capa.jpg",
+        "publicado_em": "2026-09-25",
+        "corpo_html": """
+            <p>Lectio Divina significa, em latim, "leitura divina" -- um jeito de ler a
+            Bíblia que os monges beneditinos praticam desde o século 6, sistematizado
+            séculos depois pelo monge Guigo II como os "quatro degraus" que levam da
+            leitura até o silêncio diante de Deus. O Concílio Vaticano II recomendou essa
+            prática pra todos os fiéis, não só pra quem vive em mosteiro -- e ela cabe em
+            qualquer dia comum, com 15 ou 20 minutos.</p>
+
+            <p>A diferença pra uma leitura comum é simples: você não lê a Bíblia atrás de
+            informação, lê atrás de um encontro. Não tem pressa, não tem meta de páginas.
+            Os quatro passos abaixo são um roteiro -- não uma fórmula rígida, e não existe
+            jeito errado de fazer.</p>
+
+            <div class="lectio-destaque">
+              <p>Não existe Lectio Divina "perfeita". Se em algum dia só der pra fazer o
+              primeiro passo, já valeu -- o objetivo não é completar as quatro etapas,
+              é abrir espaço real pra ouvir.</p>
+            </div>
+
+            <h2>Os 4 passos</h2>
+
+            <div class="passo-guia">
+              <span class="passo-guia-numero">1</span>
+              <div class="passo-guia-conteudo">
+                <h3>Lectio — Leitura</h3>
+                <p>Escolha uma passagem curta (o Evangelho do dia é um ótimo ponto de
+                partida) e leia devagar, de preferência em voz alta ou sussurrando. Leia
+                pelo menos duas vezes -- a primeira pra conhecer o texto, a segunda
+                prestando atenção em cada palavra.</p>
+                <p class="passo-guia-dica"><strong>Dica:</strong> se uma palavra ou frase
+                "chamar sua atenção" de algum jeito, não passe direto -- isso já é parte
+                da oração.</p>
+              </div>
+            </div>
+
+            <div class="passo-guia">
+              <span class="passo-guia-numero">2</span>
+              <div class="passo-guia-conteudo">
+                <h3>Meditatio — Meditação</h3>
+                <p>Pare no trecho que tocou você. Pergunte, sem pressa: o que esse texto
+                diz sobre a minha vida agora? O que Deus pode estar me dizendo através
+                dessa palavra, hoje?</p>
+                <p class="passo-guia-dica"><strong>Dica:</strong> não é hora de interpretar
+                teologicamente o texto como um estudo bíblico -- é hora de deixar o texto
+                te interpretar. Fique com uma única palavra ou imagem, se ajudar.</p>
+              </div>
+            </div>
+
+            <div class="passo-guia">
+              <span class="passo-guia-numero">3</span>
+              <div class="passo-guia-conteudo">
+                <h3>Oratio — Oração</h3>
+                <p>Responda a Deus com suas próprias palavras -- o que quer que tenha
+                surgido na meditação: gratidão, pedido, arrependimento, até uma dúvida
+                honesta. Não precisa ser bonito nem formal.</p>
+                <p class="passo-guia-dica"><strong>Dica:</strong> fale como fala com
+                alguém de confiança. Se não souber o que dizer, "Fala, Senhor, que eu
+                escuto" (1Sm 3,9) já é uma oração completa.</p>
+              </div>
+            </div>
+
+            <div class="passo-guia">
+              <span class="passo-guia-numero">4</span>
+              <div class="passo-guia-conteudo">
+                <h3>Contemplatio — Contemplação</h3>
+                <p>Fique em silêncio. Sem mais palavras, sem mais leitura -- só a
+                presença. É o passo mais simples de descrever e o mais difícil de fazer,
+                porque a cabeça quer preencher o silêncio.</p>
+                <p class="passo-guia-dica"><strong>Dica:</strong> comece com só 2 ou 3
+                minutos de silêncio cronometrado. Quando a mente se distrair (vai
+                acontecer, com todo mundo), volte gentilmente pra palavra do passo 2.</p>
+              </div>
+            </div>
+
+            <figure>
+              <img src="/static/img/artigos/lectio-divina-maos-durer.jpg" alt="Estudo de mãos em oração, Albrecht Dürer, 1508" loading="lazy" decoding="async">
+              <figcaption>Estudo de mãos em oração, Albrecht Dürer, 1508 (Wikimedia Commons, domínio público).</figcaption>
+            </figure>
+
+            <h2>Antes de começar: 3 dicas práticas</h2>
+            <ul>
+              <li><strong>Escolha um horário fixo.</strong> De manhã, antes do dia começar,
+              costuma funcionar melhor -- a mente ainda não está cheia.</li>
+              <li><strong>Silencie o celular de verdade</strong> (não só o som) e escolha
+              um lugar tranquilo, mesmo que seja só uma cadeira específica em casa.</li>
+              <li><strong>Não escolha o texto na hora.</strong> Decidir "o que vou ler"
+              embaixo da pressão do tempo já quebra o clima -- separe a passagem no dia
+              anterior, ou use sempre a leitura do dia.</li>
+            </ul>
+
+            <div class="cta-blog-produto">
+              <p>Não sabe qual passagem escolher? A gente resolve isso pra você</p>
+              <a href="__URL_PRODUTO__" class="botao-principal">Pegar a leitura do dia certinha (e-book grátis) →</a>
+            </div>
+
+            <p>Com o tempo, os quatro passos deixam de ser uma lista pra seguir e viram só
+            um jeito natural de estar com a Palavra. O importante não é fazer certo -- é
+            voltar a fazer, amanhã de novo.</p>
+        """,
+    },
 }
 
 

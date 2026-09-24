@@ -4169,6 +4169,77 @@ input[type="file"] {
   padding: 0 18px 18px 60px;
 }
 
+/* passo a passo didatico (ver services/blog.py: artigo "como-fazer-
+   lectio-divina") -- cards grandes e sempre abertos (nao e´ um
+   accordeao como .novena-dia: aqui e´ conteudo curto (4 passos) feito
+   pra ler direto, sem clicar em nada). Genérico o suficiente pra
+   reaproveitar em outros artigos de "passo a passo" no futuro. */
+.passo-guia {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--gold);
+  border-radius: 14px;
+  padding: 18px 20px;
+  margin: 0 0 14px;
+}
+
+.passo-guia-numero {
+  flex-shrink: 0;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: #fff;
+  font-family: var(--fonte-titulo);
+  font-size: 1.2rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.passo-guia-conteudo h3 {
+  margin: 0 0 6px;
+  font-family: var(--fonte-titulo);
+  color: var(--accent);
+  font-size: 1.05rem;
+}
+
+.passo-guia-conteudo p {
+  margin: 0 0 8px;
+}
+
+.passo-guia-dica {
+  background: var(--gold-soft);
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 0.85rem;
+  color: var(--gold-texto-claro);
+  margin: 8px 0 0 !important;
+}
+
+/* callout grande pra uma unica ideia-chave (pedido do usuario: "coisas
+   grandes em informacoes importantes") -- so texto, sem numero, usado
+   uma vez por artigo pro ponto mais importante. */
+.lectio-destaque {
+  background: var(--accent);
+  color: #fff;
+  border-radius: 14px;
+  padding: 20px 22px;
+  margin: 0 0 22px;
+  text-align: center;
+}
+
+.lectio-destaque p {
+  margin: 0;
+  font-family: var(--fonte-titulo);
+  font-size: 1.05rem;
+  line-height: 1.5;
+}
+
 /* descricoes por formato (pagina de produto) */
 
 .formato-info {

@@ -269,3 +269,26 @@ def test_santa_rita_mostra_foto_do_quadro_de_roccaporena_e_modelo_2(client):
     pagina = resposta.get_data(as_text=True)
     assert "santa-rita-roccaporena-quadro.jpg" in pagina
     assert "santa_rita_de_cassia_modelo_2_medalha.jpg" in pagina
+
+
+def test_lectio_divina_tem_os_4_passos_e_imagens(client):
+    """ver conversa 2026-09-24: pedido do usuario -- passo a passo
+    didatico ("coisas grandes em informacoes importantes"), com
+    imagens e botao pra landing da liturgia."""
+    resposta = client.get("/blog/como-fazer-lectio-divina")
+    pagina = resposta.get_data(as_text=True)
+    assert resposta.status_code == 200
+    assert pagina.count('class="passo-guia"') == 4
+    for etapa in ("Lectio", "Meditatio", "Oratio", "Contemplatio"):
+        assert etapa in pagina
+    assert "lectio-divina-capa.jpg" in pagina
+    assert "lectio-divina-maos-durer.jpg" in pagina
+    assert "/liturgia-do-mes" in pagina
+
+
+def test_lectio_divina_imagens_existem_no_disco():
+    from pathlib import Path
+
+    base = Path(__file__).resolve().parent.parent / "static" / "img" / "artigos"
+    assert (base / "lectio-divina-capa.jpg").exists()
+    assert (base / "lectio-divina-maos-durer.jpg").exists()
