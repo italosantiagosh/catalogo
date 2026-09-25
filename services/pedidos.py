@@ -1030,22 +1030,25 @@ def marcar_campanha_convite_liturgia_enviado(email: str, *, erro: str | None) ->
             )
 
 
-def contar_enviados_campanha_convite_liturgia_hoje_utc() -> int:
-    """Quantos convites ja´ saíram desde a ultima virada de dia em UTC --
-    teto por DIA CALENDARIO UTC, nao por janela movel nem por "execucao
-    do job", pra bater com o horario real que a conta Brevo usa pra
-    renovar a cota de 300 e-mails/dia (conferido pelo usuario: o painel
-    do Brevo ja mostrava cota nova antes da meia-noite de Brasilia --
-    ou seja, a virada e´ em UTC, 21h de Brasilia, nao 00h de Brasilia,
-    ver conversa 2026-09-25). As duas vias que mandam e-mail (job
-    automatico e o botao "Enviar agora", ver app.py:
-    admin_campanha_liturgia_enviar_agora) chamam essa mesma conta antes
-    de decidir quantos faltam pra bater LIMITE_DIARIO_CAMPANHA_LITURGIA."""
+def contar_enviados_campanha_convite_liturgia_ultimas_24h() -> int:
+    """Quantos convites saíram nas ultimas 24h -- janela MOVEL, nao dia
+    calendario UTC. Chegamos a usar um corte fixo de dia calendario UTC
+    (achando que batia com a hora que a cota Brevo renova), mas o
+    usuario conferiu no proprio painel Brevo duas vezes no mesmo dia
+    (2026-09-25) com resultados incompativeis entre si sobre quando
+    exatamente a virada acontece -- ou seja, nao da pra confiar em
+    adivinhar o instante exato da virada da Brevo. Uma janela movel de
+    24h nunca deixa passar mais que LIMITE_DIARIO_CAMPANHA_LITURGIA em
+    NENHUM periodo de 24h, nao importa a hora real que a Brevo use. As
+    duas vias que mandam e-mail (job automatico e o botao "Enviar
+    agora", ver app.py:admin_campanha_liturgia_enviar_agora) chamam essa
+    mesma conta antes de decidir quantos faltam pra bater
+    LIMITE_DIARIO_CAMPANHA_LITURGIA."""
     inicializar_db()
-    hoje_utc = datetime.now(timezone.utc).replace(hour=0, minute=0, second=0, microsecond=0)
+    desde = datetime.now(timezone.utc) - timedelta(hours=24)
     with _conexao() as conexao:
         return conexao.execute(
-            "SELECT COUNT(*) FROM campanha_convite_liturgia WHERE enviado_em >= ?", (hoje_utc.isoformat(),)
+            "SELECT COUNT(*) FROM campanha_convite_liturgia WHERE enviado_em >= ?", (desde.isoformat(),)
         ).fetchone()[0]
 
 
