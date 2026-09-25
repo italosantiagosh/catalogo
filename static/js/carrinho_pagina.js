@@ -12,6 +12,7 @@
   const pedidoIdTexto = document.getElementById('pedido-id-texto');
   const gatilhoProducaoEl = document.getElementById('gatilho-producao');
   const btnWhatsappFinalizar = document.getElementById('btn-whatsapp-finalizar');
+  const whatsappTelefoneClienteInput = document.getElementById('whatsapp-telefone-cliente');
   const btnWhatsappDuvida = document.getElementById('btn-whatsapp-duvida');
   const formaPagamentoRadios = document.querySelectorAll('input[name="forma-pagamento"]');
   const cadastroClienteEl = document.getElementById('cadastro-cliente');
@@ -1615,6 +1616,19 @@
         return;
       }
 
+      // WhatsApp valido exigido desde a conversa 2026-09-25: sem isso,
+      // quando a pessoa nao manda a mensagem de verdade, o pedido fica
+      // sem NENHUM contato -- nem telefone nem e-mail, nem cai como
+      // carrinho abandonado. Valida ANTES de abrir a janela (mesmo
+      // padrao do telefone no cadastro de pagamento direto, ver
+      // telefoneValido acima).
+      const telefoneWhatsapp = whatsappTelefoneClienteInput ? whatsappTelefoneClienteInput.value.trim() : '';
+      if (!telefoneValido(telefoneWhatsapp)) {
+        mostrarToast('⚠️ WhatsApp inválido. Confira o DDD e o número digitado.');
+        if (whatsappTelefoneClienteInput) whatsappTelefoneClienteInput.focus();
+        return;
+      }
+
       // registra o pedido no painel admin (status "whatsapp") antes de
       // abrir a conversa, pra quem vende poder acompanhar e preencher os
       // dados na mao se a venda fechar (ver conversa) -- best-effort: se
@@ -1634,6 +1648,7 @@
             itens: ultimosItens,
             frete: freteEscolhido || {},
             cep_informado: freteCepInput ? freteCepInput.value.trim() : '',
+            cliente_telefone: telefoneWhatsapp,
             origem: window.obterOrigemVisita ? window.obterOrigemVisita() : null,
           }),
         });

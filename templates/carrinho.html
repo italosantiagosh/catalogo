@@ -215,6 +215,10 @@
     </div>
 
     <div class="whatsapp-acoes" id="whatsapp-finalizar-wrap" hidden>
+      <div class="cadastro-campos">
+        <label for="whatsapp-telefone-cliente">Seu WhatsApp (pra gente confirmar o pedido, caso a mensagem não chegue)</label>
+        <input type="text" id="whatsapp-telefone-cliente" inputmode="numeric" autocomplete="tel" placeholder="(11) 91234-5678">
+      </div>
       <button type="button" id="btn-whatsapp-finalizar" class="botao-whatsapp">
         <img src="{{ url_for('static', filename='img/icones/whatsapp.svg') }}" alt="" class="botao-whatsapp-icone">
         Enviar pedido pronto pelo WhatsApp
