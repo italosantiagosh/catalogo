@@ -13,23 +13,6 @@
 
   <div id="lista-itens" class="lista-itens"></div>
 
-  {% if linha_premium_pecas %}
-    <section class="destaques destaques-carrinho">
-      <div class="destaques-grupo">
-        <h2 class="destaques-titulo">Linha Premium</h2>
-        <p class="destaques-subtitulo">Colares, pulseiras e relicários banhados a ouro — que tal completar o pedido?</p>
-        <div class="destaques-linha destaques-linha-carrinho">
-          {% for peca in linha_premium_pecas %}
-            <a class="destaque-card" href="{{ url_for('linha_premium_item', peca_id=peca.id) }}">
-              <img src="{{ url_for('static', filename=peca.imagens[0].src) }}" alt="{{ peca.nome }}" loading="lazy" decoding="async" width="84" height="84">
-              <span>{{ peca.nome }} — {{ peca.preco | preco }}</span>
-            </a>
-          {% endfor %}
-        </div>
-      </div>
-    </section>
-  {% endif %}
-
   <div class="resumo-carrinho" id="resumo-carrinho" hidden>
     <p class="resumo-linha">Quantidade total: <strong id="resumo-quantidade">0</strong> peças</p>
 
@@ -247,6 +230,23 @@
         Tirar uma dúvida sobre este carrinho
       </button>
     </div>
+
+    {% if linha_premium_pecas %}
+      <section class="destaques destaques-carrinho">
+        <div class="destaques-grupo">
+          <h2 class="destaques-titulo">Linha Premium</h2>
+          <p class="destaques-subtitulo">Colares, pulseiras e relicários banhados a ouro — que tal completar o pedido?</p>
+          <div class="destaques-linha destaques-linha-carrinho">
+            {% for peca in linha_premium_pecas %}
+              <a class="destaque-card" href="{{ url_for('linha_premium_item', peca_id=peca.id) }}">
+                <img src="{{ url_for('static', filename=peca.imagens[0].src) }}" alt="{{ peca.nome }}" loading="lazy" decoding="async" width="84" height="84">
+                <span>{{ peca.nome }} — {{ peca.preco | preco }}</span>
+              </a>
+            {% endfor %}
+          </div>
+        </div>
+      </section>
+    {% endif %}
 
     <div class="resumo-acoes">
       <button type="button" id="btn-limpar" class="botao-secundario">Limpar carrinho</button>
