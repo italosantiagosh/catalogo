@@ -16,6 +16,7 @@ transparencia mal tratada.
 
 from __future__ import annotations
 
+from functools import lru_cache
 from pathlib import Path
 
 import numpy as np
@@ -38,6 +39,34 @@ def load_rgba(path: Path) -> Image.Image:
     return img.convert("RGBA")
 
 
+# Cache SO pros assets FIXOS da medalha (base_medalha.png/efeito_resina.png
+# de cada MedalSpec) -- NUNCA usar pra foto de usuario (load_rgba() comum
+# continua sendo usado pra isso, ver compose_medal abaixo e app.py:
+# _crop_quadrada) -- cachear por path arbitrario ali vazaria foto de um
+# cliente pra outro se um arquivo temporario reusar o mesmo nome, e
+# cresceria sem limite a cada upload.
+#
+# maxsize=3 de proposito (pedido em 2026-09-25, apos medir onde ia a
+# memoria do compose_medal): cachear os 8 arquivos distintos (7 bases +
+# 1 resina) de uma vez custaria ~48MB permanentes pra economizar so
+# ~12-19MB por simulacao (cada uma usa so 2 desses 8) -- pioraria o pico
+# em vez de ajudar. Um cache pequeno cobre o caso comum (a resina, unica
+# e usada em TODA chamada, fica sempre quente; sobra espaco pra 2 bases
+# mais usadas recentemente, ex: o formato "medalha" de longe o mais
+# pedido) sem reservar memoria pros formatos raros (chaveiro_2lados etc).
+@lru_cache(maxsize=3)
+def _load_asset_rgba_cached(path: Path) -> Image.Image:
+    return load_rgba(path)
+
+
+# Cache SEM limite de proposito: so existem 7 diametros distintos no total
+# (um por MedalSpec, ver services/gerador/config.py:MEDAL_SPECS), cada
+# mascara ja cacheada no tamanho FINAL (nao no supersample 4x usado so
+# durante o desenho) pesa menos de 1MB -- ~3,6MB no pior caso com todos os
+# 7 guardados, pra evitar recriar (desenhar + reduzir) a MESMA mascara a
+# cada simulacao do mesmo formato (~26MB de pico por chamada, medido em
+# 2026-09-25).
+@lru_cache(maxsize=None)
 def _circular_mask(diameter: int, supersample: int = SUPERSAMPLE) -> Image.Image:
     """Mascara circular (modo 'L') com borda suavizada, sem serrilhado."""
     diameter = max(1, int(round(diameter)))
@@ -179,8 +208,8 @@ def compose_medal(spec: MedalSpec, user_image_path: Path,
     pixels da imagem ORIGINAL do usuario, escolhido manualmente (editor de
     recorte em app.py) -- substitui o recorte automatico centralizado.
     """
-    base = load_rgba(spec.base_path)
-    resina = load_rgba(spec.resina_path)
+    base = _load_asset_rgba_cached(spec.base_path)
+    resina = _load_asset_rgba_cached(spec.resina_path)
     geo = spec.resolve(base.size)
 
     # 1) fundo branco puro, do tamanho exato da base (mesma proporcao/resolucao)
@@ -244,7 +273,7 @@ def save_output(image: Image.Image, output_path: Path) -> None:
 def build_calibration_preview(spec: MedalSpec) -> Image.Image:
     """Desenha centro / raio de recorte / raio da resina por cima da base,
     para validar visualmente os parametros de config.py."""
-    base = load_rgba(spec.base_path)
+    base = _load_asset_rgba_cached(spec.base_path)
     geo = spec.resolve(base.size)
     preview = base.copy()
     draw = ImageDraw.Draw(preview)
