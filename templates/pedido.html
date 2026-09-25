@@ -149,13 +149,6 @@
         "postado" e atualiza de novo quando sair pra entrega. Não é sinal de que o pedido parou.
       </p>
     {% endif %}
-    {% if correios_detectado %}
-      <p class="aviso-greve-correios">
-        ⚠️ Os Correios aumentaram o prazo de entrega deles momentaneamente por causa da greve — mesmo esse
-        prazo maior pode atrasar além do previsto. Pedimos a sua compreensão; qualquer dúvida sobre o seu
-        pedido, fale com a gente no WhatsApp.
-      </p>
-    {% endif %}
   {% elif pedido.status == 'entregue' %}
     {% if pedido.frete_descricao == 'Retirada no local' %}
       <p class="pedido-status pedido-status-entregue">🎉 Pedido retirado</p>

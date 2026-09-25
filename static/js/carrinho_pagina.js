@@ -1294,33 +1294,14 @@
     adicionarOpcaoRetirada();
   }
 
-  // Aviso temporario da greve dos Correios (ver conversa) -- so um
-  // <script>document.getElementById(...)</script> direto em vez do
-  // padrao _configurarModalSimples (modais_base.js), porque aqui tem 2
-  // jeitos de fechar (X e botao "Entendi") e o modal e´ especifico dessa
-  // pagina. Facil de remover inteiro (esse bloco + o markup em
-  // carrinho.html) quando a greve acabar.
-  const modalGreveCorreios = document.getElementById('modal-aviso-greve-correios');
-  const btnGreveCorreiosFechar = document.getElementById('btn-aviso-greve-correios-fechar');
-  const btnGreveCorreiosOk = document.getElementById('btn-aviso-greve-correios-ok');
-  function fecharAvisoGreveCorreios() {
-    if (modalGreveCorreios) modalGreveCorreios.hidden = true;
-  }
-  if (btnGreveCorreiosFechar) btnGreveCorreiosFechar.addEventListener('click', fecharAvisoGreveCorreios);
-  if (btnGreveCorreiosOk) btnGreveCorreiosOk.addEventListener('click', fecharAvisoGreveCorreios);
-  if (modalGreveCorreios) {
-    modalGreveCorreios.addEventListener('click', (evento) => {
-      if (evento.target === modalGreveCorreios) fecharAvisoGreveCorreios();
-    });
-  }
-
   // Popup de pedido minimo (ver conversa: "não seria bom um popup
   // avisando novamente do mínimo") -- alem do aviso fixo na pagina
   // (aviso-minimo, sempre visivel quando abaixo do minimo), esse popup
   // interrompe a pessoa bem na hora que ela tenta pagar/mandar pelo
   // WhatsApp, com um botao direto pro catalogo (em vez de só rolar a
-  // tela ate o aviso fixo). Mesmo padrao de modal simples do aviso da
-  // greve dos Correios acima (2 jeitos de fechar: X e botao).
+  // tela ate o aviso fixo). Mesmo padrao de modal simples (2 jeitos de
+  // fechar: X e botao) usado antes pelo aviso da greve dos Correios
+  // (removido em 2026-09-25 quando a greve acabou).
   const modalAvisoMinimo = document.getElementById('modal-aviso-minimo');
   const avisoMinimoModalTexto = document.getElementById('aviso-minimo-modal-texto');
   const avisoMinimoSugestoesEl = document.getElementById('aviso-minimo-sugestoes');
@@ -1421,7 +1402,6 @@
         freteResultadoEl.innerHTML = '<p class="frete-erro">Digite um CEP válido.</p>';
         return;
       }
-      if (modalGreveCorreios) modalGreveCorreios.hidden = false;
       btnCalcularFrete.disabled = true;
       btnCalcularFrete.textContent = 'Calculando...';
       await calcularFreteParaCep(cep);

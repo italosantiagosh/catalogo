@@ -179,14 +179,17 @@ _NOMES_TRANSPORTADORA_CONHECIDOS = [
 ]
 
 
-# Deteccao dos Correios pro aviso da greve + logo oficial no link de
-# acompanhamento do cliente (templates/pedido.html, pedido do usuario
-# 2026-09-12) -- cobre tanto o nome escrito por extenso ("Correios")
-# quanto uma modalidade digitada sozinha A MAO no admin, sem a palavra
-# "Correios" no meio (Mini Envios, PAC, Sedex). Usa \b (limite de
-# palavra) em vez do mesmo criterio de substring de logo_transportadora
-# acima porque "pac" e curto demais pra isso -- bateria por engano
-# dentro de palavras como "espaco" (sem acento).
+# Deteccao dos Correios pro logo oficial e pro aviso de rastreio simples
+# do Mini Envios no link de acompanhamento do cliente (templates/
+# pedido.html, pedido do usuario 2026-09-12) -- cobre tanto o nome
+# escrito por extenso ("Correios") quanto uma modalidade digitada
+# sozinha A MAO no admin, sem a palavra "Correios" no meio (Mini Envios,
+# PAC, Sedex). Usa \b (limite de palavra) em vez do mesmo criterio de
+# substring de logo_transportadora acima porque "pac" e curto demais pra
+# isso -- bateria por engano dentro de palavras como "espaco" (sem
+# acento). Usada tambem pro aviso da greve dos Correios, removido em
+# 2026-09-25 quando a greve acabou (ver templates/pedido.html/
+# carrinho.html no historico do git se precisar recriar).
 _PADRAO_CORREIOS = re.compile(r"\b(correios|mini\s*envios|pac|sedex)\b", re.IGNORECASE)
 
 
