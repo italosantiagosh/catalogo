@@ -1031,19 +1031,15 @@ def marcar_campanha_convite_liturgia_enviado(email: str, *, erro: str | None) ->
 
 
 def contar_enviados_campanha_convite_liturgia_ultimas_24h() -> int:
-    """Quantos convites saíram nas ultimas 24h -- janela MOVEL, nao dia
-    calendario UTC. Chegamos a usar um corte fixo de dia calendario UTC
-    (achando que batia com a hora que a cota Brevo renova), mas o
-    usuario conferiu no proprio painel Brevo duas vezes no mesmo dia
-    (2026-09-25) com resultados incompativeis entre si sobre quando
-    exatamente a virada acontece -- ou seja, nao da pra confiar em
-    adivinhar o instante exato da virada da Brevo. Uma janela movel de
-    24h nunca deixa passar mais que LIMITE_DIARIO_CAMPANHA_LITURGIA em
-    NENHUM periodo de 24h, nao importa a hora real que a Brevo use. As
-    duas vias que mandam e-mail (job automatico e o botao "Enviar
-    agora", ver app.py:admin_campanha_liturgia_enviar_agora) chamam essa
-    mesma conta antes de decidir quantos faltam pra bater
-    LIMITE_DIARIO_CAMPANHA_LITURGIA."""
+    """Quantos convites saíram nas ultimas 24h -- so´ INFORMATIVO (ver
+    admin_newsletter.html), nao trava mais envio nenhum. Chegamos a usar
+    isso (e antes um corte por dia calendario UTC) pra tentar adivinhar
+    localmente quando a cota da conta Brevo renova, mas o usuario
+    conferiu no proprio painel Brevo duas vezes no mesmo dia
+    (2026-09-25) com resultados incompativeis entre si -- ou seja, nao
+    da´ pra confiar em adivinhar isso aqui. Quem decide a cota real
+    agora e´ a propria Brevo no momento do envio (ver
+    _enviar_lote_campanha_convite_liturgia em app.py)."""
     inicializar_db()
     desde = datetime.now(timezone.utc) - timedelta(hours=24)
     with _conexao() as conexao:

@@ -2052,17 +2052,21 @@ def pagina_atendimento(slug: str):
 
 
 def _thumbnail_do_artigo(artigo: dict) -> str:
-    """Miniatura de um artigo do blog -- reaproveita a foto do proprio
-    produto relacionado (ver services/blog.py), sem precisar de nenhuma
-    imagem nova so pro blog. Artigo sem produto de catalogo (ex: a
-    historia da propria loja, ver conversa) usa "imagem_manual" no
-    lugar -- uma imagem de marca ja existente em static/img/."""
+    """Miniatura de um artigo do blog -- prioriza "imagem_manual" (foto
+    do santo/tema, ou de banco de imagem livre pros artigos sem santo
+    especifico, ver conversa 2026-09-25: "não quero imagem das medalhas
+    sendo a capa"), e so cai pra foto do proprio produto relacionado
+    (a medalha) quando o artigo nao tiver nenhuma imagem manual
+    definida ainda."""
+    imagem_manual = artigo.get("imagem_manual")
+    if imagem_manual:
+        return imagem_manual
     produto_id = artigo.get("produto_relacionado_id")
     if produto_id:
         produto = buscar_produto(produto_id)
         if produto:
             return produto["modelos"][0]["imagem"]
-    return artigo.get("imagem_manual", "")
+    return ""
 
 
 def _url_cta_do_artigo(artigo: dict) -> str:
@@ -5961,6 +5965,7 @@ def admin_newsletter():
         erro=resultado.get("erro"),
         brevo_list_id=BREVO_LIST_ID,
         campanha_liturgia=contar_campanha_convite_liturgia(),
+        campanha_liturgia_ultimas_24h=contar_enviados_campanha_convite_liturgia_ultimas_24h(),
     )
 
 
@@ -5984,16 +5989,21 @@ def admin_campanha_liturgia_enviar_agora():
     """Dispara agora o proximo lote de convites, em vez de esperar o job
     automatico rodar sozinho (ver conversa 2026-09-25: "como faço pra
     enviar a campanha só pra 200 hj"). Seguro de clicar quantas vezes
-    quiser: o teto de LIMITE_DIARIO_CAMPANHA_LITURGIA vale por janela
-    movel de 24h (ver _enviar_lote_campanha_convite_liturgia), entao
-    clicar de novo antes de passar 24h do ultimo lote so manda quem
-    ainda sobrar de cota."""
+    quiser: cada chamada tenta no maximo LIMITE_DIARIO_CAMPANHA_LITURGIA
+    pendentes, e quem a Brevo recusar (cota do dia dela, nao a nossa)
+    fica pendente pra tentar de novo depois (ver
+    _enviar_lote_campanha_convite_liturgia)."""
     if not _autenticacao_admin_valida(request.authorization):
         return Response(
             "Autenticação necessária.", 401, {"WWW-Authenticate": 'Basic realm="Painel de newsletter"'}
         )
     enviados_agora = _enviar_lote_campanha_convite_liturgia()
-    return jsonify({"ok": True, "enviados_agora": enviados_agora, **contar_campanha_convite_liturgia()})
+    return jsonify({
+        "ok": True,
+        "enviados_agora": enviados_agora,
+        "ultimas_24h": contar_enviados_campanha_convite_liturgia_ultimas_24h(),
+        **contar_campanha_convite_liturgia(),
+    })
 
 
 @app.route("/admin/campanha-liturgia/exportar.csv", methods=["GET"])
@@ -6481,30 +6491,32 @@ def _enviar_upsell_pedidos_pagos() -> None:
 def _enviar_lote_campanha_convite_liturgia() -> int:
     """Job agendado (a cada 24h) E o botao manual "Enviar agora" (ver
     admin_campanha_liturgia_enviar_agora abaixo) chamam esta MESMA
-    funcao -- o teto de LIMITE_DIARIO_CAMPANHA_LITURGIA vale por JANELA
-    MOVEL de 24h (ver services/pedidos.py:contar_enviados_campanha_
-    convite_liturgia_ultimas_24h), nao por dia calendario UTC: tentamos
-    bater com a hora exata que a cota da conta Brevo renova, mas o
-    usuario conferiu isso duas vezes no mesmo dia (2026-09-25) com
-    resultados diferentes, entao desistimos de adivinhar o instante e
-    usamos uma janela movel, que nunca estoura o teto nem depende de
-    acertar o horario da Brevo. Clicar o botao no mesmo dia em que o job
-    automatico tambem rodar nunca estoura o teto. Devolve quantos
-    e-mails foram enviados nesta chamada."""
+    funcao. Ja´ tentamos adivinhar aqui, localmente, quando a cota da
+    conta Brevo renova -- primeiro por dia calendario UTC, depois por
+    janela movel de 24h (ver git log) -- e nas duas vezes o usuario
+    conferiu no proprio painel Brevo que nao batia com a cota real
+    (ver conversa 2026-09-25). Desistimos de adivinhar: aqui so´
+    limitamos quantos TENTAMOS mandar por chamada
+    (LIMITE_DIARIO_CAMPANHA_LITURGIA), pra nao estourar a fila inteira
+    de uma vez; quem a Brevo aceitar, aceitou (a cota real e´ decidida
+    por ela no momento do envio), e quem falhar (seja por cota ou
+    qualquer outro erro, ver services/email.py:_enviar) fica pendente
+    pra tentar de novo na proxima chamada. Devolve quantos e-mails
+    foram enviados com sucesso nesta chamada."""
     if not CANONICAL_DOMAIN:
         return 0
-    ja_enviados_hoje = contar_enviados_campanha_convite_liturgia_ultimas_24h()
-    limite_restante = max(0, LIMITE_DIARIO_CAMPANHA_LITURGIA - ja_enviados_hoje)
-    if limite_restante == 0:
-        return 0
-    pendentes = listar_pendentes_campanha_convite_liturgia(limite_restante)
+    pendentes = listar_pendentes_campanha_convite_liturgia(LIMITE_DIARIO_CAMPANHA_LITURGIA)
     if not pendentes:
         return 0
     url_liturgia = f"https://{CANONICAL_DOMAIN}/liturgia-do-mes"
+    enviados = 0
     for contato in pendentes:
         resultado = enviar_convite_liturgia_mensal(contato["email"], contato.get("nome") or "", url_liturgia)
-        marcar_campanha_convite_liturgia_enviado(contato["email"], erro=resultado.get("erro"))
-    return len(pendentes)
+        erro = resultado.get("erro")
+        marcar_campanha_convite_liturgia_enviado(contato["email"], erro=erro)
+        if not erro:
+            enviados += 1
+    return enviados
 
 
 def _enviar_email_avaliacao(token: str) -> str | None:

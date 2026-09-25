@@ -155,10 +155,14 @@ def test_job_manda_ate_o_limite_diario_e_marca_enviado(client, monkeypatch):
     assert contagem["pendentes"] == 1
 
 
-def test_job_respeita_teto_diario_entre_duas_chamadas(client, monkeypatch):
-    """Ver conversa 2026-09-25: o teto vale por janela movel de 24h,
-    nao por chamada -- chamar a funcao 2x seguidas (ex: clique manual +
-    job automatico) na mesma janela nunca manda mais que o limite."""
+def test_job_manda_o_resto_da_fila_em_chamada_seguinte(client, monkeypatch):
+    """Ver conversa 2026-09-25: o teto local nao trava mais uma segunda
+    chamada no mesmo dia/janela -- quem decide se ainda ha´ cota e´ a
+    propria Brevo no momento do envio (o usuario ja conferiu duas vezes
+    que adivinhar o horario de renovacao da Brevo localmente nao bate
+    com a realidade). Cada chamada so´ limita QUANTOS TENTA mandar por
+    vez (LIMITE_DIARIO_CAMPANHA_LITURGIA), entao uma segunda chamada
+    logo em seguida manda o restante da fila, nao fica bloqueada."""
     import app as app_module
 
     monkeypatch.setattr(app_module, "CANONICAL_DOMAIN", "lojanovedejulho.com.br")
@@ -171,11 +175,13 @@ def test_job_respeita_teto_diario_entre_duas_chamadas(client, monkeypatch):
     with patch("app.enviar_convite_liturgia_mensal", return_value={"ok": True}) as mock_email:
         primeiro = _enviar_lote_campanha_convite_liturgia()
         segundo = _enviar_lote_campanha_convite_liturgia()
+        terceiro = _enviar_lote_campanha_convite_liturgia()
 
     assert primeiro == 2
-    assert segundo == 0
-    assert mock_email.call_count == 2
-    assert pedidos.contar_campanha_convite_liturgia()["pendentes"] == 1
+    assert segundo == 1
+    assert terceiro == 0
+    assert mock_email.call_count == 3
+    assert pedidos.contar_campanha_convite_liturgia()["pendentes"] == 0
 
 
 def test_teto_reseta_apos_24h_do_envio_nao_na_virada_do_dia_utc(client):
@@ -218,7 +224,9 @@ def test_job_marca_erro_quando_envio_falha(client, monkeypatch):
     pedidos.preparar_campanha_convite_liturgia()
 
     with patch("app.enviar_convite_liturgia_mensal", return_value={"erro": "Brevo fora do ar"}):
-        _enviar_lote_campanha_convite_liturgia()
+        enviados = _enviar_lote_campanha_convite_liturgia()
+
+    assert enviados == 0
 
     contagem = pedidos.contar_campanha_convite_liturgia()
     assert contagem["enviados"] == 0
@@ -388,7 +396,11 @@ def test_enviar_agora_manda_o_lote_na_hora(client, monkeypatch):
     assert dados["pendentes"] == 0
 
 
-def test_enviar_agora_duas_vezes_no_mesmo_dia_nao_estoura_o_teto(client, monkeypatch):
+def test_enviar_agora_duas_vezes_manda_o_resto_da_fila(client, monkeypatch):
+    """Ver conversa 2026-09-25: clicar duas vezes seguidas nao fica mais
+    bloqueado por um teto local -- a segunda chamada manda o que ainda
+    sobrar na fila (limitado a LIMITE_DIARIO_CAMPANHA_LITURGIA por
+    chamada), ate´ a Brevo de fato recusar por falta de cota dela."""
     import app as app_module
 
     monkeypatch.setattr(app_module, "CANONICAL_DOMAIN", "lojanovedejulho.com.br")
@@ -403,5 +415,5 @@ def test_enviar_agora_duas_vezes_no_mesmo_dia_nao_estoura_o_teto(client, monkeyp
         segunda = client.post("/admin/campanha-liturgia/enviar-agora", auth=("admin", "segredo123")).get_json()
 
     assert primeira["enviados_agora"] == 1
-    assert segunda["enviados_agora"] == 0
-    assert segunda["pendentes"] == 1
+    assert segunda["enviados_agora"] == 1
+    assert segunda["pendentes"] == 0

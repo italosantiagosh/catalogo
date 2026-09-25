@@ -116,6 +116,7 @@
         <div>Enviados<strong id="campanha-enviados">{{ campanha_liturgia.enviados }}</strong></div>
         <div>Pendentes<strong id="campanha-pendentes">{{ campanha_liturgia.pendentes }}</strong></div>
         <div>Com erro<strong id="campanha-erro">{{ campanha_liturgia.com_erro }}</strong></div>
+        <div>Últimas 24h<strong id="campanha-24h">{{ campanha_liturgia_ultimas_24h }}</strong></div>
       </div>
       <button type="button" id="campanha-preparar-btn">Buscar clientes que já compraram</button>
       <button type="button" id="campanha-enviar-agora-btn" style="margin-left:8px;">📤 Enviar agora (até 200)</button>
@@ -123,7 +124,9 @@
       <p id="campanha-feedback" hidden></p>
       <p style="font-size:0.76rem; color:var(--texto-suave); margin-top:10px;">O CSV acima só traz clientes com pedido
       registrado neste site — pedidos de antes dele (outra loja/planilha) não aparecem aqui. "Enviar agora" é seguro
-      de clicar quantas vezes quiser: o teto de 200 vale por dia (renova de madrugada, no horário UTC que o Brevo usa), não por clique, então nunca estoura.</p>
+      de clicar quantas vezes quiser: cada clique tenta até 200 pendentes, e quem a Brevo recusar por já ter
+      estourado a cota dela do dia fica pendente pra tentar de novo depois — quem já tinha erro antes também é
+      tentado de novo, então limpa sozinho assim que a cota da Brevo permitir.</p>
 
       <hr style="border:none; border-top:1px solid var(--linha); margin:16px 0;">
 
@@ -163,6 +166,9 @@
         document.getElementById('campanha-enviados').textContent = dados.enviados;
         document.getElementById('campanha-pendentes').textContent = dados.pendentes;
         document.getElementById('campanha-erro').textContent = dados.com_erro;
+        if (dados.ultimas_24h !== undefined) {
+          document.getElementById('campanha-24h').textContent = dados.ultimas_24h;
+        }
       }
 
       const botao = document.getElementById('campanha-preparar-btn');
@@ -194,7 +200,7 @@
           atualizarNumeros(dados);
           feedback.textContent = dados.enviados_agora > 0
             ? `${dados.enviados_agora} convite(s) enviado(s) agora.`
-            : 'Nada pra enviar agora (fila vazia ou cota de hoje já usada).';
+            : 'Nada pra enviar agora (fila vazia ou a Brevo recusou todos — tenta de novo daqui a pouco).';
           feedback.hidden = false;
         } catch (e) {
           feedback.textContent = e.message;

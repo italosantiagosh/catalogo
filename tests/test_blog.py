@@ -271,15 +271,16 @@ def test_santa_rita_mostra_foto_do_quadro_de_roccaporena_e_modelo_2(client):
     assert "santa_rita_de_cassia_modelo_2_medalha.jpg" in pagina
 
 
-def test_lectio_divina_tem_os_4_passos_e_imagens(client):
+def test_lectio_divina_tem_os_5_passos_e_imagens(client):
     """ver conversa 2026-09-24: pedido do usuario -- passo a passo
     didatico ("coisas grandes em informacoes importantes"), com
-    imagens e botao pra landing da liturgia."""
+    imagens e botao pra landing da liturgia. Ver tambem conversa
+    2026-09-25: 5o passo (Actio/Acao) adicionado depois."""
     resposta = client.get("/blog/como-fazer-lectio-divina")
     pagina = resposta.get_data(as_text=True)
     assert resposta.status_code == 200
-    assert pagina.count('class="passo-guia"') == 4
-    for etapa in ("Lectio", "Meditatio", "Oratio", "Contemplatio"):
+    assert pagina.count('class="passo-guia"') == 5
+    for etapa in ("Lectio", "Meditatio", "Oratio", "Contemplatio", "Actio"):
         assert etapa in pagina
     assert "lectio-divina-capa.jpg" in pagina
     assert "lectio-divina-maos-durer.jpg" in pagina

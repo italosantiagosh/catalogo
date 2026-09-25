@@ -25,6 +25,7 @@ ARTIGOS_BLOG = {
             "no Brasil."
         ),
         "produto_relacionado_id": "sao-judas-tadeu",
+        "imagem_manual": "img/artigos/sao-judas-tadeu-santo-das-causas-impossiveis.jpg",
         "publicado_em": "2026-09-08",
         "corpo_html": """
             <p>São Judas Tadeu foi um dos doze apóstolos escolhidos por Jesus -- segundo a
@@ -69,6 +70,7 @@ ARTIGOS_BLOG = {
             "maior devoção mariana do Brasil. Conheça a história por trás da padroeira."
         ),
         "produto_relacionado_id": "nossa-senhora-aparecida",
+        "imagem_manual": "img/artigos/nossa-senhora-aparecida-historia.jpg",
         "publicado_em": "2026-09-08",
         "corpo_html": """
             <p>Em outubro de 1717, três pescadores -- Domingos Garcia, João Alves e Felipe
@@ -117,6 +119,7 @@ ARTIGOS_BLOG = {
             "mundo católico. Entenda o significado de cada símbolo e a origem da devoção."
         ),
         "produto_relacionado_id": "sao-bento",
+        "imagem_manual": "img/artigos/sao-bento-medalha-significado.jpg",
         "publicado_em": "2026-09-08",
         "corpo_html": """
             <p>São Bento de Núrsia viveu entre os séculos V e VI, na Itália, numa época de
@@ -174,6 +177,7 @@ ARTIGOS_BLOG = {
             "dos Nós nasceu de um quadro alemão do século XVIII. Conheça a história."
         ),
         "produto_relacionado_id": "nossa-senhora-desatadora-dos-nos",
+        "imagem_manual": "img/artigos/nossa-senhora-desatadora-dos-nos-oracao.jpg",
         "publicado_em": "2026-09-08",
         "corpo_html": """
             <p>A devoção a Nossa Senhora Desatadora dos Nós tem origem num quadro pintado
@@ -223,6 +227,7 @@ ARTIGOS_BLOG = {
             "profundas antes de se tornar uma das santas mais queridas da Igreja."
         ),
         "produto_relacionado_id": "santa-rita-de-cassia",
+        "imagem_manual": "img/artigos/santa-rita-de-cassia-santa-dos-impossiveis.jpg",
         "publicado_em": "2026-09-08",
         "corpo_html": """
             <p>Rita nasceu por volta de 1381, em Roccaporena, uma pequena vila na região
@@ -291,6 +296,7 @@ ARTIGOS_BLOG = {
             "rio deu origem a uma das devoções mais usadas dentro dos carros do Brasil."
         ),
         "produto_relacionado_id": "sao-cristovao",
+        "imagem_manual": "img/artigos/sao-cristovao-padroeiro-dos-viajantes.jpg",
         "publicado_em": "2026-09-08",
         "corpo_html": """
             <p>Segundo a tradição, Cristóvão era um homem de estatura e força enormes que
@@ -342,6 +348,7 @@ ARTIGOS_BLOG = {
             "de obediência e cuidado fizeram dele padroeiro dos trabalhadores e da Igreja."
         ),
         "produto_relacionado_id": "sao-jose",
+        "imagem_manual": "img/artigos/sao-jose-pai-adotivo-de-jesus.jpg",
         "publicado_em": "2026-09-08",
         "corpo_html": """
             <p>José era um carpinteiro (ou, mais amplamente, um artesão que trabalhava com
@@ -390,6 +397,7 @@ ARTIGOS_BLOG = {
             "Sagrado Coração simboliza o amor de Cristo por toda a humanidade."
         ),
         "produto_relacionado_id": "sagrado-coracao-de-jesus",
+        "imagem_manual": "img/artigos/sagrado-coracao-de-jesus-significado.jpg",
         "publicado_em": "2026-09-08",
         "corpo_html": """
             <p>A devoção ao Sagrado Coração de Jesus, embora com raízes que remontam à
@@ -437,6 +445,7 @@ ARTIGOS_BLOG = {
             "padroeiro da proteção espiritual, de policiais e militares."
         ),
         "produto_relacionado_id": "sao-miguel",
+        "imagem_manual": "img/artigos/sao-miguel-arcanjo-oracao-de-protecao.jpg",
         "publicado_em": "2026-09-08",
         "corpo_html": """
             <p>Miguel é um dos três arcanjos citados pelo nome na Bíblia (ao lado de
@@ -484,6 +493,7 @@ ARTIGOS_BLOG = {
             "mais amadas ao ensinar que a santidade está nas pequenas coisas do dia a dia."
         ),
         "produto_relacionado_id": "santa-teresinha",
+        "imagem_manual": "img/artigos/santa-teresinha-caminho-da-infancia-espiritual.jpg",
         "publicado_em": "2026-09-08",
         "corpo_html": """
             <p>Teresa Martin nasceu em 1873, em Alençon, na França, e entrou ainda muito
@@ -529,6 +539,7 @@ ARTIGOS_BLOG = {
             "preciso viver muitos anos pra deixar um exemplo de fé que atravessa gerações."
         ),
         "produto_relacionado_id": "carlo-acutis",
+        "imagem_manual": "img/artigos/jovens-santos-e-beatos.jpg",
         "publicado_em": "2026-09-09",
         "corpo_html": """
             <p>É comum imaginar a santidade como fruto de uma vida longa, dedicada
@@ -589,6 +600,7 @@ ARTIGOS_BLOG = {
             "carregam o mesmo hábito e uma busca em comum: a união íntima com Deus."
         ),
         "produto_relacionado_id": "teresas-do-carmelo",
+        "imagem_manual": "img/artigos/santos-carmelitas-espiritualidade-do-carmelo.jpg",
         "publicado_em": "2026-09-09",
         "corpo_html": """
             <p>A Ordem do Carmelo nasceu no século XII, quando um grupo de eremitas
@@ -649,6 +661,7 @@ ARTIGOS_BLOG = {
             "que um mesmo santo aparece em tantas invocações diferentes."
         ),
         "produto_relacionado_id": "sao-jose",
+        "imagem_manual": "img/artigos/titulos-de-sao-jose.jpg",
         "publicado_em": "2026-09-09",
         "corpo_html": """
             <p>Já contamos aqui a <a href="/blog/sao-jose-pai-adotivo-de-jesus">história de
@@ -707,6 +720,7 @@ ARTIGOS_BLOG = {
             "\"Jesus, eu confio em Vós\"."
         ),
         "produto_relacionado_id": "santa-faustina",
+        "imagem_manual": "img/artigos/santa-faustina-e-jesus-misericordioso.jpg",
         "publicado_em": "2026-09-09",
         "corpo_html": """
             <p>Faustina Kowalska nasceu em 1905, numa família humilde de agricultores da
@@ -756,6 +770,7 @@ ARTIGOS_BLOG = {
             "nome na Bíblia têm papéis bem diferentes entre si. Conheça cada um."
         ),
         "produto_relacionado_id": "santos-arcanjos",
+        "imagem_manual": "img/artigos/arcanjos-miguel-gabriel-rafael.jpg",
         "publicado_em": "2026-09-09",
         "corpo_html": """
             <p>Entre todos os anjos mencionados na tradição cristã, apenas três são
@@ -806,6 +821,7 @@ ARTIGOS_BLOG = {
             "freiras -- e foram os primeiros esposos canonizados juntos na mesma cerimônia."
         ),
         "produto_relacionado_id": "familia-martin",
+        "imagem_manual": "img/artigos/familia-martin-zelie.jpg",
         "publicado_em": "2026-09-09",
         "corpo_html": """
             <p>Quando se fala da <a href="/blog/santa-teresinha-caminho-da-infancia-espiritual">Santa
@@ -857,6 +873,7 @@ ARTIGOS_BLOG = {
             "santos nascidos em solo brasileiro. Uma história que começa bem perto daqui."
         ),
         "produto_relacionado_id": "santos-martires-do-rn",
+        "imagem_manual": "img/artigos/santos-martires-de-cunhau-e-uruacu.jpg",
         "publicado_em": "2026-09-10",
         "corpo_html": """
             <p>Nem toda devoção do nosso catálogo nasceu do outro lado do mundo -- essa
@@ -910,6 +927,7 @@ ARTIGOS_BLOG = {
             "primeira mulher negra leiga beatificada pela Igreja no Brasil."
         ),
         "produto_relacionado_id": "beata-nha-xica",
+        "imagem_manual": "img/artigos/beata-nha-chica-baependi.jpg",
         "publicado_em": "2026-09-10",
         "corpo_html": """
             <p>Francisca de Paula de Jesus, mais conhecida pelo apelido carinhoso de
@@ -957,6 +975,7 @@ ARTIGOS_BLOG = {
             "marcaram tanto a fé popular do Nordeste brasileiro quanto esses dois padres."
         ),
         "produto_relacionado_id": "padre-cicero",
+        "imagem_manual": "img/artigos/padre-cicero-e-frei-damiao-devocao-nordestina.jpg",
         "publicado_em": "2026-09-10",
         "corpo_html": """
             <p>Nem toda devoção presente no nosso catálogo já recebeu um título oficial da
@@ -1010,6 +1029,7 @@ ARTIGOS_BLOG = {
             "não-mártires mais jovens da história da Igreja Católica."
         ),
         "produto_relacionado_id": "francisco-de-fatima",
+        "imagem_manual": "img/artigos/francisco-e-jacinta-pastorinhos-de-fatima.jpg",
         "publicado_em": "2026-09-10",
         "corpo_html": """
             <p>Já contamos aqui <a href="/blog/nossa-senhora-aparecida-historia">a história
@@ -1060,6 +1080,7 @@ ARTIGOS_BLOG = {
             "essas devoções que aparecem juntas com frequência."
         ),
         "produto_relacionado_id": "espirito-santo",
+        "imagem_manual": "img/artigos/espirito-santo-pentecostes-santissima-trindade.jpg",
         "publicado_em": "2026-09-10",
         "corpo_html": """
             <p>Entre as devoções do catálogo, três aparecem com frequência lado a lado e
@@ -1116,6 +1137,7 @@ ARTIGOS_BLOG = {
             "mesma Maria. Entenda a diferença entre uma aparição e um título."
         ),
         "produto_relacionado_id": "nossa-senhora-imaculada-conceicao",
+        "imagem_manual": "img/artigos/nossa-senhora-titulos-e-aparicoes.jpg",
         "publicado_em": "2026-09-11",
         "corpo_html": """
             <p>Quem já visitou uma livraria católica ou olhou o catálogo de uma loja de
@@ -1191,6 +1213,7 @@ ARTIGOS_BLOG = {
             "origem da tradição de pedir a Santo Antônio ajuda para casar."
         ),
         "produto_relacionado_id": "santo-antonio",
+        "imagem_manual": "img/artigos/santo-antonio-de-padua-santo-casamenteiro.jpg",
         "publicado_em": "2026-09-11",
         "corpo_html": """
             <p>Fernando Martins de Bulhões nasceu em Lisboa, Portugal, em 1195, numa
@@ -1243,6 +1266,7 @@ ARTIGOS_BLOG = {
             "mais populares do Brasil. Conheça a lenda e a história real por trás dela."
         ),
         "produto_relacionado_id": "sao-jorge",
+        "imagem_manual": "img/artigos/sao-jorge-cavaleiro-e-martir.jpg",
         "publicado_em": "2026-09-11",
         "corpo_html": """
             <p>Jorge foi, segundo a tradição, um soldado romano de origem grega que
@@ -1291,6 +1315,7 @@ ARTIGOS_BLOG = {
             "lenda por trás de um dos santos mais procurados em momentos de urgência."
         ),
         "produto_relacionado_id": "santo-expedito",
+        "imagem_manual": "img/artigos/santo-expedito-santo-das-causas-urgentes.jpg",
         "publicado_em": "2026-09-11",
         "corpo_html": """
             <p>Diferente da maioria dos santos deste catálogo, é importante começar sendo
@@ -1341,6 +1366,7 @@ ARTIGOS_BLOG = {
             "doentes -- décadas depois, se tornou a primeira santa nascida em solo brasileiro."
         ),
         "produto_relacionado_id": "santa-dulce",
+        "imagem_manual": "img/artigos/santa-dulce-dos-pobres-primeira-santa-brasileira.jpg",
         "publicado_em": "2026-09-11",
         "corpo_html": """
             <p>Maria Rita de Souza Brito Lopes Pontes nasceu em Salvador, Bahia, em 1914.
@@ -1390,6 +1416,7 @@ ARTIGOS_BLOG = {
             "João Paulo II se tornou um dos líderes religiosos mais influentes do século XX."
         ),
         "produto_relacionado_id": "sao-joao-paulo-ii",
+        "imagem_manual": "img/artigos/sao-joao-paulo-ii-o-papa-viajante.jpg",
         "publicado_em": "2026-09-11",
         "corpo_html": """
             <p>Karol Józef Wojtyła nasceu em 1920, na Polônia, e viveu a juventude sob duas
@@ -1760,6 +1787,7 @@ ARTIGOS_BLOG = {
             "Acutis, entenda por que ele virou referência pra juventude católica."
         ),
         "produto_relacionado_id": "sao-pier-giorgio-frassati",
+        "imagem_manual": "img/artigos/pier-giorgio-frassati-historia.jpg",
         "publicado_em": "2026-09-17",
         "corpo_html": """
             <p>Pier Giorgio Frassati nasceu em 1901 em Turim, na Itália, filho de Alfredo
@@ -1808,6 +1836,7 @@ ARTIGOS_BLOG = {
             "feito pela própria Virgem."
         ),
         "produto_relacionado_id": "imaculado-coracao-de-maria",
+        "imagem_manual": "img/artigos/imaculado-coracao-de-maria-significado.jpg",
         "publicado_em": "2026-09-24",
         "corpo_html": """
             <p>A devoção ao Imaculado Coração de Maria também tem raízes antigas -- já
@@ -1850,6 +1879,7 @@ ARTIGOS_BLOG = {
             "Sagrada Família. Entenda o que ela representa."
         ),
         "produto_relacionado_id": "castissimo-coracao-de-sao-jose",
+        "imagem_manual": "img/artigos/castissimo-coracao-de-sao-jose-devocao.png",
         "publicado_em": "2026-09-24",
         "corpo_html": """
             <p>Já contamos aqui a <a href="/blog/sao-jose-pai-adotivo-de-jesus">história de
@@ -1940,7 +1970,7 @@ ARTIGOS_BLOG = {
         ),
         "produto_relacionado_id": None,
         "cta_endpoint": "catalogo_completo",
-        "imagem_manual": "img/banner-uso-real.jpg",
+        "imagem_manual": "img/artigos/presente-de-santo-para-quem-e-ocasiao.jpg",
         "publicado_em": "2026-09-24",
         "corpo_html": """
             <p>Diferente de outros presentes que se usam uma vez e são guardados na gaveta,
@@ -1976,6 +2006,10 @@ ARTIGOS_BLOG = {
             qualquer presente "de ocasião" -- é um jeito de dizer que você presta atenção na
             fé de quem você gosta.</p>
 
+            <figure>
+              <img src="/static/img/banner-uso-real.jpg" alt="Medalhas de santos pra cada ocasião" loading="lazy" decoding="async">
+            </figure>
+
             <div class="cta-blog-produto">
               <p>Encontre a medalha certa pra presentear</p>
               <a href="__URL_PRODUTO__" class="botao-principal">Ver catálogo completo de medalhas →</a>
@@ -1990,7 +2024,7 @@ ARTIGOS_BLOG = {
         ),
         "produto_relacionado_id": None,
         "cta_endpoint": "catalogo_completo",
-        "imagem_manual": "img/banner-atacado.jpg",
+        "imagem_manual": "img/artigos/como-comprar-artigos-religiosos-no-atacado.jpg",
         "publicado_em": "2026-09-24",
         "corpo_html": """
             <p>Quem vende artigos religiosos -- numa livraria física, numa banca dentro da
@@ -2020,6 +2054,10 @@ ARTIGOS_BLOG = {
             <a href="/para/livrarias-e-revendedores">página própria com condições pensadas
             pra esse perfil</a> -- vale a pena conferir antes de fechar um pedido grande.</p>
 
+            <figure>
+              <img src="/static/img/banner-atacado.jpg" alt="Caixas de pedido de atacado prontas pra envio" loading="lazy" decoding="async">
+            </figure>
+
             <div class="cta-blog-produto">
               <p>Monte seu estoque com desconto automático</p>
               <a href="__URL_PRODUTO__" class="botao-principal">Ver catálogo completo de medalhas →</a>
@@ -2034,7 +2072,7 @@ ARTIGOS_BLOG = {
         ),
         "produto_relacionado_id": None,
         "cta_endpoint": "catalogo_completo",
-        "imagem_manual": "img/banner-atacado.jpg",
+        "imagem_manual": "img/artigos/atacado-para-paroquias-e-eventos.jpg",
         "publicado_em": "2026-09-24",
         "corpo_html": """
             <p>Quem organiza a compra de lembrancinhas pra uma turma inteira de crismandos,
@@ -2067,6 +2105,10 @@ ARTIGOS_BLOG = {
             escolhida pelo grupo --, o desconto por quantidade continua valendo. Só reunir
             os pedidos de todo mundo no mesmo carrinho antes de fechar a compra.</p>
 
+            <figure>
+              <img src="/static/img/banner-atacado.jpg" alt="Caixas de pedido de atacado prontas pra envio" loading="lazy" decoding="async">
+            </figure>
+
             <div class="cta-blog-produto">
               <p>Organize a compra em quantidade do seu grupo</p>
               <a href="__URL_PRODUTO__" class="botao-principal">Ver catálogo completo de medalhas →</a>
@@ -2079,6 +2121,7 @@ ARTIGOS_BLOG = {
             "A novena completa de Santa Teresinha, dia a dia, pra rezar antes de sua festa em 1º de outubro."
         ),
         "produto_relacionado_id": "santa-teresinha",
+        "imagem_manual": "img/artigos/novena-teresinha-inicio.jpg",
         "publicado_em": "2026-09-24",
         "oculta_imagem_topo": True,
         "corpo_html": """
@@ -2158,6 +2201,7 @@ ARTIGOS_BLOG = {
             "A novena completa de São Francisco de Assis, com leitura bíblica sugerida pra cada um dos 9 dias, antes de sua festa em 4 de outubro."
         ),
         "produto_relacionado_id": "sao-francisco",
+        "imagem_manual": "img/artigos/novena-sao-francisco-inicio.jpg",
         "publicado_em": "2026-09-24",
         "oculta_imagem_topo": True,
         "corpo_html": """
@@ -2293,6 +2337,7 @@ e é morrendo que se vive para a vida eterna.</p>
             "A novena completa de Santa Teresa d'Ávila, com reflexão e oração pra cada um dos 9 dias, antes de sua festa em 15 de outubro."
         ),
         "produto_relacionado_id": "santa-teresa-davila",
+        "imagem_manual": "img/artigos/novena-teresa-davila-inicio.jpg",
         "publicado_em": "2026-09-24",
         "oculta_imagem_topo": True,
         "corpo_html": """
@@ -2624,6 +2669,7 @@ e é morrendo que se vive para a vida eterna.</p>
             "A novena completa de São João Paulo II, com trechos de suas homilias e encíclicas, antes de sua festa em 22 de outubro."
         ),
         "produto_relacionado_id": "sao-joao-paulo-ii",
+        "imagem_manual": "img/artigos/novena-jp2-inicio.jpg",
         "publicado_em": "2026-09-24",
         "oculta_imagem_topo": True,
         "corpo_html": """
@@ -2893,6 +2939,7 @@ para que sejamos dignos das promessas de Cristo. Amém!</p>
             "A novena completa de São Carlo Acutis, com uma frase marcante do santo em cada um dos 9 dias, tradicionalmente rezada de 3 a 11 de outubro."
         ),
         "produto_relacionado_id": "carlo-acutis",
+        "imagem_manual": "img/artigos/novena-carlo-acutis-inicio.jpg",
         "publicado_em": "2026-09-24",
         "oculta_imagem_topo": True,
         "corpo_html": """
@@ -3006,6 +3053,7 @@ para que sejamos dignos das promessas de Cristo. Amém!</p>
             "A novena completa de Nossa Senhora Aparecida, dia a dia, pra rezar antes de sua festa em 12 de outubro, padroeira do Brasil."
         ),
         "produto_relacionado_id": "nossa-senhora-aparecida",
+        "imagem_manual": "img/artigos/novena-aparecida-inicio.jpg",
         "publicado_em": "2026-09-24",
         "oculta_imagem_topo": True,
         "corpo_html": """
@@ -3206,17 +3254,18 @@ para que sejamos dignos das promessas de Cristo. Amém!</p>
             qualquer dia comum, com 15 ou 20 minutos.</p>
 
             <p>A diferença pra uma leitura comum é simples: você não lê a Bíblia atrás de
-            informação, lê atrás de um encontro. Não tem pressa, não tem meta de páginas.
-            Os quatro passos abaixo são um roteiro -- não uma fórmula rígida, e não existe
+            informação, lê atrás de um encontro. Não tem pressa, não tem meta de páginas. Os
+            quatro passos clássicos de Guigo II (mais um quinto, de aplicação prática, comum
+            na vivência de hoje) são um roteiro abaixo -- não uma fórmula rígida, e não existe
             jeito errado de fazer.</p>
 
             <div class="lectio-destaque">
               <p>Não existe Lectio Divina "perfeita". Se em algum dia só der pra fazer o
-              primeiro passo, já valeu -- o objetivo não é completar as quatro etapas,
+              primeiro passo, já valeu -- o objetivo não é completar as cinco etapas,
               é abrir espaço real pra ouvir.</p>
             </div>
 
-            <h2>Os 4 passos</h2>
+            <h2>Os 5 passos</h2>
 
             <div class="passo-guia">
               <span class="passo-guia-numero">1</span>
@@ -3271,6 +3320,21 @@ para que sejamos dignos das promessas de Cristo. Amém!</p>
               </div>
             </div>
 
+            <div class="passo-guia">
+              <span class="passo-guia-numero">5</span>
+              <div class="passo-guia-conteudo">
+                <h3>Actio — Ação</h3>
+                <p>Volte pro concreto: o que essa passagem pede que você faça, hoje ou nesta
+                semana? Não precisa ser grandioso -- pode ser um gesto pequeno, uma conversa
+                que você vem evitando, um pedido de perdão, um tempo maior de silêncio
+                amanhã.</p>
+                <p class="passo-guia-dica"><strong>Dica:</strong> anote o que você decidiu
+                concretizar -- num caderno, no celular, onde for. Depois de um tempo (uma
+                semana, um mês), releia o que anotou: dá pra perceber o progresso real que já
+                deu, e também quando é hora de mudar alguma coisa ou de buscar a confissão.</p>
+              </div>
+            </div>
+
             <figure>
               <img src="/static/img/artigos/lectio-divina-maos-durer.jpg" alt="Estudo de mãos em oração, Albrecht Dürer, 1508" loading="lazy" decoding="async">
               <figcaption>Estudo de mãos em oração, Albrecht Dürer, 1508 (Wikimedia Commons, domínio público).</figcaption>
@@ -3292,7 +3356,7 @@ para que sejamos dignos das promessas de Cristo. Amém!</p>
               <a href="__URL_PRODUTO__" class="botao-principal">Pegar a leitura do dia certinha (e-book grátis) →</a>
             </div>
 
-            <p>Com o tempo, os quatro passos deixam de ser uma lista pra seguir e viram só
+            <p>Com o tempo, os cinco passos deixam de ser uma lista pra seguir e viram só
             um jeito natural de estar com a Palavra. O importante não é fazer certo -- é
             voltar a fazer, amanhã de novo.</p>
         """,
