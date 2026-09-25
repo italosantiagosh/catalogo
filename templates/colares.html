@@ -2,7 +2,7 @@
 
 {% block titulo %}Colares em banhado a ouro — peças exclusivas do varejo | Nove de Julho{% endblock %}
 {% block meta_descricao %}Colares em banhado a ouro, peças exclusivas do varejo (sem desconto de atacado): Sagrado Coração de Jesus e mais devoções, prontos pra usar ou presentear.{% endblock %}
-{% block og_imagem %}{{ url_for('static', filename=colares[0].imagem_frente) if colares else '' }}{% endblock %}
+{% block og_imagem %}{{ url_for('static', filename=colares[0].imagens[0].src) if colares else '' }}{% endblock %}
 
 {% block conteudo %}
   <script type="application/ld+json">{{ dados_breadcrumb | tojson }}</script>
@@ -25,15 +25,18 @@
 
       <div class="peca-carrossel" data-peca-carrossel>
         <div class="peca-carrossel-trilho">
-          <img class="peca-carrossel-slide" data-peca-zoom src="{{ url_for('static', filename=colar.imagem_frente) }}" alt="{{ colar.nome }}" loading="lazy" decoding="async">
-          <img class="peca-carrossel-slide" data-peca-zoom src="{{ url_for('static', filename=colar.imagem_detalhe) }}" alt="{{ colar.nome }} — detalhe do pingente" loading="lazy" decoding="async">
-          <img class="peca-carrossel-slide" data-peca-zoom src="{{ url_for('static', filename=colar.imagem_uso) }}" alt="{{ colar.nome }} — sendo usado" loading="lazy" decoding="async">
+          {% for imagem in colar.imagens %}
+            <img class="peca-carrossel-slide" data-peca-zoom src="{{ url_for('static', filename=imagem.src) }}"
+              alt="{{ colar.nome }}{{ ' — ' + imagem.rotulo if imagem.rotulo else '' }}" loading="lazy" decoding="async">
+          {% endfor %}
         </div>
-        <div class="peca-carrossel-pontos">
-          <span class="ponto ativo"></span>
-          <span class="ponto"></span>
-          <span class="ponto"></span>
-        </div>
+        {% if colar.imagens | length > 1 %}
+          <div class="peca-carrossel-pontos">
+            {% for imagem in colar.imagens %}
+              <span class="ponto{{ ' ativo' if loop.first else '' }}"></span>
+            {% endfor %}
+          </div>
+        {% endif %}
       </div>
 
       {% if colar.total_avaliacoes > 0 %}
@@ -61,7 +64,7 @@
 
       <button type="button" class="botao-carrinho colar-btn-adicionar"
         data-colar="{{ colar.id }}" data-nome="{{ colar.nome }}" data-preco="{{ colar.preco }}"
-        data-chave-preco="{{ colar.chave_preco }}" data-imagem="{{ url_for('static', filename=colar.imagem_frente) }}">
+        data-chave-preco="{{ colar.chave_preco }}" data-imagem="{{ url_for('static', filename=colar.imagens[0].src) }}">
         Adicionar ao carrinho
       </button>
 

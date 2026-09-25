@@ -176,7 +176,7 @@
         <div class="destaques-linha">
           {% for colar in colares %}
             <a class="destaque-card" href="{{ url_for('colares') }}#colar-{{ colar.id }}">
-              <img src="{{ url_for('static', filename=colar.imagem_frente) }}" alt="{{ colar.nome }}" loading="lazy" decoding="async" width="224" height="224">
+              <img src="{{ url_for('static', filename=colar.imagens[0].src) }}" alt="{{ colar.nome }}" loading="lazy" decoding="async" width="224" height="224">
               <span>{{ colar.nome }} — {{ colar.preco | preco }}</span>
             </a>
           {% endfor %}
@@ -193,7 +193,7 @@
         <div class="destaques-linha">
           {% for pulseira in pulseiras %}
             <a class="destaque-card" href="{{ url_for('pulseiras') }}#pulseira-{{ pulseira.id }}">
-              <img src="{{ url_for('static', filename=pulseira.imagem_frente) }}" alt="{{ pulseira.nome }}" loading="lazy" decoding="async" width="224" height="224">
+              <img src="{{ url_for('static', filename=pulseira.imagens[0].src) }}" alt="{{ pulseira.nome }}" loading="lazy" decoding="async" width="224" height="224">
               <span>{{ pulseira.nome }} — {{ pulseira.preco | preco }}</span>
             </a>
           {% endfor %}

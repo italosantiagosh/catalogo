@@ -1513,7 +1513,7 @@ def _itens_peca_varejo_com_avaliacoes(itens: list[dict], rota: str) -> list[dict
         avaliacoes_aprovadas = listar_avaliacoes_aprovadas(item["id"])
         media_avaliacoes, total_avaliacoes = media_e_total_aprovadas(item["id"])
         url_item = url_for(rota, _external=True)
-        imagem_url = url_for("static", filename=item["imagem_frente"], _external=True)
+        imagem_url = url_for("static", filename=item["imagens"][0]["src"], _external=True)
         dados_produto = {
             "@context": "https://schema.org",
             "@type": "Product",
@@ -1808,10 +1808,10 @@ def _produto_para_avaliar(produto_id: str) -> dict | None:
             return {"id": p["id"], "nome": p["nome"], "imagem": p["thumbnail"]}
     colar = colar_por_id(produto_id)
     if colar is not None:
-        return {"id": colar["id"], "nome": colar["nome"], "imagem": colar["imagem_frente"]}
+        return {"id": colar["id"], "nome": colar["nome"], "imagem": colar["imagens"][0]["src"]}
     pulseira = pulseira_por_id(produto_id)
     if pulseira is not None:
-        return {"id": pulseira["id"], "nome": pulseira["nome"], "imagem": pulseira["imagem_frente"]}
+        return {"id": pulseira["id"], "nome": pulseira["nome"], "imagem": pulseira["imagens"][0]["src"]}
     return None
 
 

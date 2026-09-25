@@ -81,6 +81,8 @@ GRUPO_DE_CHAVE = {
     "cruz_terco_ouro_velho": "cruz_terco",
     "cruz_terco_dourado": "cruz_terco",
     "colar_sagrado_coracao_de_jesus": "colares",
+    "colar_imaculado_coracao_maria": "colares",
+    "colar_castissimo_coracao_sao_jose": "colares",
     "pulseira_consagracao_nossa_senhora": "pulseiras",
 }
 CHAVES_PRECO = tuple(GRUPO_DE_CHAVE)

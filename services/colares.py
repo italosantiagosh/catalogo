@@ -7,9 +7,12 @@ data/produtos.json). Isolada no proprio GRUPO "colares" do motor de preco
 um preco fixo que nao deve nem sofrer nem causar desconto de outro grupo.
 
 So entra aqui quando tem FOTO DE VERDADE da peca -- "publicado: False" fica
-fora da home/pagina /colares ate a foto chegar (ver conversa: Nossa Senhora
-e Sao Jose ainda nao tem nenhuma foto no Drive, so a descricao pretendida).
-"""
+fora da home/pagina /colares ate a foto chegar. "imagens" e´ uma lista (1 a
+3 fotos) -- Sagrado Coracao de Jesus tem 3 (frente/detalhe/uso), Castissimo
+Coracao de Sao Jose e Imaculado Coracao de Maria (fotos mandadas em
+2026-09-25, depois do pedido inicial) tem so 1 cada por enquanto -- o
+carrossel (templates/colares.html) se adapta ao numero de fotos disponiveis,
+sem inventar foto repetida so pra "completar" 3."""
 
 from __future__ import annotations
 
@@ -19,9 +22,11 @@ COLARES = [
         "nome": "Colar Sagrado Coração de Jesus",
         "chave_preco": "colar_sagrado_coracao_de_jesus",
         "publicado": True,
-        "imagem_frente": "img/produtos/colar_sagrado_coracao_de_jesus_frente.jpg",
-        "imagem_detalhe": "img/produtos/colar_sagrado_coracao_de_jesus_detalhe.jpg",
-        "imagem_uso": "img/produtos/colar_sagrado_coracao_de_jesus_uso.jpg",
+        "imagens": [
+            {"src": "img/produtos/colar_sagrado_coracao_de_jesus_frente.jpg", "rotulo": None},
+            {"src": "img/produtos/colar_sagrado_coracao_de_jesus_detalhe.jpg", "rotulo": "detalhe do pingente"},
+            {"src": "img/produtos/colar_sagrado_coracao_de_jesus_uso.jpg", "rotulo": "sendo usado"},
+        ],
         "descricao_curta": "Pingente de coração vermelho com coroa de espinhos e cruz, banhado a ouro.",
         "descricao": [
             "O Sagrado Coração de Jesus é o amor de Cristo entregue por inteiro — "
@@ -35,28 +40,43 @@ COLARES = [
         "medidas": "Pingente ≈ 16mm x 12mm · Corrente ≈ 40cm + 5cm de extensor",
     },
     {
-        "id": "nossa-senhora",
-        "nome": "Colar Nossa Senhora (rosa)",
-        "chave_preco": None,
-        "publicado": False,
-        "imagem_frente": None,
-        "imagem_detalhe": None,
-        "imagem_uso": None,
-        "descricao_curta": "Pingente de Nossa Senhora em cristal rosa, banhado a ouro.",
-        "descricao": [],
-        "medidas": "",
+        "id": "imaculado-coracao-de-maria",
+        "nome": "Colar Imaculado Coração de Maria",
+        "chave_preco": "colar_imaculado_coracao_maria",
+        "publicado": True,
+        "imagens": [
+            {"src": "img/produtos/colar_imaculado_coracao_maria_frente.jpg", "rotulo": None},
+        ],
+        "descricao_curta": "Pingente de coração rosa trespassado por espada, banhado a ouro.",
+        "descricao": [
+            "O Imaculado Coração de Maria é sinal do amor puro e da entrega total "
+            "de Nossa Senhora a Deus — o coração rosa trespassado pela espada "
+            "lembra a profecia de Simeão (\"uma espada trespassará também a tua "
+            "alma\"), e a dor que Maria viveu junto de Jesus.",
+            "Peça delicada e discreta, banhada a ouro, pensada pra quem vive a "
+            "consagração a Nossa Senhora no dia a dia — ou pra presentear alguém "
+            "com essa devoção.",
+        ],
+        "medidas": "Pingente ≈ 16mm x 12mm · Corrente ≈ 40cm + 5cm de extensor",
     },
     {
-        "id": "sao-jose",
-        "nome": "Colar São José",
-        "chave_preco": None,
-        "publicado": False,
-        "imagem_frente": None,
-        "imagem_detalhe": None,
-        "imagem_uso": None,
-        "descricao_curta": "Pingente de São José, banhado a ouro.",
-        "descricao": [],
-        "medidas": "",
+        "id": "castissimo-coracao-de-sao-jose",
+        "nome": "Colar Castíssimo Coração de São José",
+        "chave_preco": "colar_castissimo_coracao_sao_jose",
+        "publicado": True,
+        "imagens": [
+            {"src": "img/produtos/colar_castissimo_coracao_sao_jose_frente.jpg", "rotulo": None},
+        ],
+        "descricao_curta": "Pingente de coração vermelho com ramo de lírio, banhado a ouro.",
+        "descricao": [
+            "O Castíssimo Coração de São José representa a pureza e a fidelidade "
+            "do esposo de Maria e pai adotivo de Jesus — o ramo de lírio junto ao "
+            "coração é o símbolo tradicional da castidade de São José.",
+            "Peça delicada e discreta, banhada a ouro, pensada pra quem tem "
+            "devoção a São José — patrono das famílias, dos trabalhadores e da "
+            "Igreja — ou pra presentear alguém com essa proteção.",
+        ],
+        "medidas": "Pingente ≈ 16mm x 12mm · Corrente ≈ 40cm + 5cm de extensor",
     },
 ]
 

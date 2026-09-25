@@ -29,20 +29,24 @@ def _limpa_avaliacoes_de_teste():
     conexao.close()
 
 
-def test_so_sagrado_coracao_esta_publicado():
+def test_todos_os_colares_estao_publicados():
     publicados = colares_publicados()
-    assert [c["id"] for c in publicados] == ["sagrado-coracao-de-jesus"]
+    assert {c["id"] for c in publicados} == {
+        "sagrado-coracao-de-jesus",
+        "imaculado-coracao-de-maria",
+        "castissimo-coracao-de-sao-jose",
+    }
     ids_todos = {c["id"] for c in COLARES}
-    assert ids_todos == {"sagrado-coracao-de-jesus", "nossa-senhora", "sao-jose"}
+    assert ids_todos == {c["id"] for c in publicados}
 
 
-def test_pagina_colares_mostra_o_publicado_e_omite_os_pendentes(client):
+def test_pagina_colares_mostra_todas_as_pecas_publicadas(client):
     resposta = client.get("/colares")
     body = resposta.get_data(as_text=True)
     assert resposta.status_code == 200
     assert "Colar Sagrado Coração de Jesus" in body
-    assert "Nossa Senhora" not in body
-    assert "São José" not in body
+    assert "Colar Imaculado Coração de Maria" in body
+    assert "Colar Castíssimo Coração de São José" in body
     assert "R$ 97,00" in body
 
 
@@ -94,15 +98,16 @@ def test_api_calcular_carrinho_aceita_colar(client):
 def test_pagina_colares_tem_json_ld_valido_por_peca(client):
     body = client.get("/colares").get_data(as_text=True)
     blocos = re.findall(r'<script type="application/ld\+json">(.*?)</script>', body, re.S)
-    assert len(blocos) >= 2  # breadcrumb + pelo menos 1 produto
+    assert len(blocos) >= 4  # breadcrumb + 3 produtos
     dados_produto = [json.loads(b) for b in blocos if '"@type": "Product"' in b]
-    assert len(dados_produto) == 1
-    assert dados_produto[0]["offers"]["price"] == "97.00"
+    assert len(dados_produto) == 3
+    assert all(d["offers"]["price"] == "97.00" for d in dados_produto)
 
 
 def test_avaliar_pagina_isolada_aceita_colar(client):
     assert client.get("/avaliar/sagrado-coracao-de-jesus").status_code == 200
-    assert client.get("/avaliar/nossa-senhora").status_code == 404  # nao publicado ainda
+    assert client.get("/avaliar/imaculado-coracao-de-maria").status_code == 200
+    assert client.get("/avaliar/colar-que-nao-existe").status_code == 404
 
 
 def test_envia_e_lista_avaliacao_de_colar(client):
@@ -123,9 +128,9 @@ def test_envia_e_lista_avaliacao_de_colar(client):
     assert "Amei!" in body
 
 
-def test_avaliacao_de_colar_nao_publicado_e_recusada(client):
+def test_avaliacao_de_colar_inexistente_e_recusada(client):
     resposta = client.post(
         "/api/avaliacoes",
-        data={"produto_id": "nossa-senhora", "nome_cliente": "Ana", "nota": "5"},
+        data={"produto_id": "colar-que-nao-existe", "nome_cliente": "Ana", "nota": "5"},
     )
     assert resposta.status_code == 404

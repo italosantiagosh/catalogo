@@ -2,7 +2,7 @@
 
 {% block titulo %}Pulseiras em banhado a ouro — peças exclusivas do varejo | Nove de Julho{% endblock %}
 {% block meta_descricao %}Pulseiras em banhado a ouro, peças exclusivas do varejo (sem desconto de atacado): Pulseira de Consagração a Nossa Senhora e mais devoções.{% endblock %}
-{% block og_imagem %}{{ url_for('static', filename=pulseiras[0].imagem_frente) if pulseiras else '' }}{% endblock %}
+{% block og_imagem %}{{ url_for('static', filename=pulseiras[0].imagens[0].src) if pulseiras else '' }}{% endblock %}
 
 {% block conteudo %}
   <script type="application/ld+json">{{ dados_breadcrumb | tojson }}</script>
@@ -25,15 +25,18 @@
 
       <div class="peca-carrossel" data-peca-carrossel>
         <div class="peca-carrossel-trilho">
-          <img class="peca-carrossel-slide" data-peca-zoom src="{{ url_for('static', filename=pulseira.imagem_frente) }}" alt="{{ pulseira.nome }}" loading="lazy" decoding="async">
-          <img class="peca-carrossel-slide" data-peca-zoom src="{{ url_for('static', filename=pulseira.imagem_detalhe) }}" alt="{{ pulseira.nome }} — detalhe" loading="lazy" decoding="async">
-          <img class="peca-carrossel-slide" data-peca-zoom src="{{ url_for('static', filename=pulseira.imagem_uso) }}" alt="{{ pulseira.nome }} — sendo usada" loading="lazy" decoding="async">
+          {% for imagem in pulseira.imagens %}
+            <img class="peca-carrossel-slide" data-peca-zoom src="{{ url_for('static', filename=imagem.src) }}"
+              alt="{{ pulseira.nome }}{{ ' — ' + imagem.rotulo if imagem.rotulo else '' }}" loading="lazy" decoding="async">
+          {% endfor %}
         </div>
-        <div class="peca-carrossel-pontos">
-          <span class="ponto ativo"></span>
-          <span class="ponto"></span>
-          <span class="ponto"></span>
-        </div>
+        {% if pulseira.imagens | length > 1 %}
+          <div class="peca-carrossel-pontos">
+            {% for imagem in pulseira.imagens %}
+              <span class="ponto{{ ' ativo' if loop.first else '' }}"></span>
+            {% endfor %}
+          </div>
+        {% endif %}
       </div>
 
       {% if pulseira.total_avaliacoes > 0 %}
@@ -61,7 +64,7 @@
 
       <button type="button" class="botao-carrinho pulseira-btn-adicionar"
         data-pulseira="{{ pulseira.id }}" data-nome="{{ pulseira.nome }}" data-preco="{{ pulseira.preco }}"
-        data-chave-preco="{{ pulseira.chave_preco }}" data-imagem="{{ url_for('static', filename=pulseira.imagem_frente) }}">
+        data-chave-preco="{{ pulseira.chave_preco }}" data-imagem="{{ url_for('static', filename=pulseira.imagens[0].src) }}">
         Adicionar ao carrinho
       </button>
 

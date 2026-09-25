@@ -10,7 +10,9 @@ Fotos baixadas da propria pagina do fornecedor que a usuaria revende
 (lojaparresia.com.br/pulseira-de-consagracao-a-nossa-senhora-com-medalha-
 milagrosa-banhada-a-ouro/p, mandada na conversa) -- mesma origem/mesmo
 criterio ja usado pro Colar Sagrado Coracao de Jesus (fotos de verdade da
-peca fisica revendida, nao fotos genericas).
+peca fisica revendida, nao fotos genericas). "imagens" e´ uma lista (1 a 3
+fotos, ver services/colares.py -- mesmo padrao, pra o carrossel se adaptar
+ao numero de fotos disponiveis de cada peca).
 """
 
 from __future__ import annotations
@@ -21,9 +23,11 @@ PULSEIRAS = [
         "nome": "Pulseira de Consagração a Nossa Senhora",
         "chave_preco": "pulseira_consagracao_nossa_senhora",
         "publicado": True,
-        "imagem_frente": "img/produtos/pulseira_consagracao_nossa_senhora_frente.jpg",
-        "imagem_detalhe": "img/produtos/pulseira_consagracao_nossa_senhora_detalhe.jpg",
-        "imagem_uso": "img/produtos/pulseira_consagracao_nossa_senhora_uso.jpg",
+        "imagens": [
+            {"src": "img/produtos/pulseira_consagracao_nossa_senhora_frente.jpg", "rotulo": None},
+            {"src": "img/produtos/pulseira_consagracao_nossa_senhora_detalhe.jpg", "rotulo": "detalhe"},
+            {"src": "img/produtos/pulseira_consagracao_nossa_senhora_uso.jpg", "rotulo": "sendo usada"},
+        ],
         "descricao_curta": "Pulseira com medalha milagrosa e berloque de coração, banhada a ouro.",
         "descricao": [
             "Inspirada no método de consagração a Nossa Senhora de São Luís Maria "
