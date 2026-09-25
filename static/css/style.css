@@ -3413,6 +3413,28 @@ body.tem-barra-fixa-comprar main {
   height: 150px;
 }
 
+/* Upsell da Linha Premium no carrinho (pedido em 2026-09-25, 3a parte:
+   "a mesma linha de cards que tem na home, coloca no carrinho, menor
+   talvez") -- mesmo scroll horizontal da home, card um pouco menor (84px
+   em vez de 108px) pra ficar claramente secundario, sem competir com o
+   resumo do pedido logo abaixo. */
+.destaques-carrinho {
+  margin-bottom: 20px;
+}
+
+.destaques-linha-carrinho .destaque-card {
+  width: 84px;
+}
+
+.destaques-linha-carrinho .destaque-card img {
+  height: 84px;
+}
+
+.destaques-linha-carrinho .destaque-card span {
+  font-size: 0.62rem;
+  padding: 6px;
+}
+
 /* Sugestoes pra completar o pedido minimo dentro do proprio popup (ver
    conversa 2026-09-25) -- reaproveita o .destaque-card de cima, so que
    em <button> em vez de <a> (adiciona ao carrinho na hora, nao navega). */

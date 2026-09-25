@@ -1340,6 +1340,19 @@ def _itens_combos_do_grid() -> list[dict]:
     ]
 
 
+def _linha_premium_pecas() -> list[dict]:
+    """Colares + pulseiras + relicarios publicados, numa linha so, cada
+    um com preco (ver services/colares.py, pulseiras.py, relicarios.py)
+    -- usado tanto na home (destaques) quanto no carrinho (upsell, pedido
+    em 2026-09-25 3a parte: "a mesma linha de cards que tem na home,
+    coloca no carrinho")."""
+    return (
+        [{**c, "preco": preco_varejo(c["chave_preco"])} for c in colares_publicados()]
+        + [{**p, "preco": preco_varejo(p["chave_preco"])} for p in pulseiras_publicadas()]
+        + [{**r, "preco": preco_varejo(r["chave_preco"])} for r in relicarios_publicados()]
+    )
+
+
 @app.route("/", methods=["GET"])
 def index():
     """Home -- landing page comercial (hero, vantagens, destaques, banners),
@@ -1392,11 +1405,7 @@ def index():
         # linha so, os colares, pulseiras e relicários") -- 1 unica secao
         # na home com as 3 categorias juntas, cada card leva direto pra
         # pagina de produto individual da peca (ver linha_premium_item).
-        linha_premium_pecas=(
-            [{**c, "preco": preco_varejo(c["chave_preco"])} for c in colares_publicados()]
-            + [{**p, "preco": preco_varejo(p["chave_preco"])} for p in pulseiras_publicadas()]
-            + [{**r, "preco": preco_varejo(r["chave_preco"])} for r in relicarios_publicados()]
-        ),
+        linha_premium_pecas=_linha_premium_pecas(),
     )
 
 
@@ -1993,6 +2002,11 @@ def carrinho():
         "carrinho.html",
         producao_dias_uteis=PRODUCAO_DIAS_UTEIS,
         faixas_producao_dias_uteis=FAIXAS_PRODUCAO_DIAS_UTEIS,
+        # Upsell da Linha Premium (pedido em 2026-09-25, 3a parte: "a
+        # mesma linha de cards que tem na home, coloca no carrinho") --
+        # mesma lista/mesmos cards da home, so que menor (ver .destaques-
+        # linha-carrinho em style.css).
+        linha_premium_pecas=_linha_premium_pecas(),
     )
 
 
