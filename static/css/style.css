@@ -1833,6 +1833,146 @@ fieldset.cores legend {
   margin-bottom: 4px;
 }
 
+/* Upload de foto pra personalizar um relicario (pedido em 2026-09-25:
+   "Colocar upload de imagem, mas não gerar previa(não criei modelo)") --
+   so mostra a propria foto enviada como previa (nao um mockup do
+   produto composto, ver static/js/relicarios.js), com aviso deixando
+   claro que a confirmacao/previa de verdade vem depois pelo WhatsApp. */
+.personalizacao-bloco {
+  margin: 4px 0 16px;
+  padding: 14px;
+  border: 1px dashed var(--border);
+  border-radius: 12px;
+  background: var(--card);
+}
+
+.personalizacao-label {
+  display: block;
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.personalizacao-input {
+  font-size: 0.85rem;
+  max-width: 100%;
+}
+
+.personalizacao-preview {
+  margin-top: 10px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.personalizacao-preview img {
+  width: 64px;
+  height: 64px;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+}
+
+.personalizacao-remover {
+  border: none;
+  background: none;
+  color: var(--erro-texto);
+  font-size: 0.8rem;
+  cursor: pointer;
+  text-decoration: underline;
+  padding: 0;
+}
+
+.personalizacao-aviso {
+  margin: 10px 0 0;
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+
+/* Card de upsell da corrente companheira (relicario coracao ouro/prata,
+   ver services/relicarios.py) -- "aviso" na propria pagina do produto,
+   preco cheio (sem desconto de combo, ver conversa 2026-09-25). */
+.compre-junto-card {
+  margin: 4px 0 16px;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--gold-soft);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.compre-junto-card img {
+  width: 56px;
+  height: 56px;
+  object-fit: cover;
+  border-radius: 8px;
+  flex-shrink: 0;
+}
+
+.compre-junto-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.compre-junto-info label {
+  font-size: 0.88rem;
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  cursor: pointer;
+}
+
+.compre-junto-checkbox {
+  margin-top: 3px;
+  flex-shrink: 0;
+}
+
+.compre-junto-preco {
+  font-size: 0.82rem;
+  color: var(--gold-texto-claro);
+  font-weight: 600;
+}
+
+/* Popup de upsell da corrente logo apos adicionar o relicario no
+   carrinho (ver conversa: "aparecer popup upsell quando adicionar o
+   relicário no carrinho") -- reaproveita o mesmo shell .imagem-modal /
+   .imagem-modal-caixa ja usado no zoom de foto e nos avisos do carrinho. */
+.upsell-modal-conteudo {
+  text-align: center;
+}
+
+.upsell-modal-conteudo img {
+  width: 120px;
+  height: 120px;
+  object-fit: cover;
+  border-radius: 10px;
+  margin: 0 auto 12px;
+  display: block;
+}
+
+.upsell-modal-titulo {
+  font-family: var(--fonte-titulo);
+  font-size: 1.2rem;
+  margin: 0 0 4px;
+}
+
+.upsell-modal-preco {
+  font-weight: 700;
+  color: var(--ink);
+  margin: 4px 0 16px;
+}
+
+.upsell-modal-botoes {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
 .quantidade label {
   display: block;
   font-size: 0.85rem;

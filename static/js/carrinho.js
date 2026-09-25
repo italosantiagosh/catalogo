@@ -269,6 +269,15 @@ const GRUPO_DE_CHAVE = {
   cruz_terco_prata: 'cruz_terco',
   cruz_terco_ouro_velho: 'cruz_terco',
   cruz_terco_dourado: 'cruz_terco',
+  colar_sagrado_coracao_de_jesus: 'colares',
+  colar_imaculado_coracao_maria: 'colares',
+  colar_castissimo_coracao_sao_jose: 'colares',
+  pulseira_consagracao_nossa_senhora: 'pulseiras',
+  relicario_coracao_ouro: 'relicarios',
+  relicario_redondo_prata: 'relicarios',
+  relicario_oval_familia: 'relicarios',
+  corrente_veneziana_ouro: 'correntes',
+  corrente_veneziana_prata: 'correntes',
 };
 
 const GRUPO_LABEL = {
@@ -276,6 +285,14 @@ const GRUPO_LABEL = {
   chaveiro: 'chaveiros',
   duas_faces: 'medalhas/entremeios de 2 lados',
 };
+
+// Grupos de preco FIXO, sem faixa de atacado nenhuma (ver GRUPO_DE_CHAVE
+// em services/pricing.py) -- pulados na barra persistente abaixo, senao
+// mostra "🎉 melhor faixa (R$ 0,00/un)" pra eles (bug real: GRUPO_DE_CHAVE
+// acima nao tinha as chaves de colares/pulseiras, entao itensDoGrupo
+// ficava vazio e o preco caia pra R$0,00 -- so cruz_terco era pulado
+// antes, mesmo padrao/lista de static/js/carrinho_pagina.js:GRUPOS_SEM_ATACADO).
+const GRUPOS_SEM_ATACADO = ['cruz_terco', 'colares', 'pulseiras', 'relicarios', 'correntes'];
 
 function _blocoBarraGrupo(nomeGrupo, grupo, itensDoGrupo) {
   const label = GRUPO_LABEL[nomeGrupo] || nomeGrupo;
@@ -335,7 +352,7 @@ async function carrinhoAtualizarBarraPersistente() {
       // "melhor faixa" pra ela sugeriria um desconto que nao existe
       // (bug real: aparecia "melhor faixa de cruz_terco R$0,00/un",
       // ver conversa/print).
-      if (nomeGrupo === 'cruz_terco') continue;
+      if (GRUPOS_SEM_ATACADO.includes(nomeGrupo)) continue;
       const grupo = dados.grupos[nomeGrupo];
       if (grupo.quantidade_total === 0) continue;
       const itensDoGrupo = dados.itens.filter((i) => GRUPO_DE_CHAVE[i.chave_preco] === nomeGrupo);

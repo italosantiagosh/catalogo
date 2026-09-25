@@ -190,17 +190,18 @@
     medalha: 'Medalha', entremeio: 'Entremeio', chaveiro: 'Chaveiro',
     medalha_2lados: 'Medalha 2 lados', entremeio_2lados: 'Entremeio 2 lados',
     chaveiro_2lados: 'Chaveiro 2 lados', cruz_terco: 'Cruz para terço', colar: 'Colar',
-    pulseira: 'Pulseira',
+    pulseira: 'Pulseira', relicario: 'Relicário', corrente: 'Corrente',
   };
   const GRUPO_LABEL = {
     padrao: 'medalhas/entremeios', chaveiro: 'chaveiros', duas_faces: 'medalhas/entremeios de 2 lados',
     cruz_terco: 'cruzes para terço', colares: 'colares', pulseiras: 'pulseiras',
+    relicarios: 'relicários', correntes: 'correntes',
   };
   // Grupos com preco FIXO, sem faixa de atacado nenhuma (ver
   // GRUPO_DE_CHAVE em services/pricing.py) -- nao faz sentido mostrar
   // barra de progresso, "faltam X" ou toast de "desconto desbloqueado"
   // pra eles (ver conversa 2026-09-11/2026-09-25).
-  const GRUPOS_SEM_ATACADO = ['cruz_terco', 'colares', 'pulseiras'];
+  const GRUPOS_SEM_ATACADO = ['cruz_terco', 'colares', 'pulseiras', 'relicarios', 'correntes'];
   // mesmo texto usado em app.py (FRETE_RETIRADA_DESCRICAO) pra detectar
   // esse tipo de frete e trocar os rotulos da timeline ("enviado" nao
   // faz sentido pra quem vai retirar -- ver conversa).
@@ -302,6 +303,15 @@
       // mesmo criterio do 'colar' acima -- ver services/pulseiras.py.
       return FORMATO_LABEL.pulseira;
     }
+    if (formato === 'relicario') {
+      // mesmo criterio do 'colar' acima -- ver services/relicarios.py.
+      return FORMATO_LABEL.relicario;
+    }
+    if (formato === 'corrente') {
+      // corrente de upsell (adicionada junto do relicario), sem pagina
+      // propria -- ver services/relicarios.py.
+      return FORMATO_LABEL.corrente;
+    }
     return `${FORMATO_LABEL.medalha} · ${TAMANHO_LABEL[item.tamanho] || item.tamanho}`;
   }
 
@@ -390,7 +400,13 @@
             : 'Foto: já anexada ao pedido, disponível no painel';
           return `${numero}. Personalizada\n${detalhe}\nQuantidade: ${item.quantidade}\n${notaFoto}`;
         }
-        if (item.formato === 'cruz_terco' || item.formato === 'colar' || item.formato === 'pulseira') {
+        if (item.formato === 'relicario' && item.personalizavel) {
+          const notaFotoRelicario = item.personalizacaoFoto
+            ? 'Foto: já anexada ao pedido, disponível no painel'
+            : 'Foto: ainda não enviada -- pode enviar nesta conversa';
+          return `${numero}. ${item.produtoNome}\n${detalhe}\nQuantidade: ${item.quantidade}\n${notaFotoRelicario}`;
+        }
+        if (item.formato === 'cruz_terco' || item.formato === 'colar' || item.formato === 'pulseira' || item.formato === 'relicario' || item.formato === 'corrente') {
           return `${numero}. ${item.produtoNome}\n${detalhe}\nQuantidade: ${item.quantidade}`;
         }
         return `${numero}. ${item.produtoNome}\nModelo: ${item.modeloId}\n${detalhe}\nQuantidade: ${item.quantidade}`;
@@ -478,6 +494,11 @@
     // cruz_terco acima, senao cairia no /produto/<id> generico (404).
     if (item.formato === 'colar') return '/colares';
     if (item.formato === 'pulseira') return '/pulseiras';
+    if (item.formato === 'relicario') return '/relicarios';
+    // corrente de upsell (sem pagina propria, ver services/relicarios.py)
+    // leva pra /relicarios tambem -- e´ onde ela aparece (aviso "compre
+    // junto"), nao tem produto proprio pra linkar.
+    if (item.formato === 'corrente') return '/relicarios';
     if (item.tipo === 'catalogo' && item.produtoId) return `/produto/${item.produtoId}`;
     if (item.tipo === 'personalizada') return '/personalizada';
     return null;
@@ -486,7 +507,7 @@
   function linhaItem(item, calculo) {
     const linha = document.createElement('article');
     linha.className = 'item-carrinho';
-    const subtitulo = item.tipo === 'personalizada' || item.formato === 'cruz_terco' || item.formato === 'colar' || item.formato === 'pulseira'
+    const subtitulo = item.tipo === 'personalizada' || item.formato === 'cruz_terco' || item.formato === 'colar' || item.formato === 'pulseira' || item.formato === 'relicario' || item.formato === 'corrente'
       ? subtituloEditavelHtml(item)
       : `${item.modeloNome} &middot; ${subtituloEditavelHtml(item)}`;
     let avisoFoto = '';
@@ -497,6 +518,14 @@
       avisoFoto = semFoto
         ? '<p class="item-aviso-foto">📷 Foto pendente -- enviar pelo WhatsApp</p>'
         : '<p class="item-aviso-foto">✅ Foto salva junto com o pedido</p>';
+    } else if (item.formato === 'relicario' && item.personalizavel) {
+      // relicario personalizavel (ver services/relicarios.py) -- mesmo
+      // aviso da personalizada acima, so que a foto e´ OPCIONAL aqui (o
+      // cliente pode preferir mandar depois pelo WhatsApp, ver conversa:
+      // "não gerar previa... avisar que entrarei em contato").
+      avisoFoto = item.personalizacaoFoto
+        ? '<p class="item-aviso-foto">✅ Foto salva junto com o pedido</p>'
+        : '<p class="item-aviso-foto">📷 Foto ainda não enviada -- pode mandar pelo WhatsApp depois</p>';
     }
     const imagemInner = item.duasFaces
       ? `<div class="item-imagem-duas-faces">

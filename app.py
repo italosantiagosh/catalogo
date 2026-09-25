@@ -280,6 +280,7 @@ from services.gerador.config import IMAGE_EXTENSIONS, MEDAL_SPECS
 from services.pricing import CHAVES_PRECO, calcular_carrinho, pedido_minimo_reais, preco_varejo, tabela_de_faixas
 from services.colares import colares_publicados, colar_por_id
 from services.pulseiras import pulseiras_publicadas, pulseira_por_id
+from services.relicarios import relicarios_publicados, relicario_por_id
 
 app = Flask(__name__)
 app.config["MAX_CONTENT_LENGTH"] = 60 * 1024 * 1024  # 60MB no total do upload
@@ -1049,6 +1050,7 @@ def sitemap_xml():
         (url_for("cruz_para_terco"), "monthly", "0.6"),
         (url_for("colares"), "monthly", "0.6"),
         (url_for("pulseiras"), "monthly", "0.6"),
+        (url_for("relicarios"), "monthly", "0.6"),
         (url_for("liturgia_outubro"), "monthly", "0.6"),
     ]
     entradas += [(url_for("landing_pagina", slug=s), "monthly", "0.6") for s in PAGINAS_LANDING]
@@ -1364,6 +1366,7 @@ def index():
         cores_cruz_terco=_cores_cruz_terco(),
         colares=[{**c, "preco": preco_varejo(c["chave_preco"])} for c in colares_publicados()],
         pulseiras=[{**p, "preco": preco_varejo(p["chave_preco"])} for p in pulseiras_publicadas()],
+        relicarios=[{**r, "preco": preco_varejo(r["chave_preco"])} for r in relicarios_publicados()],
     )
 
 
@@ -1621,6 +1624,33 @@ def pulseiras():
     )
 
 
+@app.route("/relicarios", methods=["GET"])
+def relicarios():
+    """Relicarios -- peca EXCLUSIVA DO VAREJO (pedido em 2026-09-25, mesma
+    conversa/padrao de /colares e /pulseiras acima). Dois modelos sao
+    personalizaveis com foto do cliente (ver services/relicarios.py) e tem
+    uma CORRENTE companheira pra upsell -- essa corrente NAO tem pagina
+    propria (so o complemento, ver conversa: "sem página própria"), entao
+    o preco dela e´ calculado aqui e anexado em `item.corrente.preco` pro
+    template mostrar o aviso "compre junto" e o JS montar o popup de
+    upsell ao adicionar no carrinho."""
+    itens = _itens_peca_varejo_com_avaliacoes(relicarios_publicados(), "relicarios")
+    for item in itens:
+        if item["corrente"] is not None:
+            item["corrente"] = {**item["corrente"], "preco": preco_varejo(item["corrente"]["chave_preco"])}
+    dados_breadcrumb = _dados_breadcrumb(
+        [
+            ("Início", url_for("index", _external=True)),
+            ("Relicários", url_for("relicarios", _external=True)),
+        ]
+    )
+    return render_template(
+        "relicarios.html",
+        relicarios=itens,
+        dados_breadcrumb=dados_breadcrumb,
+    )
+
+
 @app.route("/categoria/<slug>", methods=["GET"])
 def categoria(slug: str):
     """Pagina propria por categoria (SEO: URL indexavel, com titulo e
@@ -1812,6 +1842,9 @@ def _produto_para_avaliar(produto_id: str) -> dict | None:
     pulseira = pulseira_por_id(produto_id)
     if pulseira is not None:
         return {"id": pulseira["id"], "nome": pulseira["nome"], "imagem": pulseira["imagens"][0]["src"]}
+    relicario = relicario_por_id(produto_id)
+    if relicario is not None:
+        return {"id": relicario["id"], "nome": relicario["nome"], "imagem": relicario["imagens"][0]["src"]}
     return None
 
 
@@ -1831,6 +1864,7 @@ def pagina_avaliacoes():
     personalizados_por_id = {p["id"]: p for p in PRODUTOS_PERSONALIZADOS}
     colares_por_id = {c["id"]: c for c in colares_publicados()}
     pulseiras_por_id = {p["id"]: p for p in pulseiras_publicadas()}
+    relicarios_por_id = {r["id"]: r for r in relicarios_publicados()}
 
     avaliacoes = []
     for avaliacao in avaliacoes_brutas:
@@ -1845,6 +1879,9 @@ def pagina_avaliacoes():
         elif produto_id in pulseiras_por_id:
             nome_produto = pulseiras_por_id[produto_id]["nome"]
             link_produto = url_for("pulseiras") + f"#pulseira-{produto_id}"
+        elif produto_id in relicarios_por_id:
+            nome_produto = relicarios_por_id[produto_id]["nome"]
+            link_produto = url_for("relicarios") + f"#relicario-{produto_id}"
         else:
             personalizado = personalizados_por_id.get(produto_id)
             nome_produto = personalizado["nome"] if personalizado else None
@@ -2207,7 +2244,7 @@ _FORMATO_LABEL = {
     "medalha": "Medalha", "entremeio": "Entremeio", "chaveiro": "Chaveiro",
     "medalha_2lados": "Medalha 2 lados", "entremeio_2lados": "Entremeio 2 lados",
     "chaveiro_2lados": "Chaveiro 2 lados", "cruz_terco": "Cruz para terço",
-    "colar": "Colar", "pulseira": "Pulseira",
+    "colar": "Colar", "pulseira": "Pulseira", "relicario": "Relicário", "corrente": "Corrente",
 }
 
 
@@ -2246,6 +2283,13 @@ def _detalhe_formato_do_item(item: dict) -> str:
     if formato == "pulseira":
         # mesmo criterio do "colar" acima -- ver services/pulseiras.py.
         return _FORMATO_LABEL["pulseira"]
+    if formato == "relicario":
+        # mesmo criterio do "colar" acima -- ver services/relicarios.py.
+        return _FORMATO_LABEL["relicario"]
+    if formato == "corrente":
+        # corrente de upsell (adicionada junto do relicario, ver
+        # services/relicarios.py) -- sem pagina propria, so o rotulo.
+        return _FORMATO_LABEL["corrente"]
     tamanho = str(item.get("tamanho", ""))
     return f"{_FORMATO_LABEL['medalha']} · {_TAMANHO_LABEL.get(tamanho, tamanho)}"
 
@@ -2515,6 +2559,15 @@ def _itens_com_descricao_do_corpo(dados: dict) -> list[dict]:
                 "modeloNomeLado1": modelo_nome_lado1,
                 "produtoNomeLado2": produto_nome_lado2,
                 "modeloNomeLado2": modelo_nome_lado2,
+                # Relicario personalizavel (ver services/relicarios.py) --
+                # foto OPCIONAL enviada na propria pagina do produto (sem
+                # gerar previa/mockup, ver static/js/relicarios.js), so
+                # pra sobreviver ate o painel admin em vez de se perder ao
+                # sair de localStorage (mesmo criterio de "imagemRecorte"
+                # acima, mas sem exigir foto pra fechar o pedido -- o
+                # cliente pode preferir mandar depois pelo WhatsApp).
+                "personalizavel": bool(item.get("personalizavel")),
+                "personalizacaoFoto": str(item.get("personalizacaoFoto", "") or ""),
             }
         )
     return itens_validos
@@ -3741,7 +3794,27 @@ def _timeline_do_pedido(pedido: dict) -> list[dict] | None:
 # pedido JA E´ o proprio chave_preco (ver
 # static/js/personalizada.js:chavePrecoAtual/duasFacesAtual), tratadas
 # a parte no ramo duasFaces abaixo.
-_FORMATO_POR_CHAVE_SIMPLES = {"12mm": "medalha", "16mm": "medalha", "entremeio": "entremeio", "chaveiro": "chaveiro"}
+#
+# As chaves de cruz_terco/colares/pulseiras/relicarios/correntes abaixo
+# (pecas exclusivas do varejo, sempre "tipo: catalogo" com produtoId, ver
+# static/js/colares.js etc.) so passam pelo primeiro ramo de
+# _itens_repetiveis_do_pedido (produto_id truthy) -- nunca aparecem num
+# item "personalizada" de verdade (segundo ramo abaixo), entao adiciona-
+# las aqui e´ seguro pros dois ramos. BUG corrigido: essas chaves nunca
+# estiveram nesse dict, entao "Repetir esse pedido" (templates/pedido.html)
+# sempre pulava silenciosamente cruz_terco/colar/pulseira em pedidos
+# antigos (formato = None -> `continue`) -- so foi notado ao adicionar
+# relicario/corrente e conferir esse fluxo de novo.
+_FORMATO_POR_CHAVE_SIMPLES = {
+    "12mm": "medalha", "16mm": "medalha", "entremeio": "entremeio", "chaveiro": "chaveiro",
+    "cruz_terco_prata": "cruz_terco", "cruz_terco_ouro_velho": "cruz_terco", "cruz_terco_dourado": "cruz_terco",
+    "colar_sagrado_coracao_de_jesus": "colar", "colar_imaculado_coracao_maria": "colar",
+    "colar_castissimo_coracao_sao_jose": "colar",
+    "pulseira_consagracao_nossa_senhora": "pulseira",
+    "relicario_coracao_ouro": "relicario", "relicario_redondo_prata": "relicario",
+    "relicario_oval_familia": "relicario",
+    "corrente_veneziana_ouro": "corrente", "corrente_veneziana_prata": "corrente",
+}
 _CHAVES_2LADOS_VALIDAS = {"medalha_2lados", "entremeio_2lados", "chaveiro_2lados"}
 _IMAGEM_SEM_FOTO = "/static/img/sem-foto.svg"
 

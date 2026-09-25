@@ -84,9 +84,14 @@ GRUPO_DE_CHAVE = {
     "colar_imaculado_coracao_maria": "colares",
     "colar_castissimo_coracao_sao_jose": "colares",
     "pulseira_consagracao_nossa_senhora": "pulseiras",
+    "relicario_coracao_ouro": "relicarios",
+    "relicario_redondo_prata": "relicarios",
+    "relicario_oval_familia": "relicarios",
+    "corrente_veneziana_ouro": "correntes",
+    "corrente_veneziana_prata": "correntes",
 }
 CHAVES_PRECO = tuple(GRUPO_DE_CHAVE)
-GRUPOS = ("padrao", "chaveiro", "duas_faces", "cruz_terco", "colares", "pulseiras")
+GRUPOS = ("padrao", "chaveiro", "duas_faces", "cruz_terco", "colares", "pulseiras", "relicarios", "correntes")
 
 # Desconto no FRETE (nao no preco do produto) quando um grupo atinge a
 # primeira faixa de atacado (ver conversa: "antes do frete gratis...
@@ -259,6 +264,10 @@ def calcular_carrinho(itens: list[dict]) -> dict:
     # os grupos de GRUPOS, nao so os que tem item no carrinho.
     chave_referencia_por_grupo.setdefault("colares", "colar_sagrado_coracao_de_jesus")
     chave_referencia_por_grupo.setdefault("pulseiras", "pulseira_consagracao_nossa_senhora")
+    # "relicarios" e "correntes" (pedido em 2026-09-25, mesma conversa)
+    # seguem o mesmo setdefault acima -- ver services/relicarios.py.
+    chave_referencia_por_grupo.setdefault("relicarios", "relicario_coracao_ouro")
+    chave_referencia_por_grupo.setdefault("correntes", "corrente_veneziana_ouro")
 
     itens_calculados = []
     subtotal_total = 0.0

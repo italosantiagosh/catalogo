@@ -133,6 +133,15 @@
               </form>
             </details>
           {% endif %}
+          {% if item.personalizavel %}
+            {% if item.personalizacaoFoto %}
+              <br>Foto pra personalizar: enviada pelo cliente —
+              <a href="{{ item.personalizacaoFoto }}" download="personalizacao_{{ loop.index0 }}.jpg">⬇ Baixar foto</a>
+              <p style="font-size:0.8rem;color:#888;">Confirme com o cliente (e mostre uma possível prévia) antes de produzir.</p>
+            {% else %}
+              <br>Foto pra personalizar: ainda não enviada — entre em contato pelo WhatsApp pra solicitar.
+            {% endif %}
+          {% endif %}
           {% if pedido.status not in ('cancelado', 'excluido') and not item.duasFaces and not item.imagemRecorte %}
             <details class="editar-item">
               <summary>{{ "⚠️ corrigir formato (pra sincronizar com a Tiny)" if not item.chave_preco else "✏️ corrigir formato" }}</summary>
