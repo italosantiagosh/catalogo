@@ -1346,9 +1346,12 @@ def _linha_premium_pecas() -> list[dict]:
     -- usado tanto na home (destaques) quanto no carrinho (upsell, pedido
     em 2026-09-25 3a parte: "a mesma linha de cards que tem na home,
     coloca no carrinho")."""
+    # Pulseira primeiro (pedido em 2026-09-25, 3a parte: "coloca a
+    # pulseira primeiro, na frente dos colares"), depois colares, depois
+    # relicarios.
     return (
-        [{**c, "preco": preco_varejo(c["chave_preco"])} for c in colares_publicados()]
-        + [{**p, "preco": preco_varejo(p["chave_preco"])} for p in pulseiras_publicadas()]
+        [{**p, "preco": preco_varejo(p["chave_preco"])} for p in pulseiras_publicadas()]
+        + [{**c, "preco": preco_varejo(c["chave_preco"])} for c in colares_publicados()]
         + [{**r, "preco": preco_varejo(r["chave_preco"])} for r in relicarios_publicados()]
     )
 
@@ -1661,9 +1664,11 @@ def linha_premium():
     /relicarios, ver conversa: "estão tudo em uma página só e grande, não
     precisa disso"), mantidas so como redirect 301 mais abaixo pra nao
     quebrar link/bookmark antigo."""
+    # Mesma ordem de _linha_premium_pecas() acima (pulseira primeiro,
+    # pedido em 2026-09-25 3a parte).
     pecas = (
-        [{**c, "tipo": "colar", "preco": preco_varejo(c["chave_preco"])} for c in colares_publicados()]
-        + [{**p, "tipo": "pulseira", "preco": preco_varejo(p["chave_preco"])} for p in pulseiras_publicadas()]
+        [{**p, "tipo": "pulseira", "preco": preco_varejo(p["chave_preco"])} for p in pulseiras_publicadas()]
+        + [{**c, "tipo": "colar", "preco": preco_varejo(c["chave_preco"])} for c in colares_publicados()]
         + [{**r, "tipo": "relicario", "preco": preco_varejo(r["chave_preco"])} for r in relicarios_publicados()]
     )
     dados_breadcrumb = _dados_breadcrumb(
