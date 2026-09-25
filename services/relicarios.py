@@ -10,30 +10,35 @@ mostra hoje, nao o preco "de": relicario coracao ouro R$100,00-3=R$97,00,
 relicario redondo prata R$280,00-3=R$277,00, oval familia R$120,00-3=
 R$117,00.
 
-Dois modelos sao PERSONALIZAVEIS com foto do cliente (coracao-banhado-a-
-ouro e redondo-prata-zirconia) -- igual a Parresia faz, mas SEM gerar
-previa automatica (a loja nao tem gerador de mockup pra relicario ainda,
-ver conversa: "não gerar previa(não criei modelo)") -- o cliente pode
-anexar a foto na propria pagina (so fica guardada junto do pedido, sem
-compor nenhuma imagem) ou deixar pra enviar depois; o aviso avisa que a
-Nove de Julho entra em contato pelo WhatsApp pra confirmar/mostrar uma
-possivel previa antes de produzir. O Pingente Relicario Oval "Familia" NAO
-e personalizavel -- a propria pagina de origem no fornecedor nao mostra
-opcao de foto pra ele.
+Os TRES modelos sao PERSONALIZAVEIS com foto do cliente -- igual a
+Parresia faz, mas SEM gerar previa automatica (a loja nao tem gerador de
+mockup pra relicario ainda, ver conversa: "não gerar previa(não criei
+modelo)") -- o cliente pode anexar a foto na propria pagina (so fica
+guardada junto do pedido, sem compor nenhuma imagem) ou deixar pra enviar
+depois; o aviso avisa que a Nove de Julho entra em contato pelo WhatsApp
+pra confirmar/mostrar uma possivel previa antes de produzir. CORRIGIDO em
+2026-09-25 (3a parte da conversa): o Oval Familia TAMBEM e personalizavel
+-- meu engano inicial foi achar que nao era, so por a pagina de origem no
+fornecedor nao ter a mesma UI de "escolha como quer personalizar" dos
+outros dois (usuario corrigiu: "O terceiro relicário, oval, tbm é
+personalizável").
 
-Cada relicario tem uma CORRENTE companheira pra upsell ("aviso" no proprio
-card do relicario + popup ao adicionar no carrinho, ver
+So os dois PRIMEIROS relicarios (coracao-banhado-a-ouro e redondo-prata-
+zirconia) tem uma CORRENTE companheira pra upsell ("aviso" no proprio card
+do relicario + popup ao adicionar no carrinho, ver
 templates/linha_premium_item.html e static/js/linha_premium.js) -- NAO e
 um catalogo proprio de "Correntes", so um complemento oferecido junto
 (pedido: "as correntes entram só como complemento... sem página própria").
-CORRIGIDO em 2026-09-25 (2a parte da conversa): o Oval Familia NAO vem com
-corrente inclusa (era um engano meu, baseado so na foto de uso da Parresia
--- usuario corrigiu: "ele nao vem com o colar completo nao") -- usa a MESMA
-corrente banhada a ouro do relicario coracao (mesmo material). Preco da
-corrente tambem "igual Parresia menos 3", mas o preco delas termina em 5
-(R$115,00/R$135,00) entao "menos 3" NAO cai em terminacao 7
+Preco da corrente tambem "igual Parresia menos 3", mas o preco delas
+termina em 5 (R$115,00/R$135,00) entao "menos 3" NAO cai em terminacao 7
 (R$112,00/R$132,00) -- aplicado do jeito que foi pedido (regra literal),
-sem inventar outro ajuste."""
+sem inventar outro ajuste. O Oval Familia NAO tem corrente nenhuma --
+CORRIGIDO 2x: primeiro achei que ele ja vinha com a propria corrente
+inclusa (2a parte da conversa, engano baseado na foto de uso da Parresia),
+troquei pra ter upsell da corrente ouro; usuario corrigiu de novo (3a
+parte): a foto de uso so mostra o TAMANHO da peca, a corrente ali NAO
+acompanha o produto E nao e´ upsell nenhum -- essa peca e´ so o pingente,
+sem nenhuma relacao com corrente na pagina."""
 
 from __future__ import annotations
 
@@ -97,26 +102,23 @@ RELICARIOS = [
         "nome": "Pingente Relicário Oval Família Coração",
         "chave_preco": "relicario_oval_familia",
         "publicado": True,
-        "personalizavel": False,
+        "personalizavel": True,
         "imagens": [
             {"src": "img/produtos/relicario_oval_familia_frente.jpg", "rotulo": None},
-            {"src": "img/produtos/relicario_oval_familia_uso.jpg", "rotulo": "sendo usado"},
+            {"src": "img/produtos/relicario_oval_familia_uso.jpg", "rotulo": "sendo usado (foto só pra mostrar o tamanho)"},
         ],
-        "descricao_curta": "Pingente relicário oval com a palavra Família e coração cravejado, banhado a ouro.",
+        "descricao_curta": "Pingente relicário oval com a palavra Família, coração cravejado e espaço pra guardar uma foto especial, banhado a ouro.",
         "descricao": [
             "Uma joia delicada e cheia de significado, criada pra representar "
             "aquilo que temos de mais precioso: o amor, a união e a proteção "
             "de Deus sobre a nossa casa.",
-            "Com a palavra Família e um coração cravejado, este relicário é "
-            "um lembrete diário de carinho, fé e gratidão por aqueles que "
-            "Deus colocou em nossa vida.",
+            "Com a palavra Família e um coração cravejado, este relicário guarda "
+            "uma foto especial de quem você ama mais perto do coração — um "
+            "lembrete diário de carinho, fé e gratidão por aqueles que Deus "
+            "colocou em nossa vida.",
         ],
-        "medidas": "Pingente ≈ 18mm · Banhado a ouro",
-        "corrente": {
-            "nome": "Corrente Veneziana Fio Fechada (40+5cm) Banhada a Ouro",
-            "chave_preco": "corrente_veneziana_ouro",
-            "imagem": "img/produtos/corrente_veneziana_ouro.jpg",
-        },
+        "medidas": "Pingente ≈ 18mm com abertura frontal · Banhado a ouro",
+        "corrente": None,
     },
 ]
 

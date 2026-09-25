@@ -39,19 +39,19 @@ def test_todos_os_relicarios_estao_publicados():
     assert len(RELICARIOS) == len(publicados)
 
 
-def test_apenas_os_dois_relicarios_de_pingente_sao_personalizaveis():
+def test_todos_os_3_relicarios_sao_personalizaveis():
     assert relicario_por_id("coracao-banhado-a-ouro")["personalizavel"] is True
     assert relicario_por_id("redondo-prata-zirconia")["personalizavel"] is True
-    assert relicario_por_id("oval-familia")["personalizavel"] is False
+    assert relicario_por_id("oval-familia")["personalizavel"] is True
 
 
-def test_todos_os_3_relicarios_tem_corrente_companheira():
-    # Correcao 2026-09-25 (2a parte da conversa): o oval-familia NAO vem
-    # com corrente inclusa (era um engano baseado so na foto de uso da
-    # Parresia) -- usa a mesma corrente banhada a ouro do relicario coracao.
+def test_apenas_os_dois_primeiros_relicarios_tem_corrente_companheira():
+    # Oval Familia NAO tem corrente nenhuma -- a foto de uso dele mostra
+    # uma corrente so pra dar nocao de tamanho, nao e´ upsell nem vem
+    # incluida (corrigido 2x nessa conversa, ver services/relicarios.py).
     assert relicario_por_id("coracao-banhado-a-ouro")["corrente"]["chave_preco"] == "corrente_veneziana_ouro"
     assert relicario_por_id("redondo-prata-zirconia")["corrente"]["chave_preco"] == "corrente_veneziana_prata"
-    assert relicario_por_id("oval-familia")["corrente"]["chave_preco"] == "corrente_veneziana_ouro"
+    assert relicario_por_id("oval-familia")["corrente"] is None
 
 
 def test_rota_relicarios_redireciona_pra_linha_premium(client):
@@ -80,15 +80,13 @@ def test_pagina_linha_premium_lista_os_3_relicarios(client):
     assert "Pingente Relicário Oval Família Coração" in body
 
 
-def test_pagina_do_relicario_mostra_upload_so_pros_personalizaveis(client):
-    body_ouro = client.get("/linha-premium/coracao-banhado-a-ouro").get_data(as_text=True)
-    assert "personalizacao-input" in body_ouro
-
-    body_oval = client.get("/linha-premium/oval-familia").get_data(as_text=True)
-    assert "personalizacao-input" not in body_oval
+def test_pagina_de_cada_relicario_mostra_upload_de_personalizacao(client):
+    for relicario_id in ("coracao-banhado-a-ouro", "redondo-prata-zirconia", "oval-familia"):
+        body = client.get(f"/linha-premium/{relicario_id}").get_data(as_text=True)
+        assert "personalizacao-input" in body
 
 
-def test_pagina_de_cada_relicario_mostra_compre_junto_da_propria_corrente(client):
+def test_pagina_de_cada_relicario_com_corrente_mostra_compre_junto(client):
     body_ouro = client.get("/linha-premium/coracao-banhado-a-ouro").get_data(as_text=True)
     assert "compre-junto-card" in body_ouro
     assert "Corrente Veneziana Fio Fechada (40+5cm) Banhada a Ouro" in body_ouro
@@ -97,9 +95,9 @@ def test_pagina_de_cada_relicario_mostra_compre_junto_da_propria_corrente(client
     assert "compre-junto-card" in body_prata
     assert "Corrente Prata Veneziana Diamantada (45cm)" in body_prata
 
+    # Oval Familia nao tem corrente nenhuma -- sem card de compre junto.
     body_oval = client.get("/linha-premium/oval-familia").get_data(as_text=True)
-    assert "compre-junto-card" in body_oval
-    assert "Corrente Veneziana Fio Fechada (40+5cm) Banhada a Ouro" in body_oval
+    assert "compre-junto-card" not in body_oval
 
 
 def test_home_mostra_card_do_relicario(client):
