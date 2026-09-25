@@ -3,8 +3,14 @@ Gera o feed de calendario (.ics) da "Liturgia do mes" -- complemento do
 e-book em PDF (ver services/liturgia_pdf.py, mesmos dados de
 DIAS_OUTUBRO_2026): a pessoa assina o calendario uma vez (botao
 "Adicionar ao Google Calendar" na landing /liturgia-do-mes) e cada dia
-de outubro entra sozinho na agenda dela, como evento de dia inteiro
-com o santo/tempo liturgico e a leitura do dia.
+entra sozinho na agenda dela, como evento de dia inteiro com o
+santo/tempo liturgico e a leitura do dia.
+
+Inclui o restante de setembro (dia 25 em diante, ver conversa
+2026-09-25 -- o PDF em si e´ so de outubro, mas a assinatura do
+calendario pode comecar a valer imediatamente) mais outubro inteiro,
+mesmos dados do widget "liturgia de hoje" (services/liturgia_hoje.py:
+DIAS_SETEMBRO_2026).
 
 Formato RFC 5545 (iCalendar) escrito a mao -- nao precisa de
 dependencia nova pra isso, e´ so um arquivo de texto com um bloco
@@ -19,6 +25,15 @@ from __future__ import annotations
 import datetime
 
 from services.liturgia_pdf import DIAS_OUTUBRO_2026, ROTULO_RANK_FRASE, ROTULO_COR_LITURGICA
+from services.liturgia_hoje import DIAS_SETEMBRO_2026
+
+# (ano, mes, uid-slug, lista de dias) -- setembro so a partir do dia 25
+# porque e´ quando essa assinatura foi lancada (dias anteriores ja
+# passaram, nao faz sentido oferecer evento pra data que ja foi).
+_MESES_DO_FEED = [
+    (2026, 9, "setembro", [d for d in DIAS_SETEMBRO_2026 if d["dia"] >= 25]),
+    (2026, 10, "outubro", DIAS_OUTUBRO_2026),
+]
 
 _LIMITE_LINHA = 75
 
@@ -72,26 +87,27 @@ def gerar_ics_liturgia_outubro(base_url: str) -> str:
         "PRODID:-//Nove de Julho//Liturgia do Mes//PT",
         "CALSCALE:GREGORIAN",
         "METHOD:PUBLISH",
-        "X-WR-CALNAME:Liturgia de Outubro — Nove de Julho",
+        "X-WR-CALNAME:Liturgia do Mês — Nove de Julho",
         "X-WR-TIMEZONE:America/Sao_Paulo",
     ]
-    for info in DIAS_OUTUBRO_2026:
-        data = datetime.date(2026, 10, info["dia"])
-        proximo_dia = data + datetime.timedelta(days=1)
-        # Nome do santo/tempo primeiro (ver conversa 2026-09-24: o app
-        # de calendario trunca o titulo na visao de mes, e "MEMÓRIA
-        # OBRIGATÓRIA..." cortado nao diz nada -- o nome e´ o que
-        # importa pra reconhecer o dia de relance).
-        resumo = f"{info['titulo']} ({ROTULO_RANK_FRASE[info['rank']]})" if info["rank"] != "comum" else info["titulo"]
-        linhas += [
-            "BEGIN:VEVENT",
-            f"UID:liturgia-outubro-2026-{info['dia']:02d}@lojanovedejulho.com.br",
-            f"DTSTAMP:{agora}",
-            f"DTSTART;VALUE=DATE:{data.strftime('%Y%m%d')}",
-            f"DTEND;VALUE=DATE:{proximo_dia.strftime('%Y%m%d')}",
-            _dobrar_linha(f"SUMMARY:{_escapar_ics(resumo)}"),
-            _dobrar_linha(f"DESCRIPTION:{_escapar_ics(_descricao_evento(info, base_url))}"),
-            "END:VEVENT",
-        ]
+    for ano, mes, slug_mes, dias in _MESES_DO_FEED:
+        for info in dias:
+            data = datetime.date(ano, mes, info["dia"])
+            proximo_dia = data + datetime.timedelta(days=1)
+            # Nome do santo/tempo primeiro (ver conversa 2026-09-24: o app
+            # de calendario trunca o titulo na visao de mes, e "MEMÓRIA
+            # OBRIGATÓRIA..." cortado nao diz nada -- o nome e´ o que
+            # importa pra reconhecer o dia de relance).
+            resumo = f"{info['titulo']} ({ROTULO_RANK_FRASE[info['rank']]})" if info["rank"] != "comum" else info["titulo"]
+            linhas += [
+                "BEGIN:VEVENT",
+                f"UID:liturgia-{slug_mes}-{ano}-{info['dia']:02d}@lojanovedejulho.com.br",
+                f"DTSTAMP:{agora}",
+                f"DTSTART;VALUE=DATE:{data.strftime('%Y%m%d')}",
+                f"DTEND;VALUE=DATE:{proximo_dia.strftime('%Y%m%d')}",
+                _dobrar_linha(f"SUMMARY:{_escapar_ics(resumo)}"),
+                _dobrar_linha(f"DESCRIPTION:{_escapar_ics(_descricao_evento(info, base_url))}"),
+                "END:VEVENT",
+            ]
     linhas.append("END:VCALENDAR")
     return "\r\n".join(linhas) + "\r\n"

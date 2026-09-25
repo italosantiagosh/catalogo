@@ -4,22 +4,41 @@ from unittest.mock import patch
 
 from services.liturgia_ics import gerar_ics_liturgia_outubro
 from services.liturgia_pdf import DIAS_OUTUBRO_2026
+from services.liturgia_hoje import DIAS_SETEMBRO_2026
 from app import app
 
+# Ver conversa 2026-09-25: a assinatura do calendario tambem cobre o
+# restante de setembro (do dia 25 em diante -- dias anteriores ja
+# passaram), alem de outubro inteiro.
+_DIAS_SETEMBRO_NO_FEED = [d for d in DIAS_SETEMBRO_2026 if d["dia"] >= 25]
+_TOTAL_EVENTOS = len(_DIAS_SETEMBRO_NO_FEED) + len(DIAS_OUTUBRO_2026)
 
-def test_gera_um_evento_por_dia_de_outubro():
+
+def test_gera_um_evento_por_dia_de_setembro_25_em_diante_e_outubro_inteiro():
     ics = gerar_ics_liturgia_outubro("https://lojanovedejulho.com.br")
-    assert ics.count("BEGIN:VEVENT") == len(DIAS_OUTUBRO_2026) == 31
+    assert ics.count("BEGIN:VEVENT") == _TOTAL_EVENTOS == 37
     assert ics.startswith("BEGIN:VCALENDAR\r\n")
     assert ics.rstrip().endswith("END:VCALENDAR")
 
 
 def test_datas_de_inicio_e_fim_sao_dia_inteiro_consecutivo():
     ics = gerar_ics_liturgia_outubro("https://lojanovedejulho.com.br")
+    assert "DTSTART;VALUE=DATE:20260925" in ics
+    assert "DTEND;VALUE=DATE:20260926" in ics
+    assert "DTSTART;VALUE=DATE:20260930" in ics
+    assert "DTEND;VALUE=DATE:20261001" in ics
     assert "DTSTART;VALUE=DATE:20261001" in ics
     assert "DTEND;VALUE=DATE:20261002" in ics
     assert "DTSTART;VALUE=DATE:20261012" in ics
     assert "DTEND;VALUE=DATE:20261013" in ics
+
+
+def test_setembro_antes_do_dia_25_nao_entra_no_feed():
+    """So o restante de setembro (25 em diante) -- dias ja passados nao
+    fazem sentido como evento futuro pra quem assina o calendario hoje."""
+    ics = gerar_ics_liturgia_outubro("https://lojanovedejulho.com.br")
+    assert "DTSTART;VALUE=DATE:20260924" not in ics
+    assert "DTSTART;VALUE=DATE:20260901" not in ics
 
 
 def _desdobrar(ics: str) -> str:
@@ -62,7 +81,7 @@ def test_rota_ics_serve_com_content_type_correto():
     resposta = client.get("/ebook/liturgia-do-mes.ics")
     assert resposta.status_code == 200
     assert resposta.headers["Content-Type"] == "text/calendar; charset=utf-8"
-    assert resposta.data.count(b"BEGIN:VEVENT") == 31
+    assert resposta.data.count(b"BEGIN:VEVENT") == _TOTAL_EVENTOS
 
 
 def test_landing_linka_direto_pro_ics_sem_o_truque_quebrado_do_google():
