@@ -748,10 +748,74 @@
     });
   }
 
+  // Reduz a foto no proprio navegador ANTES de mandar pro servidor (pedido
+  // em 2026-09-25, apos a queda por OOM: "diminuir a memoria gasta" sem
+  // depender de API externa) -- foto de celular moderno chega com 12-48MP,
+  // mas o servidor ja reduz tudo pra no maximo 1000px de lado antes de
+  // compor a medalha (ver app.py:_FOTO_PERSONALIZADA_LADO_MAXIMO), entao
+  // mandar o arquivo original inteiro so pesa o upload e o processamento a
+  // toa. 1200px da uma folga sobre esse limite (evita perder nitidez numa
+  // segunda reducao) sem mandar megapixel nenhum que vai ser jogado fora
+  // do outro lado. Roda ANTES do cropper carregar a imagem (mesmo arquivo
+  // usado pro cropper E pro upload, ver arquivoAtual abaixo), entao a caixa
+  // de recorte e o arquivo final sempre batem, sem precisar reescalar
+  // coordenada nenhuma. Se o navegador nao conseguir decodificar (ex: HEIC
+  // em navegador antigo sem suporte), cai pro arquivo original -- nunca
+  // bloqueia o envio por causa disso, so perde a otimizacao nesse caso (o
+  // servidor ainda tem seus proprios limites/fila como rede de seguranca).
+  const FOTO_PERSONALIZADA_LADO_MAXIMO_NAVEGADOR = 1200;
+
+  function reduzirFotoSeGrande(arquivo) {
+    return new Promise((resolve) => {
+      if (!arquivo || !arquivo.type || !arquivo.type.startsWith('image/')) {
+        resolve(arquivo);
+        return;
+      }
+      const urlObjeto = URL.createObjectURL(arquivo);
+      const img = new Image();
+      img.onload = () => {
+        const maiorLado = Math.max(img.naturalWidth, img.naturalHeight);
+        if (maiorLado <= FOTO_PERSONALIZADA_LADO_MAXIMO_NAVEGADOR) {
+          URL.revokeObjectURL(urlObjeto);
+          resolve(arquivo);
+          return;
+        }
+        const escala = FOTO_PERSONALIZADA_LADO_MAXIMO_NAVEGADOR / maiorLado;
+        const canvas = document.createElement('canvas');
+        canvas.width = Math.round(img.naturalWidth * escala);
+        canvas.height = Math.round(img.naturalHeight * escala);
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        URL.revokeObjectURL(urlObjeto);
+        canvas.toBlob(
+          (blob) => {
+            if (!blob) {
+              resolve(arquivo);
+              return;
+            }
+            resolve(new File([blob], arquivo.name, { type: 'image/jpeg' }));
+          },
+          'image/jpeg',
+          0.88
+        );
+      };
+      img.onerror = () => {
+        URL.revokeObjectURL(urlObjeto);
+        resolve(arquivo);
+      };
+      img.src = urlObjeto;
+    });
+  }
+
   botaoEnviar.addEventListener('click', async () => {
     if (botaoEnviar.disabled) return;
     limparErro();
-    arquivoAtual = inputImagem.files[0];
+    const textoOriginalBotao = botaoEnviar.textContent;
+    botaoEnviar.disabled = true;
+    botaoEnviar.textContent = 'Preparando foto...';
+    arquivoAtual = await reduzirFotoSeGrande(inputImagem.files[0]);
+    botaoEnviar.disabled = false;
+    botaoEnviar.textContent = textoOriginalBotao;
     boxAnterior = null;
     recorteFoiAjustado = false;
     const img = await carregarImagemDeArquivo(arquivoAtual);
