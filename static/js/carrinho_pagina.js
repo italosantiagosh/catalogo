@@ -636,6 +636,23 @@
       barra.appendChild(preenchimento);
       bloco.appendChild(texto);
       bloco.appendChild(barra);
+
+      // Botao "completar com os mais vendidos" (ver conversa 2026-09-25)
+      // -- so faz sentido pra "padrao" (medalha/entremeio) e "chaveiro":
+      // o grupo "duas_faces" e´ sempre produzido a partir de foto enviada
+      // pela pessoa (personalizada), nao existe "santo mais vendido" pra
+      // sugerir ali (ver app.py:api_sugestoes_atacado).
+      if (grupo.proxima_faixa && (nomeGrupo === 'padrao' || nomeGrupo === 'chaveiro')) {
+        const btnCompletar = document.createElement('button');
+        btnCompletar.type = 'button';
+        btnCompletar.className = 'botao-completar-atacado';
+        btnCompletar.textContent = '+ Completar com os mais vendidos';
+        btnCompletar.addEventListener('click', () =>
+          completarAtacadoComMaisVendidos(btnCompletar, itens, nomeGrupo, grupo.proxima_faixa.faltam)
+        );
+        bloco.appendChild(btnCompletar);
+      }
+
       progressoGruposEl.appendChild(bloco);
     }
 
@@ -720,6 +737,90 @@
     // aparecendo antes do pagamento passava a impressao de pedido ja
     // feito.
     pedidoIdTexto.textContent = `Código de referência: #${obterOuCriarPedidoId()} (uso apenas se fechar pelo WhatsApp -- o pedido ainda não foi registrado)`;
+  }
+
+  // Formato/tamanho/cor que mais aparece (em unidades, nao em numero de
+  // linhas) entre os itens de um grupo -- "a variacao que ja tem na
+  // maioria daquele carrinho" (ver conversa 2026-09-25), pra completar o
+  // atacado na MESMA variacao que a pessoa ja escolheu, em vez de
+  // inventar uma nova.
+  function variacaoDominanteDoGrupo(itens, nomeGrupo) {
+    const contagem = {};
+    itens.forEach((item) => {
+      if (GRUPO_DE_CHAVE[item.chave_preco] !== nomeGrupo) return;
+      const chaveCombo = `${item.formato || 'medalha'}|${item.chave_preco}|${item.cor || ''}`;
+      contagem[chaveCombo] = (contagem[chaveCombo] || 0) + item.quantidade;
+    });
+    let melhorCombo = null;
+    let melhorQtd = 0;
+    Object.keys(contagem).forEach((chaveCombo) => {
+      if (contagem[chaveCombo] > melhorQtd) {
+        melhorQtd = contagem[chaveCombo];
+        melhorCombo = chaveCombo;
+      }
+    });
+    if (!melhorCombo) return null;
+    const [formato, chave_preco, cor] = melhorCombo.split('|');
+    return { formato, chave_preco, cor: cor || null };
+  }
+
+  // Botao "+ Completar com os mais vendidos" da barra de atacado (ver
+  // conversa 2026-09-25) -- busca os santos mais vendidos na mesma
+  // variacao que ja predomina no carrinho e adiciona TODOS de uma vez
+  // (diferente do popup de pedido minimo, que deixa a pessoa escolher
+  // card a card -- aqui o pedido foi por um botao que "adiciona
+  // automaticamente").
+  async function completarAtacadoComMaisVendidos(botao, itensAtuais, nomeGrupo, faltam) {
+    const variacao = variacaoDominanteDoGrupo(itensAtuais, nomeGrupo);
+    if (!variacao) return;
+    botao.disabled = true;
+    const textoOriginal = botao.textContent;
+    botao.textContent = 'Adicionando...';
+    try {
+      const idsNoCarrinho = itensAtuais
+        .filter((item) => item.tipo === 'catalogo' && item.produtoId)
+        .map((item) => item.produtoId);
+      const params = new URLSearchParams({
+        formato: variacao.formato,
+        chave_preco: variacao.chave_preco,
+        cor: variacao.cor || '',
+        faltam: String(faltam),
+        excluir: idsNoCarrinho.join(','),
+      });
+      const resposta = await fetch(`/api/carrinho/sugestoes-atacado?${params.toString()}`);
+      const dados = await resposta.json();
+      const sugestoes = dados.sugestoes || [];
+      if (sugestoes.length === 0) {
+        mostrarToast('Não encontramos mais santos pra sugerir agora.');
+        return;
+      }
+      sugestoes.forEach((sugestao) => {
+        carrinhoAdicionarItem({
+          chave: `${sugestao.id}-${sugestao.modelo_id}-${sugestao.formato}-${sugestao.chave_preco}-${sugestao.cor || ''}`,
+          tipo: 'catalogo',
+          produtoId: sugestao.id,
+          produtoNome: sugestao.nome,
+          modeloId: sugestao.modelo_id,
+          modeloNome: sugestao.modelo_nome,
+          imagem: sugestao.thumbnail,
+          imagensCor: null,
+          formato: sugestao.formato,
+          chave_preco: sugestao.chave_preco,
+          tamanho: sugestao.formato === 'medalha' ? sugestao.chave_preco : null,
+          cor: sugestao.cor,
+          quantidade: sugestao.quantidade,
+        });
+      });
+      const totalAdicionado = sugestoes.reduce((acc, s) => acc + s.quantidade, 0);
+      rastrearEventoGA4('completar_atacado_automatico', {
+        grupo: nomeGrupo, quantidade: totalAdicionado, currency: 'BRL',
+      });
+      await render();
+      mostrarToast(`🎉 Adicionamos ${sugestoes.length} santos mais vendidos (${totalAdicionado} unidades) pra completar o atacado!`);
+    } finally {
+      botao.disabled = false;
+      botao.textContent = textoOriginal;
+    }
   }
 
   // ---- calculadora de frete (Frenet) ----

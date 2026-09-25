@@ -2578,6 +2578,84 @@ def api_sugestoes_pedido_minimo():
     return jsonify(sugestoes=sugestoes)
 
 
+_FORMATOS_ATACADO_AUTOMATICO = {"medalha", "entremeio", "chaveiro"}
+_FALTAM_MAXIMO_ATACADO_AUTOMATICO = 5000  # trava de sanidade contra parametro absurdo, nao um limite de negocio
+
+
+def _imagem_da_variacao(modelo: dict, formato: str, cor: str | None) -> str:
+    if formato == "entremeio":
+        chave = "imagem_entremeio_ouro_velho" if cor == "ouro_velho" else "imagem_entremeio_prata"
+        return modelo.get(chave, modelo["imagem"])
+    if formato == "chaveiro":
+        return modelo.get("imagem_chaveiro", modelo["imagem"])
+    return modelo["imagem"]
+
+
+@app.route("/api/carrinho/sugestoes-atacado", methods=["GET"])
+def api_sugestoes_atacado():
+    """Botao "completar com os mais vendidos" embaixo da barra de
+    proxima faixa de atacado (ver conversa 2026-09-25: em vez de so
+    avisar "faltam 10 medalhas/entremeios", oferece completar na hora
+    com os santos mais vendidos, NA MESMA variacao -- formato/tamanho/
+    cor -- que ja predomina naquele carrinho, decidida no client
+    (static/js/carrinho_pagina.js:variacaoDominanteDoGrupo) porque so
+    ele tem os itens de verdade do carrinho.
+
+    So faz sentido pra "padrao" (medalha/entremeio) e "chaveiro" -- o
+    grupo "duas_faces" (medalha_2lados/entremeio_2lados/chaveiro_2lados)
+    e´ sempre produzido a partir de FOTO ENVIADA PELA PESSOA (personalizada,
+    ver services/pricing.py), entao nao existe "santo mais vendido" pra
+    sugerir ali -- por isso o botao so aparece pros outros dois grupos
+    (ver static/js/carrinho_pagina.js)."""
+    formato = request.args.get("formato", "")
+    chave_preco = request.args.get("chave_preco", "")
+    cor = request.args.get("cor") or None
+    if formato not in _FORMATOS_ATACADO_AUTOMATICO or chave_preco not in CHAVES_PRECO:
+        return jsonify(erro="Formato ou variação inválida."), 400
+
+    try:
+        faltam = int(request.args.get("faltam", 0))
+    except ValueError:
+        faltam = 0
+    faltam = max(0, min(faltam, _FALTAM_MAXIMO_ATACADO_AUTOMATICO))
+    if faltam == 0:
+        return jsonify(sugestoes=[])
+
+    ids_no_carrinho = {v for v in request.args.get("excluir", "").split(",") if v}
+    produtos = [p for p in carregar_produtos() if p["id"] not in ids_no_carrinho]
+    vendas = unidades_vendidas_por_produto(VENDAS_RECENTES_DIAS)
+    produtos.sort(key=lambda p: vendas.get(p["id"], 0), reverse=True)
+
+    quantidade_produtos = min(len(produtos), _QUANTIDADE_SUGESTOES_PEDIDO_MINIMO)
+    escolhidos = produtos[:quantidade_produtos]
+    # distribui "faltam" unidades entre os escolhidos o mais igual
+    # possivel (em vez de tudo num so produto) -- um carrinho variado de
+    # santos diferentes vende melhor como presente/atacado pra revenda
+    # do que 10 unidades do mesmo santo (ver conversa).
+    base = faltam // quantidade_produtos if quantidade_produtos else 0
+    resto = faltam % quantidade_produtos if quantidade_produtos else 0
+    sugestoes = []
+    for i, p in enumerate(escolhidos):
+        quantidade = base + (1 if i < resto else 0)
+        if quantidade == 0:
+            continue
+        modelo = p["modelos"][0]
+        sugestoes.append(
+            {
+                "id": p["id"],
+                "nome": p["nome"],
+                "modelo_id": modelo["id"],
+                "modelo_nome": modelo["nome"],
+                "thumbnail": url_for("static", filename=_imagem_da_variacao(modelo, formato, cor)),
+                "formato": formato,
+                "chave_preco": chave_preco,
+                "cor": cor,
+                "quantidade": quantidade,
+            }
+        )
+    return jsonify(sugestoes=sugestoes)
+
+
 @app.route("/api/frete/calcular", methods=["POST"])
 @limiter.limit("20 per minute")
 def api_calcular_frete():

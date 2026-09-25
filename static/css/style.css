@@ -2306,6 +2306,27 @@ button.botao-carrinho:disabled {
   margin: 0 0 6px;
 }
 
+/* Botao "completar com os mais vendidos" embaixo da barra de atacado
+   (ver conversa 2026-09-25) -- mesmo padrao visual do botao-secundario,
+   so que menor pra caber junto da barra sem competir com ela. */
+.botao-completar-atacado {
+  display: inline-block;
+  margin-top: 8px;
+  padding: 7px 12px;
+  border: 1px solid var(--gold-texto-claro);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--gold-texto-claro);
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.botao-completar-atacado:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
 .calculadora-frete {
   border-top: 1px solid var(--border);
   border-bottom: 1px solid var(--border);
