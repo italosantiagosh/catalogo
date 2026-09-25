@@ -36,6 +36,12 @@ a quantidade que conta pra faixa de desconto NAO se mistura entre grupos:
                      propria, entao esse isolamento na pratica so evita
                      ela contaminar a faixa alheia, sem efeito nela
                      mesma).
+    "colares"     -- colares (colar_sagrado_coracao_de_jesus, pedido em
+                     2026-09-25). Peca exclusiva do varejo (sem tabela de
+                     atacado -- ver services/colares.py), mesmo padrao de
+                     isolamento do "cruz_terco" acima e pelo mesmo motivo:
+                     um preco fixo por peca que nao deve nem sofrer nem
+                     causar desconto de outro grupo.
 
 Cada item do carrinho manda uma "chave_preco" (12mm | 16mm | entremeio |
 chaveiro | chaveiro_2lados | medalha_2lados | entremeio_2lados) que
@@ -69,9 +75,10 @@ GRUPO_DE_CHAVE = {
     "cruz_terco_prata": "cruz_terco",
     "cruz_terco_ouro_velho": "cruz_terco",
     "cruz_terco_dourado": "cruz_terco",
+    "colar_sagrado_coracao_de_jesus": "colares",
 }
 CHAVES_PRECO = tuple(GRUPO_DE_CHAVE)
-GRUPOS = ("padrao", "chaveiro", "duas_faces", "cruz_terco")
+GRUPOS = ("padrao", "chaveiro", "duas_faces", "cruz_terco", "colares")
 
 # Desconto no FRETE (nao no preco do produto) quando um grupo atinge a
 # primeira faixa de atacado (ver conversa: "antes do frete gratis...
@@ -237,6 +244,12 @@ def calcular_carrinho(itens: list[dict]) -> dict:
     # mesmo resultado (sempre "1+ unidades" / sem proxima faixa)
     # independente de qual vira referencia, entao qualquer uma serve.
     chave_referencia_por_grupo.setdefault("cruz_terco", "cruz_terco_prata")
+    # "colares" (pedido em 2026-09-25) tem so 1 chave hoje, mas segue o
+    # mesmo padrao dos setdefault acima -- sem isso, um carrinho SEM
+    # nenhum colar (grupo com quantidade 0) da KeyError abaixo em
+    # grupos_calculados, que indexa chave_referencia_por_grupo pra TODOS
+    # os grupos de GRUPOS, nao so os que tem item no carrinho.
+    chave_referencia_por_grupo.setdefault("colares", "colar_sagrado_coracao_de_jesus")
 
     itens_calculados = []
     subtotal_total = 0.0

@@ -189,12 +189,17 @@
   const FORMATO_LABEL = {
     medalha: 'Medalha', entremeio: 'Entremeio', chaveiro: 'Chaveiro',
     medalha_2lados: 'Medalha 2 lados', entremeio_2lados: 'Entremeio 2 lados',
-    chaveiro_2lados: 'Chaveiro 2 lados', cruz_terco: 'Cruz para terço',
+    chaveiro_2lados: 'Chaveiro 2 lados', cruz_terco: 'Cruz para terço', colar: 'Colar',
   };
   const GRUPO_LABEL = {
     padrao: 'medalhas/entremeios', chaveiro: 'chaveiros', duas_faces: 'medalhas/entremeios de 2 lados',
-    cruz_terco: 'cruzes para terço',
+    cruz_terco: 'cruzes para terço', colares: 'colares',
   };
+  // Grupos com preco FIXO, sem faixa de atacado nenhuma (ver
+  // GRUPO_DE_CHAVE em services/pricing.py) -- nao faz sentido mostrar
+  // barra de progresso, "faltam X" ou toast de "desconto desbloqueado"
+  // pra eles (ver conversa 2026-09-11/2026-09-25).
+  const GRUPOS_SEM_ATACADO = ['cruz_terco', 'colares'];
   // mesmo texto usado em app.py (FRETE_RETIRADA_DESCRICAO) pra detectar
   // esse tipo de frete e trocar os rotulos da timeline ("enviado" nao
   // faz sentido pra quem vai retirar -- ver conversa).
@@ -286,6 +291,12 @@
     if (formato === 'cruz_terco') {
       return `${FORMATO_LABEL.cruz_terco} · ${COR_LABEL[item.cor] || item.cor}`;
     }
+    if (formato === 'colar') {
+      // sem tamanho/cor (peca exclusiva do varejo, ver services/
+      // colares.py) -- o nome do proprio colar (produtoNome) ja
+      // identifica a peca.
+      return FORMATO_LABEL.colar;
+    }
     return `${FORMATO_LABEL.medalha} · ${TAMANHO_LABEL[item.tamanho] || item.tamanho}`;
   }
 
@@ -374,7 +385,7 @@
             : 'Foto: já anexada ao pedido, disponível no painel';
           return `${numero}. Personalizada\n${detalhe}\nQuantidade: ${item.quantidade}\n${notaFoto}`;
         }
-        if (item.formato === 'cruz_terco') {
+        if (item.formato === 'cruz_terco' || item.formato === 'colar') {
           return `${numero}. ${item.produtoNome}\n${detalhe}\nQuantidade: ${item.quantidade}`;
         }
         return `${numero}. ${item.produtoNome}\nModelo: ${item.modeloId}\n${detalhe}\nQuantidade: ${item.quantidade}`;
@@ -385,10 +396,9 @@
   function montarLinhasFaixas(calculo) {
     const linhas = [];
     for (const nomeGrupo of Object.keys(calculo.grupos)) {
-      // "cruz_terco" tem preco fixo, sem faixa de atacado (ver
-      // GRUPO_DE_CHAVE em services/pricing.py) -- nao faz sentido listar
-      // "faixa" pra ela na mensagem do pedido.
-      if (nomeGrupo === 'cruz_terco') continue;
+      // grupos de preco fixo (ver GRUPOS_SEM_ATACADO acima) -- nao faz
+      // sentido listar "faixa" pra eles na mensagem do pedido.
+      if (GRUPOS_SEM_ATACADO.includes(nomeGrupo)) continue;
       const grupo = calculo.grupos[nomeGrupo];
       if (grupo.quantidade_total === 0) continue;
       linhas.push(`Faixa de atacado (${GRUPO_LABEL[nomeGrupo] || nomeGrupo}):`, grupo.faixa_label, '');
@@ -458,6 +468,10 @@
   // simulador em vez de nao linkar nada.
   function linkDoProduto(item) {
     if (item.formato === 'cruz_terco') return '/cruz-para-terco';
+    // colares (ver services/colares.py) sao "catalogo" mas NAO estao no
+    // catalogo normal (data/produtos.json) -- tem pagina propria, igual
+    // cruz_terco acima, senao cairia no /produto/<id> generico (404).
+    if (item.formato === 'colar') return '/colares';
     if (item.tipo === 'catalogo' && item.produtoId) return `/produto/${item.produtoId}`;
     if (item.tipo === 'personalizada') return '/personalizada';
     return null;
@@ -466,7 +480,7 @@
   function linhaItem(item, calculo) {
     const linha = document.createElement('article');
     linha.className = 'item-carrinho';
-    const subtitulo = item.tipo === 'personalizada' || item.formato === 'cruz_terco'
+    const subtitulo = item.tipo === 'personalizada' || item.formato === 'cruz_terco' || item.formato === 'colar'
       ? subtituloEditavelHtml(item)
       : `${item.modeloNome} &middot; ${subtituloEditavelHtml(item)}`;
     let avisoFoto = '';
@@ -607,10 +621,9 @@
     // (medalhas/entremeios e chaveiros nao se misturam -- services/pricing.py)
     progressoGruposEl.innerHTML = '';
     for (const nomeGrupo of Object.keys(dados.grupos)) {
-      // "cruz_terco" tem preco fixo, sem faixa de atacado nenhuma (ver
-      // GRUPO_DE_CHAVE em services/pricing.py) -- mostrar uma barra de
-      // "progresso" pra ela sugeriria um desconto que nao existe.
-      if (nomeGrupo === 'cruz_terco') continue;
+      // grupos de preco fixo (ver GRUPOS_SEM_ATACADO acima) -- mostrar
+      // uma barra de "progresso" pra eles sugeriria um desconto que nao existe.
+      if (GRUPOS_SEM_ATACADO.includes(nomeGrupo)) continue;
       const grupo = dados.grupos[nomeGrupo];
       if (grupo.quantidade_total === 0) continue;
       const bloco = document.createElement('div');
@@ -676,12 +689,12 @@
     // toast de comemoracao -- so depois da primeira renderizacao, pra nao
     // disparar assim que a pagina abre com um carrinho ja em faixa alta.
     if (!primeiraRenderizacao) {
-      // "cruz_terco" nunca teve preco "desbloqueado" de verdade (preco
-      // fixo, sem faixa -- ver GRUPO_DE_CHAVE em services/pricing.py):
-      // sem esse filtro, adicionar a PRIMEIRA cruz mudaria o faixa_label
-      // dela de "" pra "1+ unidades" e disparava esse toast por engano.
+      // grupos de preco fixo (ver GRUPOS_SEM_ATACADO acima) nunca tem
+      // preco "desbloqueado" de verdade: sem esse filtro, adicionar o
+      // PRIMEIRO item mudaria o faixa_label dele de "" pra "1+ unidades"
+      // e disparava esse toast por engano.
       const grupoMudou = Object.keys(dados.grupos).find(
-        (g) => g !== 'cruz_terco' && dados.grupos[g].quantidade_total > 0 && dados.grupos[g].faixa_label !== faixasAnteriores[g]
+        (g) => !GRUPOS_SEM_ATACADO.includes(g) && dados.grupos[g].quantidade_total > 0 && dados.grupos[g].faixa_label !== faixasAnteriores[g]
       );
       if (grupoMudou) {
         const itemDoGrupo = dados.itens.find((i) => GRUPO_DE_CHAVE[i.chave_preco] === grupoMudou);

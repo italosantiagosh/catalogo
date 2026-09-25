@@ -1726,6 +1726,24 @@ fieldset.cores legend {
   margin-bottom: 20px;
 }
 
+/* Colares -- peca exclusiva do varejo (ver conversa 2026-09-25 e
+   templates/colares.html): cada colar publicado vira uma secao com
+   galeria + descricao + botao proprio, separadas por uma borda quando
+   houver mais de um (Nossa Senhora/Sao Jose entram aqui assim que
+   tiverem foto de verdade, ver services/colares.py). */
+.colar-item {
+  padding: 20px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.colar-item:last-of-type {
+  border-bottom: none;
+}
+
+.colar-item h2 {
+  margin-top: 0;
+}
+
 .quantidade label {
   display: block;
   font-size: 0.85rem;

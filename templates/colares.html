@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+
+{% block titulo %}Colares em banhado a ouro — peças exclusivas do varejo | Nove de Julho{% endblock %}
+{% block meta_descricao %}Colares em banhado a ouro, peças exclusivas do varejo (sem desconto de atacado): Sagrado Coração de Jesus e mais devoções, prontos pra usar ou presentear.{% endblock %}
+{% block og_imagem %}{{ url_for('static', filename=colares[0].imagem_frente) if colares else '' }}{% endblock %}
+
+{% block conteudo %}
+  <script type="application/ld+json">{{ dados_breadcrumb | tojson }}</script>
+  <nav class="breadcrumbs" aria-label="Breadcrumb">
+    <a href="{{ url_for('index') }}">Início</a>
+    <span>›</span>
+    <span aria-current="page">Colares</span>
+  </nav>
+
+  <h1>Colares</h1>
+  <p class="instrucao">
+    Peças exclusivas do varejo, banhadas a ouro — não entram na tabela de
+    desconto por quantidade das medalhas/entremeios, preço único por peça.
+  </p>
+
+  {% for colar in colares %}
+    <section class="colar-item" id="colar-{{ colar.id }}">
+      <h2>{{ colar.nome }}</h2>
+
+      <div class="destaques-linha colar-galeria">
+        <img src="{{ url_for('static', filename=colar.imagem_frente) }}" alt="{{ colar.nome }}"
+          loading="lazy" decoding="async" width="480" height="480" style="border-radius: 14px;">
+        <img src="{{ url_for('static', filename=colar.imagem_detalhe) }}" alt="{{ colar.nome }} — detalhe do pingente"
+          loading="lazy" decoding="async" width="480" height="480" style="border-radius: 14px;">
+        <img src="{{ url_for('static', filename=colar.imagem_uso) }}" alt="{{ colar.nome }} — sendo usado"
+          loading="lazy" decoding="async" width="480" height="480" style="border-radius: 14px;">
+      </div>
+
+      {% for paragrafo in colar.descricao %}
+        <p>{{ paragrafo }}</p>
+      {% endfor %}
+
+      {% if colar.medidas %}
+        <p class="instrucao">📏 {{ colar.medidas }}</p>
+      {% endif %}
+
+      <div class="quantidade">
+        <label for="colar-quantidade-{{ colar.id }}">Quantidade</label>
+        <div class="stepper">
+          <button type="button" class="colar-qtd-menos" data-colar="{{ colar.id }}" aria-label="Diminuir quantidade">−</button>
+          <input type="number" id="colar-quantidade-{{ colar.id }}" class="colar-quantidade" value="1" min="1" inputmode="numeric">
+          <button type="button" class="colar-qtd-mais" data-colar="{{ colar.id }}" aria-label="Aumentar quantidade">+</button>
+        </div>
+      </div>
+
+      <div class="preview-preco colar-preview-preco" id="colar-preview-preco-{{ colar.id }}"></div>
+
+      <button type="button" class="botao-carrinho colar-btn-adicionar"
+        data-colar="{{ colar.id }}" data-nome="{{ colar.nome }}" data-preco="{{ colar.preco }}"
+        data-chave-preco="{{ colar.chave_preco }}" data-imagem="{{ url_for('static', filename=colar.imagem_frente) }}">
+        Adicionar ao carrinho — {{ colar.preco | preco }}
+      </button>
+    </section>
+  {% endfor %}
+
+  <div class="selo-confianca">
+    <div class="selo-item">
+      <span class="selo-icone">✨</span>
+      <strong>Banhado a ouro</strong>
+      peça exclusiva do varejo
+    </div>
+    <div class="selo-divisor"></div>
+    <div class="selo-item">
+      <span class="selo-icone"><img src="{{ url_for('static', filename='img/icones/brasil.svg') }}" alt="" class="selo-icone-brasil"></span>
+      <strong>Envio</strong>
+      para todo o Brasil
+    </div>
+  </div>
+
+  <p class="instrucao">
+    Procurando medalhas, entremeios ou chaveiros com desconto de atacado?
+    <a href="{{ url_for('catalogo_completo') }}">Veja o catálogo completo →</a>
+  </p>
+{% endblock %}
+
+{% block script %}
+  <script src="{{ url_for('static', filename='js/colares.js') }}"></script>
+{% endblock %}

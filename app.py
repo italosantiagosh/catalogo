@@ -278,6 +278,7 @@ from services.tiny import buscar_contatos_tiny, criar_pedido_tiny, erro_e_duplic
 from services.gerador.compositor import auto_cover_box, compose_medal, crop_to_box, load_rgba
 from services.gerador.config import IMAGE_EXTENSIONS, MEDAL_SPECS
 from services.pricing import CHAVES_PRECO, calcular_carrinho, pedido_minimo_reais, preco_varejo, tabela_de_faixas
+from services.colares import colares_publicados
 
 app = Flask(__name__)
 app.config["MAX_CONTENT_LENGTH"] = 60 * 1024 * 1024  # 60MB no total do upload
@@ -1045,6 +1046,7 @@ def sitemap_xml():
         (url_for("personalizada"), "monthly", "0.7"),
         (url_for("kit_livraria_shalom"), "monthly", "0.6"),
         (url_for("cruz_para_terco"), "monthly", "0.6"),
+        (url_for("colares"), "monthly", "0.6"),
         (url_for("liturgia_outubro"), "monthly", "0.6"),
     ]
     entradas += [(url_for("landing_pagina", slug=s), "monthly", "0.6") for s in PAGINAS_LANDING]
@@ -1358,6 +1360,7 @@ def index():
         procurados=procurados,
         categorias=categorias,
         cores_cruz_terco=_cores_cruz_terco(),
+        colares=[{**c, "preco": preco_varejo(c["chave_preco"])} for c in colares_publicados()],
     )
 
 
@@ -1488,6 +1491,28 @@ def cruz_para_terco():
     return render_template(
         "cruz_terco.html",
         cores=cores,
+        dados_breadcrumb=dados_breadcrumb,
+    )
+
+
+@app.route("/colares", methods=["GET"])
+def colares():
+    """Colares -- peca EXCLUSIVA DO VAREJO (pedido em 2026-09-25), preco
+    fixo R$97,00 (ver services/colares.py), mesmo padrao de pagina dedicada
+    do /cruz-para-terco acima (nao usa produto.html generico -- essas
+    pecas nao tem santo/modelo/tamanho/cor). So mostra os colares com foto
+    de verdade (colares_publicados() -- Nossa Senhora e Sao Jose ainda nao
+    tem, ver conversa)."""
+    itens = [{**c, "preco": preco_varejo(c["chave_preco"])} for c in colares_publicados()]
+    dados_breadcrumb = _dados_breadcrumb(
+        [
+            ("Início", url_for("index", _external=True)),
+            ("Colares", url_for("colares", _external=True)),
+        ]
+    )
+    return render_template(
+        "colares.html",
+        colares=itens,
         dados_breadcrumb=dados_breadcrumb,
     )
 
@@ -2063,6 +2088,7 @@ _FORMATO_LABEL = {
     "medalha": "Medalha", "entremeio": "Entremeio", "chaveiro": "Chaveiro",
     "medalha_2lados": "Medalha 2 lados", "entremeio_2lados": "Entremeio 2 lados",
     "chaveiro_2lados": "Chaveiro 2 lados", "cruz_terco": "Cruz para terço",
+    "colar": "Colar",
 }
 
 
@@ -2093,6 +2119,11 @@ def _detalhe_formato_do_item(item: dict) -> str:
         # 2026-09-11) -- so a cor muda.
         cor = str(item.get("cor", ""))
         return f"{_FORMATO_LABEL['cruz_terco']} · {_COR_LABEL.get(cor, cor)}"
+    if formato == "colar":
+        # sem tamanho/cor (peca exclusiva do varejo, ver services/
+        # colares.py) -- so o nome do proprio colar (produtoNome) ja
+        # identifica a peca, o formato aqui e´ so pra rotulo generico.
+        return _FORMATO_LABEL["colar"]
     tamanho = str(item.get("tamanho", ""))
     return f"{_FORMATO_LABEL['medalha']} · {_TAMANHO_LABEL.get(tamanho, tamanho)}"
 
