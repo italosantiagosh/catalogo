@@ -711,7 +711,7 @@ def _foto_avaliacao_para_data_uri(arquivo: FileStorage) -> str:
     pra 2 fotos pesadas (de endpoints diferentes) nao somarem o pico de
     memoria ao mesmo tempo."""
     if not _LIMITE_PROCESSAMENTO_IMAGEM_PESADO.acquire(timeout=_TIMEOUT_ESPERA_PROCESSAMENTO_SEGUNDOS):
-        raise TimeoutError("muita gente enviando foto agora, tenta de novo em instantes")
+        raise TimeoutError(_MENSAGEM_FILA_PROCESSAMENTO_CHEIA)
     try:
         imagem = Image.open(arquivo.stream)
         largura, altura = imagem.size
@@ -783,8 +783,25 @@ def _salvar_temp(arquivo: FileStorage) -> tempfile._TemporaryFileWrapper:
 # extras esperam alguns segundos na fila em vez de estourarem a memoria
 # junto; o timeout fica abaixo do --timeout 90 do gunicorn pra devolver
 # um erro tratavel em vez do worker inteiro travar esperando.
+#
+# Reduzido de 60s pra 20s (pedido em 2026-09-25, apos a queda por OOM das
+# 12:13): 60s de fila por request e´ tempo demais segurando memoria
+# (raw upload + thread) esperando a vez -- 20s libera mais rapido sob
+# pico, ao custo de errar mais cedo pra quem realmente precisava esperar
+# um pouco mais. A mensagem de erro (ver jsonify(erro=...) abaixo/em
+# api_personalizada_preview) usa essa MESMA constante pra nunca dessincronizar
+# do numero real de segundos.
 _LIMITE_PROCESSAMENTO_IMAGEM_PESADO = threading.Semaphore(1)
-_TIMEOUT_ESPERA_PROCESSAMENTO_SEGUNDOS = 60
+_TIMEOUT_ESPERA_PROCESSAMENTO_SEGUNDOS = 20
+
+# Mensagem mostrada quando o timeout acima estoura (fila cheia) -- pedido
+# em 2026-09-25: "o erro seria bom não ser apenas 'tente de novo'... pedir
+# pra aguardar X segundos" -- interpola a MESMA constante do timeout, pra
+# o numero de segundos mostrado nunca desincronizar do real.
+_MENSAGEM_FILA_PROCESSAMENTO_CHEIA = (
+    f"A demanda de simulações está alta no momento. "
+    f"Aguarde uns {_TIMEOUT_ESPERA_PROCESSAMENTO_SEGUNDOS} segundos e tente de novo."
+)
 
 
 # Fotos de celular moderno passam facil de 12-48MP -- processar em
@@ -5669,7 +5686,7 @@ def api_avaliacoes_criar():
         try:
             foto_data_uri = _foto_avaliacao_para_data_uri(arquivo)
         except TimeoutError:
-            return jsonify(erro="Muita gente enviando foto agora, tenta de novo em alguns segundos."), 503
+            return jsonify(erro=_MENSAGEM_FILA_PROCESSAMENTO_CHEIA), 503
         except Exception:
             return jsonify(erro="Não foi possível processar a foto enviada."), 400
 
@@ -6184,7 +6201,7 @@ def api_personalizada_preview():
     # do worker (_reciclar_worker_se_memoria_alta acima).
     memoria_antes = _memoria_atual_mb()
     if not _LIMITE_PROCESSAMENTO_IMAGEM_PESADO.acquire(timeout=_TIMEOUT_ESPERA_PROCESSAMENTO_SEGUNDOS):
-        return jsonify(erro="Muita gente enviando foto agora, tenta de novo em alguns segundos."), 503
+        return jsonify(erro=_MENSAGEM_FILA_PROCESSAMENTO_CHEIA), 503
     try:
         with _salvar_temp(arquivo) as tmp:
             caminho = Path(tmp.name)
