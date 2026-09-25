@@ -2544,6 +2544,40 @@ def api_calcular_carrinho():
     return jsonify(calcular_carrinho(itens_validos))
 
 
+_QUANTIDADE_SUGESTOES_PEDIDO_MINIMO = 3
+
+
+@app.route("/api/carrinho/sugestoes-pedido-minimo", methods=["GET"])
+def api_sugestoes_pedido_minimo():
+    """Sugestoes pra completar o pedido minimo (ver conversa 2026-09-25:
+    a hipotese de quem clica num anuncio de UM produto, adiciona so ele
+    ao carrinho -- geralmente bem abaixo dos R$30 -- e desiste ao ver o
+    popup avisando do minimo, em vez de continuar comprando). Mostra os
+    mais vendidos primeiro (ver _com_vendas_recentes/VENDAS_RECENTES_DIAS
+    -- mesmo sinal de prova social ja usado no card do catalogo), excluindo
+    o que a pessoa ja tem no carrinho, sempre no menor formato/preco
+    (12mm) pra caber facil na conta que falta."""
+    ids_no_carrinho = {v for v in request.args.get("excluir", "").split(",") if v}
+    produtos = [p for p in carregar_produtos() if p["id"] not in ids_no_carrinho]
+    vendas = unidades_vendidas_por_produto(VENDAS_RECENTES_DIAS)
+    produtos.sort(key=lambda p: vendas.get(p["id"], 0), reverse=True)
+    preco_unidade = preco_varejo("12mm")
+    sugestoes = []
+    for p in produtos[:_QUANTIDADE_SUGESTOES_PEDIDO_MINIMO]:
+        modelo = p["modelos"][0]
+        sugestoes.append(
+            {
+                "id": p["id"],
+                "nome": p["nome"],
+                "modelo_id": modelo["id"],
+                "modelo_nome": modelo["nome"],
+                "thumbnail": url_for("static", filename=modelo["imagem"]),
+                "preco": preco_unidade,
+            }
+        )
+    return jsonify(sugestoes=sugestoes)
+
+
 @app.route("/api/frete/calcular", methods=["POST"])
 @limiter.limit("20 per minute")
 def api_calcular_frete():

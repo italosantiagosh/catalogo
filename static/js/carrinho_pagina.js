@@ -1171,18 +1171,88 @@
   // greve dos Correios acima (2 jeitos de fechar: X e botao).
   const modalAvisoMinimo = document.getElementById('modal-aviso-minimo');
   const avisoMinimoModalTexto = document.getElementById('aviso-minimo-modal-texto');
+  const avisoMinimoSugestoesEl = document.getElementById('aviso-minimo-sugestoes');
+  const avisoMinimoSugestoesLinhaEl = document.getElementById('aviso-minimo-sugestoes-linha');
   const btnAvisoMinimoFechar = document.getElementById('btn-aviso-minimo-fechar');
   const btnAvisoMinimoContinuar = document.getElementById('btn-aviso-minimo-continuar');
   function fecharAvisoMinimo() {
     if (modalAvisoMinimo) modalAvisoMinimo.hidden = true;
   }
+
+  // Sugestoes pra completar o minimo direto no popup, sem precisar sair
+  // pro catalogo (ver conversa 2026-09-25: quem clica num anuncio de UM
+  // produto, adiciona so ele -- bem abaixo dos R$30 -- e desiste ao ver
+  // esse aviso; oferecer o proximo santo com 1 clique aqui mesmo evita
+  // essa saida). Mostra so enquanto ainda falta pro minimo -- some
+  // sozinho assim que o carrinho bate os R$30 (ver cardSugestaoClick).
+  async function carregarSugestoesPedidoMinimo() {
+    if (!avisoMinimoSugestoesEl || !avisoMinimoSugestoesLinhaEl) return;
+    const idsNoCarrinho = ultimosItens
+      .filter((item) => item.tipo === 'catalogo' && item.produtoId)
+      .map((item) => item.produtoId);
+    let sugestoes = [];
+    try {
+      const resposta = await fetch(`/api/carrinho/sugestoes-pedido-minimo?excluir=${encodeURIComponent(idsNoCarrinho.join(','))}`);
+      const dados = await resposta.json();
+      sugestoes = dados.sugestoes || [];
+    } catch (e) {
+      sugestoes = [];
+    }
+    if (sugestoes.length === 0) {
+      avisoMinimoSugestoesEl.hidden = true;
+      return;
+    }
+    avisoMinimoSugestoesLinhaEl.innerHTML = '';
+    sugestoes.forEach((sugestao) => {
+      const card = document.createElement('button');
+      card.type = 'button';
+      card.className = 'destaque-card destaque-card-sugestao';
+      card.innerHTML =
+        `<img src="${sugestao.thumbnail}" alt="${sugestao.nome}" loading="lazy">` +
+        `<span>${sugestao.nome}<br><strong>+ ${formatarPreco(sugestao.preco)}</strong></span>`;
+      card.addEventListener('click', async () => {
+        card.disabled = true;
+        carrinhoAdicionarItem({
+          chave: `${sugestao.id}-${sugestao.modelo_id}-medalha-12mm`,
+          tipo: 'catalogo',
+          produtoId: sugestao.id,
+          produtoNome: sugestao.nome,
+          modeloId: sugestao.modelo_id,
+          modeloNome: sugestao.modelo_nome,
+          imagem: sugestao.thumbnail,
+          imagensCor: null,
+          formato: 'medalha',
+          chave_preco: '12mm',
+          tamanho: '12mm',
+          cor: 'prata',
+          quantidade: 1,
+        });
+        rastrearEventoGA4('add_to_cart_sugestao_minimo', { item_id: sugestao.id, value: sugestao.preco, currency: 'BRL' });
+        await render();
+        if (ultimoCalculo && ultimoCalculo.atinge_minimo) {
+          avisoMinimoModalTexto.textContent = '🎉 Prontinho, já chegou no pedido mínimo! Pode continuar pro pagamento.';
+          avisoMinimoSugestoesEl.hidden = true;
+        } else if (ultimoCalculo) {
+          const faltamAgora = ultimoCalculo.pedido_minimo_reais - ultimoCalculo.subtotal_total;
+          avisoMinimoModalTexto.textContent =
+            `Faltam ${formatarPreco(faltamAgora)} em produtos para o pedido mínimo de ` +
+            `${formatarPreco(ultimoCalculo.pedido_minimo_reais)} (o frete é à parte e não entra nessa conta).`;
+          await carregarSugestoesPedidoMinimo();
+        }
+      });
+      avisoMinimoSugestoesLinhaEl.appendChild(card);
+    });
+    avisoMinimoSugestoesEl.hidden = false;
+  }
+
   function mostrarPopupAvisoMinimo(faltamParaMinimo, minimoReais) {
     if (!modalAvisoMinimo || !avisoMinimoModalTexto) return;
     avisoMinimoModalTexto.textContent =
       `Faltam ${formatarPreco(faltamParaMinimo)} em produtos para o pedido mínimo de ` +
       `${formatarPreco(minimoReais)} (o frete é à parte e não entra nessa conta). ` +
-      `Que tal dar uma olhada no catálogo pra completar?`;
+      `Que tal completar com mais um santo?`;
     modalAvisoMinimo.hidden = false;
+    carregarSugestoesPedidoMinimo();
   }
   if (btnAvisoMinimoFechar) btnAvisoMinimoFechar.addEventListener('click', fecharAvisoMinimo);
   if (btnAvisoMinimoContinuar) btnAvisoMinimoContinuar.addEventListener('click', fecharAvisoMinimo);

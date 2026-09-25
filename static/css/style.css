@@ -3127,6 +3127,35 @@ body.tem-barra-fixa-comprar main {
   line-height: 1.25;
 }
 
+/* Sugestoes pra completar o pedido minimo dentro do proprio popup (ver
+   conversa 2026-09-25) -- reaproveita o .destaque-card de cima, so que
+   em <button> em vez de <a> (adiciona ao carrinho na hora, nao navega). */
+.aviso-minimo-sugestoes {
+  margin: 14px 0;
+  text-align: left;
+}
+
+.aviso-minimo-sugestoes-titulo {
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.destaque-card-sugestao {
+  font: inherit;
+  cursor: pointer;
+  padding: 0;
+}
+
+.destaque-card-sugestao span strong {
+  color: var(--gold-texto-claro);
+}
+
+.destaque-card-sugestao:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
 /* banner de destaque para a personalizada e o kit sugerido, na home --
    imagens fornecidas pelo cliente, ver templates/index.html */
 
