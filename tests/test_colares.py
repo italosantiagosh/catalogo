@@ -40,20 +40,36 @@ def test_todos_os_colares_estao_publicados():
     assert ids_todos == {c["id"] for c in publicados}
 
 
-def test_pagina_colares_mostra_todas_as_pecas_publicadas(client):
+def test_rota_colares_redireciona_pra_linha_premium(client):
     resposta = client.get("/colares")
-    body = resposta.get_data(as_text=True)
-    assert resposta.status_code == 200
+    assert resposta.status_code == 301
+    assert resposta.headers["Location"] == "/linha-premium"
+
+
+def test_cada_colar_tem_a_propria_pagina_de_produto(client):
+    for colar_id, nome in [
+        ("sagrado-coracao-de-jesus", "Colar Sagrado Coração de Jesus"),
+        ("imaculado-coracao-de-maria", "Colar Imaculado Coração de Maria"),
+        ("castissimo-coracao-de-sao-jose", "Colar Castíssimo Coração de São José"),
+    ]:
+        resposta = client.get(f"/linha-premium/{colar_id}")
+        body = resposta.get_data(as_text=True)
+        assert resposta.status_code == 200
+        assert nome in body
+        assert "R$ 97,00" in body
+
+
+def test_pagina_linha_premium_lista_todos_os_colares(client):
+    body = client.get("/linha-premium").get_data(as_text=True)
     assert "Colar Sagrado Coração de Jesus" in body
     assert "Colar Imaculado Coração de Maria" in body
     assert "Colar Castíssimo Coração de São José" in body
-    assert "R$ 97,00" in body
 
 
 def test_home_mostra_card_do_colar_publicado(client):
     body = client.get("/").get_data(as_text=True)
-    assert "Colares" in body
-    assert "/colares#colar-sagrado-coracao-de-jesus" in body
+    assert "Linha Premium" in body
+    assert "/linha-premium/sagrado-coracao-de-jesus" in body
 
 
 def test_colar_tem_preco_fixo_sem_faixa_de_atacado():
@@ -95,13 +111,13 @@ def test_api_calcular_carrinho_aceita_colar(client):
     assert dados["atinge_minimo"] is True
 
 
-def test_pagina_colares_tem_json_ld_valido_por_peca(client):
-    body = client.get("/colares").get_data(as_text=True)
+def test_pagina_do_colar_tem_json_ld_valido(client):
+    body = client.get("/linha-premium/sagrado-coracao-de-jesus").get_data(as_text=True)
     blocos = re.findall(r'<script type="application/ld\+json">(.*?)</script>', body, re.S)
-    assert len(blocos) >= 4  # breadcrumb + 3 produtos
+    assert len(blocos) >= 2  # breadcrumb + produto
     dados_produto = [json.loads(b) for b in blocos if '"@type": "Product"' in b]
-    assert len(dados_produto) == 3
-    assert all(d["offers"]["price"] == "97.00" for d in dados_produto)
+    assert len(dados_produto) == 1
+    assert dados_produto[0]["offers"]["price"] == "97.00"
 
 
 def test_avaliar_pagina_isolada_aceita_colar(client):
@@ -123,7 +139,7 @@ def test_envia_e_lista_avaliacao_de_colar(client):
     pendente = next(a for a in listar_avaliacoes(status="pendente") if a["produto_id"] == "sagrado-coracao-de-jesus")
     atualizar_status(pendente["id"], "aprovada")
 
-    body = client.get("/colares").get_data(as_text=True)
+    body = client.get("/linha-premium/sagrado-coracao-de-jesus").get_data(as_text=True)
     assert "Ana Teste" in body
     assert "Amei!" in body
 

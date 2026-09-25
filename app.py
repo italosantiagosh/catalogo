@@ -50,6 +50,7 @@ import threading
 import time
 import zipfile
 from datetime import datetime, timedelta, timezone
+from typing import Callable
 from zoneinfo import ZoneInfo
 from pathlib import Path
 from urllib.parse import urlsplit
@@ -1048,10 +1049,16 @@ def sitemap_xml():
         (url_for("personalizada"), "monthly", "0.7"),
         (url_for("kit_livraria_shalom"), "monthly", "0.6"),
         (url_for("cruz_para_terco"), "monthly", "0.6"),
-        (url_for("colares"), "monthly", "0.6"),
-        (url_for("pulseiras"), "monthly", "0.6"),
-        (url_for("relicarios"), "monthly", "0.6"),
+        (url_for("linha_premium"), "monthly", "0.6"),
         (url_for("liturgia_outubro"), "monthly", "0.6"),
+    ]
+    # cada peca da Linha Premium tem sua propria pagina de produto agora
+    # (ver linha_premium_item, pedido em 2026-09-25 2a parte) -- entra no
+    # sitemap individualmente, igual /produto/<id> do catalogo normal, em
+    # vez de so a pagina-hub /linha-premium acima.
+    entradas += [
+        (url_for("linha_premium_item", peca_id=p["id"]), "monthly", "0.6")
+        for p in colares_publicados() + pulseiras_publicadas() + relicarios_publicados()
     ]
     entradas += [(url_for("landing_pagina", slug=s), "monthly", "0.6") for s in PAGINAS_LANDING]
     entradas += [
@@ -1364,9 +1371,15 @@ def index():
         procurados=procurados,
         categorias=categorias,
         cores_cruz_terco=_cores_cruz_terco(),
-        colares=[{**c, "preco": preco_varejo(c["chave_preco"])} for c in colares_publicados()],
-        pulseiras=[{**p, "preco": preco_varejo(p["chave_preco"])} for p in pulseiras_publicadas()],
-        relicarios=[{**r, "preco": preco_varejo(r["chave_preco"])} for r in relicarios_publicados()],
+        # Linha Premium (pedido em 2026-09-25, 2a parte: "coloca tudo numa
+        # linha so, os colares, pulseiras e relicários") -- 1 unica secao
+        # na home com as 3 categorias juntas, cada card leva direto pra
+        # pagina de produto individual da peca (ver linha_premium_item).
+        linha_premium_pecas=(
+            [{**c, "preco": preco_varejo(c["chave_preco"])} for c in colares_publicados()]
+            + [{**p, "preco": preco_varejo(p["chave_preco"])} for p in pulseiras_publicadas()]
+            + [{**r, "preco": preco_varejo(r["chave_preco"])} for r in relicarios_publicados()]
+        ),
     )
 
 
@@ -1501,21 +1514,30 @@ def cruz_para_terco():
     )
 
 
-def _itens_peca_varejo_com_avaliacoes(itens: list[dict], rota: str) -> list[dict]:
-    """Enriquece cada colar/pulseira com preco + avaliacoes reais + o
-    mesmo JSON-LD de Product/Offer/AggregateRating usado em produto()
-    acima (rich snippet no Google) -- pedido em 2026-09-25: "não tem
-    como fazer no mesmo estilo [da Parresia]... sendo que melhor".
+def _itens_peca_varejo_com_avaliacoes(
+    itens: list[dict], rota: str, *, url_por_item: Callable[[dict], str] | None = None
+) -> list[dict]:
+    """Enriquece cada colar/pulseira/relicario com preco + avaliacoes
+    reais + o mesmo JSON-LD de Product/Offer/AggregateRating usado em
+    produto() acima (rich snippet no Google) -- pedido em 2026-09-25: "não
+    tem como fazer no mesmo estilo [da Parresia]... sendo que melhor".
     Reaproveita o sistema de avaliacoes de verdade (_produto_para_
-    avaliar ja resolve colar/pulseira, ver acima) em vez de inventar
-    prova social falsa (sem contador de estoque fake nem cronometro de
-    oferta -- essas pecas nao tem controle de estoque de verdade pra
-    sustentar isso)."""
+    avaliar ja resolve colar/pulseira/relicario, ver acima) em vez de
+    inventar prova social falsa (sem contador de estoque fake nem
+    cronometro de oferta -- essas pecas nao tem controle de estoque de
+    verdade pra sustentar isso).
+
+    `url_por_item` (pedido em 2026-09-25, 2a parte: "pode ser uma página
+    de produto pra cada um deles") sobrescreve `rota` quando a URL de
+    cada peca precisa de um parametro por item (linha_premium_item/
+    <peca_id>) em vez de uma rota fixa sem argumento -- rota continua
+    existindo so pro `url_for(rota, ...)` generico funcionar quando
+    `url_por_item` nao e´ passado."""
     resultado = []
     for item in itens:
         avaliacoes_aprovadas = listar_avaliacoes_aprovadas(item["id"])
         media_avaliacoes, total_avaliacoes = media_e_total_aprovadas(item["id"])
-        url_item = url_for(rota, _external=True)
+        url_item = url_por_item(item) if url_por_item else url_for(rota, _external=True)
         imagem_url = url_for("static", filename=item["imagens"][0]["src"], _external=True)
         dados_produto = {
             "@context": "https://schema.org",
@@ -1583,72 +1605,111 @@ def _itens_peca_varejo_com_avaliacoes(itens: list[dict], rota: str) -> list[dict
     return resultado
 
 
-@app.route("/colares", methods=["GET"])
-def colares():
-    """Colares -- peca EXCLUSIVA DO VAREJO (pedido em 2026-09-25), preco
-    fixo R$97,00 (ver services/colares.py), mesmo padrao de pagina dedicada
-    do /cruz-para-terco acima (nao usa produto.html generico -- essas
-    pecas nao tem santo/modelo/tamanho/cor). So mostra os colares com foto
-    de verdade (colares_publicados() -- Nossa Senhora e Sao Jose ainda nao
-    tem, ver conversa)."""
-    itens = _itens_peca_varejo_com_avaliacoes(colares_publicados(), "colares")
+def _peca_linha_premium_por_id(peca_id: str) -> tuple[dict, str] | tuple[None, None]:
+    """Resolve um id de peca exclusiva do varejo (colar/pulseira/
+    relicario, ids unicos entre si) pro seu dict + tipo -- usado por
+    linha_premium_item() abaixo e por _produto_para_avaliar/
+    pagina_avaliacoes (que ja tinham essa mesma cadeia de ifs repetida 3x,
+    ver conversa 2026-09-25 2a parte: "pode ser uma página de produto pra
+    cada um deles")."""
+    colar = colar_por_id(peca_id)
+    if colar is not None:
+        return colar, "colar"
+    pulseira = pulseira_por_id(peca_id)
+    if pulseira is not None:
+        return pulseira, "pulseira"
+    relicario = relicario_por_id(peca_id)
+    if relicario is not None:
+        return relicario, "relicario"
+    return None, None
+
+
+@app.route("/linha-premium", methods=["GET"])
+def linha_premium():
+    """Hub da Linha Premium -- pecas exclusivas do varejo (colares,
+    pulseiras, relicarios) reunidas numa linha so (pedido em 2026-09-25,
+    2a parte: "coloca tudo numa linha so, os colares, pulseiras e
+    relicários... linha premium"). Cada card leva pra sua PROPRIA pagina
+    de produto (linha_premium_item abaixo) -- antes cada categoria tinha
+    uma pagina grande com todas as pecas juntas (/colares, /pulseiras,
+    /relicarios, ver conversa: "estão tudo em uma página só e grande, não
+    precisa disso"), mantidas so como redirect 301 mais abaixo pra nao
+    quebrar link/bookmark antigo."""
+    pecas = (
+        [{**c, "tipo": "colar", "preco": preco_varejo(c["chave_preco"])} for c in colares_publicados()]
+        + [{**p, "tipo": "pulseira", "preco": preco_varejo(p["chave_preco"])} for p in pulseiras_publicadas()]
+        + [{**r, "tipo": "relicario", "preco": preco_varejo(r["chave_preco"])} for r in relicarios_publicados()]
+    )
     dados_breadcrumb = _dados_breadcrumb(
         [
             ("Início", url_for("index", _external=True)),
-            ("Colares", url_for("colares", _external=True)),
+            ("Linha Premium", url_for("linha_premium", _external=True)),
         ]
     )
     return render_template(
-        "colares.html",
-        colares=itens,
+        "linha_premium.html",
+        pecas=pecas,
         dados_breadcrumb=dados_breadcrumb,
     )
+
+
+@app.route("/linha-premium/<peca_id>", methods=["GET"])
+def linha_premium_item(peca_id: str):
+    """Pagina de produto individual de UMA peca da Linha Premium (colar,
+    pulseira ou relicario) -- pedido em 2026-09-25, 2a parte: "pode ser
+    uma página de produto pra cada um deles" (antes as 3 pecas de colar
+    ficavam todas juntas numa pagina so, ver /colares no historico). Preco
+    fixo (sem tabela de atacado, ver services/pricing.py:GRUPO_DE_CHAVE),
+    mesmo padrao de /cruz-para-terco (nao usa produto.html generico --
+    essas pecas nao tem santo/modelo/tamanho/cor). Relicario personalizavel
+    e sua corrente companheira (ver services/relicarios.py) sao tratados
+    de forma generica no template (`item.personalizavel`/`item.corrente`
+    simplesmente nao existem no dict de colar/pulseira, entao os blocos
+    correspondentes nao aparecem pra eles -- Jinja trata atributo ausente
+    como falso)."""
+    peca, tipo = _peca_linha_premium_por_id(peca_id)
+    if peca is None:
+        abort(404)
+    item = _itens_peca_varejo_com_avaliacoes(
+        [peca], "linha_premium_item", url_por_item=lambda i: url_for("linha_premium_item", peca_id=i["id"], _external=True)
+    )[0]
+    if item.get("corrente") is not None:
+        item["corrente"] = {**item["corrente"], "preco": preco_varejo(item["corrente"]["chave_preco"])}
+    dados_breadcrumb = _dados_breadcrumb(
+        [
+            ("Início", url_for("index", _external=True)),
+            ("Linha Premium", url_for("linha_premium", _external=True)),
+            (item["nome"], url_for("linha_premium_item", peca_id=peca_id, _external=True)),
+        ]
+    )
+    return render_template(
+        "linha_premium_item.html",
+        item=item,
+        tipo=tipo,
+        dados_breadcrumb=dados_breadcrumb,
+    )
+
+
+@app.route("/colares", methods=["GET"])
+def colares():
+    """Pagina grande com os 3 colares juntos virou pagina individual por
+    peca (ver linha_premium_item acima, pedido em 2026-09-25, 2a parte) --
+    mantida so como redirect 301 pra nao quebrar link/bookmark antigo
+    (essa URL ja foi pro ar em producao antes dessa mudanca)."""
+    return redirect(url_for("linha_premium"), code=301)
 
 
 @app.route("/pulseiras", methods=["GET"])
 def pulseiras():
-    """Pulseiras -- peca EXCLUSIVA DO VAREJO (pedido em 2026-09-25, mesma
-    conversa/padrao de /colares acima), preco fixo R$197,00 (ver services/
-    pulseiras.py)."""
-    itens = _itens_peca_varejo_com_avaliacoes(pulseiras_publicadas(), "pulseiras")
-    dados_breadcrumb = _dados_breadcrumb(
-        [
-            ("Início", url_for("index", _external=True)),
-            ("Pulseiras", url_for("pulseiras", _external=True)),
-        ]
-    )
-    return render_template(
-        "pulseiras.html",
-        pulseiras=itens,
-        dados_breadcrumb=dados_breadcrumb,
-    )
+    """Mesmo criterio do /colares acima."""
+    return redirect(url_for("linha_premium"), code=301)
 
 
 @app.route("/relicarios", methods=["GET"])
 def relicarios():
-    """Relicarios -- peca EXCLUSIVA DO VAREJO (pedido em 2026-09-25, mesma
-    conversa/padrao de /colares e /pulseiras acima). Dois modelos sao
-    personalizaveis com foto do cliente (ver services/relicarios.py) e tem
-    uma CORRENTE companheira pra upsell -- essa corrente NAO tem pagina
-    propria (so o complemento, ver conversa: "sem página própria"), entao
-    o preco dela e´ calculado aqui e anexado em `item.corrente.preco` pro
-    template mostrar o aviso "compre junto" e o JS montar o popup de
-    upsell ao adicionar no carrinho."""
-    itens = _itens_peca_varejo_com_avaliacoes(relicarios_publicados(), "relicarios")
-    for item in itens:
-        if item["corrente"] is not None:
-            item["corrente"] = {**item["corrente"], "preco": preco_varejo(item["corrente"]["chave_preco"])}
-    dados_breadcrumb = _dados_breadcrumb(
-        [
-            ("Início", url_for("index", _external=True)),
-            ("Relicários", url_for("relicarios", _external=True)),
-        ]
-    )
-    return render_template(
-        "relicarios.html",
-        relicarios=itens,
-        dados_breadcrumb=dados_breadcrumb,
-    )
+    """Mesmo criterio do /colares acima (essa URL nunca chegou a ir pro
+    ar em producao, mantida por consistencia mesmo assim)."""
+    return redirect(url_for("linha_premium"), code=301)
 
 
 @app.route("/categoria/<slug>", methods=["GET"])
@@ -1836,15 +1897,9 @@ def _produto_para_avaliar(produto_id: str) -> dict | None:
     for p in PRODUTOS_PERSONALIZADOS:
         if p["id"] == produto_id:
             return {"id": p["id"], "nome": p["nome"], "imagem": p["thumbnail"]}
-    colar = colar_por_id(produto_id)
-    if colar is not None:
-        return {"id": colar["id"], "nome": colar["nome"], "imagem": colar["imagens"][0]["src"]}
-    pulseira = pulseira_por_id(produto_id)
-    if pulseira is not None:
-        return {"id": pulseira["id"], "nome": pulseira["nome"], "imagem": pulseira["imagens"][0]["src"]}
-    relicario = relicario_por_id(produto_id)
-    if relicario is not None:
-        return {"id": relicario["id"], "nome": relicario["nome"], "imagem": relicario["imagens"][0]["src"]}
+    peca, _tipo = _peca_linha_premium_por_id(produto_id)
+    if peca is not None:
+        return {"id": peca["id"], "nome": peca["nome"], "imagem": peca["imagens"][0]["src"]}
     return None
 
 
@@ -1862,26 +1917,18 @@ def pagina_avaliacoes():
 
     produtos_por_id = {p["id"]: p for p in carregar_produtos()}
     personalizados_por_id = {p["id"]: p for p in PRODUTOS_PERSONALIZADOS}
-    colares_por_id = {c["id"]: c for c in colares_publicados()}
-    pulseiras_por_id = {p["id"]: p for p in pulseiras_publicadas()}
-    relicarios_por_id = {r["id"]: r for r in relicarios_publicados()}
 
     avaliacoes = []
     for avaliacao in avaliacoes_brutas:
         produto_id = avaliacao["produto_id"]
         produto = produtos_por_id.get(produto_id)
+        peca_linha_premium, _tipo = _peca_linha_premium_por_id(produto_id)
         if produto is not None:
             nome_produto = produto["nome"]
             link_produto = url_for("produto", produto_id=produto_id)
-        elif produto_id in colares_por_id:
-            nome_produto = colares_por_id[produto_id]["nome"]
-            link_produto = url_for("colares") + f"#colar-{produto_id}"
-        elif produto_id in pulseiras_por_id:
-            nome_produto = pulseiras_por_id[produto_id]["nome"]
-            link_produto = url_for("pulseiras") + f"#pulseira-{produto_id}"
-        elif produto_id in relicarios_por_id:
-            nome_produto = relicarios_por_id[produto_id]["nome"]
-            link_produto = url_for("relicarios") + f"#relicario-{produto_id}"
+        elif peca_linha_premium is not None:
+            nome_produto = peca_linha_premium["nome"]
+            link_produto = url_for("linha_premium_item", peca_id=produto_id)
         else:
             personalizado = personalizados_por_id.get(produto_id)
             nome_produto = personalizado["nome"] if personalizado else None
@@ -2561,7 +2608,7 @@ def _itens_com_descricao_do_corpo(dados: dict) -> list[dict]:
                 "modeloNomeLado2": modelo_nome_lado2,
                 # Relicario personalizavel (ver services/relicarios.py) --
                 # foto OPCIONAL enviada na propria pagina do produto (sem
-                # gerar previa/mockup, ver static/js/relicarios.js), so
+                # gerar previa/mockup, ver static/js/linha_premium.js), so
                 # pra sobreviver ate o painel admin em vez de se perder ao
                 # sair de localStorage (mesmo criterio de "imagemRecorte"
                 # acima, mas sem exigir foto pra fechar o pedido -- o
@@ -3797,7 +3844,7 @@ def _timeline_do_pedido(pedido: dict) -> list[dict] | None:
 #
 # As chaves de cruz_terco/colares/pulseiras/relicarios/correntes abaixo
 # (pecas exclusivas do varejo, sempre "tipo: catalogo" com produtoId, ver
-# static/js/colares.js etc.) so passam pelo primeiro ramo de
+# static/js/linha_premium.js) so passam pelo primeiro ramo de
 # _itens_repetiveis_do_pedido (produto_id truthy) -- nunca aparecem num
 # item "personalizada" de verdade (segundo ramo abaixo), entao adiciona-
 # las aqui e´ seguro pros dois ramos. BUG corrigido: essas chaves nunca

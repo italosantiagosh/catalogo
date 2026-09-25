@@ -1,12 +1,12 @@
 // Comportamento COMPARTILHADO das paginas de "peca exclusiva do varejo"
-// (colares.html/colares.js, pulseiras.html/pulseiras.js -- ver conversa
-// 2026-09-25: "não tem como fazer no mesmo estilo [da Parresia]...
-// sendo que melhor") -- carrossel de fotos com bolinhas, zoom ao tocar
-// na foto, e o formulario de avaliacao (pode ter mais de uma peca por
-// pagina no futuro -- Nossa Senhora/Sao Jose ainda pendentes de foto,
-// ver services/colares.py -- por isso tudo aqui usa querySelectorAll
-// em vez de getElementById, ao contrario do avaliacoes.js generico
-// (que so espera 1 formulario por pagina, ver templates/produto.html).
+// (templates/linha_premium_item.html -- ver conversa 2026-09-25: "não tem
+// como fazer no mesmo estilo [da Parresia]... sendo que melhor", e depois
+// "pode ser uma página de produto pra cada um deles") -- carrossel de
+// fotos com bolinhas, zoom ao tocar na foto, e o formulario de avaliacao.
+// Continua usando querySelectorAll (nao getElementById) mesmo com 1 peca
+// so por pagina agora, pra nao precisar reescrever se um dia essa pagina
+// voltar a ter mais de uma peca junto (ao contrario do avaliacoes.js
+// generico, que so espera 1 formulario por pagina, ver templates/produto.html).
 (function () {
   // ---- carrossel: bolinha ativa acompanha o scroll, toque na bolinha rola ----
   document.querySelectorAll('[data-peca-carrossel]').forEach((carrossel) => {

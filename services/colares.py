@@ -7,12 +7,13 @@ data/produtos.json). Isolada no proprio GRUPO "colares" do motor de preco
 um preco fixo que nao deve nem sofrer nem causar desconto de outro grupo.
 
 So entra aqui quando tem FOTO DE VERDADE da peca -- "publicado: False" fica
-fora da home/pagina /colares ate a foto chegar. "imagens" e´ uma lista (1 a
-3 fotos) -- Sagrado Coracao de Jesus tem 3 (frente/detalhe/uso), Castissimo
+fora da home/pagina de produto ate a foto chegar. "imagens" e´ uma lista (1
+a 3 fotos) -- Sagrado Coracao de Jesus tem 3 (frente/detalhe/uso), Castissimo
 Coracao de Sao Jose e Imaculado Coracao de Maria (fotos mandadas em
 2026-09-25, depois do pedido inicial) tem so 1 cada por enquanto -- o
-carrossel (templates/colares.html) se adapta ao numero de fotos disponiveis,
-sem inventar foto repetida so pra "completar" 3."""
+carrossel (templates/linha_premium_item.html, pagina individual por peca
+desde 2026-09-25 2a parte) se adapta ao numero de fotos disponiveis, sem
+inventar foto repetida so pra "completar" 3."""
 
 from __future__ import annotations
 

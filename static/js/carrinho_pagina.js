@@ -489,16 +489,19 @@
   // simulador em vez de nao linkar nada.
   function linkDoProduto(item) {
     if (item.formato === 'cruz_terco') return '/cruz-para-terco';
-    // colares (ver services/colares.py) sao "catalogo" mas NAO estao no
-    // catalogo normal (data/produtos.json) -- tem pagina propria, igual
-    // cruz_terco acima, senao cairia no /produto/<id> generico (404).
-    if (item.formato === 'colar') return '/colares';
-    if (item.formato === 'pulseira') return '/pulseiras';
-    if (item.formato === 'relicario') return '/relicarios';
+    // colar/pulseira/relicario (Linha Premium, ver services/colares.py,
+    // pulseiras.py, relicarios.py) sao "catalogo" mas NAO estao no
+    // catalogo normal (data/produtos.json) -- cada peca tem sua PROPRIA
+    // pagina de produto desde 2026-09-25 2a parte (pedido: "pode ser uma
+    // página de produto pra cada um deles"), em /linha-premium/<id> em
+    // vez do /produto/<id> generico (que so conhece o catalogo normal).
+    if (item.formato === 'colar' || item.formato === 'pulseira' || item.formato === 'relicario') {
+      return `/linha-premium/${item.produtoId}`;
+    }
     // corrente de upsell (sem pagina propria, ver services/relicarios.py)
-    // leva pra /relicarios tambem -- e´ onde ela aparece (aviso "compre
-    // junto"), nao tem produto proprio pra linkar.
-    if (item.formato === 'corrente') return '/relicarios';
+    // -- produtoId dela e´ so a chave_preco (ex: corrente_veneziana_ouro),
+    // nao um id valido de /linha-premium/<id>, entao nao tem link.
+    if (item.formato === 'corrente') return null;
     if (item.tipo === 'catalogo' && item.produtoId) return `/produto/${item.produtoId}`;
     if (item.tipo === 'personalizada') return '/personalizada';
     return null;

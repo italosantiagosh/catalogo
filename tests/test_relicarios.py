@@ -45,45 +45,67 @@ def test_apenas_os_dois_relicarios_de_pingente_sao_personalizaveis():
     assert relicario_por_id("oval-familia")["personalizavel"] is False
 
 
-def test_apenas_os_relicarios_de_pingente_tem_corrente_companheira():
+def test_todos_os_3_relicarios_tem_corrente_companheira():
+    # Correcao 2026-09-25 (2a parte da conversa): o oval-familia NAO vem
+    # com corrente inclusa (era um engano baseado so na foto de uso da
+    # Parresia) -- usa a mesma corrente banhada a ouro do relicario coracao.
     assert relicario_por_id("coracao-banhado-a-ouro")["corrente"]["chave_preco"] == "corrente_veneziana_ouro"
     assert relicario_por_id("redondo-prata-zirconia")["corrente"]["chave_preco"] == "corrente_veneziana_prata"
-    assert relicario_por_id("oval-familia")["corrente"] is None
+    assert relicario_por_id("oval-familia")["corrente"]["chave_preco"] == "corrente_veneziana_ouro"
 
 
-def test_pagina_relicarios_mostra_as_3_pecas_e_precos(client):
+def test_rota_relicarios_redireciona_pra_linha_premium(client):
     resposta = client.get("/relicarios")
-    body = resposta.get_data(as_text=True)
-    assert resposta.status_code == 200
+    assert resposta.status_code == 301
+    assert resposta.headers["Location"] == "/linha-premium"
+
+
+def test_cada_relicario_tem_a_propria_pagina_de_produto_com_preco(client):
+    for relicario_id, nome, preco_str in [
+        ("coracao-banhado-a-ouro", "Relicário Coração Banhado a Ouro Personalizado", "R$ 97,00"),
+        ("redondo-prata-zirconia", "Relicário Redondo Prata com Zircônia Coração", "R$ 277,00"),
+        ("oval-familia", "Pingente Relicário Oval Família Coração", "R$ 117,00"),
+    ]:
+        resposta = client.get(f"/linha-premium/{relicario_id}")
+        body = resposta.get_data(as_text=True)
+        assert resposta.status_code == 200
+        assert nome in body
+        assert preco_str in body
+
+
+def test_pagina_linha_premium_lista_os_3_relicarios(client):
+    body = client.get("/linha-premium").get_data(as_text=True)
     assert "Relicário Coração Banhado a Ouro Personalizado" in body
     assert "Relicário Redondo Prata com Zircônia Coração" in body
     assert "Pingente Relicário Oval Família Coração" in body
-    assert "R$ 97,00" in body
-    assert "R$ 277,00" in body
-    assert "R$ 117,00" in body
 
 
-def test_pagina_relicarios_mostra_upload_so_pros_personalizaveis(client):
-    body = client.get("/relicarios").get_data(as_text=True)
-    assert body.count("personalizacao-input") >= 2
-    assert 'id="personalizacao-foto-coracao-banhado-a-ouro"' in body
-    assert 'id="personalizacao-foto-redondo-prata-zirconia"' in body
-    assert 'id="personalizacao-foto-oval-familia"' not in body
+def test_pagina_do_relicario_mostra_upload_so_pros_personalizaveis(client):
+    body_ouro = client.get("/linha-premium/coracao-banhado-a-ouro").get_data(as_text=True)
+    assert "personalizacao-input" in body_ouro
+
+    body_oval = client.get("/linha-premium/oval-familia").get_data(as_text=True)
+    assert "personalizacao-input" not in body_oval
 
 
-def test_pagina_relicarios_mostra_compre_junto_so_pros_com_corrente(client):
-    body = client.get("/relicarios").get_data(as_text=True)
-    assert "Corrente Veneziana Fio Fechada (40+5cm) Banhada a Ouro" in body
-    assert "Corrente Prata Veneziana Diamantada (45cm)" in body
-    # o oval-familia nao tem corrente companheira (ja vem com a propria
-    # corrente inclusa) -- o card "compre junto" so deve aparecer 2x.
-    assert body.count("compre-junto-card") == 2
+def test_pagina_de_cada_relicario_mostra_compre_junto_da_propria_corrente(client):
+    body_ouro = client.get("/linha-premium/coracao-banhado-a-ouro").get_data(as_text=True)
+    assert "compre-junto-card" in body_ouro
+    assert "Corrente Veneziana Fio Fechada (40+5cm) Banhada a Ouro" in body_ouro
+
+    body_prata = client.get("/linha-premium/redondo-prata-zirconia").get_data(as_text=True)
+    assert "compre-junto-card" in body_prata
+    assert "Corrente Prata Veneziana Diamantada (45cm)" in body_prata
+
+    body_oval = client.get("/linha-premium/oval-familia").get_data(as_text=True)
+    assert "compre-junto-card" in body_oval
+    assert "Corrente Veneziana Fio Fechada (40+5cm) Banhada a Ouro" in body_oval
 
 
 def test_home_mostra_card_do_relicario(client):
     body = client.get("/").get_data(as_text=True)
-    assert "Relicários" in body
-    assert "/relicarios#relicario-coracao-banhado-a-ouro" in body
+    assert "Linha Premium" in body
+    assert "/linha-premium/coracao-banhado-a-ouro" in body
 
 
 def test_relicario_tem_preco_fixo_sem_faixa_de_atacado():
@@ -144,13 +166,12 @@ def test_api_calcular_carrinho_aceita_relicario_e_corrente(client):
     assert dados["subtotal_total"] == 277.0 + 132.0
 
 
-def test_pagina_relicarios_tem_json_ld_valido_por_peca(client):
-    body = client.get("/relicarios").get_data(as_text=True)
+def test_pagina_do_relicario_tem_json_ld_valido(client):
+    body = client.get("/linha-premium/coracao-banhado-a-ouro").get_data(as_text=True)
     blocos = re.findall(r'<script type="application/ld\+json">(.*?)</script>', body, re.S)
     dados_produto = [json.loads(b) for b in blocos if '"@type": "Product"' in b]
-    assert len(dados_produto) == 3
-    precos = {d["offers"]["price"] for d in dados_produto}
-    assert precos == {"97.00", "277.00", "117.00"}
+    assert len(dados_produto) == 1
+    assert dados_produto[0]["offers"]["price"] == "97.00"
 
 
 def test_avaliar_pagina_isolada_aceita_relicario(client):
@@ -171,7 +192,7 @@ def test_envia_e_lista_avaliacao_de_relicario(client):
     pendente = next(a for a in listar_avaliacoes(status="pendente") if a["produto_id"] == "coracao-banhado-a-ouro")
     atualizar_status(pendente["id"], "aprovada")
 
-    body = client.get("/relicarios").get_data(as_text=True)
+    body = client.get("/linha-premium/coracao-banhado-a-ouro").get_data(as_text=True)
     assert "Ana Teste" in body
     assert "Lindo!" in body
 

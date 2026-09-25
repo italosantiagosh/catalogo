@@ -20,8 +20,14 @@ def test_pulseira_consagracao_esta_publicada():
     assert len(PULSEIRAS) == 1
 
 
-def test_pagina_pulseiras_mostra_a_publicada(client):
+def test_rota_pulseiras_redireciona_pra_linha_premium(client):
     resposta = client.get("/pulseiras")
+    assert resposta.status_code == 301
+    assert resposta.headers["Location"] == "/linha-premium"
+
+
+def test_pagina_da_pulseira_mostra_a_publicada(client):
+    resposta = client.get("/linha-premium/consagracao-nossa-senhora")
     body = resposta.get_data(as_text=True)
     assert resposta.status_code == 200
     assert "Pulseira de Consagração a Nossa Senhora" in body
@@ -30,8 +36,8 @@ def test_pagina_pulseiras_mostra_a_publicada(client):
 
 def test_home_mostra_card_da_pulseira(client):
     body = client.get("/").get_data(as_text=True)
-    assert "Pulseiras" in body
-    assert "/pulseiras#pulseira-consagracao-nossa-senhora" in body
+    assert "Linha Premium" in body
+    assert "/linha-premium/consagracao-nossa-senhora" in body
 
 
 def test_pulseira_tem_preco_fixo_sem_faixa_de_atacado():

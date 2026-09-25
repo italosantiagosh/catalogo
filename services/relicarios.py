@@ -18,19 +18,22 @@ anexar a foto na propria pagina (so fica guardada junto do pedido, sem
 compor nenhuma imagem) ou deixar pra enviar depois; o aviso avisa que a
 Nove de Julho entra em contato pelo WhatsApp pra confirmar/mostrar uma
 possivel previa antes de produzir. O Pingente Relicario Oval "Familia" NAO
-e personalizavel -- a propria pagina de origem no fornecedor mostra que ja
-vem como colar completo (pingente + corrente), sem opcao de foto.
+e personalizavel -- a propria pagina de origem no fornecedor nao mostra
+opcao de foto pra ele.
 
-Cada relicario personalizavel tem uma CORRENTE companheira pra upsell
-("aviso" no proprio card do relicario + popup ao adicionar no carrinho,
-ver templates/relicarios.html e static/js/relicarios.js) -- NAO e um
-catalogo proprio de "Correntes", so um complemento oferecido junto (pedido:
-"as correntes entram só como complemento... sem página própria"). Preco
-da corrente tambem "igual Parresia menos 3", mas o preco delas termina em
-5 (R$115,00/R$135,00) entao "menos 3" NAO cai em terminacao 7
+Cada relicario tem uma CORRENTE companheira pra upsell ("aviso" no proprio
+card do relicario + popup ao adicionar no carrinho, ver
+templates/linha_premium_item.html e static/js/linha_premium.js) -- NAO e
+um catalogo proprio de "Correntes", so um complemento oferecido junto
+(pedido: "as correntes entram só como complemento... sem página própria").
+CORRIGIDO em 2026-09-25 (2a parte da conversa): o Oval Familia NAO vem com
+corrente inclusa (era um engano meu, baseado so na foto de uso da Parresia
+-- usuario corrigiu: "ele nao vem com o colar completo nao") -- usa a MESMA
+corrente banhada a ouro do relicario coracao (mesmo material). Preco da
+corrente tambem "igual Parresia menos 3", mas o preco delas termina em 5
+(R$115,00/R$135,00) entao "menos 3" NAO cai em terminacao 7
 (R$112,00/R$132,00) -- aplicado do jeito que foi pedido (regra literal),
-sem inventar outro ajuste. O Oval Familia NAO tem corrente companheira
-(ver acima -- ja vem com a propria corrente incluida)."""
+sem inventar outro ajuste."""
 
 from __future__ import annotations
 
@@ -106,11 +109,14 @@ RELICARIOS = [
             "de Deus sobre a nossa casa.",
             "Com a palavra Família e um coração cravejado, este relicário é "
             "um lembrete diário de carinho, fé e gratidão por aqueles que "
-            "Deus colocou em nossa vida — já vem completo, com a corrente "
-            "inclusa, pronto pra usar.",
+            "Deus colocou em nossa vida.",
         ],
-        "medidas": "Pingente ≈ 18mm · Banhado a ouro · Já vem com corrente",
-        "corrente": None,
+        "medidas": "Pingente ≈ 18mm · Banhado a ouro",
+        "corrente": {
+            "nome": "Corrente Veneziana Fio Fechada (40+5cm) Banhada a Ouro",
+            "chave_preco": "corrente_veneziana_ouro",
+            "imagem": "img/produtos/corrente_veneziana_ouro.jpg",
+        },
     },
 ]
 

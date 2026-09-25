@@ -168,50 +168,16 @@
     Garanta as condições de hoje.
   </div>
 
-  {% if colares %}
+  {% if linha_premium_pecas %}
     <section class="destaques">
       <div class="destaques-grupo">
-        <h2 class="destaques-titulo">Colares</h2>
-        <p class="destaques-subtitulo">Peças exclusivas do varejo, banhadas a ouro — preço único, sem tabela de atacado.</p>
+        <h2 class="destaques-titulo">Linha Premium</h2>
+        <p class="destaques-subtitulo">Colares, pulseiras e relicários banhados a ouro — peças exclusivas do varejo, preço único, sem tabela de atacado.</p>
         <div class="destaques-linha">
-          {% for colar in colares %}
-            <a class="destaque-card" href="{{ url_for('colares') }}#colar-{{ colar.id }}">
-              <img src="{{ url_for('static', filename=colar.imagens[0].src) }}" alt="{{ colar.nome }}" loading="lazy" decoding="async" width="224" height="224">
-              <span>{{ colar.nome }} — {{ colar.preco | preco }}</span>
-            </a>
-          {% endfor %}
-        </div>
-      </div>
-    </section>
-  {% endif %}
-
-  {% if pulseiras %}
-    <section class="destaques">
-      <div class="destaques-grupo">
-        <h2 class="destaques-titulo">Pulseiras</h2>
-        <p class="destaques-subtitulo">Peças exclusivas do varejo, banhadas a ouro — preço único, sem tabela de atacado.</p>
-        <div class="destaques-linha">
-          {% for pulseira in pulseiras %}
-            <a class="destaque-card" href="{{ url_for('pulseiras') }}#pulseira-{{ pulseira.id }}">
-              <img src="{{ url_for('static', filename=pulseira.imagens[0].src) }}" alt="{{ pulseira.nome }}" loading="lazy" decoding="async" width="224" height="224">
-              <span>{{ pulseira.nome }} — {{ pulseira.preco | preco }}</span>
-            </a>
-          {% endfor %}
-        </div>
-      </div>
-    </section>
-  {% endif %}
-
-  {% if relicarios %}
-    <section class="destaques">
-      <div class="destaques-grupo">
-        <h2 class="destaques-titulo">Relicários</h2>
-        <p class="destaques-subtitulo">Peças exclusivas do varejo, banhadas a ouro — preço único, sem tabela de atacado.</p>
-        <div class="destaques-linha">
-          {% for relicario in relicarios %}
-            <a class="destaque-card" href="{{ url_for('relicarios') }}#relicario-{{ relicario.id }}">
-              <img src="{{ url_for('static', filename=relicario.imagens[0].src) }}" alt="{{ relicario.nome }}" loading="lazy" decoding="async" width="224" height="224">
-              <span>{{ relicario.nome }} — {{ relicario.preco | preco }}</span>
+          {% for peca in linha_premium_pecas %}
+            <a class="destaque-card" href="{{ url_for('linha_premium_item', peca_id=peca.id) }}">
+              <img src="{{ url_for('static', filename=peca.imagens[0].src) }}" alt="{{ peca.nome }}" loading="lazy" decoding="async" width="224" height="224">
+              <span>{{ peca.nome }} — {{ peca.preco | preco }}</span>
             </a>
           {% endfor %}
         </div>

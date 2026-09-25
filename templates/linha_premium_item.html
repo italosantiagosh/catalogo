@@ -1,0 +1,226 @@
+{% extends "base.html" %}
+
+{% block titulo %}{{ item.nome }} — Linha Premium | Nove de Julho{% endblock %}
+{% block meta_descricao %}{{ item.descricao_curta }}{% endblock %}
+{% block og_imagem %}{{ url_for('static', filename=item.imagens[0].src) }}{% endblock %}
+
+{% block conteudo %}
+  <script type="application/ld+json">{{ dados_breadcrumb | tojson }}</script>
+  <script type="application/ld+json">{{ item.dados_produto | tojson }}</script>
+  <nav class="breadcrumbs" aria-label="Breadcrumb">
+    <a href="{{ url_for('index') }}">Início</a>
+    <span>›</span>
+    <a href="{{ url_for('linha_premium') }}">Linha Premium</a>
+    <span>›</span>
+    <span aria-current="page">{{ item.nome }}</span>
+  </nav>
+
+  <section class="colar-item" id="peca-{{ item.id }}">
+    <h1>{{ item.nome }}</h1>
+
+    <div class="peca-carrossel" data-peca-carrossel>
+      <div class="peca-carrossel-trilho">
+        {% for imagem in item.imagens %}
+          <img class="peca-carrossel-slide" data-peca-zoom src="{{ url_for('static', filename=imagem.src) }}"
+            alt="{{ item.nome }}{{ ' — ' + imagem.rotulo if imagem.rotulo else '' }}" loading="lazy" decoding="async">
+        {% endfor %}
+      </div>
+      {% if item.imagens | length > 1 %}
+        <div class="peca-carrossel-pontos">
+          {% for imagem in item.imagens %}
+            <span class="ponto{{ ' ativo' if loop.first else '' }}"></span>
+          {% endfor %}
+        </div>
+      {% endif %}
+    </div>
+
+    {% if item.total_avaliacoes > 0 %}
+      <p class="avaliacoes-resumo">
+        <span class="avaliacoes-estrelas">{{ "★" * (item.media_avaliacoes | round(0, "floor") | int) }}{{ "☆" * (5 - (item.media_avaliacoes | round(0, "floor") | int)) }}</span>
+        <strong>{{ item.media_avaliacoes }}</strong> de 5 — {{ item.total_avaliacoes }} avaliaç{{ "ão" if item.total_avaliacoes == 1 else "ões" }}
+      </p>
+    {% endif %}
+
+    <div class="peca-preco-bloco">
+      <span class="peca-preco-valor">{{ item.preco | preco }}</span>
+      <span class="peca-preco-parcelamento">ou em até 12x no cartão (com juros)</span>
+    </div>
+
+    {% if item.personalizavel %}
+      <div class="personalizacao-bloco" data-personalizacao>
+        <label class="personalizacao-label" for="personalizacao-foto">
+          📷 Foto para personalizar (opcional)
+        </label>
+        <input type="file" id="personalizacao-foto" class="personalizacao-input" accept="image/*">
+        <div class="personalizacao-preview" data-personalizacao-preview hidden>
+          <img alt="Prévia da foto enviada" data-personalizacao-preview-img>
+          <button type="button" class="personalizacao-remover" data-personalizacao-remover>Remover foto</button>
+        </div>
+        <p class="personalizacao-aviso">
+          Pode enviar a foto agora ou depois — depois de fechar o pedido, entraremos
+          em contato pelo WhatsApp pra confirmar (e mostrar uma possível prévia) antes de produzir.
+        </p>
+      </div>
+    {% endif %}
+
+    <div class="quantidade">
+      <label for="peca-quantidade">Quantidade</label>
+      <div class="stepper">
+        <button type="button" id="peca-qtd-menos" aria-label="Diminuir quantidade">−</button>
+        <input type="number" id="peca-quantidade" value="1" min="1" inputmode="numeric">
+        <button type="button" id="peca-qtd-mais" aria-label="Aumentar quantidade">+</button>
+      </div>
+    </div>
+
+    <div class="preview-preco" id="peca-preview-preco"></div>
+
+    {% if item.corrente %}
+      <div class="compre-junto-card" data-compre-junto>
+        <img src="{{ url_for('static', filename=item.corrente.imagem) }}" alt="{{ item.corrente.nome }}" loading="lazy" decoding="async">
+        <div class="compre-junto-info">
+          <label>
+            <input type="checkbox" id="compre-junto-checkbox"
+              data-corrente-nome="{{ item.corrente.nome }}" data-corrente-preco="{{ item.corrente.preco }}"
+              data-corrente-chave-preco="{{ item.corrente.chave_preco }}" data-corrente-imagem="{{ url_for('static', filename=item.corrente.imagem) }}">
+            Levar também a <strong>{{ item.corrente.nome }}</strong>
+          </label>
+          <span class="compre-junto-preco">+ {{ item.corrente.preco | preco }}</span>
+        </div>
+      </div>
+    {% endif %}
+
+    <button type="button" class="botao-carrinho" id="peca-btn-adicionar"
+      data-peca-id="{{ item.id }}" data-nome="{{ item.nome }}" data-preco="{{ item.preco }}"
+      data-chave-preco="{{ item.chave_preco }}" data-imagem="{{ url_for('static', filename=item.imagens[0].src) }}"
+      data-formato="{{ tipo }}" data-personalizavel="{{ 'true' if item.personalizavel else 'false' }}">
+      Adicionar ao carrinho
+    </button>
+
+    <div class="selo-confianca">
+      <div class="selo-item">
+        <span class="selo-icone">✨</span>
+        <strong>Banhado a ouro</strong>
+        peça exclusiva do varejo
+      </div>
+      <div class="selo-divisor"></div>
+      <div class="selo-item">
+        <span class="selo-icone">💳</span>
+        <strong>Parcelamos</strong>
+        em 12x <span class="selo-fininha">(com juros)</span>
+      </div>
+      <div class="selo-divisor"></div>
+      <div class="selo-item">
+        <span class="selo-icone"><img src="{{ url_for('static', filename='img/icones/brasil.svg') }}" alt="" class="selo-icone-brasil"></span>
+        <strong>Envio</strong>
+        para todo o Brasil
+      </div>
+    </div>
+
+    <p class="aviso-frete-estimativa" id="aviso-frete-estimativa" hidden></p>
+
+    <div class="peca-descricao">
+      <h2>Sobre esta peça</h2>
+      {% for paragrafo in item.descricao %}
+        <p>{{ paragrafo }}</p>
+      {% endfor %}
+
+      <h2>Detalhes</h2>
+      <ul>
+        {% if item.medidas %}<li>{{ item.medidas }}</li>{% endif %}
+        <li>Banhado a ouro</li>
+        <li>Peça exclusiva do varejo — não entra na tabela de desconto de atacado</li>
+        <li>Envio para todo o Brasil</li>
+      </ul>
+    </div>
+
+    <section class="avaliacoes-produto" id="avaliacoes-{{ item.id }}">
+      <h2>Avaliações de {{ item.nome }}</h2>
+
+      {% if item.avaliacoes %}
+        <div class="avaliacoes-lista">
+          {% for avaliacao in item.avaliacoes %}
+            <div class="avaliacao-card">
+              {% if avaliacao.foto %}<img src="{{ avaliacao.foto }}" alt="Foto enviada por {{ avaliacao.nome_cliente }}" loading="lazy">{% endif %}
+              <div class="avaliacao-corpo">
+                <span class="avaliacao-estrelas">{{ "★" * avaliacao.nota }}{{ "☆" * (5 - avaliacao.nota) }}</span>
+                <strong class="avaliacao-nome">{{ avaliacao.nome_cliente }}</strong>
+                {% if avaliacao.texto %}<p>{{ avaliacao.texto }}</p>{% endif %}
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <p class="avaliacoes-vazio">Seja a primeira pessoa a avaliar {{ item.nome }}!</p>
+      {% endif %}
+
+      <button type="button" class="botao-secundario btn-abrir-avaliacao" data-alvo="form-avaliacao-{{ item.id }}">Avaliar esse produto</button>
+
+      <form id="form-avaliacao-{{ item.id }}" class="form-avaliacao" hidden data-peca-avaliacao>
+        <input type="hidden" name="produto_id" value="{{ item.id }}">
+        <label for="aval-nome-{{ item.id }}">Seu nome</label>
+        <input type="text" id="aval-nome-{{ item.id }}" name="nome_cliente" required maxlength="120">
+
+        <label>Sua nota</label>
+        <div class="aval-estrelas-input">
+          <button type="button" data-nota="1" aria-label="1 estrela">★</button>
+          <button type="button" data-nota="2" aria-label="2 estrelas">★</button>
+          <button type="button" data-nota="3" aria-label="3 estrelas">★</button>
+          <button type="button" data-nota="4" aria-label="4 estrelas">★</button>
+          <button type="button" data-nota="5" aria-label="5 estrelas">★</button>
+        </div>
+        <input type="hidden" name="nota" value="">
+
+        <label class="dropzone" for="aval-foto-{{ item.id }}">
+          <span class="icone">📷</span>
+          <span class="principal">Toque para adicionar uma foto</span>
+          <span class="secundario">Opcional — JPG, PNG, WEBP ou HEIC</span>
+        </label>
+        <input type="file" id="aval-foto-{{ item.id }}" name="foto" accept="image/*">
+        <div class="aval-nome-arquivo"></div>
+
+        <label for="aval-texto-{{ item.id }}">Conte como foi (opcional)</label>
+        <textarea id="aval-texto-{{ item.id }}" name="texto" maxlength="1000" rows="3"></textarea>
+
+        <div class="erro" hidden></div>
+        <button type="submit" class="botao-carrinho">Enviar avaliação</button>
+      </form>
+      <p class="aval-sucesso" hidden>Obrigado! Sua avaliação foi enviada e vai aparecer aqui assim que for aprovada.</p>
+    </section>
+  </section>
+
+  <p class="instrucao">
+    Procurando medalhas, entremeios ou chaveiros com desconto de atacado?
+    <a href="{{ url_for('catalogo_completo') }}">Veja o catálogo completo →</a>
+  </p>
+
+  <div class="imagem-modal" id="peca-zoom-modal" hidden>
+    <div class="imagem-modal-caixa">
+      <button type="button" class="imagem-modal-fechar" id="peca-zoom-fechar" aria-label="Fechar">×</button>
+      <img id="peca-zoom-img" src="" alt="">
+    </div>
+  </div>
+
+  {% if item.corrente %}
+    <div class="imagem-modal" id="upsell-modal" hidden>
+      <div class="imagem-modal-caixa">
+        <button type="button" class="imagem-modal-fechar" id="upsell-modal-fechar" aria-label="Fechar">×</button>
+        <div class="upsell-modal-conteudo">
+          <img id="upsell-modal-imagem" src="" alt="">
+          <p class="upsell-modal-titulo">Quer levar também?</p>
+          <p id="upsell-modal-nome"></p>
+          <p class="upsell-modal-preco" id="upsell-modal-preco"></p>
+          <div class="upsell-modal-botoes">
+            <button type="button" class="botao-carrinho" id="upsell-modal-adicionar">Adicionar também</button>
+            <button type="button" class="botao-secundario" id="upsell-modal-recusar">Não, obrigado</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  {% endif %}
+{% endblock %}
+
+{% block script %}
+  <script src="{{ url_for('static', filename='js/frete_estimativa.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/peca_varejo.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/linha_premium.js') }}"></script>
+{% endblock %}
