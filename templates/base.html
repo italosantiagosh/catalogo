@@ -96,10 +96,12 @@
         </a>
       </div>
     </header>
+    {% block busca_topo %}
     <div class="busca-wrap-home busca-wrap-topo">
       <input type="search" class="busca-home-input" placeholder="Qual santo você procura? (ex: José, Carlo, Fátima)" aria-label="Buscar santo ou devoção" autocomplete="off">
       <div class="busca-resultados busca-home-resultados" hidden></div>
     </div>
+    {% endblock %}
     <div class="barra-persistente" id="barra-persistente" hidden></div>
   </div>
   <main>

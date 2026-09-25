@@ -4360,6 +4360,14 @@ input[type="file"] {
   counter-reset: novena-dia;
 }
 
+/* So no blog (ver conversa 2026-09-25: "os textos não ficariam melhor
+   se fossem centralizados?") -- centraliza a COLUNA de texto dentro da
+   pagina mais larga (main tem 960px), sem centralizar o texto em si
+   (paragrafo centralizado fica mais dificil de ler). */
+.conteudo-institucional-blog {
+  margin: 0 auto;
+}
+
 .conteudo-institucional h2 {
   font-size: 1.1rem;
   margin: 32px 0 12px;
