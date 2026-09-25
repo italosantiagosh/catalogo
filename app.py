@@ -278,8 +278,8 @@ from services.tiny import buscar_contatos_tiny, criar_pedido_tiny, erro_e_duplic
 from services.gerador.compositor import auto_cover_box, compose_medal, crop_to_box, load_rgba
 from services.gerador.config import IMAGE_EXTENSIONS, MEDAL_SPECS
 from services.pricing import CHAVES_PRECO, calcular_carrinho, pedido_minimo_reais, preco_varejo, tabela_de_faixas
-from services.colares import colares_publicados
-from services.pulseiras import pulseiras_publicadas
+from services.colares import colares_publicados, colar_por_id
+from services.pulseiras import pulseiras_publicadas, pulseira_por_id
 
 app = Flask(__name__)
 app.config["MAX_CONTENT_LENGTH"] = 60 * 1024 * 1024  # 60MB no total do upload
@@ -1498,6 +1498,88 @@ def cruz_para_terco():
     )
 
 
+def _itens_peca_varejo_com_avaliacoes(itens: list[dict], rota: str) -> list[dict]:
+    """Enriquece cada colar/pulseira com preco + avaliacoes reais + o
+    mesmo JSON-LD de Product/Offer/AggregateRating usado em produto()
+    acima (rich snippet no Google) -- pedido em 2026-09-25: "não tem
+    como fazer no mesmo estilo [da Parresia]... sendo que melhor".
+    Reaproveita o sistema de avaliacoes de verdade (_produto_para_
+    avaliar ja resolve colar/pulseira, ver acima) em vez de inventar
+    prova social falsa (sem contador de estoque fake nem cronometro de
+    oferta -- essas pecas nao tem controle de estoque de verdade pra
+    sustentar isso)."""
+    resultado = []
+    for item in itens:
+        avaliacoes_aprovadas = listar_avaliacoes_aprovadas(item["id"])
+        media_avaliacoes, total_avaliacoes = media_e_total_aprovadas(item["id"])
+        url_item = url_for(rota, _external=True)
+        imagem_url = url_for("static", filename=item["imagem_frente"], _external=True)
+        dados_produto = {
+            "@context": "https://schema.org",
+            "@type": "Product",
+            "name": item["nome"],
+            "image": imagem_url,
+            "brand": {"@type": "Brand", "name": "Nove de Julho"},
+            "description": item["descricao_curta"],
+            "offers": {
+                "@type": "Offer",
+                "url": url_item,
+                "priceCurrency": "BRL",
+                "price": f"{preco_varejo(item['chave_preco']):.2f}",
+                "availability": "https://schema.org/InStock",
+                "validFrom": datetime.now(timezone.utc).date().isoformat(),
+                "priceValidUntil": (datetime.now(timezone.utc) + timedelta(days=90)).date().isoformat(),
+                "hasMerchantReturnPolicy": {
+                    "@type": "MerchantReturnPolicy",
+                    "applicableCountry": "BR",
+                    "returnPolicyCategory": "https://schema.org/MerchantReturnFiniteReturnWindow",
+                    "merchantReturnDays": 7,
+                    "returnMethod": "https://schema.org/ReturnByMail",
+                    "returnFees": "https://schema.org/FreeReturn",
+                },
+                "shippingDetails": {
+                    "@type": "OfferShippingDetails",
+                    "shippingRate": {"@type": "MonetaryAmount", "value": "0", "currency": "BRL"},
+                    "shippingDestination": {"@type": "DefinedRegion", "addressCountry": "BR"},
+                    "deliveryTime": {
+                        "@type": "ShippingDeliveryTime",
+                        "handlingTime": {
+                            "@type": "QuantitativeValue",
+                            "minValue": PRODUCAO_DIAS_UTEIS,
+                            "maxValue": max(FAIXAS_PRODUCAO_DIAS_UTEIS.values(), default=PRODUCAO_DIAS_UTEIS),
+                            "unitCode": "d",
+                        },
+                        "transitTime": {"@type": "QuantitativeValue", "minValue": 2, "maxValue": 20, "unitCode": "d"},
+                    },
+                },
+            },
+        }
+        if total_avaliacoes > 0:
+            dados_produto["aggregateRating"] = {
+                "@type": "AggregateRating", "ratingValue": media_avaliacoes, "reviewCount": total_avaliacoes,
+            }
+            dados_produto["review"] = [
+                {
+                    "@type": "Review",
+                    "author": {"@type": "Person", "name": a["nome_cliente"]},
+                    "reviewRating": {"@type": "Rating", "ratingValue": a["nota"], "bestRating": 5},
+                    **({"reviewBody": a["texto"]} if a["texto"] else {}),
+                }
+                for a in avaliacoes_aprovadas
+            ]
+        resultado.append(
+            {
+                **item,
+                "preco": preco_varejo(item["chave_preco"]),
+                "avaliacoes": avaliacoes_aprovadas,
+                "media_avaliacoes": media_avaliacoes,
+                "total_avaliacoes": total_avaliacoes,
+                "dados_produto": dados_produto,
+            }
+        )
+    return resultado
+
+
 @app.route("/colares", methods=["GET"])
 def colares():
     """Colares -- peca EXCLUSIVA DO VAREJO (pedido em 2026-09-25), preco
@@ -1506,7 +1588,7 @@ def colares():
     pecas nao tem santo/modelo/tamanho/cor). So mostra os colares com foto
     de verdade (colares_publicados() -- Nossa Senhora e Sao Jose ainda nao
     tem, ver conversa)."""
-    itens = [{**c, "preco": preco_varejo(c["chave_preco"])} for c in colares_publicados()]
+    itens = _itens_peca_varejo_com_avaliacoes(colares_publicados(), "colares")
     dados_breadcrumb = _dados_breadcrumb(
         [
             ("Início", url_for("index", _external=True)),
@@ -1525,7 +1607,7 @@ def pulseiras():
     """Pulseiras -- peca EXCLUSIVA DO VAREJO (pedido em 2026-09-25, mesma
     conversa/padrao de /colares acima), preco fixo R$197,00 (ver services/
     pulseiras.py)."""
-    itens = [{**p, "preco": preco_varejo(p["chave_preco"])} for p in pulseiras_publicadas()]
+    itens = _itens_peca_varejo_com_avaliacoes(pulseiras_publicadas(), "pulseiras")
     dados_breadcrumb = _dados_breadcrumb(
         [
             ("Início", url_for("index", _external=True)),
@@ -1710,19 +1792,26 @@ def produto(produto_id: str):
 
 
 def _produto_para_avaliar(produto_id: str) -> dict | None:
-    """Resolve produto_id tanto do catalogo de santos quanto de
-    PRODUTOS_PERSONALIZADOS (config.py) -- avaliar_produto/
-    api_avaliacoes_criar abaixo precisam aceitar os dois (peca
-    personalizada tambem pode ser avaliada, ver conversa). Normaliza
-    os dois em {"id", "nome", "imagem"} (personalizada nao tem
-    "modelos", so um thumbnail unico) pro template nao precisar saber
-    a origem."""
+    """Resolve produto_id do catalogo de santos, de PRODUTOS_PERSONALIZADOS
+    (config.py), ou de colares/pulseiras (services/colares.py, services/
+    pulseiras.py -- pecas exclusivas do varejo, ver conversa 2026-09-25) --
+    avaliar_produto/api_avaliacoes_criar abaixo precisam aceitar todos
+    (peca personalizada e colar/pulseira tambem podem ser avaliados).
+    Normaliza tudo em {"id", "nome", "imagem"} (personalizada/colar/
+    pulseira nao tem "modelos", so um thumbnail unico) pro template nao
+    precisar saber a origem."""
     produto = buscar_produto(produto_id)
     if produto is not None:
         return {"id": produto["id"], "nome": produto["nome"], "imagem": produto["modelos"][0]["imagem"]}
     for p in PRODUTOS_PERSONALIZADOS:
         if p["id"] == produto_id:
             return {"id": p["id"], "nome": p["nome"], "imagem": p["thumbnail"]}
+    colar = colar_por_id(produto_id)
+    if colar is not None:
+        return {"id": colar["id"], "nome": colar["nome"], "imagem": colar["imagem_frente"]}
+    pulseira = pulseira_por_id(produto_id)
+    if pulseira is not None:
+        return {"id": pulseira["id"], "nome": pulseira["nome"], "imagem": pulseira["imagem_frente"]}
     return None
 
 
@@ -1740,6 +1829,8 @@ def pagina_avaliacoes():
 
     produtos_por_id = {p["id"]: p for p in carregar_produtos()}
     personalizados_por_id = {p["id"]: p for p in PRODUTOS_PERSONALIZADOS}
+    colares_por_id = {c["id"]: c for c in colares_publicados()}
+    pulseiras_por_id = {p["id"]: p for p in pulseiras_publicadas()}
 
     avaliacoes = []
     for avaliacao in avaliacoes_brutas:
@@ -1748,6 +1839,12 @@ def pagina_avaliacoes():
         if produto is not None:
             nome_produto = produto["nome"]
             link_produto = url_for("produto", produto_id=produto_id)
+        elif produto_id in colares_por_id:
+            nome_produto = colares_por_id[produto_id]["nome"]
+            link_produto = url_for("colares") + f"#colar-{produto_id}"
+        elif produto_id in pulseiras_por_id:
+            nome_produto = pulseiras_por_id[produto_id]["nome"]
+            link_produto = url_for("pulseiras") + f"#pulseira-{produto_id}"
         else:
             personalizado = personalizados_por_id.get(produto_id)
             nome_produto = personalizado["nome"] if personalizado else None

@@ -1744,6 +1744,95 @@ fieldset.cores legend {
   margin-top: 0;
 }
 
+/* Carrossel de fotos das pecas exclusivas do varejo (colar/pulseira,
+   ver conversa 2026-09-25: "não tem como fazer no mesmo estilo [da
+   Parresia]... sendo que melhor") -- 1 foto por vez, arrasta/desliza
+   (scroll-snap nativo, sem lib nova) com bolinhas indicando a posicao,
+   toque pra ampliar (ver .peca-zoom-* abaixo, reaproveita .imagem-modal
+   ja usado nos avisos do carrinho). */
+.peca-carrossel {
+  margin: 0 0 16px;
+}
+
+.peca-carrossel-trilho {
+  display: flex;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  border-radius: 14px;
+  scrollbar-width: none;
+}
+
+.peca-carrossel-trilho::-webkit-scrollbar {
+  display: none;
+}
+
+.peca-carrossel-slide {
+  flex: 0 0 100%;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+  scroll-snap-align: start;
+  cursor: zoom-in;
+}
+
+.peca-carrossel-pontos {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 10px;
+}
+
+.peca-carrossel-pontos .ponto {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--border);
+  transition: background 0.15s, transform 0.15s;
+}
+
+.peca-carrossel-pontos .ponto.ativo {
+  background: var(--gold-texto-claro);
+  transform: scale(1.3);
+}
+
+/* Preco em destaque -- maior e mais proximo do botao de comprar do que
+   o resto do texto da pagina, mesmo criterio visual da Parresia (preco
+   grande logo acima do CTA), sem inventar "de/por" nenhum (essas pecas
+   sempre tiveram esse preco unico, nao teria um valor "riscado" real
+   pra mostrar). */
+.peca-preco-bloco {
+  margin: 4px 0 16px;
+}
+
+.peca-preco-valor {
+  font-family: var(--fonte-titulo);
+  font-size: 1.9rem;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.peca-preco-parcelamento {
+  display: block;
+  font-size: 0.82rem;
+  color: var(--muted);
+  margin-top: 2px;
+}
+
+.peca-descricao h3 {
+  font-size: 1rem;
+  margin: 20px 0 8px;
+}
+
+.peca-descricao ul {
+  margin: 0 0 12px;
+  padding-left: 20px;
+}
+
+.peca-descricao li {
+  margin-bottom: 4px;
+}
+
 .quantidade label {
   display: block;
   font-size: 0.85rem;
