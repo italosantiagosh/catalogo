@@ -185,6 +185,23 @@
     </section>
   {% endif %}
 
+  {% if pulseiras %}
+    <section class="destaques">
+      <div class="destaques-grupo">
+        <h2 class="destaques-titulo">Pulseiras</h2>
+        <p class="destaques-subtitulo">Peças exclusivas do varejo, banhadas a ouro — preço único, sem tabela de atacado.</p>
+        <div class="destaques-linha">
+          {% for pulseira in pulseiras %}
+            <a class="destaque-card" href="{{ url_for('pulseiras') }}#pulseira-{{ pulseira.id }}">
+              <img src="{{ url_for('static', filename=pulseira.imagem_frente) }}" alt="{{ pulseira.nome }}" loading="lazy" decoding="async" width="224" height="224">
+              <span>{{ pulseira.nome }} — {{ pulseira.preco | preco }}</span>
+            </a>
+          {% endfor %}
+        </div>
+      </div>
+    </section>
+  {% endif %}
+
   <a class="banner-personalizada" href="{{ url_for('personalizada') }}">
     <picture>
       <source type="image/webp" srcset="{{ url_for('static', filename='img/banner-personalizada.webp') }}">

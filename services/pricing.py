@@ -42,6 +42,11 @@ a quantidade que conta pra faixa de desconto NAO se mistura entre grupos:
                      isolamento do "cruz_terco" acima e pelo mesmo motivo:
                      um preco fixo por peca que nao deve nem sofrer nem
                      causar desconto de outro grupo.
+    "pulseiras"   -- pulseiras (pulseira_consagracao_nossa_senhora, pedido
+                     na mesma conversa de 2026-09-25). Mesmo padrao/motivo
+                     de "colares" acima, so que grupo PROPRIO -- pulseira e
+                     colar sao pecas diferentes, cada uma com sua faixa
+                     isolada (ver services/pulseiras.py).
 
 Cada item do carrinho manda uma "chave_preco" (12mm | 16mm | entremeio |
 chaveiro | chaveiro_2lados | medalha_2lados | entremeio_2lados) que
@@ -76,9 +81,10 @@ GRUPO_DE_CHAVE = {
     "cruz_terco_ouro_velho": "cruz_terco",
     "cruz_terco_dourado": "cruz_terco",
     "colar_sagrado_coracao_de_jesus": "colares",
+    "pulseira_consagracao_nossa_senhora": "pulseiras",
 }
 CHAVES_PRECO = tuple(GRUPO_DE_CHAVE)
-GRUPOS = ("padrao", "chaveiro", "duas_faces", "cruz_terco", "colares")
+GRUPOS = ("padrao", "chaveiro", "duas_faces", "cruz_terco", "colares", "pulseiras")
 
 # Desconto no FRETE (nao no preco do produto) quando um grupo atinge a
 # primeira faixa de atacado (ver conversa: "antes do frete gratis...
@@ -250,6 +256,7 @@ def calcular_carrinho(itens: list[dict]) -> dict:
     # grupos_calculados, que indexa chave_referencia_por_grupo pra TODOS
     # os grupos de GRUPOS, nao so os que tem item no carrinho.
     chave_referencia_por_grupo.setdefault("colares", "colar_sagrado_coracao_de_jesus")
+    chave_referencia_por_grupo.setdefault("pulseiras", "pulseira_consagracao_nossa_senhora")
 
     itens_calculados = []
     subtotal_total = 0.0

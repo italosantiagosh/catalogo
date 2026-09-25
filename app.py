@@ -279,6 +279,7 @@ from services.gerador.compositor import auto_cover_box, compose_medal, crop_to_b
 from services.gerador.config import IMAGE_EXTENSIONS, MEDAL_SPECS
 from services.pricing import CHAVES_PRECO, calcular_carrinho, pedido_minimo_reais, preco_varejo, tabela_de_faixas
 from services.colares import colares_publicados
+from services.pulseiras import pulseiras_publicadas
 
 app = Flask(__name__)
 app.config["MAX_CONTENT_LENGTH"] = 60 * 1024 * 1024  # 60MB no total do upload
@@ -1047,6 +1048,7 @@ def sitemap_xml():
         (url_for("kit_livraria_shalom"), "monthly", "0.6"),
         (url_for("cruz_para_terco"), "monthly", "0.6"),
         (url_for("colares"), "monthly", "0.6"),
+        (url_for("pulseiras"), "monthly", "0.6"),
         (url_for("liturgia_outubro"), "monthly", "0.6"),
     ]
     entradas += [(url_for("landing_pagina", slug=s), "monthly", "0.6") for s in PAGINAS_LANDING]
@@ -1361,6 +1363,7 @@ def index():
         categorias=categorias,
         cores_cruz_terco=_cores_cruz_terco(),
         colares=[{**c, "preco": preco_varejo(c["chave_preco"])} for c in colares_publicados()],
+        pulseiras=[{**p, "preco": preco_varejo(p["chave_preco"])} for p in pulseiras_publicadas()],
     )
 
 
@@ -1513,6 +1516,25 @@ def colares():
     return render_template(
         "colares.html",
         colares=itens,
+        dados_breadcrumb=dados_breadcrumb,
+    )
+
+
+@app.route("/pulseiras", methods=["GET"])
+def pulseiras():
+    """Pulseiras -- peca EXCLUSIVA DO VAREJO (pedido em 2026-09-25, mesma
+    conversa/padrao de /colares acima), preco fixo R$197,00 (ver services/
+    pulseiras.py)."""
+    itens = [{**p, "preco": preco_varejo(p["chave_preco"])} for p in pulseiras_publicadas()]
+    dados_breadcrumb = _dados_breadcrumb(
+        [
+            ("Início", url_for("index", _external=True)),
+            ("Pulseiras", url_for("pulseiras", _external=True)),
+        ]
+    )
+    return render_template(
+        "pulseiras.html",
+        pulseiras=itens,
         dados_breadcrumb=dados_breadcrumb,
     )
 
@@ -2088,7 +2110,7 @@ _FORMATO_LABEL = {
     "medalha": "Medalha", "entremeio": "Entremeio", "chaveiro": "Chaveiro",
     "medalha_2lados": "Medalha 2 lados", "entremeio_2lados": "Entremeio 2 lados",
     "chaveiro_2lados": "Chaveiro 2 lados", "cruz_terco": "Cruz para terço",
-    "colar": "Colar",
+    "colar": "Colar", "pulseira": "Pulseira",
 }
 
 
@@ -2124,6 +2146,9 @@ def _detalhe_formato_do_item(item: dict) -> str:
         # colares.py) -- so o nome do proprio colar (produtoNome) ja
         # identifica a peca, o formato aqui e´ so pra rotulo generico.
         return _FORMATO_LABEL["colar"]
+    if formato == "pulseira":
+        # mesmo criterio do "colar" acima -- ver services/pulseiras.py.
+        return _FORMATO_LABEL["pulseira"]
     tamanho = str(item.get("tamanho", ""))
     return f"{_FORMATO_LABEL['medalha']} · {_TAMANHO_LABEL.get(tamanho, tamanho)}"
 

@@ -190,16 +190,17 @@
     medalha: 'Medalha', entremeio: 'Entremeio', chaveiro: 'Chaveiro',
     medalha_2lados: 'Medalha 2 lados', entremeio_2lados: 'Entremeio 2 lados',
     chaveiro_2lados: 'Chaveiro 2 lados', cruz_terco: 'Cruz para terço', colar: 'Colar',
+    pulseira: 'Pulseira',
   };
   const GRUPO_LABEL = {
     padrao: 'medalhas/entremeios', chaveiro: 'chaveiros', duas_faces: 'medalhas/entremeios de 2 lados',
-    cruz_terco: 'cruzes para terço', colares: 'colares',
+    cruz_terco: 'cruzes para terço', colares: 'colares', pulseiras: 'pulseiras',
   };
   // Grupos com preco FIXO, sem faixa de atacado nenhuma (ver
   // GRUPO_DE_CHAVE em services/pricing.py) -- nao faz sentido mostrar
   // barra de progresso, "faltam X" ou toast de "desconto desbloqueado"
   // pra eles (ver conversa 2026-09-11/2026-09-25).
-  const GRUPOS_SEM_ATACADO = ['cruz_terco', 'colares'];
+  const GRUPOS_SEM_ATACADO = ['cruz_terco', 'colares', 'pulseiras'];
   // mesmo texto usado em app.py (FRETE_RETIRADA_DESCRICAO) pra detectar
   // esse tipo de frete e trocar os rotulos da timeline ("enviado" nao
   // faz sentido pra quem vai retirar -- ver conversa).
@@ -297,6 +298,10 @@
       // identifica a peca.
       return FORMATO_LABEL.colar;
     }
+    if (formato === 'pulseira') {
+      // mesmo criterio do 'colar' acima -- ver services/pulseiras.py.
+      return FORMATO_LABEL.pulseira;
+    }
     return `${FORMATO_LABEL.medalha} · ${TAMANHO_LABEL[item.tamanho] || item.tamanho}`;
   }
 
@@ -385,7 +390,7 @@
             : 'Foto: já anexada ao pedido, disponível no painel';
           return `${numero}. Personalizada\n${detalhe}\nQuantidade: ${item.quantidade}\n${notaFoto}`;
         }
-        if (item.formato === 'cruz_terco' || item.formato === 'colar') {
+        if (item.formato === 'cruz_terco' || item.formato === 'colar' || item.formato === 'pulseira') {
           return `${numero}. ${item.produtoNome}\n${detalhe}\nQuantidade: ${item.quantidade}`;
         }
         return `${numero}. ${item.produtoNome}\nModelo: ${item.modeloId}\n${detalhe}\nQuantidade: ${item.quantidade}`;
@@ -472,6 +477,7 @@
     // catalogo normal (data/produtos.json) -- tem pagina propria, igual
     // cruz_terco acima, senao cairia no /produto/<id> generico (404).
     if (item.formato === 'colar') return '/colares';
+    if (item.formato === 'pulseira') return '/pulseiras';
     if (item.tipo === 'catalogo' && item.produtoId) return `/produto/${item.produtoId}`;
     if (item.tipo === 'personalizada') return '/personalizada';
     return null;
@@ -480,7 +486,7 @@
   function linhaItem(item, calculo) {
     const linha = document.createElement('article');
     linha.className = 'item-carrinho';
-    const subtitulo = item.tipo === 'personalizada' || item.formato === 'cruz_terco' || item.formato === 'colar'
+    const subtitulo = item.tipo === 'personalizada' || item.formato === 'cruz_terco' || item.formato === 'colar' || item.formato === 'pulseira'
       ? subtituloEditavelHtml(item)
       : `${item.modeloNome} &middot; ${subtituloEditavelHtml(item)}`;
     let avisoFoto = '';
