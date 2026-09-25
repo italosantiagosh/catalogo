@@ -123,7 +123,7 @@
       <p id="campanha-feedback" hidden></p>
       <p style="font-size:0.76rem; color:var(--texto-suave); margin-top:10px;">O CSV acima só traz clientes com pedido
       registrado neste site — pedidos de antes dele (outra loja/planilha) não aparecem aqui. "Enviar agora" é seguro
-      de clicar quantas vezes quiser: o teto de 200 vale por 24h, não por clique, então nunca estoura.</p>
+      de clicar quantas vezes quiser: o teto de 200 vale por dia (renova de madrugada, no horário UTC que o Brevo usa), não por clique, então nunca estoura.</p>
 
       <hr style="border:none; border-top:1px solid var(--linha); margin:16px 0;">
 
@@ -194,7 +194,7 @@
           atualizarNumeros(dados);
           feedback.textContent = dados.enviados_agora > 0
             ? `${dados.enviados_agora} convite(s) enviado(s) agora.`
-            : 'Nada pra enviar agora (fila vazia ou cota de 24h já usada).';
+            : 'Nada pra enviar agora (fila vazia ou cota de hoje já usada).';
           feedback.hidden = false;
         } catch (e) {
           feedback.textContent = e.message;

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from datetime import datetime, timedelta, timezone
 from unittest.mock import patch
 
 import pytest
@@ -154,10 +155,11 @@ def test_job_manda_ate_o_limite_diario_e_marca_enviado(client, monkeypatch):
     assert contagem["pendentes"] == 1
 
 
-def test_job_respeita_janela_movel_de_24h_entre_duas_chamadas(client, monkeypatch):
-    """Ver conversa 2026-09-25: o teto vale por janela movel de 24h, nao
-    por chamada -- chamar a funcao 2x seguidas (ex: clique manual +
-    job automatico) no mesmo dia nunca manda mais que o limite."""
+def test_job_respeita_teto_diario_entre_duas_chamadas(client, monkeypatch):
+    """Ver conversa 2026-09-25: o teto vale por dia calendario UTC
+    (bate com a hora real que a cota Brevo renova), nao por chamada --
+    chamar a funcao 2x seguidas (ex: clique manual + job automatico)
+    no mesmo dia nunca manda mais que o limite."""
     import app as app_module
 
     monkeypatch.setattr(app_module, "CANONICAL_DOMAIN", "lojanovedejulho.com.br")
@@ -175,6 +177,31 @@ def test_job_respeita_janela_movel_de_24h_entre_duas_chamadas(client, monkeypatc
     assert segundo == 0
     assert mock_email.call_count == 2
     assert pedidos.contar_campanha_convite_liturgia()["pendentes"] == 1
+
+
+def test_teto_reseta_na_virada_do_dia_utc_nao_24h_depois_do_envio(client):
+    """Ver conversa 2026-09-25: usuario conferiu no proprio Brevo que a
+    cota ja tinha renovado ANTES da meia-noite de Brasilia -- ou seja,
+    a cota renova na virada UTC (21h de Brasilia), nao 24h depois do
+    ultimo envio. Um envio marcado ontem (UTC) nao pode contar pra hoje,
+    mesmo tendo menos de 24h de diferenca."""
+    _criar_pago(client)
+    pedidos.preparar_campanha_convite_liturgia()
+    email = pedidos.listar_pendentes_campanha_convite_liturgia(10)[0]["email"]
+    pedidos.marcar_campanha_convite_liturgia_enviado(email, erro=None)
+
+    # Envio de "ontem, 23h UTC" -- soh 2h atras em horario relogio, mas
+    # ja e´ um dia UTC diferente de "agora" (qualquer hora de hoje).
+    ontem_23h_utc = (datetime.now(timezone.utc) - timedelta(days=1)).replace(
+        hour=23, minute=0, second=0, microsecond=0
+    )
+    with pedidos._conexao() as conexao:
+        conexao.execute(
+            "UPDATE campanha_convite_liturgia SET enviado_em = ? WHERE email = ?",
+            (ontem_23h_utc.isoformat(), email),
+        )
+
+    assert pedidos.contar_enviados_campanha_convite_liturgia_hoje_utc() == 0
 
 
 def test_job_marca_erro_quando_envio_falha(client, monkeypatch):

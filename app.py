@@ -200,7 +200,7 @@ from services.pedidos import (
     confirmar_venda_manual,
     contagem_pedidos_por_status,
     contar_campanha_convite_liturgia,
-    contar_enviados_campanha_convite_liturgia_ultimas_24h,
+    contar_enviados_campanha_convite_liturgia_hoje_utc,
     criar_pedido,
     importar_clientes_campanha_convite_liturgia,
     desarquivar_pedido,
@@ -5556,8 +5556,8 @@ def admin_campanha_liturgia_enviar_agora():
     """Dispara agora o proximo lote de convites, em vez de esperar o job
     automatico rodar sozinho (ver conversa 2026-09-25: "como faço pra
     enviar a campanha só pra 200 hj"). Seguro de clicar quantas vezes
-    quiser: o teto de LIMITE_DIARIO_CAMPANHA_LITURGIA vale por janela
-    movel de 24h (ver _enviar_lote_campanha_convite_liturgia), entao
+    quiser: o teto de LIMITE_DIARIO_CAMPANHA_LITURGIA vale por dia
+    calendario UTC (ver _enviar_lote_campanha_convite_liturgia), entao
     clicar de novo no mesmo dia so manda quem ainda sobrar de cota."""
     if not _autenticacao_admin_valida(request.authorization):
         return Response(
@@ -6052,16 +6052,17 @@ def _enviar_upsell_pedidos_pagos() -> None:
 def _enviar_lote_campanha_convite_liturgia() -> int:
     """Job agendado (a cada 24h) E o botao manual "Enviar agora" (ver
     admin_campanha_liturgia_enviar_agora abaixo) chamam esta MESMA
-    funcao -- o teto de LIMITE_DIARIO_CAMPANHA_LITURGIA vale por
-    JANELA MOVEL de 24h (ver services/pedidos.py:contar_enviados_
-    campanha_convite_liturgia_ultimas_24h), nao por execucao, entao
-    clicar o botao no mesmo dia em que o job automatico tambem rodar
-    nunca estoura o teto. Devolve quantos e-mails foram enviados
-    nesta chamada."""
+    funcao -- o teto de LIMITE_DIARIO_CAMPANHA_LITURGIA vale por DIA
+    CALENDARIO UTC (ver services/pedidos.py:contar_enviados_campanha_
+    convite_liturgia_hoje_utc), pra bater com a hora real que a cota da
+    conta Brevo renova (conferido pelo usuario, ver conversa
+    2026-09-25). Clicar o botao no mesmo dia em que o job automatico
+    tambem rodar nunca estoura o teto. Devolve quantos e-mails foram
+    enviados nesta chamada."""
     if not CANONICAL_DOMAIN:
         return 0
-    ja_enviados_24h = contar_enviados_campanha_convite_liturgia_ultimas_24h()
-    limite_restante = max(0, LIMITE_DIARIO_CAMPANHA_LITURGIA - ja_enviados_24h)
+    ja_enviados_hoje = contar_enviados_campanha_convite_liturgia_hoje_utc()
+    limite_restante = max(0, LIMITE_DIARIO_CAMPANHA_LITURGIA - ja_enviados_hoje)
     if limite_restante == 0:
         return 0
     pendentes = listar_pendentes_campanha_convite_liturgia(limite_restante)
