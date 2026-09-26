@@ -78,6 +78,25 @@ body {
   overflow-x: hidden;
 }
 
+/* reveal ao rolar (static/js/reveal.js poe/tira essas classes; sem JS
+   nada disso e´ aplicado). Subida curta (16px) e curva que desacelera
+   -- efeito de "assentar", nao de "voar". */
+/* "html" na frente sobe a especificidade acima de regras de 1 classe
+   com transition propria (.modelo-card, .destaque-card), senao a
+   transition deles apagava a do reveal. */
+html .reveal {
+  opacity: 0;
+  transform: translateY(16px);
+  transition:
+    opacity 0.6s cubic-bezier(0.2, 0.7, 0.2, 1) var(--reveal-atraso, 0ms),
+    transform 0.6s cubic-bezier(0.2, 0.7, 0.2, 1) var(--reveal-atraso, 0ms);
+}
+
+html .reveal.reveal-visivel {
+  opacity: 1;
+  transform: none;
+}
+
 h1, h2, h3 {
   font-family: var(--fonte-titulo);
   font-weight: 600;
