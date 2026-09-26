@@ -53,8 +53,33 @@
     <p class="vendas-recentes-produto">🔥 <strong>{{ vendas_recentes }}</strong> vendidas nos últimos 30 dias</p>
   {% endif %}
   <div class="buybox">
-    <div class="buybox-topo">
-      <img src="{{ url_for('static', filename=produto.modelos[0].imagem) }}" alt="{{ produto.nome }}" class="buybox-img">
+    <div class="buybox-topo buybox-topo-galeria">
+      {# Galeria (sem fotos novas): as "vistas" sao as fotos que ja
+         existem de cada formato do modelo 1 + o verso inox. static/js/
+         galeria.js troca as fotos quando o cliente escolhe outro modelo
+         (mesmas chaves do data-imagens de .modelo-card). #}
+      {% set m1 = produto.modelos[0] %}
+      {% set fotos_galeria = [
+        ("medalha", m1.imagem, "Medalha"),
+        ("verso", "img/verso-medalha-inox.jpg", "Verso em base inox"),
+        ("entremeio_prata", m1.imagem_entremeio_prata, "Entremeio prata"),
+        ("entremeio_ouro_velho", m1.imagem_entremeio_ouro_velho, "Entremeio ouro velho"),
+        ("chaveiro", m1.imagem_chaveiro, "Chaveiro"),
+        ("medalha_2lados_prata", m1.get("imagem_medalha_2lados_prata"), "Medalha 2 lados"),
+        ("chaveiro_2lados", m1.get("imagem_chaveiro_2lados"), "Chaveiro 2 lados"),
+      ] %}
+      <div class="galeria" id="galeria">
+        <div class="galeria-principal">
+          <img src="{{ url_for('static', filename=m1.imagem) }}" alt="{{ produto.nome }} — Medalha" class="buybox-img" id="galeria-img" width="480" height="480">
+        </div>
+        <div class="galeria-miniaturas" id="galeria-miniaturas">
+          {% for chave, caminho, rotulo in fotos_galeria %}
+            <button type="button" class="galeria-mini{% if loop.first %} ativa{% endif %}" data-chave="{{ chave }}" data-rotulo="{{ rotulo }}" aria-label="Ver foto: {{ rotulo }}"{% if not caminho %} hidden{% endif %}>
+              <img src="{{ url_for('static', filename=caminho) if caminho else '' }}" alt="" loading="lazy" decoding="async" width="480" height="480">
+            </button>
+          {% endfor %}
+        </div>
+      </div>
       <div class="buybox-precos">
         <span class="buybox-de">A partir de</span>
         {{ preco_destaque(preco_varejo, 7.0) }}
@@ -411,6 +436,7 @@
     window.PRECO_VAREJO_2LADOS = {{ preco_varejo_2lados | tojson }};
   </script>
   <script src="{{ url_for('static', filename='js/produto.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/galeria.js') }}"></script>
   <script src="{{ url_for('static', filename='js/avaliacoes.js') }}"></script>
   <script src="{{ url_for('static', filename='js/frete_estimativa.js') }}"></script>
 {% endblock %}

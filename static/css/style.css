@@ -1302,6 +1302,82 @@ h1 {
   transform: translateY(-1px);
 }
 
+/* galeria da buybox (produto.html, static/js/galeria.js) -- no celular
+   a foto deixa de ser miniatura de 88px e ocupa a largura, com as
+   outras vistas (formatos do mesmo modelo + verso) numa fileira que
+   rola na horizontal. So produto.html tem .buybox-topo-galeria; a
+   /personalizada continua com a foto pequena ao lado do preco. */
+.buybox-topo-galeria {
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.galeria {
+  min-width: 0;
+}
+
+.galeria-principal {
+  display: flex;
+  justify-content: center;
+  background: #fff;
+  border-radius: 16px;
+}
+
+.galeria .buybox-img {
+  width: min(100%, 300px);
+  height: auto;
+  aspect-ratio: 1;
+  box-shadow: none;
+}
+
+.galeria-miniaturas {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  justify-content: safe center;
+  padding: 2px;
+}
+
+.galeria-miniaturas::-webkit-scrollbar {
+  display: none;
+}
+
+.galeria-mini {
+  flex: 0 0 auto;
+  width: 56px;
+  height: 56px;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: #fff;
+  overflow: hidden;
+  cursor: pointer;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.galeria-mini img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.galeria-mini:hover {
+  border-color: var(--muted);
+}
+
+.galeria-mini.ativa {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px var(--accent);
+}
+
+.galeria-mini:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 2px;
+}
+
 /* desktop: 2 colunas classicas de pagina de produto -- foto a esquerda,
    preco + tabela de formatos a direita (antes o preco ficava encostado
    na borda direita com um vazio enorme no meio). display:contents deixa
@@ -1323,6 +1399,24 @@ h1 {
     width: 300px;
     height: 300px;
     border-radius: 16px;
+  }
+  .galeria {
+    grid-row: 1 / span 2;
+    width: 300px;
+  }
+  .galeria .buybox-img {
+    width: 300px;
+    height: 300px;
+  }
+  .galeria-miniaturas {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 6px;
+  }
+  .galeria-mini {
+    width: auto;
+    height: auto;
+    aspect-ratio: 1;
   }
   .buybox-precos {
     align-self: end;
