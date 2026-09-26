@@ -52,22 +52,6 @@
     }
     .cartao-brevo a.botao:hover { background: #1c4a80; }
 
-    .cartao-campanha {
-      background: var(--cartao); border-radius: 14px; padding: 16px 18px; margin-bottom: 20px;
-      border: 1px solid var(--linha); box-shadow: 0 8px 20px -16px rgba(20, 51, 92, 0.35);
-    }
-    .cartao-campanha h3 { margin: 0 0 6px; font-family: 'Fraunces', Georgia, serif; font-size: 0.95rem; }
-    .cartao-campanha p { margin: 0 0 12px; font-size: 0.82rem; color: var(--texto-suave); }
-    .campanha-numeros { display: flex; gap: 18px; flex-wrap: wrap; margin-bottom: 12px; }
-    .campanha-numeros div { font-size: 0.78rem; color: var(--texto-suave); }
-    .campanha-numeros strong { display: block; font-size: 1.25rem; color: var(--texto); font-family: 'Fraunces', Georgia, serif; }
-    .cartao-campanha button {
-      cursor: pointer; border: none; background: var(--dourado); color: #4a3410; font-weight: 700;
-      font-size: 0.82rem; padding: 10px 16px; border-radius: 8px;
-    }
-    .cartao-campanha button:disabled { opacity: 0.6; cursor: default; }
-    #campanha-feedback { font-size: 0.8rem; margin: 10px 0 0; }
-
     .vazio { padding: 40px 24px; text-align: center; color: var(--texto-suave); background: var(--cartao); border-radius: 14px; }
 
     table.lista-contatos { width: 100%; border-collapse: collapse; background: var(--cartao); border-radius: 14px; overflow: hidden; border: 1px solid var(--linha); }
@@ -106,40 +90,6 @@
       <a class="botao" href="https://my.brevo.com/camp/lists/id/{{ brevo_list_id }}" target="_blank" rel="noopener">Abrir lista no Brevo →</a>
     </div>
 
-    <div class="cartao-campanha">
-      <h3>📖 Convite "Liturgia do Mês" pra quem já comprou</h3>
-      <p>Convite único (não recorrente) pra base de clientes conhecer a Liturgia do Mês — enviado aos poucos,
-      até 200 por dia, pelo job agendado. Só entra na newsletter de verdade quem clicar e
-      confirmar o e-mail na landing.</p>
-      <div class="campanha-numeros">
-        <div>Na fila<strong id="campanha-total">{{ campanha_liturgia.total }}</strong></div>
-        <div>Enviados<strong id="campanha-enviados">{{ campanha_liturgia.enviados }}</strong></div>
-        <div>Pendentes<strong id="campanha-pendentes">{{ campanha_liturgia.pendentes }}</strong></div>
-        <div>Com erro<strong id="campanha-erro">{{ campanha_liturgia.com_erro }}</strong></div>
-        <div>Últimas 24h<strong id="campanha-24h">{{ campanha_liturgia_ultimas_24h }}</strong></div>
-      </div>
-      <button type="button" id="campanha-preparar-btn">Buscar clientes que já compraram</button>
-      <button type="button" id="campanha-enviar-agora-btn" style="margin-left:8px;">📤 Enviar agora (até 200)</button>
-      <a class="botao" href="{{ url_for('admin_campanha_liturgia_exportar_csv') }}" style="margin-left:8px; display:inline-block;">Baixar CSV (e-mail + nome) →</a>
-      <p id="campanha-feedback" hidden></p>
-      <p style="font-size:0.76rem; color:var(--texto-suave); margin-top:10px;">O CSV acima só traz clientes com pedido
-      registrado neste site — pedidos de antes dele (outra loja/planilha) não aparecem aqui. "Enviar agora" é seguro
-      de clicar quantas vezes quiser: cada clique tenta até 200 pendentes, e quem a Brevo recusar por já ter
-      estourado a cota dela do dia fica pendente pra tentar de novo depois — quem já tinha erro antes também é
-      tentado de novo, então limpa sozinho assim que a cota da Brevo permitir.</p>
-
-      <hr style="border:none; border-top:1px solid var(--linha); margin:16px 0;">
-
-      <p style="font-weight:700; margin-bottom:6px;">Tem uma planilha de clientes antigos?</p>
-      <p>Sobe o CSV (com uma coluna de e-mail, e nome se tiver) que eu adiciono só quem ainda não está na fila
-      acima — sem duplicar e sem colocar ninguém direto na lista de newsletter.</p>
-      <form id="form-campanha-importar" style="display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin-top:10px;">
-        <input type="file" id="campanha-importar-arquivo" accept=".csv" required>
-        <button type="submit">Importar planilha</button>
-      </form>
-      <p id="campanha-importar-feedback" hidden></p>
-    </div>
-
     {% if contatos %}
       <table class="lista-contatos">
         <thead>
@@ -158,88 +108,5 @@
       <p class="vazio">Ninguém se inscreveu ainda.</p>
     {% endif %}
   </div>
-
-  <script>
-    (function () {
-      function atualizarNumeros(dados) {
-        document.getElementById('campanha-total').textContent = dados.total;
-        document.getElementById('campanha-enviados').textContent = dados.enviados;
-        document.getElementById('campanha-pendentes').textContent = dados.pendentes;
-        document.getElementById('campanha-erro').textContent = dados.com_erro;
-        if (dados.ultimas_24h !== undefined) {
-          document.getElementById('campanha-24h').textContent = dados.ultimas_24h;
-        }
-      }
-
-      const botao = document.getElementById('campanha-preparar-btn');
-      const feedback = document.getElementById('campanha-feedback');
-      botao.addEventListener('click', async () => {
-        botao.disabled = true;
-        try {
-          const resposta = await fetch('{{ url_for("admin_campanha_liturgia_preparar") }}', { method: 'POST' });
-          const dados = await resposta.json();
-          if (!resposta.ok) throw new Error(dados.erro || 'Falha ao buscar clientes.');
-          atualizarNumeros(dados);
-          feedback.textContent = `${dados.novos} cliente(s) novo(s) adicionado(s) à fila.`;
-          feedback.hidden = false;
-        } catch (e) {
-          feedback.textContent = e.message;
-          feedback.hidden = false;
-        } finally {
-          botao.disabled = false;
-        }
-      });
-
-      const botaoEnviar = document.getElementById('campanha-enviar-agora-btn');
-      botaoEnviar.addEventListener('click', async () => {
-        botaoEnviar.disabled = true;
-        try {
-          const resposta = await fetch('{{ url_for("admin_campanha_liturgia_enviar_agora") }}', { method: 'POST' });
-          const dados = await resposta.json();
-          if (!resposta.ok) throw new Error(dados.erro || 'Falha ao enviar.');
-          atualizarNumeros(dados);
-          feedback.textContent = dados.enviados_agora > 0
-            ? `${dados.enviados_agora} convite(s) enviado(s) agora.`
-            : 'Nada pra enviar agora (fila vazia ou a Brevo recusou todos — tenta de novo daqui a pouco).';
-          feedback.hidden = false;
-        } catch (e) {
-          feedback.textContent = e.message;
-          feedback.hidden = false;
-        } finally {
-          botaoEnviar.disabled = false;
-        }
-      });
-
-      const formImportar = document.getElementById('form-campanha-importar');
-      const campoArquivo = document.getElementById('campanha-importar-arquivo');
-      const feedbackImportar = document.getElementById('campanha-importar-feedback');
-      formImportar.addEventListener('submit', async (evento) => {
-        evento.preventDefault();
-        const arquivo = campoArquivo.files[0];
-        if (!arquivo) return;
-        const botaoImportar = formImportar.querySelector('button[type="submit"]');
-        botaoImportar.disabled = true;
-        try {
-          const corpo = new FormData();
-          corpo.append('arquivo', arquivo);
-          const resposta = await fetch('{{ url_for("admin_campanha_liturgia_importar") }}', {
-            method: 'POST', body: corpo,
-          });
-          const dados = await resposta.json();
-          if (!resposta.ok) throw new Error(dados.erro || 'Falha ao importar a planilha.');
-          atualizarNumeros(dados);
-          feedbackImportar.textContent =
-            `${dados.linhas_lidas} linha(s) lida(s), ${dados.novos} cliente(s) novo(s) adicionado(s) à fila.`;
-          feedbackImportar.hidden = false;
-          formImportar.reset();
-        } catch (e) {
-          feedbackImportar.textContent = e.message;
-          feedbackImportar.hidden = false;
-        } finally {
-          botaoImportar.disabled = false;
-        }
-      });
-    })();
-  </script>
 </body>
 </html>

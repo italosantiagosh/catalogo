@@ -194,13 +194,6 @@ LEMBRETE_MINUTOS = int(os.environ.get("LEMBRETE_MINUTOS", "720"))
 # padrao de todos: 6h -> 12h -> 18h -> cancela em 24h.
 LEMBRETE_FINAL_MINUTOS = int(os.environ.get("LEMBRETE_FINAL_MINUTOS", "1080"))
 
-# Convite unico pra base de clientes conhecer a "Liturgia do mes" (ver
-# services/pedidos.py:preparar_campanha_convite_liturgia) -- teto
-# conservador pra sobrar folga no limite de 300 e-mails/dia da conta
-# Brevo, que tambem manda os e-mails transacionais normais (confirmacao
-# de pedido, lembrete de carrinho etc).
-LIMITE_DIARIO_CAMPANHA_LITURGIA = int(os.environ.get("LIMITE_DIARIO_CAMPANHA_LITURGIA", "200"))
-
 # Quanto tempo esperar DEPOIS do lembrete (2o link) antes de cancelar
 # automaticamente um pedido que continua "pendente" -- job agendado
 # junto com o lembrete acima (ver app.py). Contagem a partir de

@@ -360,10 +360,13 @@ def test_feed_produtos_xml_bem_formado_e_uma_variacao_por_modelo(client):
     raiz = ET.fromstring(resposta.get_data(as_text=True))
     ns = {"g": "http://base.google.com/ns/1.0"}
     itens = raiz.findall("./channel/item")
+    itens_santos = [i for i in itens if not i.find("g:id", ns).text.startswith("lp-")]
     # 5 variacoes por modelo: medalha 12mm, medalha 16mm, entremeio
-    # prata, entremeio ouro velho, chaveiro (ver _VARIANTES_FEED)
-    assert len(itens) == total_modelos * 5
-    primeiro = itens[0]
+    # prata, entremeio ouro velho, chaveiro (ver _VARIANTES_FEED) -- o
+    # resto do feed (prefixo "lp-") e´ a Linha Premium, ver
+    # test_feed_produtos_inclui_linha_premium.
+    assert len(itens_santos) == total_modelos * 5
+    primeiro = itens_santos[0]
     assert primeiro.find("g:id", ns) is not None
     assert primeiro.find("g:item_group_id", ns) is not None
     assert primeiro.find("g:price", ns).text.endswith("BRL")
@@ -373,7 +376,7 @@ def test_feed_produtos_xml_bem_formado_e_uma_variacao_por_modelo(client):
     assert raiz.find("./channel/language").text == "pt-BR"
 
 
-def test_feed_produtos_sao_jose_tem_30_variacoes_agrupadas(client):
+def test_feed_produtos_sao_jose_tem_40_variacoes_agrupadas(client):
     import xml.etree.ElementTree as ET
 
     ns = {"g": "http://base.google.com/ns/1.0"}
@@ -382,8 +385,8 @@ def test_feed_produtos_sao_jose_tem_30_variacoes_agrupadas(client):
     itens_sao_jose = [
         item for item in raiz.findall("./channel/item") if item.find("g:id", ns).text.startswith("sao-jose-modelo")
     ]
-    # 7 modelos x 5 variacoes
-    assert len(itens_sao_jose) == 35
+    # 8 modelos x 5 variacoes
+    assert len(itens_sao_jose) == 40
     assert all(item.find("g:item_group_id", ns).text == "sao-jose" for item in itens_sao_jose)
 
     precos = {item.find("g:id", ns).text: item.find("g:price", ns).text for item in itens_sao_jose}
@@ -396,6 +399,31 @@ def test_feed_produtos_sao_jose_tem_30_variacoes_agrupadas(client):
         i for i in itens_sao_jose if i.find("g:id", ns).text == "sao-jose-modelo1-entremeio-ouro-velho"
     )
     assert entremeio_ouro.find("g:color", ns).text == "Ouro velho"
+
+
+def test_feed_produtos_inclui_linha_premium(client):
+    """Ver conversa 2026-09-26: colares/pulseira/relicarios (Linha
+    Premium) e as correntes vendidas separadamente tambem entram no
+    feed, com id prefixado "lp-" pra nao colidir com o catalogo de
+    santos (3 nomes se repetem entre os dois catalogos)."""
+    import xml.etree.ElementTree as ET
+
+    ns = {"g": "http://base.google.com/ns/1.0"}
+    resposta = client.get("/feed-produtos.xml")
+    raiz = ET.fromstring(resposta.get_data(as_text=True))
+    itens_lp = {
+        item.find("g:id", ns).text: item
+        for item in raiz.findall("./channel/item")
+        if item.find("g:id", ns).text.startswith("lp-")
+    }
+    # 3 colares + 1 pulseira + 3 relicarios + 2 correntes avulsas
+    assert len(itens_lp) == 9
+    assert "lp-sagrado-coracao-de-jesus" in itens_lp
+    assert "lp-corrente-corrente_veneziana_ouro" in itens_lp
+    item = itens_lp["lp-sagrado-coracao-de-jesus"]
+    assert item.find("g:price", ns).text == "97.00 BRL"
+    assert item.find("link").text.endswith("/linha-premium/sagrado-coracao-de-jesus")
+    assert item.find("g:item_group_id", ns).text == "lp-sagrado-coracao-de-jesus"
 
 
 def test_feed_produtos_tem_rotulo_de_conjunto_pra_colecoes(client):

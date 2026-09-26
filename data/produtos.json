@@ -3944,6 +3944,21 @@
         "imagem_chaveiro_2lados": "img/produtos/sao-jose_modelo_4_chaveiro_2lados.jpg"
       },
       {
+        "id": 5,
+        "nome": "Modelo 5",
+        "imagem": "img/produtos/sao_jose_modelo_5_medalha.jpg",
+        "tamanhos": [
+          "12mm",
+          "16mm"
+        ],
+        "imagem_entremeio_prata": "img/produtos/sao_jose_modelo_5_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/sao_jose_modelo_5_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/sao_jose_modelo_5_chaveiro.jpg",
+        "imagem_medalha_2lados_prata": "img/produtos/sao-jose_modelo_5_medalha_2lados_prata.jpg",
+        "imagem_medalha_2lados_ouro_velho": "img/produtos/sao-jose_modelo_5_medalha_2lados_ouro_velho.jpg",
+        "imagem_chaveiro_2lados": "img/produtos/sao-jose_modelo_5_chaveiro_2lados.jpg"
+      },
+      {
         "id": 6,
         "nome": "Modelo 6",
         "imagem": "img/produtos/sao_jose_modelo_6_medalha.jpg",

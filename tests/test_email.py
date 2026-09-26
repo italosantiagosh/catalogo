@@ -313,54 +313,6 @@ def test_upsell_de_cruz_manda_mensagem_de_whatsapp_com_quantidade(monkeypatch):
     assert "retirada no local" in corpo["htmlContent"].lower()
 
 
-def test_convite_liturgia_mensal_deixa_claro_que_nao_inscreve_sozinho(monkeypatch):
-    """Ver conversa 2026-09-24: convite unico pra base de clientes que ja
-    comprou -- precisa deixar claro que so o envio nao inscreve
-    ninguem, pra nao virar opt-in escondido."""
-    monkeypatch.setattr(email, "BREVO_API_KEY", "segredo")
-    resposta_mock = Mock()
-    resposta_mock.raise_for_status = Mock()
-    with patch("services.email.requests.post", return_value=resposta_mock) as post_mock:
-        resultado = email.enviar_convite_liturgia_mensal(
-            "maria@example.com", "Maria Teste", "https://lojanovedejulho.com.br/liturgia-do-mes"
-        )
-
-    assert resultado == {"ok": True}
-    corpo = post_mock.call_args.kwargs["json"]
-    assert corpo["to"] == [{"email": "maria@example.com", "name": "Maria Teste"}]
-    assert corpo["tags"] == ["convite_liturgia_mensal"]
-    assert "não te inscreve em nada" in corpo["htmlContent"]
-    assert "utm_campaign=convite_liturgia_mensal" in corpo["htmlContent"]
-    assert "liturgia-do-mes" in corpo["htmlContent"]
-
-
-def test_convite_liturgia_mensal_sem_nome_usa_saudacao_generica(monkeypatch):
-    monkeypatch.setattr(email, "BREVO_API_KEY", "segredo")
-    resposta_mock = Mock()
-    resposta_mock.raise_for_status = Mock()
-    with patch("services.email.requests.post", return_value=resposta_mock) as post_mock:
-        email.enviar_convite_liturgia_mensal("maria@example.com", "", "https://lojanovedejulho.com.br/liturgia-do-mes")
-
-    corpo = post_mock.call_args.kwargs["json"]["htmlContent"]
-    assert "Olá!" in corpo
-
-
-def test_convite_liturgia_mensal_preenche_email_no_link(monkeypatch):
-    """Ver conversa 2026-09-24: o botao do convite ja vem com o e-mail
-    preenchido (static/js/liturgia_outubro.js le ?email= da URL) -- a
-    pessoa so precisa clicar, nao redigitar."""
-    monkeypatch.setattr(email, "BREVO_API_KEY", "segredo")
-    resposta_mock = Mock()
-    resposta_mock.raise_for_status = Mock()
-    with patch("services.email.requests.post", return_value=resposta_mock) as post_mock:
-        email.enviar_convite_liturgia_mensal(
-            "maria@example.com", "Maria", "https://lojanovedejulho.com.br/liturgia-do-mes"
-        )
-
-    corpo = post_mock.call_args.kwargs["json"]["htmlContent"]
-    assert "email=maria%40example.com" in corpo
-
-
 def test_ebook_liturgia_mensal_manda_link_do_pdf_e_do_calendario(monkeypatch):
     monkeypatch.setattr(email, "BREVO_API_KEY", "segredo")
     resposta_mock = Mock()

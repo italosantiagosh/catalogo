@@ -95,7 +95,6 @@ from config import (
     LEMBRETE_FINAL_MINUTOS,
     LEMBRETE_MINUTOS,
     LEMBRETE_PRECOCE_MINUTOS,
-    LIMITE_DIARIO_CAMPANHA_LITURGIA,
     META_PIXEL_ID,
     PROCURADOS_HOME,
     PRODUCAO_DIAS_UTEIS,
@@ -152,7 +151,6 @@ from services.email import (
     enviar_lembrete_carrinho_abandonado,
     enviar_lembrete_pedido_pendente,
     enviar_lembrete_precoce_pedido_pendente,
-    enviar_convite_liturgia_mensal,
     enviar_ebook_liturgia_mensal,
     enviar_link_pagamento,
     enviar_nota_fiscal_disponivel,
@@ -197,13 +195,9 @@ from services.pedidos import (
     arquivar_pedido,
     atualizar_status,
     cancelar_pedido,
-    clientes_pagos_distintos,
     confirmar_venda_manual,
     contagem_pedidos_por_status,
-    contar_campanha_convite_liturgia,
-    contar_enviados_campanha_convite_liturgia_ultimas_24h,
     criar_pedido,
-    importar_clientes_campanha_convite_liturgia,
     desarquivar_pedido,
     editar_item_formato,
     editar_valor,
@@ -224,9 +218,7 @@ from services.pedidos import (
     listar_pedidos_pendentes_para_lembrete_final,
     listar_pedidos_pendentes_para_lembrete_precoce,
     listar_pedidos_por_documento,
-    listar_pendentes_campanha_convite_liturgia,
     marcar_boleto_erro,
-    marcar_campanha_convite_liturgia_enviado,
     marcar_email_avaliacao_enviado,
     marcar_email_avaliacao_seguimento_enviado,
     marcar_email_cancelado_enviado,
@@ -248,7 +240,6 @@ from services.pedidos import (
     obter_pedido,
     pedidos_pagos_por_dispositivo,
     pedidos_por_uf,
-    preparar_campanha_convite_liturgia,
     previsoes_do_pedido,
     produtos_mais_vendidos,
     quantidade_por_material,
@@ -1163,7 +1154,7 @@ e/ou cor conforme o modelo.
 # Um item de feed por VARIACAO de verdade -- cada combinacao que o
 # cliente realmente escolhe na pagina de produto (formato, depois
 # tamanho ou cor) vira 1 item, pra cada MODELO do santo. Sao Jose, por
-# exemplo, tem 6 modelos x 5 variacoes = 30 itens. (sufixo do id,
+# exemplo, tem 8 modelos x 5 variacoes = 40 itens. (sufixo do id,
 # prefixo do titulo, campo da imagem no modelo, chave_preco pro preco
 # de varejo, chave de DESCRICOES_FORMATO, g:size, g:color).
 _VARIANTES_FEED = (
@@ -1185,7 +1176,10 @@ def feed_produtos_xml():
     mesmo santo no Google/Meta, nao como produtos avulsos repetidos.
     `availability` sempre "in stock": o catalogo e feito sob encomenda,
     nao ha controle de estoque real pra diferenciar (mesma decisao ja
-    tomada no schema.org Product de templates/produto.html)."""
+    tomada no schema.org Product de templates/produto.html). Inclui
+    tambem a Linha Premium (colares/pulseiras/relicarios + correntes
+    avulsas, ver _itens_xml_linha_premium abaixo, pedido em
+    2026-09-26)."""
     produtos = carregar_produtos()
     base = request.url_root.rstrip("/")
 
@@ -1237,6 +1231,8 @@ def feed_produtos_xml():
                 item.append("</item>")
                 itens_xml.append("".join(item))
 
+    itens_xml.append(_itens_xml_linha_premium(base))
+
     corpo = (
         '<?xml version="1.0" encoding="UTF-8"?>'
         '<rss version="2.0" xmlns:g="http://base.google.com/ns/1.0"><channel>'
@@ -1248,6 +1244,70 @@ def feed_produtos_xml():
         + "</channel></rss>"
     )
     return Response(corpo, mimetype="application/xml")
+
+
+def _itens_xml_linha_premium(base: str) -> str:
+    """Itens do feed pra colares, pulseira e relicarios (Linha Premium) --
+    cada peca e´ 1 produto so, sem variacao de tamanho/cor (diferente do
+    catalogo de santos acima), entao vira 1 item cada; a corrente vendida
+    junto de alguns relicarios (ver services/relicarios.py) tambem entra,
+    como item avulso, ja que da´ pra comprar ela separada. Prefixo "lp-"
+    nos ids pra nao colidir com o catalogo de santos (3 nomes se repetem,
+    ex: "sagrado-coracao-de-jesus" existe nos dois catalogos, ver conversa
+    2026-09-26)."""
+    itens = colares_publicados() + pulseiras_publicadas() + relicarios_publicados()
+    itens_xml = []
+    for item in itens:
+        link = base + url_for("linha_premium_item", peca_id=item["id"])
+        imagem = base + url_for("static", filename=item["imagens"][0]["src"])
+        preco_item = f"{preco_varejo(item['chave_preco']):.2f} BRL"
+        item_id = f"lp-{item['id']}"
+        itens_xml.append(
+            "".join([
+                "<item>",
+                f"<g:id>{escapar_xml(item_id)}</g:id>",
+                f"<g:item_group_id>{escapar_xml(item_id)}</g:item_group_id>",
+                f"<title>{escapar_xml(item['nome'])}</title>",
+                f"<description>{escapar_xml(item['descricao_curta'])}</description>",
+                f"<link>{escapar_xml(link)}</link>",
+                f"<g:image_link>{escapar_xml(imagem)}</g:image_link>",
+                "<g:availability>in stock</g:availability>",
+                f"<g:price>{preco_item}</g:price>",
+                "<g:brand>Nove de Julho</g:brand>",
+                "<g:condition>new</g:condition>",
+                "<g:identifier_exists>no</g:identifier_exists>",
+                "<g:product_type>Linha Premium</g:product_type>",
+                "<g:google_product_category>Religious &amp; Ceremonial &gt; Religious Jewelry</g:google_product_category>",
+                "<g:custom_label_0>Linha Premium</g:custom_label_0>",
+                "</item>",
+            ])
+        )
+        corrente = item.get("corrente")
+        if corrente:
+            corrente_id = f"lp-corrente-{corrente['chave_preco']}"
+            preco_corrente = f"{preco_varejo(corrente['chave_preco']):.2f} BRL"
+            imagem_corrente = base + url_for("static", filename=corrente["imagem"])
+            itens_xml.append(
+                "".join([
+                    "<item>",
+                    f"<g:id>{escapar_xml(corrente_id)}</g:id>",
+                    f"<g:item_group_id>{escapar_xml(corrente_id)}</g:item_group_id>",
+                    f"<title>{escapar_xml(corrente['nome'])}</title>",
+                    f"<description>Corrente vendida junto com o {escapar_xml(item['nome'])} -- pode ser comprada separadamente.</description>",
+                    f"<link>{escapar_xml(link)}</link>",
+                    f"<g:image_link>{escapar_xml(imagem_corrente)}</g:image_link>",
+                    "<g:availability>in stock</g:availability>",
+                    f"<g:price>{preco_corrente}</g:price>",
+                    "<g:brand>Nove de Julho</g:brand>",
+                    "<g:condition>new</g:condition>",
+                    "<g:identifier_exists>no</g:identifier_exists>",
+                    "<g:product_type>Linha Premium &gt; Corrente</g:product_type>",
+                    "<g:google_product_category>Religious &amp; Ceremonial &gt; Religious Jewelry</g:google_product_category>",
+                    "<g:custom_label_0>Corrente</g:custom_label_0>",
+                    "</item>",
+                ])
+            )
+    return "".join(itens_xml)
 
 
 def _com_avaliacoes(itens: list[dict]) -> list[dict]:
@@ -5964,130 +6024,7 @@ def admin_newsletter():
         total=resultado.get("total", 0),
         erro=resultado.get("erro"),
         brevo_list_id=BREVO_LIST_ID,
-        campanha_liturgia=contar_campanha_convite_liturgia(),
-        campanha_liturgia_ultimas_24h=contar_enviados_campanha_convite_liturgia_ultimas_24h(),
     )
-
-
-@app.route("/admin/campanha-liturgia/preparar", methods=["POST"])
-def admin_campanha_liturgia_preparar():
-    """Popula a fila de convite pra base de clientes que ja comprou (ver
-    services/pedidos.py:preparar_campanha_convite_liturgia) -- disparada
-    manualmente UMA VEZ (e´ seguro chamar de novo: so adiciona quem
-    ainda nao esta na fila). Depois disso o envio em lotes acontece
-    sozinho pelo job agendado (_enviar_lote_campanha_convite_liturgia)."""
-    if not _autenticacao_admin_valida(request.authorization):
-        return Response(
-            "Autenticação necessária.", 401, {"WWW-Authenticate": 'Basic realm="Painel de newsletter"'}
-        )
-    novos = preparar_campanha_convite_liturgia()
-    return jsonify({"ok": True, "novos": novos, **contar_campanha_convite_liturgia()})
-
-
-@app.route("/admin/campanha-liturgia/enviar-agora", methods=["POST"])
-def admin_campanha_liturgia_enviar_agora():
-    """Dispara agora o proximo lote de convites, em vez de esperar o job
-    automatico rodar sozinho (ver conversa 2026-09-25: "como faço pra
-    enviar a campanha só pra 200 hj"). Seguro de clicar quantas vezes
-    quiser: cada chamada tenta no maximo LIMITE_DIARIO_CAMPANHA_LITURGIA
-    pendentes, e quem a Brevo recusar (cota do dia dela, nao a nossa)
-    fica pendente pra tentar de novo depois (ver
-    _enviar_lote_campanha_convite_liturgia)."""
-    if not _autenticacao_admin_valida(request.authorization):
-        return Response(
-            "Autenticação necessária.", 401, {"WWW-Authenticate": 'Basic realm="Painel de newsletter"'}
-        )
-    enviados_agora = _enviar_lote_campanha_convite_liturgia()
-    return jsonify({
-        "ok": True,
-        "enviados_agora": enviados_agora,
-        "ultimas_24h": contar_enviados_campanha_convite_liturgia_ultimas_24h(),
-        **contar_campanha_convite_liturgia(),
-    })
-
-
-@app.route("/admin/campanha-liturgia/exportar.csv", methods=["GET"])
-def admin_campanha_liturgia_exportar_csv():
-    """CSV (e-mail + nome) de todo cliente com pedido pago/faturado/
-    enviado/entregue neste banco (ver services/pedidos.py:
-    clientes_pagos_distintos) -- pro usuario importar manualmente numa
-    lista separada do Brevo, em vez do envio automatico em lotes (ver
-    conversa 2026-09-24: pedidos antigos de antes desta loja propria
-    nao passam por aqui, entao o total pode ficar abaixo do que o
-    usuario tem cadastrado em outro lugar)."""
-    if not _autenticacao_admin_valida(request.authorization):
-        return Response(
-            "Autenticação necessária.", 401, {"WWW-Authenticate": 'Basic realm="Painel de newsletter"'}
-        )
-    buffer = io.StringIO()
-    escritor = csv.writer(buffer, delimiter=";")
-    escritor.writerow(["E-mail", "Nome"])
-    for cliente in clientes_pagos_distintos():
-        escritor.writerow([cliente["email"], cliente["nome"]])
-
-    conteudo_bytes = buffer.getvalue().encode("utf-8-sig")
-    resposta = Response(conteudo_bytes, mimetype="text/csv")
-    resposta.headers["Content-Disposition"] = 'attachment; filename="clientes-nove-de-julho.csv"'
-    return resposta
-
-
-_COLUNAS_EMAIL_CSV = {"email", "e-mail", "e_mail"}
-_COLUNAS_NOME_CSV = {"nome", "name"}
-
-
-def _ler_pares_email_nome_do_csv(texto: str) -> list[tuple[str, str]]:
-    """Aceita CSV exportado de qualquer planilha (Excel/Brevo/Tiny) --
-    detecta ; ou , automaticamente e reconhece a coluna de e-mail (e de
-    nome, se tiver) pelo cabecalho, sem exigir ordem ou nome exato de
-    coluna."""
-    try:
-        dialeto = csv.Sniffer().sniff(texto[:2048], delimiters=";,")
-    except csv.Error:
-        dialeto = csv.excel
-        dialeto.delimiter = ";" if texto[:2048].count(";") > texto[:2048].count(",") else ","
-    leitor = csv.DictReader(io.StringIO(texto), dialect=dialeto)
-    if not leitor.fieldnames:
-        return []
-    colunas = {c.strip().lower(): c for c in leitor.fieldnames}
-    coluna_email = next((colunas[c] for c in _COLUNAS_EMAIL_CSV if c in colunas), None)
-    if coluna_email is None:
-        return []
-    coluna_nome = next((colunas[c] for c in _COLUNAS_NOME_CSV if c in colunas), None)
-    pares = []
-    for linha in leitor:
-        email = (linha.get(coluna_email) or "").strip()
-        nome = (linha.get(coluna_nome) or "").strip() if coluna_nome else ""
-        if email:
-            pares.append((email, nome))
-    return pares
-
-
-@app.route("/admin/campanha-liturgia/importar", methods=["POST"])
-def admin_campanha_liturgia_importar():
-    """Sobe uma planilha (CSV) de clientes antigos -- de antes desta
-    loja propria, que clientes_pagos_distintos() nao enxerga (ver
-    conversa 2026-09-24) -- e adiciona so os e-mails novos na MESMA
-    fila de convite (campanha_convite_liturgia), nunca direto na lista
-    de newsletter do Brevo. Quem ja esta na fila (de preparar() ou de
-    uma importacao anterior) e´ ignorado, sem duplicar nem reenviar."""
-    if not _autenticacao_admin_valida(request.authorization):
-        return Response(
-            "Autenticação necessária.", 401, {"WWW-Authenticate": 'Basic realm="Painel de newsletter"'}
-        )
-    arquivo = request.files.get("arquivo")
-    if arquivo is None or not arquivo.filename:
-        return jsonify({"erro": "Nenhum arquivo enviado."}), 400
-    try:
-        texto = arquivo.read().decode("utf-8-sig")
-    except UnicodeDecodeError:
-        return jsonify({"erro": "Não consegui ler o arquivo -- exporte como CSV (UTF-8)."}), 400
-
-    pares = _ler_pares_email_nome_do_csv(texto)
-    if not pares:
-        return jsonify({"erro": "Não encontrei uma coluna de e-mail no arquivo."}), 400
-
-    novos = importar_clientes_campanha_convite_liturgia(pares)
-    return jsonify({"ok": True, "linhas_lidas": len(pares), "novos": novos, **contar_campanha_convite_liturgia()})
 
 
 @app.route("/sw.js", methods=["GET"])
@@ -6488,37 +6425,6 @@ def _enviar_upsell_pedidos_pagos() -> None:
         marcar_email_upsell_enviado(pedido["token"], erro=resultado_email.get("erro"))
 
 
-def _enviar_lote_campanha_convite_liturgia() -> int:
-    """Job agendado (a cada 24h) E o botao manual "Enviar agora" (ver
-    admin_campanha_liturgia_enviar_agora abaixo) chamam esta MESMA
-    funcao. Ja´ tentamos adivinhar aqui, localmente, quando a cota da
-    conta Brevo renova -- primeiro por dia calendario UTC, depois por
-    janela movel de 24h (ver git log) -- e nas duas vezes o usuario
-    conferiu no proprio painel Brevo que nao batia com a cota real
-    (ver conversa 2026-09-25). Desistimos de adivinhar: aqui so´
-    limitamos quantos TENTAMOS mandar por chamada
-    (LIMITE_DIARIO_CAMPANHA_LITURGIA), pra nao estourar a fila inteira
-    de uma vez; quem a Brevo aceitar, aceitou (a cota real e´ decidida
-    por ela no momento do envio), e quem falhar (seja por cota ou
-    qualquer outro erro, ver services/email.py:_enviar) fica pendente
-    pra tentar de novo na proxima chamada. Devolve quantos e-mails
-    foram enviados com sucesso nesta chamada."""
-    if not CANONICAL_DOMAIN:
-        return 0
-    pendentes = listar_pendentes_campanha_convite_liturgia(LIMITE_DIARIO_CAMPANHA_LITURGIA)
-    if not pendentes:
-        return 0
-    url_liturgia = f"https://{CANONICAL_DOMAIN}/liturgia-do-mes"
-    enviados = 0
-    for contato in pendentes:
-        resultado = enviar_convite_liturgia_mensal(contato["email"], contato.get("nome") or "", url_liturgia)
-        erro = resultado.get("erro")
-        marcar_campanha_convite_liturgia_enviado(contato["email"], erro=erro)
-        if not erro:
-            enviados += 1
-    return enviados
-
-
 def _enviar_email_avaliacao(token: str) -> str | None:
     """Manda o e-mail pedindo avaliacao (ver services/email.py:
     enviar_pedido_avaliacao, ja convida a seguir/marcar @novedjulho no
@@ -6731,9 +6637,6 @@ def _iniciar_scheduler_jobs() -> None:
     )
     scheduler.add_job(_cancelar_pedidos_abandonados, "interval", minutes=10, id="cancelar_pedidos_abandonados")
     scheduler.add_job(_enviar_upsell_pedidos_pagos, "interval", minutes=10, id="upsell_pedidos_pagos")
-    scheduler.add_job(
-        _enviar_lote_campanha_convite_liturgia, "interval", hours=24, id="campanha_convite_liturgia"
-    )
     scheduler.add_job(
         _enviar_seguimento_avaliacao_entregues, "interval", minutes=10, id="seguimento_avaliacao_entregues"
     )
