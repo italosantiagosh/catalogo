@@ -63,7 +63,7 @@
           Prefere receber no seu calendário (Google, Apple ou Outlook)? Cada dia
           entra sozinho na agenda, com a notificação que você já configurou por lá.
         </p>
-        <a class="botao-secundario" href="{{ url_for('ebook_liturgia_outubro_ics') }}" target="_blank" rel="noopener">Adicionar ao meu calendário →</a>
+        <a class="botao-secundario" href="{{ url_for('ebook_liturgia_outubro_ics') }}" target="_blank" rel="noopener" onclick="if (typeof gtag === 'function') gtag('event', 'add_to_calendar');">Adicionar ao meu calendário →</a>
       </div>
     </div>
   </div>
