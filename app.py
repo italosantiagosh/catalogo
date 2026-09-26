@@ -115,6 +115,7 @@ from config import (
 import services.analytics as analytics
 from services.catalogo import (
     buscar_produto,
+    descricao_santo,
     carregar_produtos,
     categoria_por_slug,
     categorias_com_slug,
@@ -1852,6 +1853,7 @@ def produto(produto_id: str):
     vendas_recentes_qtd = unidades_vendidas_por_produto(VENDAS_RECENTES_DIAS).get(produto_id, 0)
     vendas_recentes = vendas_recentes_qtd if vendas_recentes_qtd >= VENDAS_RECENTES_MINIMO_PARA_EXIBIR else None
 
+    descricao = descricao_santo(produto_id)
     dados_produto = {
         "@context": "https://schema.org",
         "@type": "Product",
@@ -1861,6 +1863,7 @@ def produto(produto_id: str):
         "description": (
             f"Medalha, entremeio e chaveiro de {produto['nome']} a partir de "
             f"R$ {preco:.2f} -- desconto de atacado automático conforme a quantidade."
+            + (f" {descricao['sobre']}" if descricao else "")
         ),
         "offers": {
             "@type": "Offer",
@@ -1970,6 +1973,7 @@ def produto(produto_id: str):
         vendas_recentes=vendas_recentes,
         slug_artigo_relacionado=artigo_relacionado[0] if artigo_relacionado else None,
         producao_dias_uteis=PRODUCAO_DIAS_UTEIS,
+        descricao=descricao,
     )
 
 

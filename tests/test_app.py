@@ -821,3 +821,27 @@ def test_api_newsletter_erro_devolve_400(client, monkeypatch):
     resposta = client.post("/api/newsletter", json={"email": "nao-e-email"})
     assert resposta.status_code == 400
     assert "erro" in resposta.get_json()
+
+
+def test_produto_mostra_descricao_do_santo_e_ficha(client):
+    html = client.get("/produto/sao-jose").get_data(as_text=True)
+    assert "Sobre a devoção" in html
+    assert "padroeiro da Igreja universal" in html
+    assert "Detalhes da peça" in html
+    assert "8 modelos de São José" in html
+
+
+def test_produto_sem_descricao_mostra_so_ficha(client):
+    html = client.get("/produto/obra-nova").get_data(as_text=True)
+    assert "Sobre a devoção" not in html
+    assert "Detalhes da peça — Obra Nova" in html
+
+
+def test_descricoes_santos_so_tem_ids_de_produtos_existentes():
+    import json
+    from services.catalogo import DESCRICOES_PATH, carregar_produtos
+
+    descricoes = json.loads(DESCRICOES_PATH.read_text(encoding="utf-8"))
+    ids = {p["id"] for p in carregar_produtos()}
+    assert set(descricoes) <= ids
+    assert all(d["sobre"].strip() for d in descricoes.values())

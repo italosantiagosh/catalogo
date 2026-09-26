@@ -1149,21 +1149,26 @@ h1 {
   margin: 4px 0 8px;
 }
 
+/* preco na serifa da marca (Fraunces) -- pedido do usuario: "nao seria
+   melhor outra fonte?". Da o ar de joalheria/loja de devocionais das
+   referencias (Santo Altar) e separa ainda mais o preco do resto do
+   texto em Public Sans. Tabela de formatos continua sans (leitura). */
 .buybox-valor {
   display: inline-flex;
   align-items: flex-start;
-  font-size: 2.3rem;
-  font-weight: 700;
+  font-family: var(--fonte-titulo);
+  font-size: 2.5rem;
+  font-weight: 600;
   color: var(--preco);
   line-height: 1;
-  letter-spacing: -0.02em;
-  font-variant-numeric: tabular-nums lining-nums;
+  letter-spacing: -0.01em;
+  font-variant-numeric: lining-nums;
 }
 
 .buybox-moeda,
 .buybox-centavos {
   font-size: 0.45em;
-  font-weight: 700;
+  font-weight: 600;
   line-height: 1.25;
   letter-spacing: 0;
 }
@@ -2368,6 +2373,125 @@ button.botao-carrinho:disabled {
   border-radius: 12px;
 }
 
+/* descricao do produto (produto.html) -- texto "Sobre a devocao" a
+   esquerda, ficha tecnica a direita no desktop; empilhados no celular.
+   Tom editorial (serifa no titulo, medida de linha curta, filete
+   dourado na curiosidade), pra ler como loja de devocionais e nao como
+   formulario. */
+.descricao-produto {
+  display: grid;
+  gap: 24px;
+  margin: 28px 0 0;
+  padding: 24px 20px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+}
+
+.descricao-eyebrow {
+  margin: 0 0 4px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--gold-texto-claro);
+}
+
+.descricao-sobre h2,
+.descricao-ficha h2 {
+  margin: 0 0 12px;
+  font-size: 1.55rem;
+  line-height: 1.15;
+  color: var(--ink);
+}
+
+.descricao-texto {
+  margin: 0 0 16px;
+  max-width: 62ch;
+  font-size: 1rem;
+  line-height: 1.7;
+  color: var(--ink);
+}
+
+.descricao-curiosidade {
+  margin: 0 0 16px;
+  padding: 12px 16px;
+  border-left: 3px solid var(--gold);
+  background: var(--gold-soft);
+  border-radius: 0 10px 10px 0;
+}
+
+.descricao-curiosidade strong {
+  display: block;
+  margin-bottom: 2px;
+  font-family: var(--fonte-titulo);
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--gold-texto-claro);
+}
+
+.descricao-curiosidade p {
+  margin: 0;
+  font-size: 0.92rem;
+  line-height: 1.6;
+}
+
+.descricao-link-blog {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--accent);
+}
+
+.descricao-ficha h3 {
+  margin: 0 0 10px;
+  font-size: 1.1rem;
+}
+
+.descricao-ficha dl {
+  margin: 0;
+}
+
+.descricao-ficha dl > div {
+  display: grid;
+  grid-template-columns: 6.5rem 1fr;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 0.88rem;
+  line-height: 1.5;
+}
+
+.descricao-ficha dl > div:last-child {
+  border-bottom: none;
+}
+
+.descricao-ficha dt {
+  font-weight: 700;
+  color: var(--muted);
+}
+
+.descricao-ficha dd {
+  margin: 0;
+  color: var(--ink);
+}
+
+@media (min-width: 860px) {
+  .descricao-produto {
+    grid-template-columns: 1.15fr 1fr;
+    gap: 48px;
+    padding: 32px;
+  }
+  .descricao-produto-so-ficha {
+    grid-template-columns: 1fr;
+  }
+  .descricao-ficha dl > div {
+    grid-template-columns: 9rem 1fr;
+  }
+  .descricao-sobre h2 {
+    font-size: 2rem;
+  }
+}
+
 .relacionados {
   margin: 20px 0 0;
   padding: 16px;
@@ -3092,7 +3216,9 @@ body.tem-barra-fixa-comprar main {
 
 #barra-fixa-preco {
   color: var(--preco);
-  font-weight: 700;
+  font-family: var(--fonte-titulo);
+  font-size: 0.9rem;
+  font-weight: 600;
 }
 
 #barra-fixa-detalhe {

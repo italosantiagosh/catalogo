@@ -262,6 +262,46 @@
     <button type="button" id="barra-fixa-btn-adicionar" class="botao-carrinho">Adicionar ao carrinho</button>
   </div>
 
+  {# Descricao em texto (SEO + loja "cheia"): "Sobre" vem de
+     data/descricoes_santos.json (so pros produtos com fatos conferidos);
+     "Detalhes da peca" sai dos proprios dados do produto e de
+     config.py:DESCRICOES_FORMATO -- nada inventado por produto. #}
+  {% set tamanhos_medalha = produto.modelos | map(attribute='tamanhos') | sum(start=[]) | unique | list %}
+  <section class="descricao-produto{% if not descricao %} descricao-produto-so-ficha{% endif %}" aria-labelledby="descricao-titulo">
+    {% if descricao %}
+      <div class="descricao-sobre">
+        <p class="descricao-eyebrow">Sobre a devoção</p>
+        <h2 id="descricao-titulo">{{ produto.nome }}</h2>
+        <p class="descricao-texto">{{ descricao.sobre }}</p>
+        {% if descricao.curiosidade %}
+          <aside class="descricao-curiosidade">
+            <strong>Você sabia?</strong>
+            <p>{{ descricao.curiosidade }}</p>
+          </aside>
+        {% endif %}
+        {% if slug_artigo_relacionado %}
+          <a class="descricao-link-blog" href="{{ url_for('blog_artigo', slug=slug_artigo_relacionado) }}">Leia a história completa no blog →</a>
+        {% endif %}
+      </div>
+    {% endif %}
+    <div class="descricao-ficha">
+      {% if descricao %}
+        <h3>Detalhes da peça</h3>
+      {% else %}
+        <h2 id="descricao-titulo">Detalhes da peça — {{ produto.nome }}</h2>
+      {% endif %}
+      <dl>
+        <div><dt>Artes disponíveis</dt><dd>{{ produto.modelos | length }} modelo{{ "s" if produto.modelos | length > 1 }} de {{ produto.nome }}</dd></div>
+        <div><dt>Medalha</dt><dd>Aço inoxidável resinado · {{ tamanhos_medalha | join(" ou ") | replace("mm", "&nbsp;mm") | safe }} · verso em base inox</dd></div>
+        <div><dt>Entremeio</dt><dd>Liga de zinco resinada · 16&nbsp;mm (interno) · prata ou ouro velho · passa no cordão do terço</dd></div>
+        <div><dt>Chaveiro</dt><dd>Liga de zinco resinada · 3&nbsp;cm (interno)</dd></div>
+        <div><dt>Dois lados</dt><dd>Medalha ou entremeio em 14 ou 18&nbsp;mm, e chaveiro frente e verso — com outro santo ou foto no lado 2</dd></div>
+        <div><dt>Produção</dt><dd>Até {{ producao_dias_uteis }} dias úteis</dd></div>
+        <div><dt>Atacado</dt><dd>Desconto automático conforme a quantidade, até&nbsp;65%</dd></div>
+      </dl>
+    </div>
+  </section>
+
   {% if relacionados %}
     <section class="relacionados">
       <h3>Outros santos de {{ produto.categoria }}</h3>

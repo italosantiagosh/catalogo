@@ -30,6 +30,23 @@ def carregar_produtos() -> list[dict]:
     return _produtos_cache
 
 
+DESCRICOES_PATH = DATA_DIR / "descricoes_santos.json"
+_descricoes_cache: dict[str, dict] | None = None
+
+
+def descricao_santo(produto_id: str) -> dict | None:
+    """Texto "Sobre o santo" (+ curiosidade opcional) da pagina de produto
+    -- antes a pagina nao tinha NENHUM texto descritivo (so imagem, preco
+    e modelos), ruim pra SEO e com cara de loja vazia. Produtos sem
+    entrada aqui (fatos incertos, ver data/descricoes_santos.json) so
+    mostram os "Detalhes da peca", montados dos dados do produto."""
+    global _descricoes_cache
+    if _descricoes_cache is None:
+        with DESCRICOES_PATH.open(encoding="utf-8") as f:
+            _descricoes_cache = json.load(f)
+    return _descricoes_cache.get(produto_id)
+
+
 def buscar_produto(produto_id: str) -> dict | None:
     for produto in carregar_produtos():
         if produto["id"] == produto_id:
