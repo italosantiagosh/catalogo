@@ -589,7 +589,9 @@
     }
   }
 
-  function selecionarModelo(botao) {
+  // automatico=true: pre-selecao ao abrir a pagina -- nao rola a tela
+  // nem conta como escolha do cliente no GA4.
+  function selecionarModelo(botao, automatico = false) {
     for (const outro of grid.querySelectorAll('.modelo-card')) {
       outro.setAttribute('aria-pressed', String(outro === botao));
     }
@@ -600,11 +602,13 @@
       imagens: JSON.parse(botao.dataset.imagens || '{}'),
     };
     nomeSpan.textContent = modeloSelecionado.nome;
-    rastrearEventoGA4('select_model', {
-      item_id: produtoId,
-      item_name: produtoNome,
-      modelo: modeloSelecionado.nome,
-    });
+    if (!automatico) {
+      rastrearEventoGA4('select_model', {
+        item_id: produtoId,
+        item_name: produtoNome,
+        modelo: modeloSelecionado.nome,
+      });
+    }
 
     // formato sempre volta pra medalha ao trocar de modelo -- evita
     // carregar uma escolha de cor/tamanho que nao fez sentido no modelo novo
@@ -629,7 +633,7 @@
     desligarToggle2Lados();
 
     painel.hidden = false;
-    painel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    if (!automatico) painel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 
     atualizarSubSelecao();
   }
@@ -811,10 +815,11 @@
     barraFixaBtn.addEventListener('click', () => btnAdicionar.click());
   }
 
-  // seleciona o primeiro modelo automaticamente para quem tem só um --
-  // mas tamanho/cor continuam em branco, precisa escolher na mao.
+  // abre a pagina com o Modelo 1 ja selecionado (antes so quando o
+  // santo tinha um modelo so; pedido do usuario: tambem quando tem
+  // varios) -- tamanho/cor continuam em branco, precisa escolher na mao.
   const primeiro = grid.querySelector('.modelo-card');
-  if (primeiro && grid.querySelectorAll('.modelo-card').length === 1) {
-    selecionarModelo(primeiro);
+  if (primeiro) {
+    selecionarModelo(primeiro, true);
   }
 })();
