@@ -427,13 +427,22 @@ a.link-carrinho #contador-carrinho {
   min-width: 0;
   text-align: center;
   padding: 9px 4px;
-  border-radius: 10px;
+  border-radius: 12px;
   background: var(--accent);
   color: #fff;
   text-decoration: none;
   font-size: 0.74rem;
   font-weight: 600;
   line-height: 1.25;
+  box-shadow: 0 6px 14px -8px rgba(20, 51, 92, 0.5);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+@media (hover: hover) {
+  .hero-acao:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 8px 18px -8px rgba(20, 51, 92, 0.6);
+  }
 }
 
 .botao-hero-primario,
@@ -444,17 +453,30 @@ a.link-carrinho #contador-carrinho {
   font-size: 0.92rem;
   font-weight: 600;
   text-decoration: none;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
 }
 
 .botao-hero-primario {
   background: var(--accent);
   color: #fff;
+  box-shadow: 0 8px 20px -10px rgba(20, 51, 92, 0.5);
 }
 
 .botao-hero-secundario {
   background: transparent;
   color: var(--accent);
   border: 1px solid var(--accent);
+}
+
+@media (hover: hover) {
+  .botao-hero-primario:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 10px 24px -10px rgba(20, 51, 92, 0.6);
+  }
+  .botao-hero-secundario:hover {
+    background: var(--gold-soft);
+    transform: translateY(-1px);
+  }
 }
 
 /* faixa de vantagens (estilo "selos de confianca" de e-commerce) */
@@ -1572,10 +1594,21 @@ h1 {
   cursor: pointer;
   font: inherit;
   color: var(--ink);
+  box-shadow: 0 2px 8px -4px rgba(20, 51, 92, 0.15);
+  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
 }
 
 .modelo-card[aria-pressed="true"] {
   border-color: var(--accent);
+  box-shadow: 0 6px 16px -6px rgba(20, 51, 92, 0.35);
+}
+
+@media (hover: hover) {
+  .modelo-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 18px -8px rgba(20, 51, 92, 0.3);
+    border-color: var(--gold);
+  }
 }
 
 .modelo-card img {
@@ -2354,14 +2387,22 @@ button.botao-carrinho:disabled {
 .botao-secundario {
   display: inline-block;
   padding: 12px 18px;
-  border: 1px solid var(--accent);
-  border-radius: 10px;
+  border: 1.5px solid var(--accent);
+  border-radius: 999px;
   background: transparent;
   color: var(--accent);
   font-size: 0.9rem;
   font-weight: 600;
   text-decoration: none;
   cursor: pointer;
+  transition: background-color 0.15s ease, transform 0.15s ease;
+}
+
+@media (hover: hover) {
+  .botao-secundario:hover {
+    background: var(--gold-soft);
+    transform: translateY(-1px);
+  }
 }
 
 .lista-itens {
@@ -5203,27 +5244,26 @@ input[type="file"] {
 .botao-principal {
   display: inline-block;
   padding: 12px 20px;
-  border-radius: 10px;
+  border-radius: 999px;
   background: var(--accent);
   color: #fff;
   font-size: 0.9rem;
   font-weight: 700;
   text-decoration: none;
-}
-
-.cta-blog-produto .botao-principal {
-  padding: 15px 26px;
-  border-radius: 999px;
-  font-size: 1rem;
   box-shadow: 0 8px 20px -10px rgba(20, 51, 92, 0.45);
   transition: transform 0.15s ease, box-shadow 0.15s ease;
 }
 
 @media (hover: hover) {
-  .cta-blog-produto .botao-principal:hover {
+  .botao-principal:hover {
     transform: translateY(-1px);
     box-shadow: 0 10px 24px -10px rgba(20, 51, 92, 0.55);
   }
+}
+
+.cta-blog-produto .botao-principal {
+  padding: 15px 26px;
+  font-size: 1rem;
 }
 
 @media (max-width: 480px) {
