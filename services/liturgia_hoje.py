@@ -22,8 +22,13 @@ from services.liturgia_pdf import DIAS_OUTUBRO_2026, ROTULO_COR_LITURGICA, ROTUL
 FUSO_BRASILIA = ZoneInfo("America/Sao_Paulo")
 
 # Mesma fonte/conferencia do DIAS_OUTUBRO_2026 (Diretorio da Liturgia
-# 2026/CNBB) -- so rank/leituras/cor, sem bio/produto: aqui e´ so o
-# teaser da home, quem quiser mais baixa o e-book de outubro.
+# 2026/CNBB) -- so rank/leituras/cor (o teaser da home nao usa mais
+# nada, quem quiser mais baixa o e-book de outubro), exceto o dia 29
+# (arcanjos, ver conversa 2026-09-26), que ganhou bio/produto_id/
+# blog_slug so pra enriquecer a DESCRIPTION do evento no calendario
+# assinado (services/liturgia_ics.py) -- o widget da home continua
+# ignorando esses campos (contexto_liturgia_de_hoje so le titulo/
+# leituras/rank/cor).
 DIAS_SETEMBRO_2026 = [
     {"dia": 1, "titulo": "22ª Semana do Tempo Comum", "rank": "comum", "cor_liturgica": "verde",
      "leituras": "1Cor 2,10b-16 · Sl 144(145) · Lc 4,31-37"},
@@ -82,7 +87,12 @@ DIAS_SETEMBRO_2026 = [
     {"dia": 28, "titulo": "26ª Semana do Tempo Comum", "rank": "comum", "cor_liturgica": "verde",
      "leituras": "Jó 1,6-22 · Sl 16(17) · Lc 9,46-50"},
     {"dia": 29, "titulo": "Santos Miguel, Gabriel e Rafael, arcanjos", "rank": "festa", "cor_liturgica": "branco",
-     "leituras": "Dn 7,9-10.13-14 ou Ap 12,7-12a · Sl 137(138) · Jo 1,47-51"},
+     "leituras": "Dn 7,9-10.13-14 ou Ap 12,7-12a · Sl 137(138) · Jo 1,47-51",
+     "produto_id": "santos-arcanjos", "blog_slug": "arcanjos-miguel-gabriel-rafael",
+     "bio": "Os três únicos anjos chamados pelo próprio nome na Bíblia, cada um com um papel: "
+            "Miguel (\"Quem é como Deus?\"), o guerreiro que lidera a milícia celeste contra o mal; "
+            "Gabriel (\"força de Deus\"), o mensageiro que anuncia a Jesus a Maria; e Rafael "
+            "(\"Deus cura\"), que acompanha e cura Tobias em sua jornada."},
     {"dia": 30, "titulo": "São Jerônimo, presbítero e doutor da Igreja", "rank": "obrigatoria", "cor_liturgica": "branco",
      "leituras": "Jó 9,1-12.14-16 · Sl 87(88) · Lc 9,57-62"},
 ]

@@ -76,6 +76,8 @@ def _descricao_evento(info: dict, base_url: str) -> str:
         linhas.append(f"Ver medalha: {base_url}/produto/{info['produto_id']}")
     if info.get("novena_slug"):
         linhas.append(f"Ver novena completa: {base_url}/blog/{info['novena_slug']}")
+    if info.get("blog_slug"):
+        linhas.append(f"Ver artigo completo: {base_url}/blog/{info['blog_slug']}")
     return "\n".join(linhas)
 
 
@@ -87,7 +89,7 @@ def gerar_ics_liturgia_outubro(base_url: str) -> str:
         "PRODID:-//Nove de Julho//Liturgia do Mes//PT",
         "CALSCALE:GREGORIAN",
         "METHOD:PUBLISH",
-        "X-WR-CALNAME:Liturgia do Mês — Nove de Julho",
+        "X-WR-CALNAME:Liturgia Diária — Nove de Julho",
         "X-WR-TIMEZONE:America/Sao_Paulo",
     ]
     for ano, mes, slug_mes, dias in _MESES_DO_FEED:
