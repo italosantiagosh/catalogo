@@ -1,17 +1,10 @@
-<!doctype html>
-<html lang="pt-br">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="robots" content="noindex, nofollow">
-  <title>Registrar pedido manual — Painel — Nove de Julho</title>
-  <link rel="icon" type="image/png" href="{{ url_for('static', filename='img/icon-192.png') }}">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Public+Sans:wght@400;500;600;700&display=swap"
-        rel="stylesheet" media="print" onload="this.media='all'">
-  <noscript><link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Public+Sans:wght@400;500;600;700&display=swap" rel="stylesheet"></noscript>
-  <style>
+{% set menu_ativo = 'novo' %}
+{% set largura = 'estreita' %}
+{% extends "admin_base.html" %}
+
+{% block titulo %}Registrar pedido manual{% endblock %}
+
+{% block estilos %}
     :root {
       --azul-escuro: #14335c; --azul-claro: #29aae1; --dourado: #dba53b;
       --fundo: #eef2f7; --cartao: #ffffff; --texto: #142238; --texto-suave: #5b6b82; --linha: #e2e7ee;
@@ -72,23 +65,18 @@
       width: 100%; margin-top: 6px; padding: 9px 10px; border: 1px solid var(--linha);
       border-radius: 8px; font-size: 0.88rem; font-family: inherit;
     }
-  </style>
-</head>
-<body>
-  <header class="masthead">
-    <div class="masthead-linha">
-      <img src="{{ url_for('static', filename='img/icon-192.png') }}" alt="">
-      <div class="masthead-titulos">
-        <h1>Registrar pedido manual</h1>
-        <p>Nove de Julho</p>
-      </div>
+{% endblock %}
+
+{% block cabecalho %}
+  <header class="admin-cabecalho">
+    <div class="admin-cabecalho-textos">
+      <h1>Registrar pedido manual</h1>
+      <p>Pra venda combinada por fora do carrinho, com valor livre.</p>
     </div>
-    <nav class="masthead-nav">
-      <a href="{{ url_for('admin_pedidos') }}">📦 Pedidos</a>
-      <a href="{{ url_for('admin_carrinhos_abandonados') }}">🛒 Carrinhos</a>
-      <a href="{{ url_for('admin_newsletter') }}">📧 Newsletter</a>
-    </nav>
   </header>
+{% endblock %}
+
+{% block conteudo %}
 
   <div class="conteudo">
     <h2 class="secao-titulo">Itens do pedido negociado</h2>
@@ -161,5 +149,4 @@
 
     document.getElementById('linhas-itens').addEventListener('input', recalcularTotal);
   </script>
-</body>
-</html>
+{% endblock %}

@@ -18,7 +18,9 @@
     try {
       const registro = await navigator.serviceWorker.getRegistration();
       const subscription = registro ? await registro.pushManager.getSubscription() : null;
-      btn.textContent = subscription ? '🔔 Notificações ativadas (desativar)' : '🔔 Ativar notificações de venda';
+      // so troca o texto (<span>), mantendo o icone do botao
+      const texto = btn.querySelector('.btn-notificacoes-texto') || btn;
+      texto.textContent = subscription ? 'Notificações ativadas (desativar)' : 'Ativar notificações de venda';
       btn.dataset.ativo = subscription ? '1' : '0';
     } catch (e) {
       // sem service worker registrado ainda -- estado inicial, nada a fazer

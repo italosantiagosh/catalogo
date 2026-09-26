@@ -1,17 +1,9 @@
-<!doctype html>
-<html lang="pt-br">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="robots" content="noindex, nofollow">
-  <title>Analytics — Painel — Nove de Julho</title>
-  <link rel="icon" type="image/png" href="{{ url_for('static', filename='img/icon-192.png') }}">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Public+Sans:wght@400;500;600;700&display=swap"
-        rel="stylesheet" media="print" onload="this.media='all'">
-  <noscript><link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Public+Sans:wght@400;500;600;700&display=swap" rel="stylesheet"></noscript>
-  <style>
+{% set menu_ativo = 'analytics' %}
+{% extends "admin_base.html" %}
+
+{% block titulo %}Analytics{% endblock %}
+
+{% block estilos %}
     :root {
       --azul-escuro: #14335c; --azul-claro: #29aae1; --dourado: #dba53b;
       --fundo: #eef2f7; --cartao: #ffffff; --texto: #142238; --texto-suave: #5b6b82; --linha: #e2e7ee;
@@ -118,36 +110,46 @@
        maior valor do periodo, so com div+CSS (sem lib de grafico
        externa, mesmo criterio do funil de conversao acima). Valor
        exato de cada dia fica no title (tooltip nativo do navegador). */
-    .grafico-dias { display: flex; align-items: flex-end; gap: 3px; height: 130px; }
-    .grafico-dia { flex: 1; height: 100%; display: flex; align-items: flex-end; }
-    .grafico-dia-barra {
-      width: 100%; background: linear-gradient(180deg, var(--azul-claro), var(--azul-escuro));
-      border-radius: 3px 3px 0 0; min-height: 2px;
-    }
-    .grafico-dias-eixo { display: flex; justify-content: space-between; font-size: 0.72rem; color: var(--texto-suave); margin-top: 6px; }
-  </style>
-</head>
-<body>
-  <header class="masthead">
-    <div class="masthead-linha">
-      <img src="{{ url_for('static', filename='img/icon-192.png') }}" alt="">
-      <div class="masthead-titulos">
-        <h1>Analytics</h1>
-        <p>Nove de Julho</p>
-      </div>
+    /* grafico de vendas por dia -- uma serie, um tom (marinho), grade
+       recessiva com 3 linhas + valores no eixo, barras finas com topo
+       arredondado de 4px e 2px de respiro, tooltip proprio no hover/foco
+       (antes era so o title nativo) e "Ver em tabela" pra leitura exata. */
+    .grafico { display: grid; grid-template-columns: auto 1fr; gap: 10px; }
+    .grafico-eixo-y { display: flex; flex-direction: column; justify-content: space-between; height: 180px; margin: -7px 0; font-size: 0.7rem; color: var(--texto-suave); text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+    .grafico-area { position: relative; height: 180px; }
+    .grafico-grade { position: absolute; inset: 0; display: flex; flex-direction: column; justify-content: space-between; pointer-events: none; }
+    .grafico-grade span { border-top: 1px solid #e9edf3; }
+    .grafico-grade span:last-child { border-top-color: #cfd7e3; }
+    .grafico-dias { position: relative; display: flex; align-items: flex-end; gap: 2px; height: 100%; }
+    .grafico-dia { flex: 1; height: 100%; display: flex; align-items: flex-end; cursor: default; outline: none; }
+    .grafico-dia-barra { width: 100%; background: #2f5f99; border-radius: 4px 4px 0 0; min-height: 2px; transition: background .12s ease; }
+    .grafico-dia-zero .grafico-dia-barra { background: #d5dce6; }
+    .grafico-dia:hover .grafico-dia-barra, .grafico-dia:focus-visible .grafico-dia-barra { background: var(--azul-escuro); }
+    .grafico-dias:hover .grafico-dia:not(:hover) .grafico-dia-barra { opacity: 0.55; }
+    .grafico-tooltip { position: absolute; z-index: 5; transform: translate(-50%, calc(-100% - 8px)); padding: 8px 10px; border-radius: 8px; background: #142238; color: #fff; font-size: 0.76rem; line-height: 1.35; white-space: nowrap; pointer-events: none; box-shadow: 0 6px 18px -6px rgba(0,0,0,.35); }
+    .grafico-tooltip strong { display: block; font-size: 0.86rem; font-variant-numeric: tabular-nums; }
+    .grafico-tooltip span { color: #b9c6d8; }
+    .grafico-dias-eixo { display: flex; justify-content: space-between; margin: 8px 0 0; padding-left: calc(var(--eixo-y, 64px) + 10px); font-size: 0.72rem; color: var(--texto-suave); }
+    .grafico-tabela { margin-top: 14px; font-size: 0.82rem; }
+    .grafico-tabela summary { cursor: pointer; color: var(--azul-escuro); font-weight: 600; }
+    .grafico-tabela table { margin-top: 10px; max-width: 420px; }
+    .grafico-tabela td:nth-child(n+2), .grafico-tabela th:nth-child(n+2) { text-align: right; font-variant-numeric: tabular-nums; }
+{% endblock %}
+
+{% block cabecalho %}
+  <header class="admin-cabecalho">
+    <div class="admin-cabecalho-textos">
+      <h1>Analytics</h1>
+      <p>Um raio-x de como o site está vendendo, atualizado a cada visita a esta página.</p>
     </div>
-    <nav class="masthead-nav">
-      <a href="{{ url_for('admin_pedidos') }}">📦 Pedidos</a>
-      <a href="{{ url_for('admin_carrinhos_abandonados') }}">🛒 Carrinhos</a>
-      <a href="{{ url_for('admin_avaliacoes') }}">⭐ Avaliações</a>
-      <a href="{{ url_for('admin_newsletter') }}">📧 Newsletter</a>
-    </nav>
   </header>
+{% endblock %}
+
+{% block conteudo %}
 
   <div class="conteudo">
-    <p class="intro-pagina">Um raio-x de como o site está vendendo, atualizado a cada visita a esta página.</p>
 
-    <h2 class="secao-titulo">💰 Vendas (30 dias)</h2>
+    <h2 class="secao-titulo">Vendas (30 dias)</h2>
     <div class="stat-grade">
       <div class="stat-cartao">
         <div class="stat-numero">{{ vendas_30d.valor_total | preco }}</div>
@@ -181,24 +183,57 @@
       </div>
     </div>
 
-    <h2 class="secao-titulo">📅 Vendas por dia (30 dias)</h2>
+    <h2 class="secao-titulo">Vendas por dia (30 dias)</h2>
     <div class="bloco">
       {% set maior_dia = vendas_por_dia_30d | map(attribute='valor') | max %}
-      <div class="grafico-dias">
-        {% for d in vendas_por_dia_30d %}
-          <div class="grafico-dia" title="{{ d.dia }}: {{ d.quantidade }} pedido{{ 's' if d.quantidade != 1 else '' }} · {{ d.valor | preco }}">
-            <div class="grafico-dia-barra" style="height: {{ (d.valor / maior_dia * 100) if maior_dia else 0 }}%;"></div>
+      {% set meio = (vendas_por_dia_30d | length) // 2 %}
+      {# topo do eixo arredondado pra um valor "redondo" (R$ 1.500 em vez
+         de R$ 1274,06) -- as barras ficam em escala desse topo #}
+      {% set ns = namespace(teto=none) %}
+      {% for c in [50, 100, 200, 250, 500, 750, 1000, 1500, 2000, 2500, 3000, 5000, 7500, 10000, 15000, 20000, 25000, 50000, 100000] %}
+        {% if ns.teto is none and c >= maior_dia %}{% set ns.teto = c %}{% endif %}
+      {% endfor %}
+      {% set teto = ns.teto or maior_dia %}
+      <div class="grafico" id="grafico-vendas-dia">
+        <div class="grafico-eixo-y" aria-hidden="true">
+          <span>R$ {{ "{:,.0f}".format(teto).replace(",", ".") }}</span>
+          <span>R$ {{ "{:,.0f}".format(teto / 2).replace(",", ".") }}</span>
+          <span>R$ 0</span>
+        </div>
+        <div class="grafico-area">
+          <div class="grafico-grade" aria-hidden="true"><span></span><span></span><span></span></div>
+          <div class="grafico-dias" role="list" aria-label="Faturamento por dia nos últimos 30 dias">
+            {% for d in vendas_por_dia_30d %}
+              <div class="grafico-dia{% if not d.valor %} grafico-dia-zero{% endif %}" role="listitem" tabindex="0"
+                   data-dia="{{ d.dia }}" data-valor="{{ d.valor | preco }}"
+                   data-pedidos="{{ d.quantidade }} pedido{{ 's' if d.quantidade != 1 else '' }}"
+                   aria-label="{{ d.dia }}: {{ d.valor | preco }}, {{ d.quantidade }} pedido{{ 's' if d.quantidade != 1 else '' }}">
+                <div class="grafico-dia-barra" style="height: {{ (d.valor / teto * 100) if teto else 0 }}%;"></div>
+              </div>
+            {% endfor %}
           </div>
-        {% endfor %}
+          <div class="grafico-tooltip" id="grafico-tooltip" hidden></div>
+        </div>
       </div>
-      <div class="grafico-dias-eixo">
+      <div class="grafico-dias-eixo" aria-hidden="true">
         <span>{{ vendas_por_dia_30d[0].dia }}</span>
+        <span>{{ vendas_por_dia_30d[meio].dia }}</span>
         <span>{{ vendas_por_dia_30d[-1].dia }}</span>
       </div>
-      <p class="secao-nota" style="margin: 10px 0 0;">Passe o mouse em cima de uma barra pra ver o valor do dia.</p>
+      <details class="grafico-tabela">
+        <summary>Ver em tabela</summary>
+        <table>
+          <thead><tr><th>Dia</th><th>Pedidos</th><th>Faturamento</th></tr></thead>
+          <tbody>
+            {% for d in vendas_por_dia_30d | reverse %}
+              <tr><td>{{ d.dia }}</td><td>{{ d.quantidade }}</td><td>{{ d.valor | preco }}</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </details>
     </div>
 
-    <h2 class="secao-titulo">🗺️ Pedidos pagos por estado</h2>
+    <h2 class="secao-titulo">Pedidos pagos por estado</h2>
     <div class="bloco">
       {% if pedidos_por_uf_30d %}
         {% set maior_uf = pedidos_por_uf_30d[0].quantidade %}
@@ -218,7 +253,7 @@
       {% endif %}
     </div>
 
-    <h2 class="secao-titulo">💳 Formas de pagamento</h2>
+    <h2 class="secao-titulo">Formas de pagamento</h2>
     <div class="bloco">
       {% if formas_pagamento_30d %}
         <table>
@@ -232,7 +267,7 @@
       {% endif %}
     </div>
 
-    <h2 class="secao-titulo">🏅 Produtos e materiais mais vendidos</h2>
+    <h2 class="secao-titulo">Produtos e materiais mais vendidos</h2>
     <div class="filtros">
       <a href="{{ url_for('admin_analytics', periodo='30d') }}" class="{{ 'ativo' if periodo_vendas == '30d' else '' }}">30 dias</a>
       <a href="{{ url_for('admin_analytics', periodo='6m') }}" class="{{ 'ativo' if periodo_vendas == '6m' else '' }}">6 meses</a>
@@ -293,7 +328,7 @@
         <code>GA4_PROPERTY_ID</code> no servidor.</p>
       </div>
     {% else %}
-      <h2 class="secao-titulo">🟢 Agora, hoje e ontem</h2>
+      <h2 class="secao-titulo">Agora, hoje e ontem</h2>
       <div class="stat-grade">
         <div class="stat-cartao ao-vivo">
           <div class="stat-numero">{{ ao_vivo if ao_vivo is not none else "—" }}</div>
@@ -327,7 +362,7 @@
         cartões 🟢 (agora) ou os de <strong>ontem</strong> (dia já fechado, número confiável).
       </p>
 
-      <h2 class="secao-titulo">🔻 Funil de conversão (7 dias)</h2>
+      <h2 class="secao-titulo">Funil de conversão (7 dias)</h2>
       <p class="secao-nota">De cada 100 visitas, quantas simularam frete, iniciaram um pedido e realmente compraram.</p>
       <div class="bloco">
         {% for etapa in funil_7d %}
@@ -346,7 +381,7 @@
         {% endfor %}
       </div>
 
-      <h2 class="secao-titulo">🧮 Proporções (7 dias)</h2>
+      <h2 class="secao-titulo">Proporções (7 dias)</h2>
       <div class="bloco">
         <div class="proporcoes-grade">
           <div class="proporcao-cartao">
@@ -372,7 +407,7 @@
         </div>
       </div>
 
-      <h2 class="secao-titulo">📱 Conversão por aparelho (7 dias)</h2>
+      <h2 class="secao-titulo">Conversão por aparelho (7 dias)</h2>
       <p class="secao-nota">De quem visitou pelo celular/computador/tablet, quantos por cento viraram venda.</p>
       <div class="bloco">
         {% if conversao_por_dispositivo %}
@@ -397,7 +432,7 @@
         {% endif %}
       </div>
 
-      <h2 class="secao-titulo">⚠️ Erros no checkout, por motivo (7 dias)</h2>
+      <h2 class="secao-titulo">Erros no checkout, por motivo (7 dias)</h2>
       <div class="bloco">
         {% if checkout_erros_por_motivo_7d %}
           {% set maior_erro = checkout_erros_por_motivo_7d[0].contagem %}
@@ -423,7 +458,7 @@
         {% endif %}
       </div>
 
-      <h2 class="secao-titulo">👀 Páginas mais vistas (7 dias)</h2>
+      <h2 class="secao-titulo">Páginas mais vistas (7 dias)</h2>
       <div class="bloco">
         {% if paginas_7d %}
           {% set maior = paginas_7d[0].visualizacoes %}
@@ -447,7 +482,7 @@
         {% endif %}
       </div>
 
-      <h2 class="secao-titulo">📊 Últimos 30 dias</h2>
+      <h2 class="secao-titulo">Últimos 30 dias</h2>
       <div class="bloco">
         <table>
           <tr><td>Visitas</td><td>{{ resumo_30d.visitas if resumo_30d else "—" }}</td></tr>
@@ -463,5 +498,34 @@
       </p>
     {% endif %}
   </div>
-</body>
-</html>
+  <script>
+    // tooltip do grafico de vendas por dia (hover e foco por teclado)
+    (function () {
+      const grafico = document.getElementById('grafico-vendas-dia');
+      if (!grafico) return;
+      const eixoY = grafico.querySelector('.grafico-eixo-y');
+      document.querySelector('.grafico-dias-eixo')?.style.setProperty('--eixo-y', eixoY.offsetWidth + 'px');
+      const area = grafico.querySelector('.grafico-area');
+      const tip = document.getElementById('grafico-tooltip');
+      const mostrar = (dia) => {
+        const barra = dia.querySelector('.grafico-dia-barra');
+        const rA = area.getBoundingClientRect(), rD = dia.getBoundingClientRect(), rB = barra.getBoundingClientRect();
+        tip.innerHTML = '';
+        const valor = document.createElement('strong'); valor.textContent = dia.dataset.valor;
+        const info = document.createElement('span'); info.textContent = dia.dataset.dia + ' · ' + dia.dataset.pedidos;
+        tip.append(valor, info);
+        tip.hidden = false;
+        const x = rD.left - rA.left + rD.width / 2;
+        const meia = tip.offsetWidth / 2;
+        tip.style.left = Math.min(Math.max(x, meia), rA.width - meia) + 'px';
+        tip.style.top = (rB.top - rA.top) + 'px';
+      };
+      grafico.querySelectorAll('.grafico-dia').forEach((dia) => {
+        dia.addEventListener('mouseenter', () => mostrar(dia));
+        dia.addEventListener('focus', () => mostrar(dia));
+        dia.addEventListener('mouseleave', () => { tip.hidden = true; });
+        dia.addEventListener('blur', () => { tip.hidden = true; });
+      });
+    })();
+  </script>
+{% endblock %}

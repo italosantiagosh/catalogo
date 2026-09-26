@@ -1,19 +1,13 @@
-<!doctype html>
-<html lang="pt-br">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="robots" content="noindex, nofollow">
-  <title>Painel de pedidos — Nove de Julho</title>
+{% set menu_ativo = 'pedidos' %}
+{% extends "admin_base.html" %}
+
+{% block titulo %}Pedidos{% endblock %}
+{% block head_extra %}
   <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
-  <link rel="icon" type="image/png" href="{{ url_for('static', filename='img/icon-192.png') }}">
   <link rel="apple-touch-icon" href="{{ url_for('static', filename='img/apple-touch-icon.png') }}">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Public+Sans:wght@400;500;600;700&display=swap"
-        rel="stylesheet" media="print" onload="this.media='all'">
-  <noscript><link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Public+Sans:wght@400;500;600;700&display=swap" rel="stylesheet"></noscript>
-  <style>
+{% endblock %}
+
+{% block estilos %}
     :root {
       --azul-escuro: #14335c;
       --azul-claro: #29aae1;
@@ -203,24 +197,24 @@
       td.linha-acoes a, td.linha-acoes .form-arquivar { display: inline-block; margin-top: 2px; }
     }
     .logo-transportadora-admin { height: 14px; width: auto; vertical-align: -2px; margin-right: 4px; }
-  </style>
-</head>
-<body>
-  <header class="masthead">
-    <div class="masthead-linha">
-      <img src="{{ url_for('static', filename='img/icon-192.png') }}" alt="">
-      <div class="masthead-titulos">
-        <h1>Nove de Julho</h1>
-        <p>Painel de pedidos</p>
-      </div>
+{% endblock %}
+
+{% block cabecalho %}
+  <header class="admin-cabecalho">
+    <div class="admin-cabecalho-textos">
+      <h1>Pedidos <span class="contagem-pill">{{ pedidos | length }}</span></h1>
+      <p>Tudo o que entrou pelo site, WhatsApp e pedidos manuais.</p>
     </div>
-    <nav class="masthead-nav">
-      <a href="{{ url_for('admin_carrinhos_abandonados') }}">🛒 Carrinhos</a>
-      <a href="{{ url_for('admin_avaliacoes') }}">⭐ Avaliações</a>
-      <a href="{{ url_for('admin_analytics') }}">📊 Analytics</a>
-      <a href="{{ url_for('admin_newsletter') }}">📧 Newsletter</a>
-    </nav>
+    <div class="admin-acoes">
+      {% if vapid_chave_publica %}
+        <button type="button" id="btn-ativar-notificacoes">{{ icone('sino') }}<span class="btn-notificacoes-texto">Ativar notificações de venda</span></button>
+      {% endif %}
+      <a href="{{ url_for('admin_pedido_novo_manual') }}" class="botao-registrar-manual">{{ icone('mais') }}Registrar pedido manual</a>
+    </div>
   </header>
+{% endblock %}
+
+{% block conteudo %}
 
   <div class="conteudo">
     <div class="stat-grade">
@@ -238,12 +232,6 @@
       </div>
     </div>
 
-    <h2 class="secao-titulo">📦 Pedidos <span class="contagem-pill">{{ pedidos | length }}</span></h2>
-
-    {% if vapid_chave_publica %}
-      <button type="button" id="btn-ativar-notificacoes">🔔 Ativar notificações de venda</button>
-    {% endif %}
-    <a href="{{ url_for('admin_pedido_novo_manual') }}" class="botao-registrar-manual">➕ Registrar pedido manual</a>
 
     <div class="filtros">
       <a href="{{ url_for('admin_pedidos') }}" class="{{ 'ativo' if not status_filtro else '' }}">Todos</a>
@@ -255,7 +243,7 @@
       <a href="{{ url_for('admin_pedidos', status='entregue') }}" class="{{ 'ativo' if status_filtro == 'entregue' else '' }}">Entregues</a>
       <a href="{{ url_for('admin_pedidos', status='cancelado') }}" class="{{ 'ativo' if status_filtro == 'cancelado' else '' }}">Cancelados</a>
       <a href="{{ url_for('admin_pedidos', status='excluido') }}" class="{{ 'ativo' if status_filtro == 'excluido' else '' }}">Excluídos</a>
-      <a href="{{ url_for('admin_pedidos', arquivados='1') }}" class="{{ 'ativo' if mostrar_arquivados else '' }}">📦 Arquivados</a>
+      <a href="{{ url_for('admin_pedidos', arquivados='1') }}" class="{{ 'ativo' if mostrar_arquivados else '' }}">Arquivados</a>
     </div>
 
     {% if pedidos %}
@@ -277,14 +265,14 @@
             <input type="text" name="motivo" placeholder="Motivo da exclusão">
             <button type="submit" name="acao" value="excluir" class="perigo"
                     onclick="return confirm('Excluir os pedidos selecionados? Cada cliente recebe um e-mail avisando.');">
-              🗑️ Excluir selecionados
+              Excluir selecionados
             </button>
-            <button type="submit" name="acao" value="arquivar">📦 Arquivar selecionados</button>
+            <button type="submit" name="acao" value="arquivar">Arquivar selecionados</button>
           {% else %}
-            <button type="submit" name="acao" value="desarquivar">↩️ Desarquivar selecionados</button>
+            <button type="submit" name="acao" value="desarquivar">Desarquivar selecionados</button>
           {% endif %}
-          <button type="submit" formaction="{{ url_for('admin_pedidos_csv_total') }}">⬇ Baixar CSV total</button>
-          <button type="submit" formaction="{{ url_for('admin_pedidos_zip_personalizadas') }}">🖼️ Baixar zip com personalizadas</button>
+          <button type="submit" formaction="{{ url_for('admin_pedidos_csv_total') }}">Baixar CSV total</button>
+          <button type="submit" formaction="{{ url_for('admin_pedidos_zip_personalizadas') }}">Baixar zip com personalizadas</button>
         </div>
         <div class="tabela-wrap">
           <table>
@@ -370,7 +358,7 @@
                         action="{{ url_for('admin_pedido_desarquivar' if mostrar_arquivados else 'admin_pedido_arquivar', token=pedido.token) }}">
                     <input type="hidden" name="status_filtro" value="{{ status_filtro or '' }}">
                     <input type="hidden" name="arquivados" value="{{ '1' if mostrar_arquivados else '' }}">
-                    <button type="submit" class="link-acao">{{ '↩️ desarquivar' if mostrar_arquivados else '📦 arquivar' }}</button>
+                    <button type="submit" class="link-acao">{{ 'desarquivar' if mostrar_arquivados else 'arquivar' }}</button>
                   </form>
                 </td>
               </tr>
@@ -433,5 +421,4 @@
       }
     </script>
   {% endif %}
-</body>
-</html>
+{% endblock %}

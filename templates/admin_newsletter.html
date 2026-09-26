@@ -1,17 +1,10 @@
-<!doctype html>
-<html lang="pt-br">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="robots" content="noindex, nofollow">
-  <title>Newsletter — Painel — Nove de Julho</title>
-  <link rel="icon" type="image/png" href="{{ url_for('static', filename='img/icon-192.png') }}">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Public+Sans:wght@400;500;600;700&display=swap"
-        rel="stylesheet" media="print" onload="this.media='all'">
-  <noscript><link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Public+Sans:wght@400;500;600;700&display=swap" rel="stylesheet"></noscript>
-  <style>
+{% set menu_ativo = 'newsletter' %}
+{% set largura = 'estreita' %}
+{% extends "admin_base.html" %}
+
+{% block titulo %}Newsletter{% endblock %}
+
+{% block estilos %}
     :root {
       --azul-escuro: #14335c; --azul-claro: #29aae1; --dourado: #dba53b;
       --fundo: #eef2f7; --cartao: #ffffff; --texto: #142238; --texto-suave: #5b6b82; --linha: #e2e7ee;
@@ -58,27 +51,20 @@
     table.lista-contatos th, table.lista-contatos td { padding: 11px 16px; text-align: left; font-size: 0.85rem; }
     table.lista-contatos th { background: #f4f7fb; color: var(--texto-suave); font-weight: 700; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.04em; }
     table.lista-contatos tr:not(:last-child) td { border-bottom: 1px solid var(--linha); }
-  </style>
-</head>
-<body>
-  <header class="masthead">
-    <div class="masthead-linha">
-      <img src="{{ url_for('static', filename='img/icon-192.png') }}" alt="">
-      <div class="masthead-titulos">
-        <h1>Newsletter</h1>
-        <p>Nove de Julho</p>
-      </div>
+{% endblock %}
+
+{% block cabecalho %}
+  <header class="admin-cabecalho">
+    <div class="admin-cabecalho-textos">
+      <h1>Newsletter <span class="contagem-pill">{{ total }}</span></h1>
+      <p>Quem se inscreveu pelo rodapé do site pra receber novenas e novidades.</p>
     </div>
-    <nav class="masthead-nav">
-      <a href="{{ url_for('admin_pedidos') }}">📦 Pedidos</a>
-      <a href="{{ url_for('admin_carrinhos_abandonados') }}">🛒 Carrinhos</a>
-      <a href="{{ url_for('admin_avaliacoes') }}">⭐ Avaliações</a>
-      <a href="{{ url_for('admin_analytics') }}">📊 Analytics</a>
-    </nav>
   </header>
+{% endblock %}
+
+{% block conteudo %}
 
   <div class="conteudo">
-    <h2 class="secao-titulo">📧 Newsletter <span class="contagem-pill">{{ total }}</span></h2>
 
     {% if erro %}
       <p class="aviso">{{ erro }}</p>
@@ -108,5 +94,4 @@
       <p class="vazio">Ninguém se inscreveu ainda.</p>
     {% endif %}
   </div>
-</body>
-</html>
+{% endblock %}

@@ -1,0 +1,704 @@
+/* Tema do painel admin (templates/admin_base.html).
+   Carregado DEPOIS do <style> de cada pagina: aqui ficam o layout do
+   painel (barra lateral + conteudo) e a aparencia dos componentes que
+   todas as paginas repetiam (cards de numero, filtros, tabelas, selos
+   de status, blocos, botoes). O <style> da pagina continua valendo pro
+   que e´ so dela (funil, grafico, busca da Tiny...).
+
+   Direcao: painel de loja profissional (Shopify/Stripe) -- fundo cinza
+   frio, cards brancos com borda fina, texto em sans tabular, marinho da
+   marca so na barra lateral e nas acoes principais, dourado so como
+   detalhe (item ativo do menu). */
+
+:root {
+  --adm-fundo: #f3f5f9;
+  --adm-superficie: #ffffff;
+  --adm-superficie-2: #f8fafc;
+  --adm-borda: #e3e8ef;
+  --adm-borda-forte: #cfd7e3;
+  --adm-texto: #142238;
+  --adm-suave: #5b6b82;
+  --adm-fraco: #8a97aa;
+  --adm-marinho: #14335c;
+  --adm-marinho-hover: #0f2847;
+  --adm-lateral: #0e2340;
+  --adm-dourado: #c9a14a;
+  --adm-foco: #3b7bc4;
+  --adm-sucesso: #1e7a43;
+  --adm-alerta: #a1651f;
+  --adm-perigo: #a13a2a;
+  --adm-raio-p: 6px;
+  --adm-raio-m: 10px;
+  --adm-raio-g: 14px;
+  --adm-sombra: 0 1px 2px rgba(16, 32, 60, 0.04), 0 4px 14px -8px rgba(16, 32, 60, 0.12);
+
+  /* nomes antigos que o <style> de cada pagina ainda usa -- apontam pra
+     paleta nova, assim a pagina inteira muda junto sem reescrever. */
+  --azul-escuro: var(--adm-marinho);
+  --azul-claro: var(--adm-foco);
+  --dourado: var(--adm-dourado);
+  --fundo: var(--adm-fundo);
+  --cartao: var(--adm-superficie);
+  --texto: var(--adm-texto);
+  --texto-suave: var(--adm-suave);
+  --linha: var(--adm-borda);
+}
+
+/* ---------- base ---------- */
+
+body.admin {
+  margin: 0;
+  padding: 0;
+  max-width: none;
+  background: var(--adm-fundo);
+  color: var(--adm-texto);
+  font-family: 'Public Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-size: 15px;
+  -webkit-font-smoothing: antialiased;
+}
+
+.admin *,
+.admin *::before,
+.admin *::after {
+  box-sizing: border-box;
+}
+
+.admin a {
+  color: var(--adm-marinho);
+}
+
+.admin :focus-visible {
+  outline: 2px solid var(--adm-foco);
+  outline-offset: 2px;
+}
+
+.admin .icone {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}
+
+/* ---------- casca: barra lateral + conteudo ---------- */
+
+.admin-shell {
+  display: grid;
+  grid-template-columns: 236px minmax(0, 1fr);
+  min-height: 100vh;
+}
+
+.admin-lateral {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 20px 14px;
+  background: var(--adm-lateral);
+  color: #c3d0e2;
+}
+
+.admin-marca {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 4px 8px 18px;
+  margin-bottom: 8px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  text-decoration: none;
+}
+
+.admin .admin-marca {
+  color: #fff;
+}
+
+.admin-marca img {
+  border-radius: var(--adm-raio-m);
+}
+
+.admin-marca strong {
+  display: block;
+  font-family: 'Fraunces', Georgia, serif;
+  font-size: 1.05rem;
+  font-weight: 600;
+  line-height: 1.1;
+}
+
+.admin-marca small {
+  display: block;
+  margin-top: 2px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--adm-dourado);
+}
+
+.admin-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.admin .admin-nav a,
+.admin .admin-ver-loja {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 9px 12px;
+  border-radius: var(--adm-raio-m);
+  color: #c3d0e2;
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.admin .admin-nav a:hover,
+.admin .admin-ver-loja:hover {
+  background: rgba(255, 255, 255, 0.06);
+  color: #fff;
+}
+
+.admin .admin-nav a.ativo {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+  box-shadow: inset 3px 0 0 var(--adm-dourado);
+}
+
+.admin-nav a.ativo .icone {
+  color: var(--adm-dourado);
+}
+
+.admin .admin-ver-loja {
+  margin-top: auto;
+  font-size: 0.82rem;
+  color: #8fa3bf;
+}
+
+.admin-principal {
+  min-width: 0;
+}
+
+.admin-conteudo {
+  max-width: 1320px;
+  margin: 0 auto;
+  padding: 28px clamp(16px, 3vw, 40px) 56px;
+}
+
+.admin-conteudo-estreito {
+  max-width: 920px;
+}
+
+/* as paginas tinham o proprio wrapper .conteudo com largura/padding --
+   quem manda agora e´ .admin-conteudo */
+.admin .conteudo {
+  max-width: none;
+  margin: 0;
+  padding: 0;
+}
+
+/* celular/tablet: a lateral vira uma barra no topo, com o menu rolando
+   na horizontal (o painel e´ muito usado no celular, ver conversa). */
+@media (max-width: 900px) {
+  .admin-shell {
+    display: block;
+  }
+  .admin-lateral {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    height: auto;
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 10px;
+    box-shadow: 0 4px 14px -8px rgba(0, 0, 0, 0.4);
+  }
+  .admin-marca {
+    padding: 0 4px 0 0;
+    margin: 0;
+    border: none;
+  }
+  .admin-marca span {
+    display: none;
+  }
+  .admin-nav {
+    flex-direction: row;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .admin-nav::-webkit-scrollbar {
+    display: none;
+  }
+  .admin .admin-nav a {
+    flex: 0 0 auto;
+    gap: 6px;
+    padding: 8px 10px;
+    font-size: 0.8rem;
+  }
+  .admin .admin-nav a .icone {
+    width: 18px;
+    height: 18px;
+  }
+  .admin .admin-nav a.ativo {
+    box-shadow: inset 0 -2px 0 var(--adm-dourado);
+  }
+  .admin .admin-ver-loja {
+    display: none;
+  }
+  .admin-conteudo {
+    padding: 18px 14px 40px;
+  }
+}
+
+/* ---------- cabecalho da pagina ---------- */
+
+.admin-cabecalho {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px 20px;
+  margin: 0 0 24px;
+}
+
+.admin-cabecalho-textos {
+  min-width: 0;
+}
+
+.admin-voltar {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 8px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.admin .admin-voltar {
+  color: var(--adm-suave);
+}
+
+.admin .admin-voltar:hover {
+  color: var(--adm-marinho);
+}
+
+.admin-voltar .icone {
+  width: 16px;
+  height: 16px;
+}
+
+.admin-cabecalho h1 {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+  font-family: inherit;
+  font-size: 1.55rem;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+  line-height: 1.2;
+}
+
+.admin-cabecalho p {
+  margin: 4px 0 0;
+  max-width: 70ch;
+  color: var(--adm-suave);
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.admin-acoes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* ---------- botoes ---------- */
+
+.admin .adm-botao,
+.admin .botao-registrar-manual,
+.admin #btn-ativar-notificacoes,
+.admin .cartao-brevo a.botao {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin: 0;
+  padding: 9px 16px;
+  border: 1px solid var(--adm-marinho);
+  border-radius: var(--adm-raio-m);
+  background: var(--adm-marinho);
+  color: #fff;
+  font: inherit;
+  font-size: 0.86rem;
+  font-weight: 600;
+  line-height: 1.2;
+  text-decoration: none;
+  cursor: pointer;
+  box-shadow: 0 1px 2px rgba(16, 32, 60, 0.12);
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.admin .adm-botao:hover,
+.admin .botao-registrar-manual:hover,
+.admin .cartao-brevo a.botao:hover {
+  background: var(--adm-marinho-hover);
+  border-color: var(--adm-marinho-hover);
+}
+
+.admin .adm-botao .icone,
+.admin .botao-registrar-manual .icone,
+.admin #btn-ativar-notificacoes .icone {
+  width: 18px;
+  height: 18px;
+}
+
+.admin .adm-botao-sec,
+.admin #btn-ativar-notificacoes {
+  background: var(--adm-superficie);
+  color: var(--adm-texto);
+  border-color: var(--adm-borda-forte);
+}
+
+.admin .adm-botao-sec:hover,
+.admin #btn-ativar-notificacoes:hover {
+  background: var(--adm-superficie-2);
+  border-color: var(--adm-fraco);
+}
+
+.admin #btn-ativar-notificacoes:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+/* ---------- numeros (KPI) ---------- */
+
+.admin .stat-grade {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 14px;
+  margin: 0 0 28px;
+}
+
+/* rotulo em cima, numero embaixo (ordem visual de painel de loja) sem
+   mexer no HTML de cada pagina: column-reverse */
+.admin .stat-cartao {
+  display: flex;
+  flex-direction: column-reverse;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 18px 20px;
+  background: var(--adm-superficie);
+  border: 1px solid var(--adm-borda);
+  border-radius: var(--adm-raio-g);
+  box-shadow: var(--adm-sombra);
+}
+
+.admin .stat-cartao .stat-numero {
+  font-family: inherit;
+  font-size: clamp(1.35rem, 1.1rem + 0.8vw, 1.75rem);
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  color: var(--adm-texto);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.admin .stat-cartao .stat-rotulo {
+  margin: 0;
+  font-size: 0.74rem;
+  font-weight: 600;
+  line-height: 1.35;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--adm-suave);
+}
+
+.admin .stat-cartao.destaque .stat-numero {
+  color: var(--adm-sucesso);
+}
+
+.admin .stat-cartao.alerta .stat-numero {
+  color: var(--adm-alerta);
+}
+
+.admin .stat-cartao a {
+  text-decoration: none;
+}
+
+/* ---------- titulos de secao ---------- */
+
+.admin h2.secao-titulo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 36px 0 14px;
+  padding: 0;
+  border: none;
+  font-family: inherit;
+  font-size: 1.02rem;
+  font-weight: 700;
+  letter-spacing: -0.005em;
+  color: var(--adm-texto);
+}
+
+.admin h2.secao-titulo:first-child,
+.admin .admin-cabecalho + h2.secao-titulo,
+.admin .admin-cabecalho + .conteudo > h2.secao-titulo:first-child {
+  margin-top: 0;
+}
+
+.admin .secao-nota,
+.admin .intro-pagina {
+  color: var(--adm-suave);
+}
+
+.admin .contagem-pill {
+  padding: 2px 9px;
+  border-radius: 999px;
+  background: #e6ebf2;
+  color: var(--adm-suave);
+  font-size: 0.74rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------- filtros (abas) ---------- */
+
+.admin .filtros {
+  gap: 6px;
+  margin: 0 0 16px;
+}
+
+.admin .filtros a,
+.admin .filtros form button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 13px;
+  border: 1px solid var(--adm-borda);
+  border-radius: 999px;
+  background: var(--adm-superficie);
+  color: var(--adm-suave);
+  font-size: 0.82rem;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.admin .filtros a:hover,
+.admin .filtros form button:hover {
+  border-color: var(--adm-borda-forte);
+  color: var(--adm-texto);
+}
+
+.admin .filtros a.ativo,
+.admin .filtros form.ativo button {
+  background: var(--adm-marinho);
+  border-color: var(--adm-marinho);
+  color: #fff;
+}
+
+/* ---------- blocos / cards ---------- */
+
+.admin .bloco,
+.admin .cartao,
+.admin .cartao-brevo,
+.admin .nao-configurado {
+  background: var(--adm-superficie);
+  border: 1px solid var(--adm-borda);
+  border-radius: var(--adm-raio-g);
+  box-shadow: var(--adm-sombra);
+}
+
+.admin .bloco {
+  padding: 20px 22px;
+  margin: 0 0 16px;
+}
+
+.admin .bloco > h2,
+.admin .bloco > h3 {
+  margin: 0 0 12px;
+  font-family: inherit;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--adm-texto);
+}
+
+.admin .bloco h2 ~ h2 {
+  margin-top: 18px;
+  padding-top: 16px;
+  border-top: 1px solid var(--adm-borda);
+}
+
+.admin .bloco-perigo {
+  border-color: #efc7bf;
+}
+
+.admin .bloco-perigo > h2 {
+  color: var(--adm-perigo);
+}
+
+.admin .vazio {
+  padding: 48px 24px;
+  border: 1px dashed var(--adm-borda-forte);
+  border-radius: var(--adm-raio-g);
+  background: transparent;
+  color: var(--adm-suave);
+  text-align: center;
+}
+
+/* ---------- tabelas ---------- */
+
+.admin .tabela-wrap {
+  background: var(--adm-superficie);
+  border: 1px solid var(--adm-borda);
+  border-radius: var(--adm-raio-g);
+  box-shadow: var(--adm-sombra);
+}
+
+/* so no desktop -- abaixo de 720px a tabela de pedidos vira cartoes
+   (regra da propria pagina, que nao pode ser atropelada aqui) */
+@media (min-width: 721px) {
+  .admin .tabela-wrap th {
+    background: var(--adm-superficie-2);
+    color: var(--adm-suave);
+    border-bottom: 1px solid var(--adm-borda);
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    padding: 11px 10px;
+    white-space: nowrap;
+  }
+  .admin .tabela-wrap th:first-child {
+    border-top-left-radius: var(--adm-raio-g);
+  }
+  .admin .tabela-wrap th:last-child {
+    border-top-right-radius: var(--adm-raio-g);
+  }
+  .admin .tabela-wrap td {
+    padding: 12px 10px;
+    vertical-align: middle;
+  }
+  .admin .tabela-wrap tbody tr:nth-child(even) {
+    background: transparent;
+  }
+  .admin .tabela-wrap tbody tr:hover {
+    background: #f5f8fc;
+  }
+}
+
+.admin table.lista-contatos {
+  box-shadow: var(--adm-sombra);
+}
+
+/* ---------- selos de status ---------- */
+
+.admin .status {
+  border-radius: 999px;
+  font-size: 0.74rem;
+  font-weight: 700;
+  line-height: 1.5;
+  text-transform: capitalize;
+  white-space: nowrap;
+}
+
+/* ---------- formularios ---------- */
+
+.admin input[type="text"],
+.admin input[type="email"],
+.admin input[type="number"],
+.admin input[type="date"],
+.admin input[type="search"],
+.admin select,
+.admin textarea {
+  border: 1px solid var(--adm-borda-forte);
+  border-radius: var(--adm-raio-m);
+  background: var(--adm-superficie);
+  color: var(--adm-texto);
+  font-family: inherit;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.admin input:focus,
+.admin select:focus,
+.admin textarea:focus {
+  outline: none;
+  border-color: var(--adm-foco);
+  box-shadow: 0 0 0 3px rgba(59, 123, 196, 0.18);
+}
+
+/* card de numero que e´ link inteiro (analytics: carrinhos abandonados) */
+.admin .stat-cartao > a {
+  display: flex;
+  flex-direction: column-reverse;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.admin .stat-cartao > a:hover .stat-rotulo {
+  color: var(--adm-marinho);
+}
+
+/* "ao vivo" (GA4): bolinha verde em CSS no lugar do emoji */
+.admin .stat-cartao.ao-vivo .stat-rotulo::before {
+  content: "";
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  margin-right: 6px;
+  border-radius: 50%;
+  background: var(--adm-sucesso);
+  vertical-align: 1px;
+}
+
+/* barras horizontais (estados, produtos): uma serie so, um tom so --
+   marinho da marca, igual ao grafico de vendas por dia */
+.admin .barra-lista-trilho {
+  background: #edf1f6;
+  border-radius: 999px;
+}
+
+.admin .barra-lista-preenchido {
+  background: #2f5f99;
+  border-radius: 999px;
+}
+
+.admin .barra-lista-numero {
+  color: var(--adm-texto);
+  font-weight: 600;
+}
+
+/* tabela de pedidos: valor, prazo, data e acoes nao quebram no meio
+   ("R$ / 136,71") -- a tabela rola na horizontal se precisar */
+@media (min-width: 721px) {
+  .admin td[data-rotulo="Total"],
+  .admin td[data-rotulo="Criado em"],
+  .admin td[data-rotulo="Código"],
+  .admin td[data-rotulo="Status"],
+  .admin td.linha-acoes {
+    white-space: nowrap;
+  }
+  .admin td[data-rotulo="Total"] {
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+  }
+  .admin td[data-rotulo="Código"] {
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.02em;
+  }
+}
+
+/* fundo da lateral acompanha a pagina inteira (a lateral e´ sticky com
+   100vh; sem isso sobrava faixa clara embaixo em pagina longa) */
+@media (min-width: 901px) {
+  .admin-shell {
+    background: linear-gradient(to right, var(--adm-lateral) 236px, transparent 236px);
+  }
+}

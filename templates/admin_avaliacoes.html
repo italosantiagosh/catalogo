@@ -1,17 +1,10 @@
-<!doctype html>
-<html lang="pt-br">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="robots" content="noindex, nofollow">
-  <title>Avaliações — Painel — Nove de Julho</title>
-  <link rel="icon" type="image/png" href="{{ url_for('static', filename='img/icon-192.png') }}">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Public+Sans:wght@400;500;600;700&display=swap"
-        rel="stylesheet" media="print" onload="this.media='all'">
-  <noscript><link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Public+Sans:wght@400;500;600;700&display=swap" rel="stylesheet"></noscript>
-  <style>
+{% set menu_ativo = 'avaliacoes' %}
+{% set largura = 'estreita' %}
+{% extends "admin_base.html" %}
+
+{% block titulo %}Avaliações{% endblock %}
+
+{% block estilos %}
     :root {
       --azul-escuro: #14335c; --azul-claro: #29aae1; --dourado: #dba53b;
       --fundo: #eef2f7; --cartao: #ffffff; --texto: #142238; --texto-suave: #5b6b82; --linha: #e2e7ee;
@@ -72,27 +65,20 @@
     .btn-aprovar:hover { background: #17632f; }
     .btn-recusar { background: #a13a2a; color: #fff; }
     .btn-recusar:hover { background: #8c2f22; }
-  </style>
-</head>
-<body>
-  <header class="masthead">
-    <div class="masthead-linha">
-      <img src="{{ url_for('static', filename='img/icon-192.png') }}" alt="">
-      <div class="masthead-titulos">
-        <h1>Avaliações</h1>
-        <p>Nove de Julho</p>
-      </div>
+{% endblock %}
+
+{% block cabecalho %}
+  <header class="admin-cabecalho">
+    <div class="admin-cabecalho-textos">
+      <h1>Avaliações <span class="contagem-pill">{{ avaliacoes | length }}</span></h1>
+      <p>Avaliações enviadas pelos clientes — só aparecem no site depois de aprovadas.</p>
     </div>
-    <nav class="masthead-nav">
-      <a href="{{ url_for('admin_pedidos') }}">📦 Pedidos</a>
-      <a href="{{ url_for('admin_carrinhos_abandonados') }}">🛒 Carrinhos</a>
-      <a href="{{ url_for('admin_analytics') }}">📊 Analytics</a>
-      <a href="{{ url_for('admin_newsletter') }}">📧 Newsletter</a>
-    </nav>
   </header>
+{% endblock %}
+
+{% block conteudo %}
 
   <div class="conteudo">
-    <h2 class="secao-titulo">⭐ Avaliações <span class="contagem-pill">{{ avaliacoes | length }}</span></h2>
 
     <div class="filtros">
       <a href="{{ url_for('admin_avaliacoes') }}" class="{{ 'ativo' if not status_filtro else '' }}">Todas</a>
@@ -142,5 +128,4 @@
       <p class="vazio">Nenhuma avaliação por aqui.</p>
     {% endif %}
   </div>
-</body>
-</html>
+{% endblock %}

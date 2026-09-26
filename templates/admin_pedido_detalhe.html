@@ -1,11 +1,9 @@
-<!doctype html>
-<html lang="pt-br">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="robots" content="noindex, nofollow">
-  <title>Pedido #{{ pedido.codigo }} — Painel — Nove de Julho</title>
-  <style>
+{% set menu_ativo = 'pedidos' %}
+{% extends "admin_base.html" %}
+
+{% block titulo %}Pedido #{{ pedido.codigo }}{% endblock %}
+
+{% block estilos %}
     body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #f5f7fa; color: #142238; margin: 0; padding: 24px; max-width: 560px; }
     a.voltar { color: #14335c; font-weight: 600; text-decoration: none; font-size: 0.88rem; }
     h1 { font-size: 1.2rem; margin: 12px 0 4px; }
@@ -62,14 +60,35 @@
     .editar-item label { margin: 8px 0 4px; }
     .campo-formato-tamanho, .campo-formato-cor { display: none; }
     .campo-formato-tamanho.ativo, .campo-formato-cor.ativo { display: block; }
-  </style>
-</head>
-<body>
-  <a class="voltar" href="{{ url_for('admin_pedidos') }}">← Todos os pedidos</a>
-  <h1>Pedido #{{ pedido.codigo }}</h1>
-  <span class="status status-{{ pedido.status }}">{{ pedido.status }}</span>
-  {% if pedido.arquivado %}<span class="status status-arquivado">📦 arquivado</span>{% endif %}
 
+    /* 2 colunas no desktop: o pedido (itens, cliente, confirmar venda) a
+       esquerda, as acoes (status, integracoes, corrigir valor, arquivar,
+       excluir) numa coluna fixa a direita -- antes era tudo empilhado
+       numa coluna de 560px. */
+    .detalhe-grade { display: grid; gap: 16px; align-items: start; }
+    @media (min-width: 1100px) {
+      .detalhe-grade { grid-template-columns: minmax(0, 1fr) minmax(320px, 400px); gap: 20px; }
+      .detalhe-lateral { position: sticky; top: 20px; }
+    }
+    .detalhe-principal, .detalhe-lateral { min-width: 0; }
+{% endblock %}
+
+{% block cabecalho %}
+  <header class="admin-cabecalho">
+    <div class="admin-cabecalho-textos">
+      <a class="admin-voltar" href="{{ url_for('admin_pedidos') }}">{{ icone('voltar') }} Todos os pedidos</a>
+      <h1>
+        Pedido #{{ pedido.codigo }}
+        <span class="status status-{{ pedido.status }}">{{ pedido.status }}</span>
+        {% if pedido.arquivado %}<span class="status status-arquivado">arquivado</span>{% endif %}
+      </h1>
+    </div>
+  </header>
+{% endblock %}
+
+{% block conteudo %}
+  <div class="detalhe-grade">
+    <div class="detalhe-principal">
   {% if pedido.status == 'whatsapp' %}
     <div class="bloco">
       <h2>Lead do WhatsApp</h2>
@@ -91,11 +110,11 @@
               <br>Lado 1: {{ item.produtoNomeLado1 }} — {{ item.modeloNomeLado1 }} (catálogo)
             {% elif item.imagemRecorteLado1 %}
               <br>Lado 1: Personalizada — Modelo {{ item.numeroModeloPersonalizadaLado1 }}
-              <a href="{{ item.imagemRecorteLado1 }}" download="personalizada_modelo_{{ item.numeroModeloPersonalizadaLado1 }}.png">⬇ Baixar lado 1 (imagem 1:1)</a>
+              <a href="{{ item.imagemRecorteLado1 }}" download="personalizada_modelo_{{ item.numeroModeloPersonalizadaLado1 }}.png">Baixar lado 1 (imagem 1:1)</a>
             {% elif pedido.status not in ('cancelado', 'excluido') %}
               <br>Lado 1: sem foto ainda
               <details class="editar-item">
-                <summary>📤 enviar foto do lado 1</summary>
+                <summary>Enviar foto do lado 1</summary>
                 <form method="post" enctype="multipart/form-data" action="{{ url_for('admin_pedido_enviar_foto', token=pedido.token, indice=loop.index0) }}">
                   <input type="hidden" name="lado" value="1">
                   <input type="file" name="imagem" accept="image/*" required>
@@ -107,11 +126,11 @@
               <br>Lado 2: {{ item.produtoNomeLado2 }} — {{ item.modeloNomeLado2 }} (catálogo)
             {% elif item.imagemRecorteLado2 %}
               <br>Lado 2: Personalizada — Modelo {{ item.numeroModeloPersonalizadaLado2 }}
-              <a href="{{ item.imagemRecorteLado2 }}" download="personalizada_modelo_{{ item.numeroModeloPersonalizadaLado2 }}.png">⬇ Baixar lado 2 (imagem 1:1)</a>
+              <a href="{{ item.imagemRecorteLado2 }}" download="personalizada_modelo_{{ item.numeroModeloPersonalizadaLado2 }}.png">Baixar lado 2 (imagem 1:1)</a>
             {% elif pedido.status not in ('cancelado', 'excluido') %}
               <br>Lado 2: sem foto ainda
               <details class="editar-item">
-                <summary>📤 enviar foto do lado 2</summary>
+                <summary>Enviar foto do lado 2</summary>
                 <form method="post" enctype="multipart/form-data" action="{{ url_for('admin_pedido_enviar_foto', token=pedido.token, indice=loop.index0) }}">
                   <input type="hidden" name="lado" value="2">
                   <input type="file" name="imagem" accept="image/*" required>
@@ -121,11 +140,11 @@
             {% endif %}
           {% elif item.imagemRecorte %}
             <br>
-            <a href="{{ item.imagemRecorte }}" download="personalizada_modelo_{{ item.numeroModeloPersonalizada }}.png">⬇ Baixar imagem 1:1</a>
+            <a href="{{ item.imagemRecorte }}" download="personalizada_modelo_{{ item.numeroModeloPersonalizada }}.png">Baixar imagem 1:1</a>
           {% elif item.produtoNome == "Personalizada" and pedido.status not in ('cancelado', 'excluido') %}
             <br>
             <details class="editar-item">
-              <summary>📤 enviar foto do cliente (sem foto ainda)</summary>
+              <summary>Enviar foto do cliente (sem foto ainda)</summary>
               <form method="post" enctype="multipart/form-data" action="{{ url_for('admin_pedido_enviar_foto', token=pedido.token, indice=loop.index0) }}">
                 <input type="file" name="imagem" accept="image/*" required>
                 <p style="font-size:0.8rem;color:#888;">Envie a foto já cortada 1:1 — ela é salva do jeito que veio, sem gerar simulação.</p>
@@ -136,7 +155,7 @@
           {% if item.personalizavel %}
             {% if item.personalizacaoFoto %}
               <br>Foto pra personalizar: enviada pelo cliente —
-              <a href="{{ item.personalizacaoFoto }}" download="personalizacao_{{ loop.index0 }}.jpg">⬇ Baixar foto</a>
+              <a href="{{ item.personalizacaoFoto }}" download="personalizacao_{{ loop.index0 }}.jpg">Baixar foto</a>
               <p style="font-size:0.8rem;color:#888;">Confirme com o cliente (e mostre uma possível prévia) antes de produzir.</p>
             {% else %}
               <br>Foto pra personalizar: ainda não enviada — entre em contato pelo WhatsApp pra solicitar.
@@ -144,7 +163,7 @@
           {% endif %}
           {% if pedido.status not in ('cancelado', 'excluido') and not item.duasFaces and not item.imagemRecorte %}
             <details class="editar-item">
-              <summary>{{ "⚠️ corrigir formato (pra sincronizar com a Tiny)" if not item.chave_preco else "✏️ corrigir formato" }}</summary>
+              <summary>{{ "Corrigir formato (pra sincronizar com a Tiny)" if not item.chave_preco else "Corrigir formato" }}</summary>
               <form method="post" action="{{ url_for('admin_pedido_editar_item_formato', token=pedido.token, indice=loop.index0) }}">
                 <label for="produto_nome-{{ loop.index0 }}">Nome do produto</label>
                 <input type="text" id="produto_nome-{{ loop.index0 }}" name="produto_nome" value="{{ item.produtoNome }}">
@@ -184,7 +203,7 @@
           {% endif %}
           {% if pedido.status not in ('cancelado', 'excluido') and not item.duasFaces and not item.imagemRecorte and item.imagem %}
             <details class="editar-item">
-              <summary>🖼️ corrigir foto (erro de cadastro no catálogo)</summary>
+              <summary>Corrigir foto (erro de cadastro no catálogo)</summary>
               <form method="post" action="{{ url_for('admin_pedido_editar_item_imagem', token=pedido.token, indice=loop.index0) }}">
                 <label for="imagem-{{ loop.index0 }}">Caminho da imagem</label>
                 <input type="text" id="imagem-{{ loop.index0 }}" name="imagem" value="{{ item.imagem }}">
@@ -196,7 +215,7 @@
         </li>
       {% endfor %}
     </ul>
-    <a class="voltar" href="{{ url_for('admin_pedido_csv', token=pedido.token) }}">⬇ Baixar CSV pra produção</a>
+    <a class="voltar" href="{{ url_for('admin_pedido_csv', token=pedido.token) }}">Baixar CSV pra produção</a>
   </div>
 
   {% if pedido.origem_classificada %}
@@ -303,45 +322,6 @@
     </div>
   {% endif %}
 
-  {% if pedido.status not in ('whatsapp', 'cancelado', 'excluido') %}
-    <div class="bloco">
-      <h2>Corrigir valor</h2>
-      <p>Use isso só pra corrigir erro de digitação (ex: valor errado no confirmar-venda manual do
-      WhatsApp). Não muda nada no gateway de pagamento nem estorna/cobra diferença — se o pedido já
-      foi pago pelo site, a diferença com o que foi cobrado de verdade precisa ser resolvida por
-      fora (Pix, reembolso etc.).</p>
-      <form method="post" action="{{ url_for('admin_pedido_editar_valor', token=pedido.token) }}"
-            id="form-editar-valor"
-            onsubmit="return confirm('Confirma a correção do valor desse pedido?');">
-        <label for="editar_subtotal">Subtotal (R$)</label>
-        <input type="text" name="subtotal" id="editar_subtotal" inputmode="numeric"
-               value="{{ '%.2f' | format(pedido.subtotal) | replace('.', ',') }}">
-        <label for="editar_frete_preco">Frete (R$)</label>
-        <input type="text" name="frete_preco" id="editar_frete_preco" inputmode="numeric"
-               value="{{ '%.2f' | format(pedido.frete_preco) | replace('.', ',') }}">
-        <label for="editar_valor_pago">Valor pago (R$, deixe em branco se ainda não foi pago)</label>
-        <input type="text" name="valor_pago" id="editar_valor_pago" inputmode="numeric"
-               value="{{ ('%.2f' | format(pedido.valor_pago) | replace('.', ',')) if pedido.valor_pago else '' }}">
-        <button type="submit">💾 Corrigir valor</button>
-      </form>
-    </div>
-    <script>
-      (function () {
-        function ligarMascaraMoedaValor(input) {
-          if (!input) return;
-          input.addEventListener('input', () => {
-            const digitos = input.value.replace(/\D/g, '') || '0';
-            const centavos = parseInt(digitos, 10);
-            input.value = (centavos / 100).toFixed(2).replace('.', ',');
-          });
-        }
-        ligarMascaraMoedaValor(document.getElementById('editar_subtotal'));
-        ligarMascaraMoedaValor(document.getElementById('editar_frete_preco'));
-        ligarMascaraMoedaValor(document.getElementById('editar_valor_pago'));
-      })();
-    </script>
-  {% endif %}
-
   {% if pedido.status == 'whatsapp' %}
     <div class="bloco">
       <h2>Confirmar venda</h2>
@@ -352,7 +332,7 @@
             <input type="text" id="busca-tiny-cliente" placeholder="Nome, razão social ou CPF/CNPJ" autocomplete="off">
             <div class="busca-tiny-resultados" id="busca-tiny-cliente-resultados" hidden></div>
           </div>
-          <button type="button" id="btn-busca-tiny-cliente">🔍 Buscar</button>
+          <button type="button" id="btn-busca-tiny-cliente">Buscar</button>
         </div>
 
         <label for="cliente_nome">Nome completo / Razão social</label>
@@ -415,7 +395,7 @@
               <input type="text" id="busca-tiny-destinatario" placeholder="Nome da livraria/paróquia ou CNPJ" autocomplete="off">
               <div class="busca-tiny-resultados" id="busca-tiny-destinatario-resultados" hidden></div>
             </div>
-            <button type="button" id="btn-busca-tiny-destinatario">🔍 Buscar</button>
+            <button type="button" id="btn-busca-tiny-destinatario">Buscar</button>
           </div>
 
           <label for="destinatario_nome">Nome de quem recebe</label>
@@ -462,11 +442,11 @@
         <label for="valor_pago">Valor recebido (R$)</label>
         <input type="text" name="valor_pago" id="valor_pago" inputmode="numeric" value="{{ pedido.subtotal | preco | replace('R$ ', '') }}">
 
-        <button type="submit">✅ Confirmar venda</button>
+        <button type="submit">Confirmar venda</button>
       </form>
       <form method="post" action="{{ url_for('admin_pedido_descartar_whatsapp', token=pedido.token) }}"
             onsubmit="return confirm('Descartar esse lead? Ele não aparece mais como pendente.');">
-        <button type="submit" style="background:#a13a2a;">✕ Descartar (não fechou)</button>
+        <button type="submit" style="background:#a13a2a;">Descartar (não fechou)</button>
       </form>
     </div>
 
@@ -794,6 +774,73 @@
       });
     </script>
   {% endif %}
+    </div>
+
+    <aside class="detalhe-lateral">
+  {% if pedido.status != 'whatsapp' %}
+    <div class="bloco">
+      <h2>Alterar status</h2>
+      <form method="post" action="{{ url_for('admin_pedido_status', token=pedido.token) }}" id="form-status">
+        <label for="status">Novo status</label>
+        <select name="status" id="status">
+          <option value="pago" {{ "selected" if pedido.status == "pago" }}>Pago</option>
+          <option value="faturado" {{ "selected" if pedido.status == "faturado" }}>Faturado (nota fiscal emitida)</option>
+          <option value="enviado" {{ "selected" if pedido.status == "enviado" }}>Enviado</option>
+          <option value="entregue" {{ "selected" if pedido.status == "entregue" }}>Entregue</option>
+        </select>
+
+        <div class="campos-rastreio" id="campos-rastreio">
+          <label for="transportadora">Transportadora</label>
+          <input type="text" name="transportadora" id="transportadora" value="{{ pedido.transportadora or '' }}">
+          <label for="codigo_rastreio">Código de rastreio</label>
+          <input type="text" name="codigo_rastreio" id="codigo_rastreio" value="{{ pedido.codigo_rastreio or '' }}">
+          <label for="link_rastreio">Link de rastreio (opcional)</label>
+          <input type="text" name="link_rastreio" id="link_rastreio" value="{{ pedido.link_rastreio or '' }}">
+        </div>
+
+        <div class="campos-rastreio" id="campos-faturado">
+          <label for="link_nota_fiscal">Link da nota fiscal (opcional)</label>
+          <input type="text" name="link_nota_fiscal" id="link_nota_fiscal" value="{{ pedido.link_nota_fiscal or '' }}" placeholder="Link do PDF da NF-e na Tiny">
+        </div>
+
+        <button type="submit">Salvar</button>
+      </form>
+    </div>
+
+    <p class="aviso-tiny">
+      Selecionar "Enviado" pela primeira vez dispara o e-mail de pedido enviado pro cliente, com o
+      código/link preenchidos aqui. Quando a integração com a Tiny estiver completa, ela vai poder
+      fazer essa mesma atualização sozinha (mesmo mecanismo por trás) -- esse formulário continua
+      funcionando do mesmo jeito pra correção manual.
+    </p>
+
+    <script>
+      const selectStatus = document.getElementById('status');
+      const camposRastreio = document.getElementById('campos-rastreio');
+      const camposFaturado = document.getElementById('campos-faturado');
+      function atualizarCamposRastreio() {
+        camposRastreio.classList.toggle('ativo', selectStatus.value === 'enviado');
+        camposFaturado.classList.toggle('ativo', selectStatus.value === 'faturado');
+      }
+      selectStatus.addEventListener('change', atualizarCamposRastreio);
+      atualizarCamposRastreio();
+    </script>
+  {% endif %}
+
+  {% if pedido.status == 'pendente' %}
+    <div class="bloco">
+      <h2>Pagamento não confirmado automaticamente</h2>
+      <p>Esse pedido foi criado pelo site (Pix/cartão via InfinitePay ou boleto Inter) e ainda
+      não recebemos a confirmação automática de pagamento. Só use o botão abaixo se você já
+      conferiu no <strong>extrato/painel da InfinitePay</strong> (ou do Banco Inter, se for boleto)
+      que o pagamento realmente caiu — essa ação não faz nenhuma verificação, ela só força o
+      pedido pra "pago" e dispara as mesmas notificações/integrações de uma confirmação normal.</p>
+      <form method="post" action="{{ url_for('admin_pedido_marcar_pago', token=pedido.token) }}"
+            onsubmit="return confirm('Confirma que você já viu esse pagamento cair no extrato da InfinitePay/Banco Inter? Isso vai marcar o pedido como pago.');">
+        <button type="submit">Confirmar pagamento manualmente</button>
+      </form>
+    </div>
+  {% endif %}
 
   {% if pedido.status != 'pendente' and pedido.status != 'cancelado' and pedido.status != 'whatsapp' %}
     <div class="bloco">
@@ -885,68 +932,42 @@
     </div>
   {% endif %}
 
-  {% if pedido.status == 'pendente' %}
+  {% if pedido.status not in ('whatsapp', 'cancelado', 'excluido') %}
     <div class="bloco">
-      <h2>Pagamento não confirmado automaticamente</h2>
-      <p>Esse pedido foi criado pelo site (Pix/cartão via InfinitePay ou boleto Inter) e ainda
-      não recebemos a confirmação automática de pagamento. Só use o botão abaixo se você já
-      conferiu no <strong>extrato/painel da InfinitePay</strong> (ou do Banco Inter, se for boleto)
-      que o pagamento realmente caiu — essa ação não faz nenhuma verificação, ela só força o
-      pedido pra "pago" e dispara as mesmas notificações/integrações de uma confirmação normal.</p>
-      <form method="post" action="{{ url_for('admin_pedido_marcar_pago', token=pedido.token) }}"
-            onsubmit="return confirm('Confirma que você já viu esse pagamento cair no extrato da InfinitePay/Banco Inter? Isso vai marcar o pedido como pago.');">
-        <button type="submit">✅ Confirmar pagamento manualmente</button>
+      <h2>Corrigir valor</h2>
+      <p>Use isso só pra corrigir erro de digitação (ex: valor errado no confirmar-venda manual do
+      WhatsApp). Não muda nada no gateway de pagamento nem estorna/cobra diferença — se o pedido já
+      foi pago pelo site, a diferença com o que foi cobrado de verdade precisa ser resolvida por
+      fora (Pix, reembolso etc.).</p>
+      <form method="post" action="{{ url_for('admin_pedido_editar_valor', token=pedido.token) }}"
+            id="form-editar-valor"
+            onsubmit="return confirm('Confirma a correção do valor desse pedido?');">
+        <label for="editar_subtotal">Subtotal (R$)</label>
+        <input type="text" name="subtotal" id="editar_subtotal" inputmode="numeric"
+               value="{{ '%.2f' | format(pedido.subtotal) | replace('.', ',') }}">
+        <label for="editar_frete_preco">Frete (R$)</label>
+        <input type="text" name="frete_preco" id="editar_frete_preco" inputmode="numeric"
+               value="{{ '%.2f' | format(pedido.frete_preco) | replace('.', ',') }}">
+        <label for="editar_valor_pago">Valor pago (R$, deixe em branco se ainda não foi pago)</label>
+        <input type="text" name="valor_pago" id="editar_valor_pago" inputmode="numeric"
+               value="{{ ('%.2f' | format(pedido.valor_pago) | replace('.', ',')) if pedido.valor_pago else '' }}">
+        <button type="submit">Corrigir valor</button>
       </form>
     </div>
-  {% endif %}
-
-  {% if pedido.status != 'whatsapp' %}
-    <div class="bloco">
-      <h2>Alterar status</h2>
-      <form method="post" action="{{ url_for('admin_pedido_status', token=pedido.token) }}" id="form-status">
-        <label for="status">Novo status</label>
-        <select name="status" id="status">
-          <option value="pago" {{ "selected" if pedido.status == "pago" }}>Pago</option>
-          <option value="faturado" {{ "selected" if pedido.status == "faturado" }}>Faturado (nota fiscal emitida)</option>
-          <option value="enviado" {{ "selected" if pedido.status == "enviado" }}>Enviado</option>
-          <option value="entregue" {{ "selected" if pedido.status == "entregue" }}>Entregue</option>
-        </select>
-
-        <div class="campos-rastreio" id="campos-rastreio">
-          <label for="transportadora">Transportadora</label>
-          <input type="text" name="transportadora" id="transportadora" value="{{ pedido.transportadora or '' }}">
-          <label for="codigo_rastreio">Código de rastreio</label>
-          <input type="text" name="codigo_rastreio" id="codigo_rastreio" value="{{ pedido.codigo_rastreio or '' }}">
-          <label for="link_rastreio">Link de rastreio (opcional)</label>
-          <input type="text" name="link_rastreio" id="link_rastreio" value="{{ pedido.link_rastreio or '' }}">
-        </div>
-
-        <div class="campos-rastreio" id="campos-faturado">
-          <label for="link_nota_fiscal">Link da nota fiscal (opcional)</label>
-          <input type="text" name="link_nota_fiscal" id="link_nota_fiscal" value="{{ pedido.link_nota_fiscal or '' }}" placeholder="Link do PDF da NF-e na Tiny">
-        </div>
-
-        <button type="submit">Salvar</button>
-      </form>
-    </div>
-
-    <p class="aviso-tiny">
-      Selecionar "Enviado" pela primeira vez dispara o e-mail de pedido enviado pro cliente, com o
-      código/link preenchidos aqui. Quando a integração com a Tiny estiver completa, ela vai poder
-      fazer essa mesma atualização sozinha (mesmo mecanismo por trás) -- esse formulário continua
-      funcionando do mesmo jeito pra correção manual.
-    </p>
-
     <script>
-      const selectStatus = document.getElementById('status');
-      const camposRastreio = document.getElementById('campos-rastreio');
-      const camposFaturado = document.getElementById('campos-faturado');
-      function atualizarCamposRastreio() {
-        camposRastreio.classList.toggle('ativo', selectStatus.value === 'enviado');
-        camposFaturado.classList.toggle('ativo', selectStatus.value === 'faturado');
-      }
-      selectStatus.addEventListener('change', atualizarCamposRastreio);
-      atualizarCamposRastreio();
+      (function () {
+        function ligarMascaraMoedaValor(input) {
+          if (!input) return;
+          input.addEventListener('input', () => {
+            const digitos = input.value.replace(/\D/g, '') || '0';
+            const centavos = parseInt(digitos, 10);
+            input.value = (centavos / 100).toFixed(2).replace('.', ',');
+          });
+        }
+        ligarMascaraMoedaValor(document.getElementById('editar_subtotal'));
+        ligarMascaraMoedaValor(document.getElementById('editar_frete_preco'));
+        ligarMascaraMoedaValor(document.getElementById('editar_valor_pago'));
+      })();
     </script>
   {% endif %}
 
@@ -956,13 +977,13 @@
       <p>Arquivado em {{ pedido.arquivado_em | data_br }} -- some da lista principal do painel, mas continua
       igual em tudo mais.</p>
       <form method="post" action="{{ url_for('admin_pedido_desarquivar', token=pedido.token) }}">
-        <button type="submit">↩️ Desarquivar</button>
+        <button type="submit">Desarquivar</button>
       </form>
     {% else %}
       <p>Tira esse pedido da lista principal do painel pra desafogar a visão do dia a dia -- não muda o
       status nem avisa o cliente, e pode desfazer quando quiser.</p>
       <form method="post" action="{{ url_for('admin_pedido_arquivar', token=pedido.token) }}">
-        <button type="submit">📦 Arquivar</button>
+        <button type="submit">Arquivar</button>
       </form>
     {% endif %}
   </div>
@@ -982,10 +1003,12 @@
             onsubmit="return confirm('Excluir esse pedido? O cliente recebe um e-mail avisando.');">
         <label for="motivo">Motivo (o cliente vai ler isso)</label>
         <textarea name="motivo" id="motivo" rows="3" required></textarea>
-        <button type="submit" class="botao-perigo">🗑️ Excluir pedido</button>
+        <button type="submit" class="botao-perigo">Excluir pedido</button>
       </form>
     </div>
   {% endif %}
+    </aside>
+  </div>
 
   <script>
     // ---- mostra tamanho/cor certos conforme o formato escolhido no
@@ -1019,5 +1042,4 @@
       }
     </script>
   {% endif %}
-</body>
-</html>
+{% endblock %}
