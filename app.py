@@ -198,6 +198,7 @@ from services.pedidos import (
     cancelar_pedido,
     confirmar_venda_manual,
     contagem_pedidos_por_status,
+    contar_assinantes_liturgia_ics,
     criar_pedido,
     desarquivar_pedido,
     editar_item_formato,
@@ -245,6 +246,7 @@ from services.pedidos import (
     produtos_mais_vendidos,
     quantidade_por_material,
     reativar_pedido_cancelado,
+    registrar_acesso_liturgia_ics,
     resumo_vendas_periodo,
     rotulo_forma_pagamento,
     salvar_dados_boleto_inter,
@@ -2365,7 +2367,15 @@ def ebook_liturgia_outubro_ics():
     (abre direto o fluxo "adicionar calendario" do Google), mas o
     arquivo em si funciona em qualquer app que leia .ics (Apple,
     Outlook). Gerado na hora, sem cache: e´ texto puro, sem foto pra
-    processar, custa nada comparado ao PDF."""
+    processar, custa nada comparado ao PDF.
+
+    Cada busca registra o IP (ver services/pedidos.py:
+    registrar_acesso_liturgia_ics) -- e´ a unica forma de aproximar
+    "quantos assinantes ativos" (ver conversa 2026-09-26), ja que
+    assinatura de calendario nao avisa quando alguem assina ou
+    cancela, so fica reconsultando o arquivo de tempos em tempos."""
+    ip_visitante = request.headers.get("CF-Connecting-IP") or request.remote_addr or ""
+    registrar_acesso_liturgia_ics(ip_visitante)
     ics = gerar_ics_liturgia_outubro(request.url_root.rstrip("/"))
     return Response(ics, mimetype="text/calendar")
 
@@ -6028,6 +6038,7 @@ def admin_newsletter():
         total=resultado.get("total", 0),
         erro=resultado.get("erro"),
         brevo_list_id=BREVO_LIST_ID,
+        assinantes_liturgia_ics_7d=contar_assinantes_liturgia_ics(7),
     )
 
 

@@ -790,6 +790,18 @@ def test_admin_newsletter_lista_contatos(client, monkeypatch):
     assert "https://my.brevo.com/camp/lists/id/7" in resposta
 
 
+def test_admin_newsletter_mostra_assinantes_do_calendario_liturgia(client, monkeypatch):
+    import app as app_module
+
+    monkeypatch.setattr(app_module, "ADMIN_USER", "admin")
+    monkeypatch.setattr(app_module, "ADMIN_PASSWORD", "segredo123")
+    monkeypatch.setattr(app_module, "listar_contatos_newsletter", lambda: {"contatos": [], "total": 0})
+    monkeypatch.setattr(app_module, "contar_assinantes_liturgia_ics", lambda dias: 42)
+
+    resposta = client.get("/admin/newsletter", auth=("admin", "segredo123")).get_data(as_text=True)
+    assert "42 assinante" in resposta
+
+
 def test_admin_newsletter_mostra_erro_de_configuracao(client, monkeypatch):
     import app as app_module
 

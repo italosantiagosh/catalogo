@@ -383,6 +383,27 @@ def inicializar_db() -> None:
         if "hash_imagem" not in colunas_numeracao:
             conexao.execute("ALTER TABLE numeros_modelo_personalizada ADD COLUMN hash_imagem TEXT")
 
+        # Assinatura de calendario (.ics) nao avisa quem assinou nem
+        # quando alguem cancela -- o app de calendario so busca o
+        # arquivo de tempos em tempos, sem se identificar (ver conversa
+        # 2026-09-26: "eu consigo saber quantos assinaram?"). Um IP por
+        # LINHA a cada busca (nao upsert) e´ de proposito: da´ pra contar
+        # "quantos IPs distintos bateram aqui nos ultimos N dias" como
+        # aproximacao de assinantes ativos, sem precisar adivinhar de
+        # quanto em quanto tempo cada app reconsulta o feed.
+        conexao.execute(
+            """
+            CREATE TABLE IF NOT EXISTS liturgia_ics_acessos (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                ip TEXT NOT NULL,
+                criado_em TEXT NOT NULL
+            )
+            """
+        )
+        conexao.execute(
+            "CREATE INDEX IF NOT EXISTS idx_liturgia_ics_acessos_criado_em ON liturgia_ics_acessos(criado_em)"
+        )
+
 
 def criar_pedido(
     *,
@@ -1975,3 +1996,35 @@ def resetar_numeracao_modelo_personalizada() -> None:
     inicializar_db()
     with _conexao() as conexao:
         conexao.execute("DELETE FROM numeros_modelo_personalizada")
+
+
+def registrar_acesso_liturgia_ics(ip: str) -> None:
+    """Uma linha por busca do feed (.ics) -- ver app.py:
+    ebook_liturgia_outubro_ics. Tambem aproveita pra podar linhas com
+    mais de 90 dias (nenhum app de calendario demora tanto pra
+    reconsultar um feed assinado, entao uma linha essa velha so
+    atrapalharia a contagem de "assinantes ativos" se ficasse pra
+    sempre) -- sem job agendado separado so pra isso, a propria escrita
+    ja aproveita pra limpar."""
+    inicializar_db()
+    agora = datetime.now(timezone.utc)
+    limite_poda = (agora - timedelta(days=90)).isoformat()
+    with _conexao() as conexao:
+        conexao.execute(
+            "INSERT INTO liturgia_ics_acessos (ip, criado_em) VALUES (?, ?)",
+            (ip, agora.isoformat()),
+        )
+        conexao.execute("DELETE FROM liturgia_ics_acessos WHERE criado_em < ?", (limite_poda,))
+
+
+def contar_assinantes_liturgia_ics(dias: int) -> int:
+    """IPs DISTINTOS que buscaram o feed nos ultimos `dias` dias --
+    aproximacao de "assinantes ativos" (nao da´ pra saber o numero real,
+    ver conversa 2026-09-26: assinatura de calendario nao tem evento de
+    inscricao nem de cancelamento, so buscas periodicas anonimas)."""
+    inicializar_db()
+    desde = (datetime.now(timezone.utc) - timedelta(days=dias)).isoformat()
+    with _conexao() as conexao:
+        return conexao.execute(
+            "SELECT COUNT(DISTINCT ip) FROM liturgia_ics_acessos WHERE criado_em >= ?", (desde,)
+        ).fetchone()[0]

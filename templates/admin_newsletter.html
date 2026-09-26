@@ -76,6 +76,12 @@
       <a class="botao" href="https://my.brevo.com/camp/lists/id/{{ brevo_list_id }}" target="_blank" rel="noopener">Abrir lista no Brevo →</a>
     </div>
 
+    <div class="cartao-brevo">
+      <p>📅 <strong>Calendário da Liturgia (.ics):</strong> {{ assinantes_liturgia_ics_7d }} assinante(s) ativo(s)
+      nos últimos 7 dias — aproximado, contando IPs distintos que buscaram o arquivo, já que assinatura de
+      calendário não avisa quando alguém assina ou cancela.</p>
+    </div>
+
     {% if contatos %}
       <table class="lista-contatos">
         <thead>

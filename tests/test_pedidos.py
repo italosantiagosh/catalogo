@@ -1002,3 +1002,39 @@ def test_numero_modelo_personalizada_lados_diferentes_ganham_numeros_separados(m
     # pedir de novo o mesmo lado -- devolve o MESMO numero
     assert pedidos.numero_modelo_personalizada("tokenA", 0, lado="lado1") == n_lado1
     assert pedidos.numero_modelo_personalizada("tokenA", 0, lado="lado2") == n_lado2
+
+
+def test_contar_assinantes_liturgia_ics_conta_ips_distintos(monkeypatch, tmp_path):
+    _reapontar_db(monkeypatch, tmp_path)
+    pedidos.registrar_acesso_liturgia_ics("1.1.1.1")
+    pedidos.registrar_acesso_liturgia_ics("2.2.2.2")
+    pedidos.registrar_acesso_liturgia_ics("1.1.1.1")  # mesmo IP de novo -- nao conta 2x
+    assert pedidos.contar_assinantes_liturgia_ics(7) == 2
+
+
+def test_contar_assinantes_liturgia_ics_ignora_acessos_fora_da_janela(monkeypatch, tmp_path):
+    _reapontar_db(monkeypatch, tmp_path)
+    pedidos.registrar_acesso_liturgia_ics("1.1.1.1")
+    with pedidos._conexao() as conexao:
+        ha_10_dias = (datetime.now(timezone.utc) - timedelta(days=10)).isoformat()
+        conexao.execute(
+            "UPDATE liturgia_ics_acessos SET criado_em = ? WHERE ip = ?", (ha_10_dias, "1.1.1.1")
+        )
+    pedidos.registrar_acesso_liturgia_ics("2.2.2.2")
+    assert pedidos.contar_assinantes_liturgia_ics(7) == 1
+
+
+def test_registrar_acesso_liturgia_ics_poda_linhas_com_mais_de_90_dias(monkeypatch, tmp_path):
+    _reapontar_db(monkeypatch, tmp_path)
+    pedidos.registrar_acesso_liturgia_ics("1.1.1.1")
+    with pedidos._conexao() as conexao:
+        ha_100_dias = (datetime.now(timezone.utc) - timedelta(days=100)).isoformat()
+        conexao.execute(
+            "UPDATE liturgia_ics_acessos SET criado_em = ? WHERE ip = ?", (ha_100_dias, "1.1.1.1")
+        )
+    pedidos.registrar_acesso_liturgia_ics("2.2.2.2")  # essa escrita ja aproveita pra podar
+    with pedidos._conexao() as conexao:
+        ips_restantes = {
+            linha["ip"] for linha in conexao.execute("SELECT ip FROM liturgia_ics_acessos").fetchall()
+        }
+    assert ips_restantes == {"2.2.2.2"}

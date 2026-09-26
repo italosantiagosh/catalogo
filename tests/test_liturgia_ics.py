@@ -84,6 +84,17 @@ def test_rota_ics_serve_com_content_type_correto():
     assert resposta.data.count(b"BEGIN:VEVENT") == _TOTAL_EVENTOS
 
 
+def test_rota_ics_registra_o_ip_de_quem_buscou(monkeypatch, tmp_path):
+    """Ver conversa 2026-09-26: "consigo saber quantos assinaram?" -- a
+    unica aproximacao possivel e´ contar quem busca o arquivo."""
+    import services.pedidos as pedidos
+
+    monkeypatch.setattr(pedidos, "DB_PATH", str(tmp_path / "pedidos.db"))
+    client = app.test_client()
+    client.get("/ebook/liturgia-do-mes.ics", headers={"CF-Connecting-IP": "9.9.9.9"})
+    assert pedidos.contar_assinantes_liturgia_ics(7) == 1
+
+
 def test_landing_linka_direto_pro_ics_sem_o_truque_quebrado_do_google():
     """Ver conversa 2026-09-24: o link calendar.google.com/calendar/render
     ?cid=... deu erro no celular do usuario -- trocado pelo link direto
