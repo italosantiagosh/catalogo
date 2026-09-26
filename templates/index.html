@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% from "_icones.html" import icone %}
 
 {% macro render_destaque(grupo, subtitulo=None) %}
   {% if grupo %}
@@ -98,17 +99,17 @@
 
   <div class="vantagens">
     <div class="vantagem">
-      <span class="vantagem-icone">🚚</span>
+      <span class="vantagem-icone">{{ icone("caminhao") }}</span>
       <strong>Envio para todo o Brasil</strong>
       <span>Despachamos para qualquer endereço do país</span>
     </div>
     <div class="vantagem">
-      <span class="vantagem-icone">💰</span>
+      <span class="vantagem-icone">{{ icone("etiqueta") }}</span>
       <strong>Desconto progressivo</strong>
       <span>Quanto mais você compra, menor o preço por peça</span>
     </div>
     <div class="vantagem">
-      <span class="vantagem-icone">📦</span>
+      <span class="vantagem-icone">{{ icone("caixa") }}</span>
       <strong>Frete grátis</strong>
       <span>Acima de R$ 300 em compras</span>
     </div>
@@ -128,7 +129,7 @@
       <span>Escolha a forma de pagamento que preferir (mais rápido)</span>
     </div>
     <div class="vantagem">
-      <span class="vantagem-icone">🧾</span>
+      <span class="vantagem-icone">{{ icone("recibo") }}</span>
       <strong>Nota fiscal</strong>
       <span>Emitimos nota fiscal para CNPJ ou CPF</span>
     </div>

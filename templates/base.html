@@ -1,4 +1,4 @@
-<!doctype html>
+{% from "_icones.html" import icone %}<!doctype html>
 <html lang="pt-br">
 <head>
   <meta charset="utf-8">
@@ -71,8 +71,8 @@
 </head>
 <body>
   <div class="faixa-topo">
-    <button type="button" class="faixa-topo-botao" onclick="abrirTabelaDesconto()">💰 Desconto progressivo automático — até 65% OFF no atacado</button>
-    <span>🚚 Frete grátis acima de R$ 300</span>
+    <button type="button" class="faixa-topo-botao" onclick="abrirTabelaDesconto()">{{ icone("etiqueta", "icone icone-inline") }} Desconto progressivo automático — até 65% OFF no atacado</button>
+    <span>{{ icone("caminhao", "icone icone-inline") }} Frete grátis acima de R$ 300</span>
   </div>
   <div class="topo-fixo">
     <header class="topo">

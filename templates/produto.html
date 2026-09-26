@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% from "_icones.html" import icone %}
 {% from "_preco.html" import preco_destaque %}
 
 {# O produto "espirito-santo" tem o mesmo nome da categoria "Espírito
@@ -252,19 +253,19 @@
 
     <div class="selo-confianca">
       <div class="selo-item">
-        <span class="selo-icone">🏅</span>
+        <span class="selo-icone">{{ icone("medalha") }}</span>
         <strong>+125 mil</strong>
         medalhas vendidas
       </div>
       <div class="selo-divisor"></div>
       <div class="selo-item">
-        <span class="selo-icone">💳</span>
+        <span class="selo-icone">{{ icone("cartao") }}</span>
         <strong>Parcelamos</strong>
         em 12x <span class="selo-fininha">(com juros)</span>
       </div>
       <div class="selo-divisor"></div>
       <div class="selo-item">
-        <span class="selo-icone">🛠️</span>
+        <span class="selo-icone">{{ icone("relogio") }}</span>
         <strong>Produção</strong>
         até {{ producao_dias_uteis }} dias úteis
       </div>

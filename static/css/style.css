@@ -595,6 +595,13 @@ a.link-carrinho #contador-carrinho {
 .vantagem-icone {
   font-size: 1.5rem;
   margin-bottom: 4px;
+  color: var(--accent);
+}
+
+.vantagem-icone .icone {
+  display: block;
+  width: 28px;
+  height: 28px;
 }
 
 .vantagem-icone-img {
@@ -2276,16 +2283,29 @@ button.botao-carrinho:disabled {
   opacity: 0.85;
 }
 
+/* icones de traco (templates/_icones.html) no lugar dos emoji -- sem
+   bolinha de fundo, so o desenho na cor da marca, como nas lojas de
+   referencia. */
 .selo-icone {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 26px;
-  height: 26px;
-  border-radius: 999px;
-  background: var(--gold-soft);
-  font-size: 0.9rem;
+  width: 28px;
+  height: 28px;
   margin-bottom: 4px;
+  color: var(--accent);
+}
+
+.selo-icone .icone {
+  width: 24px;
+  height: 24px;
+}
+
+.icone-inline {
+  width: 1.15em;
+  height: 1.15em;
+  vertical-align: -0.22em;
+  margin-right: 2px;
 }
 
 /* Bandeira do Brasil como imagem, nao emoji -- no Windows (Chrome/Edge)

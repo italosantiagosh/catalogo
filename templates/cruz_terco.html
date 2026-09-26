@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% from "_icones.html" import icone %}
 
 {% block titulo %}Cruz para Terço (Cruz do Papa) — Prata, Ouro velho e Dourado | Nove de Julho{% endblock %}
 {% block meta_descricao %}Cruz para terço no modelo "Cruz do Papa" (São João Paulo II), 4,2 x 1,7 cm, em liga de zinco resinada. Prata, ouro velho ou dourado — combina com os entremeios da mesma cor. Desconto de atacado automático.{% endblock %}
@@ -50,19 +51,19 @@
 
   <div class="selo-confianca">
     <div class="selo-item">
-      <span class="selo-icone">📏</span>
+      <span class="selo-icone">{{ icone("regua") }}</span>
       <strong>4,2 x 1,7 cm</strong>
       tamanho real
     </div>
     <div class="selo-divisor"></div>
     <div class="selo-item">
-      <span class="selo-icone">🧵</span>
+      <span class="selo-icone">{{ icone("elo") }}</span>
       <strong>Combina</strong>
       com o entremeio da mesma cor
     </div>
     <div class="selo-divisor"></div>
     <div class="selo-item">
-      <span class="selo-icone"><img src="{{ url_for('static', filename='img/icones/brasil.svg') }}" alt="" class="selo-icone-brasil"></span>
+      <span class="selo-icone">{{ icone("caminhao") }}</span>
       <strong>Envio</strong>
       para todo o Brasil
     </div>
