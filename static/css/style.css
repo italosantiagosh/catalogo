@@ -18,6 +18,14 @@
   --gold-texto-escuro: #d4ac5c; /* texto dourado sobre fundo escuro/--accent (~6:1) */
   --border: #dde3ec;
 
+  /* cor PROPRIA de preco -- antes o preco usava --accent (o mesmo
+     azul-marinho de titulo/link), e sumia no meio da pagina. Bordo
+     liturgico: terceira cor natural ao lado de marinho + dourado,
+     contraste ~9:1 sobre branco. Usar so em preco/desconto, nunca em
+     link ou titulo, senao perde o sinal de "aqui esta o preco". */
+  --preco: #8e1b2c;
+  --preco-fundo: #fbeef0;
+
   /* consolida os varios tons de verde/vermelho quase iguais que foram
      sendo escolhidos separadamente em conversas diferentes pro mesmo
      significado (sucesso/erro) -- ver conversa: "site não estava
@@ -1125,34 +1133,67 @@ h1 {
 
 .buybox-de {
   font-size: 0.74rem;
+  font-weight: 600;
   color: var(--muted);
   text-transform: uppercase;
-  letter-spacing: 0.03em;
+  letter-spacing: 0.08em;
 }
 
-.buybox-riscado {
-  font-size: 0.85rem;
-  color: var(--muted);
-  text-decoration: line-through;
-  margin-right: 6px;
+/* preco grande + riscado + selo de % na MESMA linha de base, como em
+   loja grande: o olho le primeiro o numero, depois a economia. */
+.buybox-linha-preco {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 10px;
+  margin: 4px 0 8px;
 }
 
 .buybox-valor {
-  font-size: 1.7rem;
-  font-weight: 800;
-  color: var(--accent);
-  line-height: 1.1;
+  display: inline-flex;
+  align-items: flex-start;
+  font-size: 2.3rem;
+  font-weight: 700;
+  color: var(--preco);
+  line-height: 1;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums lining-nums;
+}
+
+.buybox-moeda,
+.buybox-centavos {
+  font-size: 0.45em;
+  font-weight: 700;
+  line-height: 1.25;
+  letter-spacing: 0;
+}
+
+.buybox-moeda {
+  margin-right: 3px;
+}
+
+.buybox-riscado {
+  font-size: 0.9rem;
+  color: var(--muted);
+  text-decoration: line-through;
+  text-decoration-thickness: 1px;
+}
+
+.buybox-off {
+  padding: 3px 7px;
+  border-radius: 6px;
+  background: var(--preco);
+  color: #fff;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
 }
 
 .buybox-tag-desconto {
-  display: inline-block;
-  margin-top: 4px;
-  padding: 2px 8px;
-  border-radius: 999px;
-  background: var(--gold-soft);
+  display: block;
+  font-size: 0.78rem;
+  font-weight: 600;
   color: var(--gold-texto-claro);
-  font-size: 0.66rem;
-  font-weight: 700;
 }
 
 .buybox-tabela {
@@ -1184,9 +1225,10 @@ h1 {
 }
 
 .buybox-tabela .final {
-  font-weight: 800;
-  color: var(--accent);
+  font-weight: 700;
+  color: var(--ink);
   font-size: 0.95rem;
+  font-variant-numeric: tabular-nums;
 }
 
 .buybox-selos {
@@ -1236,29 +1278,46 @@ h1 {
   transform: translateY(-1px);
 }
 
+/* desktop: 2 colunas classicas de pagina de produto -- foto a esquerda,
+   preco + tabela de formatos a direita (antes o preco ficava encostado
+   na borda direita com um vazio enorme no meio). display:contents deixa
+   a foto e o bloco de preco do .buybox-topo virarem celulas do grid sem
+   mudar o HTML do mobile. */
 @media (min-width: 860px) {
+  .buybox {
+    display: grid;
+    grid-template-columns: 300px 1fr;
+    grid-template-rows: auto 1fr;
+    column-gap: 36px;
+    padding: 24px;
+  }
   .buybox-topo {
-    align-items: center;
+    display: contents;
   }
   .buybox-img {
-    width: 240px;
-    height: 240px;
+    grid-row: 1 / span 2;
+    width: 300px;
+    height: 300px;
     border-radius: 16px;
-    margin-left: 14px;
   }
   .buybox-precos {
-    align-items: flex-end;
-    text-align: right;
-    padding-right: 18px;
+    align-self: end;
+    padding: 8px 0 18px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 8px;
   }
   .buybox-valor {
-    font-size: 2.6rem;
+    font-size: 3.2rem;
   }
   .buybox-de {
-    font-size: 0.85rem;
+    font-size: 0.8rem;
   }
   .buybox-riscado {
-    font-size: 1rem;
+    font-size: 1.05rem;
+  }
+  .buybox-tabela {
+    align-self: start;
+    margin-bottom: 0;
   }
 }
 
@@ -3029,6 +3088,11 @@ body.tem-barra-fixa-comprar main {
 .barra-fixa-info span {
   font-size: 0.75rem;
   color: var(--muted);
+}
+
+#barra-fixa-preco {
+  color: var(--preco);
+  font-weight: 700;
 }
 
 #barra-fixa-detalhe {

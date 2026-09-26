@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% from "_preco.html" import preco_destaque %}
 
 {% block titulo %}Medalha Personalizada com Foto — Nove de Julho{% endblock %}
 {% block meta_descricao %}Medalha personalizada com foto: envie a imagem, veja a simulação antes de pedir e receba em medalha, entremeio ou chaveiro.{% endblock %}
@@ -19,8 +20,8 @@
       <img src="{{ url_for('static', filename='img/personalizada-medalha-1lado.jpg') }}" alt="Medalha personalizada" class="buybox-img">
       <div class="buybox-precos">
         <span class="buybox-de">A partir de</span>
-        <span><span class="buybox-riscado">R$ 7,00</span><span class="buybox-valor">{{ preco_varejo | preco }}</span></span>
-        <span class="buybox-tag-desconto">Desconto de até 65%</span>
+        {{ preco_destaque(preco_varejo, 7.0) }}
+        <span class="buybox-tag-desconto">Até 65% OFF no atacado, sem cupom</span>
       </div>
     </div>
     <table class="buybox-tabela">

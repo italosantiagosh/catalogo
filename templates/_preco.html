@@ -1,0 +1,12 @@
+{# Preco em destaque da buybox (produto.html e personalizada.html).
+   Separa "R$" e centavos do valor inteiro pra dar a hierarquia de loja
+   grande (numero grande, moeda/centavos menores) -- o texto continua
+   "R$ 5,00" pra leitor de tela via aria-label. #}
+{% macro preco_destaque(valor, de) -%}
+  {%- set partes = ("%.2f" | format(valor)).split(".") -%}
+  <span class="buybox-linha-preco">
+    <span class="buybox-valor" aria-label="{{ valor | preco }}"><span class="buybox-moeda">R$</span>{{ partes[0] }}<span class="buybox-centavos">,{{ partes[1] }}</span></span>
+    <span class="buybox-riscado" aria-label="Preço anterior {{ de | preco }}">{{ de | preco }}</span>
+    <span class="buybox-off">-{{ ((1 - valor / de) * 100) | round | int }}%</span>
+  </span>
+{%- endmacro %}

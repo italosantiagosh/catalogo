@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% from "_preco.html" import preco_destaque %}
 
 {# O produto "espirito-santo" tem o mesmo nome da categoria "Espírito
    Santo" -- sem essa excecao, os dois geravam o MESMO <title>
@@ -56,8 +57,8 @@
       <img src="{{ url_for('static', filename=produto.modelos[0].imagem) }}" alt="{{ produto.nome }}" class="buybox-img">
       <div class="buybox-precos">
         <span class="buybox-de">A partir de</span>
-        <span><span class="buybox-riscado">R$ 7,00</span><span class="buybox-valor">{{ preco_varejo | preco }}</span></span>
-        <span class="buybox-tag-desconto">Desconto de até 65%</span>
+        {{ preco_destaque(preco_varejo, 7.0) }}
+        <span class="buybox-tag-desconto">Até 65% OFF no atacado, sem cupom</span>
       </div>
     </div>
     <table class="buybox-tabela">
