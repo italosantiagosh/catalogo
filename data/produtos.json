@@ -1081,6 +1081,28 @@
     "categoria": "Nossa Senhora"
   },
   {
+    "id": "nossa-senhora-auxiliadora",
+    "nome": "Nossa Senhora Auxiliadora",
+    "categoria": "Nossa Senhora",
+    "modelos": [
+      {
+        "id": 1,
+        "nome": "Modelo 1",
+        "imagem": "img/produtos/nossa_senhora_auxiliadora_modelo_1_medalha.jpg",
+        "tamanhos": [
+          "12mm",
+          "16mm"
+        ],
+        "imagem_entremeio_prata": "img/produtos/nossa_senhora_auxiliadora_modelo_1_entremeio_prata.jpg",
+        "imagem_entremeio_ouro_velho": "img/produtos/nossa_senhora_auxiliadora_modelo_1_entremeio_ouro_velho.jpg",
+        "imagem_chaveiro": "img/produtos/nossa_senhora_auxiliadora_modelo_1_chaveiro.jpg",
+        "imagem_medalha_2lados_prata": "img/produtos/nossa-senhora-auxiliadora_modelo_1_medalha_2lados_prata.jpg",
+        "imagem_medalha_2lados_ouro_velho": "img/produtos/nossa-senhora-auxiliadora_modelo_1_medalha_2lados_ouro_velho.jpg",
+        "imagem_chaveiro_2lados": "img/produtos/nossa-senhora-auxiliadora_modelo_1_chaveiro_2lados.jpg"
+      }
+    ]
+  },
+  {
     "id": "nossa-senhora-da-apresentacao",
     "nome": "Nossa Senhora da Apresentação",
     "modelos": [
